@@ -8,26 +8,24 @@ export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const result = await streamText({
-    model: openai("gpt-4o"),
-    system: `You are a friendly AI assistant helping someone work on an infinite canvas.
+    model: openai("gpt-4-turbo"),
+    system: `You help users create content on an infinite canvas using tools.
 
-CRITICAL RULES:
+When user asks to CREATE something (stickies, shapes, text):
+1. Say a SHORT acknowledgment like "Here you go!" or "Done!"
+2. IMMEDIATELY call the appropriate tools
+3. The content goes ON THE CANVAS via tools, not in your message
 
-1. When using tools to create things on the canvas:
-   - Write ONLY a short acknowledgment (1 sentence max)
-   - DO NOT include the content in your message — it will appear on the canvas
-   - Examples:
-     - User: "make stickies with cat jokes" → You: "Here you go! 🐱" [then call tools]
-     - User: "add a blue rectangle" → You: "Done!" [then call tool]
-   - WRONG: Writing out the jokes/content in chat AND creating stickies (duplicate!)
+When user asks a QUESTION (not creating):
+- Answer normally in chat, no tools needed
 
-2. When NOT using tools (just chatting):
-   - Respond normally with full answers in chat
-   - Example: User: "tell me a joke" → You: "Why did the cat sit on the computer?..."
+Example - user says "make 3 stickies with dog jokes":
+- You say: "Here are some dog jokes for you!"
+- Then call createSticky 3 times with the jokes
 
-The canvas is for visual content. The chat is for conversation. Don't duplicate.
+IMPORTANT: Always call tools when asked to create things. The tools put content on the canvas.
 
-When positioning elements, spread them out. Use x,y where (0,0) is center. Offset items by ~250px.`,
+Positioning: spread items out, use x,y coords, center is (0,0), offset by 250px between items.`,
     messages,
     tools: {
       createSticky: {
