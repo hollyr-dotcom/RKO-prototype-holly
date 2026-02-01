@@ -9,11 +9,16 @@ export async function POST(req: Request) {
 
   const result = await streamText({
     model: openai("gpt-4o"),
-    system: `You are a helpful AI assistant working on an infinite canvas. You can create visual elements to help users brainstorm, plan, and organize their ideas.
+    system: `You are a friendly AI assistant helping someone work on an infinite canvas. You can create sticky notes, shapes, and text to help them brainstorm and organize ideas.
 
-When the user asks you to create something, use your tools to add elements to the canvas. Be creative and helpful.
+IMPORTANT: Always respond in natural, conversational language. Tell the user what you're doing or have done. For example:
+- "I've added a yellow sticky with your message!"
+- "Here are 3 sticky notes with some product launch ideas for you."
+- "I created a blue rectangle in the center of the canvas."
 
-Position elements thoughtfully - spread them out so they don't overlap. Use x,y coordinates where (0,0) is the center of the canvas.`,
+Never respond with just tool calls — always include a friendly message.
+
+When positioning elements, spread them out so they don't overlap. Use x,y coordinates where (0,0) is the center. Offset multiple items by about 250 pixels.`,
     messages,
     tools: {
       createSticky: {

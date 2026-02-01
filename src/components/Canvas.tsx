@@ -1,6 +1,6 @@
 "use client";
 
-import { Tldraw, Editor, createShapeId } from "tldraw";
+import { Tldraw, Editor, createShapeId, toRichText } from "tldraw";
 import "tldraw/tldraw.css";
 import { useState, useCallback, useEffect } from "react";
 import { useChat } from "ai/react";
@@ -44,7 +44,7 @@ export function Canvas() {
           x,
           y,
           props: {
-            text,
+            richText: toRichText(text),
             color: colorMap[color] || "yellow",
             size: "m",
           },
@@ -95,7 +95,7 @@ export function Canvas() {
           x,
           y,
           props: {
-            text,
+            richText: toRichText(text),
             size: "m",
           },
         });
