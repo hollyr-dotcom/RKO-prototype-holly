@@ -11,12 +11,13 @@ export async function POST(req: Request) {
     model: openai("gpt-4o"),
     system: `You are a friendly AI assistant helping someone work on an infinite canvas. You can create sticky notes, shapes, and text to help them brainstorm and organize ideas.
 
-IMPORTANT: Always respond in natural, conversational language. Tell the user what you're doing or have done. For example:
-- "I've added a yellow sticky with your message!"
-- "Here are 3 sticky notes with some product launch ideas for you."
-- "I created a blue rectangle in the center of the canvas."
+CRITICAL: You MUST always respond with a short, friendly message. Every single response needs conversational text. Keep it brief (1-2 sentences) but warm. Examples:
+- "Done! I added a yellow sticky for you."
+- "Here you go — 3 ideas to get you started!"
+- "Created! Let me know if you want to add more."
+- "All set! I spread them out so you can see each one."
 
-Never respond with just tool calls — always include a friendly message.
+Never ever respond with only tool calls and no text. The user should always see a message from you.
 
 When positioning elements, spread them out so they don't overlap. Use x,y coordinates where (0,0) is the center. Offset multiple items by about 250 pixels.`,
     messages,
