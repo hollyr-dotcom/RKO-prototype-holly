@@ -1,6 +1,7 @@
 "use client";
 
 import type { Message } from "ai";
+import { useState } from "react";
 
 interface ChatPanelProps {
   onClose: () => void;
@@ -9,6 +10,70 @@ interface ChatPanelProps {
   setInput: (input: string) => void;
   onSubmit: (text: string) => void;
   isLoading: boolean;
+}
+
+// Collapsible tool invocation block
+function ToolBlock({ toolInvocations }: { toolInvocations: Message["toolInvocations"] }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (!toolInvocations || toolInvocations.length === 0) return null;
+
+  // Generate summary text
+  const getSummary = () => {
+    const counts: Record<string, number> = {};
+    toolInvocations.forEach((t) => {
+      const name = t.toolName.replace("create", "").toLowerCase();
+      counts[name] = (counts[name] || 0) + 1;
+    });
+
+    const parts = Object.entries(counts).map(([name, count]) => {
+      const plural = count > 1 ? "s" : "";
+      return `${count} ${name}${plural}`;
+    });
+
+    return `Creating ${parts.join(", ")} on canvas`;
+  };
+
+  return (
+    <div className="mb-2">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-gray-800 hover:bg-gray-700 rounded-xl border border-gray-700 text-left transition-colors"
+      >
+        <span className="text-sm text-gray-300">{getSummary()}</span>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          className={`text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="mt-1 px-4 py-2 bg-gray-800 rounded-xl border border-gray-700">
+          {toolInvocations.map((tool, i) => (
+            <div key={i} className="text-xs text-gray-400 py-1">
+              <span className="text-green-500 mr-2">✓</span>
+              {tool.toolName === "createSticky" && (
+                <>Sticky: "{(tool.args as { text: string }).text}"</>
+              )}
+              {tool.toolName === "createShape" && (
+                <>Shape: {(tool.args as { type: string }).type}</>
+              )}
+              {tool.toolName === "createText" && (
+                <>Text: "{(tool.args as { text: string }).text}"</>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function ChatPanel({
@@ -69,29 +134,24 @@ export function ChatPanel({
                 message.role === "user" ? "justify-end" : "justify-start"
               }`}
             >
-              <div
-                className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                  message.role === "user"
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-900"
-                }`}
-              >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                {/* Show tool calls */}
-                {message.toolInvocations &&
-                  message.toolInvocations.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
-                      {message.toolInvocations.map((tool, i) => (
-                        <div
-                          key={i}
-                          className="text-xs text-gray-500 flex items-center gap-1"
-                        >
-                          <span className="text-green-600">✓</span>
-                          Created {tool.toolName.replace("create", "")}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+              <div className="max-w-[90%]">
+                {/* Tool invocations shown as collapsible block BEFORE text */}
+                {message.role === "assistant" && (
+                  <ToolBlock toolInvocations={message.toolInvocations} />
+                )}
+
+                {/* Message content */}
+                {message.content && (
+                  <div
+                    className={`rounded-2xl px-4 py-2 ${
+                      message.role === "user"
+                        ? "bg-gray-900 text-white"
+                        : "bg-gray-100 text-gray-900"
+                    }`}
+                  >
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  </div>
+                )}
               </div>
             </div>
           ))
