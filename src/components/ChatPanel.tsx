@@ -142,9 +142,12 @@ export function ChatPanel({
               ) : (
                 /* AI message: full width, no bg */
                 <div className="w-full">
-                  {message.content && (
+                  {/* Show content or fallback if only tool calls */}
+                  {message.content ? (
                     <p className="text-sm text-gray-900 whitespace-pre-wrap">{message.content}</p>
-                  )}
+                  ) : message.toolInvocations && message.toolInvocations.length > 0 ? (
+                    <p className="text-sm text-gray-900">Done!</p>
+                  ) : null}
 
                   {/* Tool invocations shown as collapsible block AFTER text */}
                   {message.toolInvocations && message.toolInvocations.length > 0 && (
