@@ -9,6 +9,7 @@ export async function POST(req: Request) {
 
   const result = await streamText({
     model: openai("gpt-5.2-chat-latest"),
+    temperature: 1,
     system: `You help users create content on an infinite canvas using tools.
 
 When user asks to CREATE something (stickies, shapes, text):
