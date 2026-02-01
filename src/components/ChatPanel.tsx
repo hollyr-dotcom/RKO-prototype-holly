@@ -35,12 +35,12 @@ function ToolBlock({ toolInvocations }: { toolInvocations: Message["toolInvocati
   };
 
   return (
-    <div className="mb-2">
+    <div>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-gray-800 hover:bg-gray-700 rounded-xl border border-gray-700 text-left transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 text-left transition-colors"
       >
-        <span className="text-sm text-gray-300">{getSummary()}</span>
+        <span className="text-sm text-gray-500">{getSummary()}</span>
         <svg
           width="16"
           height="16"
@@ -55,10 +55,10 @@ function ToolBlock({ toolInvocations }: { toolInvocations: Message["toolInvocati
       </button>
 
       {isOpen && (
-        <div className="mt-1 px-4 py-2 bg-gray-800 rounded-xl border border-gray-700">
+        <div className="mt-1 px-4 py-2 rounded-xl border border-gray-200">
           {toolInvocations.map((tool, i) => (
-            <div key={i} className="text-xs text-gray-400 py-1">
-              <span className="text-green-500 mr-2">✓</span>
+            <div key={i} className="text-xs text-gray-500 py-1">
+              <span className="text-green-600 mr-2">✓</span>
               {tool.toolName === "createSticky" && (
                 <>Sticky: "{(tool.args as { text: string }).text}"</>
               )}
@@ -130,48 +130,45 @@ export function ChatPanel({
           messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${
-                message.role === "user" ? "justify-end" : "justify-start"
+              className={`${
+                message.role === "user" ? "flex justify-end" : ""
               }`}
             >
-              <div className="max-w-[90%]">
-                {/* Tool invocations shown as collapsible block BEFORE text */}
-                {message.role === "assistant" && (
-                  <ToolBlock toolInvocations={message.toolInvocations} />
-                )}
+              {message.role === "user" ? (
+                /* User message: light gray bg, right aligned */
+                <div className="max-w-[80%] rounded-2xl px-4 py-2 bg-gray-100 text-gray-900">
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                </div>
+              ) : (
+                /* AI message: full width, no bg */
+                <div className="w-full">
+                  {message.content && (
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{message.content}</p>
+                  )}
 
-                {/* Message content */}
-                {message.content && (
-                  <div
-                    className={`rounded-2xl px-4 py-2 ${
-                      message.role === "user"
-                        ? "bg-gray-900 text-white"
-                        : "bg-gray-100 text-gray-900"
-                    }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  </div>
-                )}
-              </div>
+                  {/* Tool invocations shown as collapsible block AFTER text */}
+                  {message.toolInvocations && message.toolInvocations.length > 0 && (
+                    <div className="mt-3">
+                      <ToolBlock toolInvocations={message.toolInvocations} />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))
         )}
 
         {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-gray-100 rounded-2xl px-4 py-2">
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                <span
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: "0.1s" }}
-                />
-                <span
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: "0.2s" }}
-                />
-              </div>
-            </div>
+          <div className="flex gap-1 py-2">
+            <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" />
+            <span
+              className="w-2 h-2 bg-gray-300 rounded-full animate-bounce"
+              style={{ animationDelay: "0.1s" }}
+            />
+            <span
+              className="w-2 h-2 bg-gray-300 rounded-full animate-bounce"
+              style={{ animationDelay: "0.2s" }}
+            />
           </div>
         )}
       </div>
