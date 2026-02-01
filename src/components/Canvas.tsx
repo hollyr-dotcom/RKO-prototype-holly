@@ -6,9 +6,13 @@ import { useState, useCallback, useRef } from "react";
 import { useChat } from "ai/react";
 import { Toolbar } from "./Toolbar";
 import { ChatPanel } from "./ChatPanel";
+import { IconSingleSparksFilled } from "@mirohq/design-system-icons";
+
+// Valid tldraw colors
+type TLColor = "yellow" | "blue" | "green" | "orange" | "violet" | "black" | "red" | "grey" | "light-blue" | "light-green" | "light-red" | "light-violet" | "white";
 
 // Map AI color names to tldraw colors
-const colorMap: Record<string, string> = {
+const colorMap: Record<string, TLColor> = {
   yellow: "yellow",
   blue: "blue",
   green: "green",
@@ -64,7 +68,7 @@ export function Canvas() {
           color: string;
         };
 
-        const geoMap: Record<string, string> = {
+        const geoMap: Record<string, "rectangle" | "ellipse" | "triangle" | "diamond"> = {
           rectangle: "rectangle",
           ellipse: "ellipse",
           triangle: "triangle",
@@ -138,10 +142,24 @@ export function Canvas() {
   );
 
   return (
-    <div className="h-screen w-screen flex">
+    <div className="h-screen w-screen flex overflow-hidden">
       {/* Main canvas area */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative transition-all duration-300 ease-out">
         <Tldraw onMount={handleMount} hideUi />
+
+        {/* AI Chat button - top right, hidden when panel is open */}
+        {!isChatOpen && (
+          <button
+            onClick={() => setIsChatOpen(true)}
+            className="absolute top-4 right-4 z-50 w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:bg-gray-800"
+            style={{
+              boxShadow: "0 4px 24px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)",
+            }}
+            title="AI Chat"
+          >
+            <IconSingleSparksFilled size="medium" />
+          </button>
+        )}
 
         {/* Custom toolbar at bottom center */}
         <Toolbar
@@ -155,14 +173,16 @@ export function Canvas() {
 
       {/* Side chat panel */}
       {isChatOpen && (
-        <ChatPanel
-          onClose={() => setIsChatOpen(false)}
-          messages={messages}
-          input={input}
-          setInput={setInput}
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-        />
+        <div className="w-96 flex-shrink-0 transition-all duration-300 ease-out">
+          <ChatPanel
+            onClose={() => setIsChatOpen(false)}
+            messages={messages}
+            input={input}
+            setInput={setInput}
+            onSubmit={handleSubmit}
+            isLoading={isLoading}
+          />
+        </div>
       )}
     </div>
   );
