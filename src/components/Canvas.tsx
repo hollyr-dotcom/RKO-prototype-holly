@@ -1,8 +1,8 @@
 "use client";
 
-import { Tldraw, Editor, createShapeId, toRichText } from "tldraw";
+import { Tldraw, Editor, createShapeId, toRichText, TLShapeId } from "tldraw";
 import "tldraw/tldraw.css";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useChat } from "ai/react";
 import { Toolbar } from "./Toolbar";
 import { ChatPanel } from "./ChatPanel";
@@ -22,6 +22,7 @@ const colorMap: Record<string, string> = {
 export function Canvas() {
   const [editor, setEditor] = useState<Editor | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const createdShapesRef = useRef<TLShapeId[]>([]);
 
   const { messages, input, setInput, append, isLoading } = useChat({
     api: "/api/chat",
@@ -29,6 +30,7 @@ export function Canvas() {
       if (!editor) return;
 
       const { toolName, args } = toolCall;
+      let shapeId: TLShapeId | null = null;
 
       if (toolName === "createSticky") {
         const { text, x, y, color } = args as {
@@ -38,8 +40,9 @@ export function Canvas() {
           color: string;
         };
 
+        shapeId = createShapeId();
         editor.createShape({
-          id: createShapeId(),
+          id: shapeId,
           type: "note",
           x,
           y,
@@ -68,8 +71,9 @@ export function Canvas() {
           diamond: "diamond",
         };
 
+        shapeId = createShapeId();
         editor.createShape({
-          id: createShapeId(),
+          id: shapeId,
           type: "geo",
           x,
           y,
@@ -89,8 +93,9 @@ export function Canvas() {
           y: number;
         };
 
+        shapeId = createShapeId();
         editor.createShape({
-          id: createShapeId(),
+          id: shapeId,
           type: "text",
           x,
           y,
@@ -99,6 +104,20 @@ export function Canvas() {
             size: "m",
           },
         });
+      }
+
+      // Track created shape for zooming later
+      if (shapeId) {
+        createdShapesRef.current.push(shapeId);
+      }
+    },
+    onFinish: () => {
+      // Zoom to created shapes when AI finishes responding
+      if (editor && createdShapesRef.current.length > 0) {
+        editor.select(...createdShapesRef.current);
+        editor.zoomToSelection({ animation: { duration: 300 } });
+        // Clear for next response
+        createdShapesRef.current = [];
       }
     },
   });
