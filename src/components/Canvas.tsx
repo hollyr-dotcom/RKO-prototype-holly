@@ -3,7 +3,7 @@
 import { Tldraw, Editor, createShapeId } from "tldraw";
 import "tldraw/tldraw.css";
 import { useState, useCallback, useEffect } from "react";
-import { useChat } from "@ai-sdk/react";
+import { useChat } from "ai/react";
 import { Toolbar } from "./Toolbar";
 import { ChatPanel } from "./ChatPanel";
 
