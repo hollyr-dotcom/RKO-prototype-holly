@@ -7,9 +7,17 @@ interface ToolbarProps {
   editor: Editor | null;
   onToggleChat: () => void;
   isChatOpen: boolean;
+  onSubmit: (text: string) => void;
+  isLoading: boolean;
 }
 
-export function Toolbar({ editor, onToggleChat, isChatOpen }: ToolbarProps) {
+export function Toolbar({
+  editor,
+  onToggleChat,
+  isChatOpen,
+  onSubmit,
+  isLoading,
+}: ToolbarProps) {
   const [inputValue, setInputValue] = useState("");
   const [activeTool, setActiveTool] = useState("select");
 
@@ -21,16 +29,9 @@ export function Toolbar({ editor, onToggleChat, isChatOpen }: ToolbarProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
-
-    // TODO: Send to AI
-    console.log("AI request:", inputValue);
+    if (!inputValue.trim() || isLoading) return;
+    onSubmit(inputValue);
     setInputValue("");
-
-    // Open chat panel when submitting
-    if (!isChatOpen) {
-      onToggleChat();
-    }
   };
 
   return (
@@ -61,8 +62,9 @@ export function Toolbar({ editor, onToggleChat, isChatOpen }: ToolbarProps) {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Make anything"
-            className="w-40 px-3 py-1.5 text-sm bg-gray-100 rounded-full border-0 outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-500"
+            placeholder={isLoading ? "Thinking..." : "Make anything"}
+            disabled={isLoading}
+            className="w-40 px-3 py-1.5 text-sm bg-gray-100 rounded-full border-0 outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-500 disabled:opacity-50"
           />
           <button
             type="button"
@@ -118,11 +120,7 @@ export function Toolbar({ editor, onToggleChat, isChatOpen }: ToolbarProps) {
             <ConnectorIcon />
           </ToolButton>
 
-          <ToolButton
-            active={false}
-            onClick={() => {}}
-            title="More"
-          >
+          <ToolButton active={false} onClick={() => {}} title="More">
             <PlusIcon />
           </ToolButton>
         </div>
@@ -148,9 +146,7 @@ function ToolButton({
       onClick={onClick}
       title={title}
       className={`p-2 rounded-xl transition-colors ${
-        active
-          ? "bg-gray-900 text-white"
-          : "text-gray-700 hover:bg-gray-100"
+        active ? "bg-gray-900 text-white" : "text-gray-700 hover:bg-gray-100"
       }`}
     >
       {children}
@@ -169,7 +165,14 @@ function PointerIcon() {
 
 function ChatIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
     </svg>
   );
@@ -186,7 +189,14 @@ function MicIcon() {
 
 function PenIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <path d="M12 19l7-7 3 3-7 7-3-3z" />
       <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
       <path d="M2 2l7.586 7.586" />
@@ -196,7 +206,14 @@ function PenIcon() {
 
 function StickyIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10l6-6V5a2 2 0 0 0-2-2z" />
       <path d="M15 21v-6h6" />
     </svg>
@@ -205,7 +222,14 @@ function StickyIcon() {
 
 function ShapeIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <polygon points="12 2 22 20 2 20" />
     </svg>
   );
@@ -213,7 +237,14 @@ function ShapeIcon() {
 
 function TextIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <polyline points="4 7 4 4 20 4 20 7" />
       <line x1="12" y1="4" x2="12" y2="20" />
       <line x1="8" y1="20" x2="16" y2="20" />
@@ -223,7 +254,14 @@ function TextIcon() {
 
 function ConnectorIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <circle cx="5" cy="12" r="3" />
       <circle cx="19" cy="12" r="3" />
       <line x1="8" y1="12" x2="16" y2="12" />

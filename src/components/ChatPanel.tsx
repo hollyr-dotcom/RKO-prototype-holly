@@ -1,47 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import type { Message } from "@ai-sdk/react";
 
 interface ChatPanelProps {
   onClose: () => void;
+  messages: Message[];
+  input: string;
+  setInput: (input: string) => void;
+  onSubmit: (text: string) => void;
+  isLoading: boolean;
 }
 
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-}
-
-export function ChatPanel({ onClose }: ChatPanelProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+export function ChatPanel({
+  onClose,
+  messages,
+  input,
+  setInput,
+  onSubmit,
+  isLoading,
+}: ChatPanelProps) {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input,
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    onSubmit(input);
     setInput("");
-    setIsLoading(true);
-
-    // TODO: Integrate with AI SDK
-    // For now, simulate a response
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "I'll help you with that! This is a placeholder response. AI integration coming next.",
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-      setIsLoading(false);
-    }, 1000);
   };
 
   return (
@@ -52,17 +34,22 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
           <span className="text-sm font-medium text-gray-900">Chat</span>
           <span className="text-xs text-gray-500">with AI</span>
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-            title="Close"
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+          title="Close"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       {/* Messages */}
@@ -78,7 +65,9 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
           messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex ${
+                message.role === "user" ? "justify-end" : "justify-start"
+              }`}
             >
               <div
                 className={`max-w-[80%] rounded-2xl px-4 py-2 ${
@@ -87,7 +76,22 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
                     : "bg-gray-100 text-gray-900"
                 }`}
               >
-                <p className="text-sm">{message.content}</p>
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                {/* Show tool calls */}
+                {message.toolInvocations &&
+                  message.toolInvocations.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      {message.toolInvocations.map((tool, i) => (
+                        <div
+                          key={i}
+                          className="text-xs text-gray-500 flex items-center gap-1"
+                        >
+                          <span className="text-green-600">✓</span>
+                          Created {tool.toolName.replace("create", "")}
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
             </div>
           ))
@@ -98,8 +102,14 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
             <div className="bg-gray-100 rounded-2xl px-4 py-2">
               <div className="flex gap-1">
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+                <span
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: "0.1s" }}
+                />
+                <span
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: "0.2s" }}
+                />
               </div>
             </div>
           </div>
@@ -114,14 +124,22 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Enter reply..."
-            className="flex-1 px-4 py-2 text-sm bg-gray-100 rounded-full border-0 outline-none focus:ring-2 focus:ring-gray-300"
+            disabled={isLoading}
+            className="flex-1 px-4 py-2 text-sm bg-gray-100 rounded-full border-0 outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50"
           />
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !input.trim()}
             className="p-2 rounded-full bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M12 19V5M5 12l7-7 7 7" />
             </svg>
           </button>
