@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const result = await streamText({
-    model: openai("gpt-4-turbo"),
+    model: openai("gpt-5.2-chat-latest"),
     system: `You help users create content on an infinite canvas using tools.
 
 When user asks to CREATE something (stickies, shapes, text):
