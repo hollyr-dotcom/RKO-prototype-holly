@@ -276,17 +276,24 @@ The layout engine handles all positioning - you just specify the content!`,
     items: z.array(z.object({
       type: z.enum(["sticky", "shape", "text"]).describe("Item type"),
       text: z.string().describe("Content text"),
-      color: z.string().optional().describe("Color (yellow, blue, green, pink, orange, violet)"),
-      parentIndex: z.number().optional().describe("For hierarchy: index of parent item (0-based)"),
+      color: z.string().default("yellow").describe("Color: yellow, blue, green, pink, orange, violet"),
+      parentIndex: z.number().default(-1).describe("For hierarchy: index of parent item (0-based), -1 for root"),
     })).min(1).max(20).describe("Items to place in the layout"),
-    options: z.object({
-      columns: z.number().optional().describe("For grid: number of columns (default 3)"),
-      direction: z.enum(["down", "right"]).optional().describe("For hierarchy: tree direction"),
-      spacing: z.enum(["compact", "normal", "spacious"]).optional().describe("Spacing between items"),
-    }).optional(),
+    columns: z.number().default(3).describe("For grid: number of columns"),
+    direction: z.enum(["down", "right"]).default("down").describe("For hierarchy: tree direction"),
+    spacing: z.enum(["compact", "normal", "spacious"]).default("normal").describe("Spacing between items"),
   }),
   execute: async (args) => {
-    return JSON.stringify({ layout: args });
+    return JSON.stringify({
+      layout: {
+        ...args,
+        options: {
+          columns: args.columns,
+          direction: args.direction,
+          spacing: args.spacing,
+        }
+      }
+    });
   },
 });
 

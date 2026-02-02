@@ -316,7 +316,8 @@ export function Canvas() {
           type: item.type,
           text: item.text,
           color: item.color,
-          parentIndex: item.parentIndex,
+          // Convert -1 to undefined for root items
+          parentIndex: item.parentIndex === -1 ? undefined : item.parentIndex,
         }));
 
         // Calculate the layout
