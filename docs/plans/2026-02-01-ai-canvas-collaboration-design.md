@@ -93,6 +93,8 @@ All artifacts are editable by both human and AI.
 - AI cursor + selection visibility
 - Cursor chat for quick questions
 - Task complexity assessment
+- **Layout Engine** — Auto-positions items, handles geometry ([Layout Engine Design](./2026-02-02-layout-engine-design.md))
+- **`createLayout()` tool** — Semantic layouts (grid, hierarchy, flow) with auto-arrangement
 
 ### Phase 3: Research & Rich Artifacts
 - Web search API integration
