@@ -1,7 +1,7 @@
 "use client";
 
-import type { Message } from "ai";
-import { useState } from "react";
+import type { Message } from "@/hooks/useAgent";
+import { useState, useEffect, useRef } from "react";
 import Markdown from "react-markdown";
 import {
   IconPlus,
@@ -29,6 +29,7 @@ interface ChatPanelProps {
   setInput: (input: string) => void;
   onSubmit: (text: string) => void;
   isLoading: boolean;
+  hideHeader?: boolean;
 }
 
 // Question block with clickable suggestions
@@ -63,7 +64,32 @@ function QuestionBlock({
   );
 }
 
-// Plan block with approve/reject buttons
+// Task status icon for plan steps
+function TaskStatusIcon({ status }: { status: 'pending' | 'running' | 'done' }) {
+  switch (status) {
+    case 'pending':
+      return <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0" />;
+    case 'running':
+      return (
+        <div className="w-4 h-4 flex-shrink-0">
+          <svg className="animate-spin text-blue-500" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        </div>
+      );
+    case 'done':
+      return (
+        <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+          <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+      );
+  }
+}
+
+// Plan block with approve/reject buttons and progress tracking
 function PlanBlock({
   title,
   steps,
@@ -71,6 +97,8 @@ function PlanBlock({
   onApprove,
   onReject,
   isLatest,
+  currentStep,
+  isExecuting,
 }: {
   title: string;
   steps: string[];
@@ -78,44 +106,202 @@ function PlanBlock({
   onApprove: () => void;
   onReject: () => void;
   isLatest: boolean;
+  currentStep?: number;
+  isExecuting?: boolean;
 }) {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const hasStarted = currentStep !== undefined;
+
+  // Determine status of each step
+  const getStepStatus = (index: number): 'pending' | 'running' | 'done' => {
+    if (currentStep === undefined) return 'pending';
+    if (isExecuting) {
+      if (index < currentStep) return 'done';
+      if (index === currentStep) return 'running';
+      return 'pending';
+    } else {
+      if (index <= currentStep) return 'done';
+      return 'pending';
+    }
+  };
+
+  // Count completed steps
+  const completedSteps = currentStep !== undefined ? (isExecuting ? currentStep : currentStep + 1) : 0;
+  const progress = steps.length > 0 ? (completedSteps / steps.length) * 100 : 0;
+
   return (
     <div className="rounded-xl border border-gray-200 overflow-hidden">
-      {/* Header */}
+      {/* Header with title */}
       <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
         <p className="text-sm font-medium text-gray-900">{title}</p>
-      </div>
-
-      {/* Steps */}
-      <div className="px-4 py-3 space-y-2">
-        {steps.map((step, i) => (
-          <div key={i} className="flex gap-2 text-sm">
-            <span className="text-gray-400 flex-shrink-0">{i + 1}.</span>
-            <span className="text-gray-700">{step}</span>
+        {hasStarted && (
+          <div className="mt-2">
+            <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-full bg-green-500 transition-all duration-300" style={{ width: `${progress}%` }} />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">{completedSteps} of {steps.length} steps</p>
           </div>
-        ))}
+        )}
       </div>
 
-      {/* Summary */}
-      <div className="px-4 py-2 bg-gray-50 border-t border-gray-200">
-        <p className="text-xs text-gray-500">{summary}</p>
-      </div>
+      {/* Summary (Goal) - at top, expandable */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full px-4 py-2 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+      >
+        <p className="text-xs text-gray-600 flex-1 pr-2">{summary}</p>
+        <svg
+          className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
 
-      {/* Approve/Reject buttons - only show on latest */}
-      {isLatest && (
+      {/* Steps - collapsible */}
+      {isExpanded && (
+        <div className="px-4 py-3 space-y-2 border-t border-gray-100">
+          {steps.map((step, i) => {
+            const status = getStepStatus(i);
+            return (
+              <div key={i} className={`flex gap-3 text-sm items-start py-1 ${status === 'running' ? 'bg-blue-50 -mx-2 px-2 rounded' : ''}`}>
+                <div className="mt-0.5 flex-shrink-0">
+                  <TaskStatusIcon status={status} />
+                </div>
+                <span className={`${status === 'done' ? 'text-gray-400 line-through' : status === 'running' ? 'text-blue-700 font-medium' : 'text-gray-700'}`}>
+                  {step}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Approve/Reject buttons - only show if not started yet */}
+      {isLatest && !hasStarted && (
         <div className="px-4 py-3 flex gap-2 border-t border-gray-200">
           <button
             onClick={onApprove}
             className="flex-1 px-3 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
           >
-            Approve
+            Approve & Start
           </button>
           <button
             onClick={onReject}
             className="flex-1 px-3 py-2 text-sm bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            Reject
+            Modify
           </button>
+        </div>
+      )}
+
+      {/* Completed state */}
+      {hasStarted && completedSteps >= steps.length && (
+        <div className="px-4 py-3 border-t border-gray-200 bg-green-50">
+          <p className="text-sm text-green-700 font-medium text-center">All steps completed!</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Compact progress header - shows at top of panel during execution
+function TaskProgressHeader({
+  title,
+  steps,
+  currentStep,
+  isExecuting,
+}: {
+  title: string;
+  steps: string[];
+  currentStep: number;
+  isExecuting: boolean;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Count completed steps
+  const completedSteps = isExecuting ? currentStep : currentStep + 1;
+  const progress = steps.length > 0 ? (completedSteps / steps.length) * 100 : 0;
+  const isComplete = completedSteps >= steps.length;
+
+  // Get current step text
+  const currentStepText = steps[currentStep] || steps[steps.length - 1];
+
+  return (
+    <div className="border-b border-gray-200 bg-gray-50">
+      {/* Collapsed header */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full px-4 py-2 flex items-center gap-3 hover:bg-gray-100 transition-colors"
+      >
+        {/* Progress ring */}
+        <div className="relative w-8 h-8 flex-shrink-0">
+          <svg className="w-8 h-8 -rotate-90" viewBox="0 0 36 36">
+            <path
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              fill="none"
+              stroke="#e5e7eb"
+              strokeWidth="3"
+            />
+            <path
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              fill="none"
+              stroke={isComplete ? "#22c55e" : "#3b82f6"}
+              strokeWidth="3"
+              strokeDasharray={`${progress}, 100`}
+              className="transition-all duration-300"
+            />
+          </svg>
+          <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-gray-700">
+            {completedSteps}/{steps.length}
+          </span>
+        </div>
+
+        {/* Title and current step */}
+        <div className="flex-1 text-left min-w-0">
+          <p className="text-xs font-medium text-gray-900 truncate">{title}</p>
+          {!isComplete && (
+            <p className="text-xs text-gray-500 truncate">
+              {isExecuting ? "Working on: " : "Next: "}{currentStepText}
+            </p>
+          )}
+          {isComplete && (
+            <p className="text-xs text-green-600 font-medium">Complete!</p>
+          )}
+        </div>
+
+        {/* Expand icon */}
+        <svg
+          className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Expanded steps list */}
+      {isExpanded && (
+        <div className="px-4 py-2 border-t border-gray-200 bg-white max-h-48 overflow-y-auto">
+          {steps.map((step, i) => {
+            const isDone = i < completedSteps;
+            const isRunning = i === currentStep && isExecuting;
+            return (
+              <div key={i} className="flex gap-2 py-1 text-xs items-start">
+                <div className="mt-0.5">
+                  <TaskStatusIcon status={isDone ? 'done' : isRunning ? 'running' : 'pending'} />
+                </div>
+                <span className={`${isDone ? 'text-gray-400 line-through' : isRunning ? 'text-blue-700' : 'text-gray-600'}`}>
+                  {i + 1}. {step}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -136,23 +322,39 @@ function ThinkingBlock({ status }: { status: string }) {
   );
 }
 
-// Collapsible tool invocation block (for create tools)
+// Progress status block - shows what AI is working on
+function ProgressBlock({ status }: { status: string }) {
+  return (
+    <div className="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-lg">
+      <span className="flex gap-1">
+        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" />
+        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
+        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
+      </span>
+      <span className="text-sm text-gray-700">{status}</span>
+    </div>
+  );
+}
+
+// Web search block removed - merged into activity indicator
+
+// Collapsible tool invocation block (for create tools) - the original nice component
 function ToolBlock({ toolInvocations }: { toolInvocations: Message["toolInvocations"] }) {
   const [isOpen, setIsOpen] = useState(false);
 
   if (!toolInvocations || toolInvocations.length === 0) return null;
 
-  // Filter out special tools - they're handled separately
-  const createTools = toolInvocations.filter(
-    (t) => !["askUser", "confirmPlan", "showThinking"].includes(t.toolName)
+  // Filter to only canvas creation/modification tools
+  const canvasTools = toolInvocations.filter(
+    (t) => ["createSticky", "createShape", "createText", "createFrame", "createArrow", "createWorkingNote", "deleteItem", "updateSticky", "moveItem"].includes(t.toolName)
   );
-  if (createTools.length === 0) return null;
+  if (canvasTools.length === 0) return null;
 
   // Generate summary text
   const getSummary = () => {
     const counts: Record<string, number> = {};
-    createTools.forEach((t) => {
-      const name = t.toolName.replace("create", "").toLowerCase();
+    canvasTools.forEach((t) => {
+      const name = t.toolName.replace("create", "").replace("Item", "").replace("Sticky", "sticky").toLowerCase();
       counts[name] = (counts[name] || 0) + 1;
     });
 
@@ -185,18 +387,36 @@ function ToolBlock({ toolInvocations }: { toolInvocations: Message["toolInvocati
       </button>
 
       {isOpen && (
-        <div className="mt-1 px-4 py-2 rounded-xl border border-gray-200">
-          {createTools.map((tool, i) => (
+        <div className="mt-1 px-4 py-2 rounded-xl border border-gray-200 max-h-48 overflow-y-auto">
+          {canvasTools.map((tool, i) => (
             <div key={i} className="text-xs text-gray-500 py-1">
               <span className="text-green-600 mr-2">✓</span>
               {tool.toolName === "createSticky" && (
-                <>Sticky: "{(tool.args as { text: string }).text}"</>
+                <>Sticky: "{((tool.args as { text: string }).text || "").slice(0, 40)}..."</>
               )}
               {tool.toolName === "createShape" && (
                 <>Shape: {(tool.args as { type: string }).type}</>
               )}
               {tool.toolName === "createText" && (
-                <>Text: "{(tool.args as { text: string }).text}"</>
+                <>Text: "{((tool.args as { text: string }).text || "").slice(0, 40)}..."</>
+              )}
+              {tool.toolName === "createFrame" && (
+                <>Frame: "{(tool.args as { name: string }).name}"</>
+              )}
+              {tool.toolName === "createArrow" && (
+                <>Arrow</>
+              )}
+              {tool.toolName === "createWorkingNote" && (
+                <>Working note: "{(tool.args as { title: string }).title}"</>
+              )}
+              {tool.toolName === "deleteItem" && (
+                <>Deleted item</>
+              )}
+              {tool.toolName === "updateSticky" && (
+                <>Updated sticky</>
+              )}
+              {tool.toolName === "moveItem" && (
+                <>Moved item</>
               )}
             </div>
           ))}
@@ -206,6 +426,138 @@ function ToolBlock({ toolInvocations }: { toolInvocations: Message["toolInvocati
   );
 }
 
+
+// Feedback request block - shows as checkpoint during execution
+function FeedbackBlock({
+  message,
+  onSelect,
+  isLatest,
+}: {
+  message: string;
+  suggestions?: string[]; // Not used - simplified to Continue/Modify
+  onSelect: (answer: string) => void;
+  isLatest: boolean;
+}) {
+  return (
+    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <span className="text-sm font-medium text-blue-900">Checkpoint</span>
+      </div>
+      <p className="text-sm text-blue-800 mb-3">{message}</p>
+      {isLatest && (
+        <div className="flex gap-2">
+          <button
+            onClick={() => onSelect("Continue")}
+            className="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Continue
+          </button>
+          <button
+            onClick={() => onSelect("I'd like to make some adjustments")}
+            className="flex-1 px-3 py-2 text-sm bg-white border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
+          >
+            Modify
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Checkpoint block - pauses for user feedback during execution
+function CheckpointBlock({
+  completed,
+  nextUp,
+  onSelect,
+  isLatest,
+}: {
+  completed: string;
+  nextUp: string;
+  options?: string[]; // Not used anymore - simplified to Continue/Modify
+  onSelect: (option: string) => void;
+  isLatest: boolean;
+}) {
+  return (
+    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <span className="text-sm font-medium text-blue-900">Checkpoint</span>
+      </div>
+      <p className="text-sm text-blue-800 mb-1">{completed}</p>
+      <p className="text-xs text-blue-600 mb-3">Next: {nextUp}</p>
+      {isLatest && (
+        <div className="flex gap-2">
+          <button
+            onClick={() => onSelect("Continue")}
+            className="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Continue
+          </button>
+          <button
+            onClick={() => onSelect("I'd like to make some adjustments")}
+            className="flex-1 px-3 py-2 text-sm bg-white border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
+          >
+            Modify
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Completed block - shown when all plan steps are done
+function CompletedBlock({
+  summary,
+  options,
+  onSelect,
+  isLatest,
+}: {
+  summary: string;
+  options: string[];
+  onSelect: (option: string) => void;
+  isLatest: boolean;
+}) {
+  return (
+    <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <span className="text-sm font-semibold text-green-900">All done!</span>
+      </div>
+      <p className="text-sm text-green-800 mb-4">{summary}</p>
+      {isLatest && options.length > 0 && (
+        <div>
+          <p className="text-xs font-medium text-green-700 mb-2">Possible next steps:</p>
+          <div className="flex flex-wrap gap-2">
+            {options.map((option, i) => (
+              <button
+                key={i}
+                onClick={() => onSelect(option)}
+                className="px-3 py-1.5 bg-white border border-green-200 rounded-full text-sm text-green-700 hover:bg-green-100 transition-colors"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 export function ChatPanel({
   onClose,
   messages,
@@ -213,13 +565,88 @@ export function ChatPanel({
   setInput,
   onSubmit,
   isLoading,
+  hideHeader = false,
 }: ChatPanelProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages change or loading state changes
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
     onSubmit(input);
     setInput("");
   };
+
+  // Extract active plan from messages for the header
+  const activePlan = (() => {
+    // Find the most recent confirmPlan tool call
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (msg.role !== 'assistant') continue;
+      const planToolIndex = msg.toolInvocations?.findIndex(t => t.toolName === 'confirmPlan');
+      if (planToolIndex === undefined || planToolIndex === -1) continue;
+
+      const planTool = msg.toolInvocations![planToolIndex];
+      const args = planTool.args as { title: string; steps: string[]; summary: string };
+
+      // Check for canvas tools in THIS message (after confirmPlan)
+      const toolsAfterPlan = msg.toolInvocations!.slice(planToolIndex + 1);
+      const hasCanvasToolsInSameMsg = toolsAfterPlan.some(t =>
+        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow'].includes(t.toolName)
+      );
+
+      // Check for activity in LATER messages
+      const laterMessages = messages.slice(i + 1).filter(m => m.role === 'assistant');
+      const laterToolCalls = laterMessages.flatMap(m => m.toolInvocations || []);
+
+      // Combine all tool calls
+      const allToolCalls = [...toolsAfterPlan, ...laterToolCalls];
+      const progressCalls = allToolCalls.filter(t => t.toolName === 'showProgress');
+
+      // Check for user approval
+      const nextUserMsg = messages.slice(i + 1).find(m => m.role === 'user');
+      const userApproved = nextUserMsg?.content?.toLowerCase().includes('approve');
+      const hasProgressCalls = progressCalls.length > 0;
+      const hasCanvasTools = hasCanvasToolsInSameMsg || laterToolCalls.some(t =>
+        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow'].includes(t.toolName)
+      );
+      const hasCheckpoint = allToolCalls.some(t => t.toolName === 'checkpoint');
+
+      const executionStarted = userApproved || hasProgressCalls || hasCanvasTools || hasCheckpoint;
+
+      if (!executionStarted) return null; // Only show header when executing
+
+      // Calculate current step
+      let completedSteps = 0;
+      let currentRunningStep = 0;
+      progressCalls.forEach(call => {
+        const pargs = call.args as { stepNumber?: number; status?: string };
+        if (pargs.stepNumber !== undefined) {
+          if (pargs.status === 'completed') {
+            completedSteps = Math.max(completedSteps, pargs.stepNumber);
+          } else if (pargs.status === 'starting') {
+            currentRunningStep = pargs.stepNumber;
+          }
+        }
+      });
+
+      const currentStep = isLoading && currentRunningStep > 0
+        ? currentRunningStep - 1
+        : completedSteps > 0 ? completedSteps - 1 : 0;
+
+      return {
+        title: args.title,
+        steps: args.steps,
+        currentStep: Math.min(currentStep, args.steps.length - 1),
+        isExecuting: isLoading,
+      };
+    }
+    return null;
+  })();
 
   return (
     <div className="w-96 h-full bg-white border-l border-gray-200 flex flex-col relative z-50">
@@ -247,6 +674,16 @@ export function ChatPanel({
         </button>
       </div>
 
+      {/* Task progress header - shows when plan is executing */}
+      {activePlan && (
+        <TaskProgressHeader
+          title={activePlan.title}
+          steps={activePlan.steps}
+          currentStep={activePlan.currentStep}
+          isExecuting={activePlan.isExecuting}
+        />
+      )}
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
@@ -268,6 +705,23 @@ export function ChatPanel({
             const showThinkingTool = message.toolInvocations?.find(
               (t) => t.toolName === "showThinking"
             );
+            const requestFeedbackTool = message.toolInvocations?.find(
+              (t) => t.toolName === "requestFeedback"
+            );
+            const checkpointTool = message.toolInvocations?.find(
+              (t) => t.toolName === "checkpoint"
+            );
+            // Get the LAST showProgress call (most recent update)
+            const showProgressTools = message.toolInvocations?.filter(
+              (t) => t.toolName === "showProgress"
+            );
+            const showProgressTool = showProgressTools && showProgressTools.length > 0
+              ? showProgressTools[showProgressTools.length - 1]
+              : undefined;
+            // Get web search calls
+            const webSearchTools = message.toolInvocations?.filter(
+              (t) => t.toolName === "webSearch"
+            );
             const isLatestMessage = index === messages.length - 1;
 
             return (
@@ -285,7 +739,8 @@ export function ChatPanel({
                 ) : (
                   /* AI message: full width, no bg */
                   <div className="w-full">
-                    {message.content && (
+                    {/* Hide text content if: askUser tool is present OR content looks like JSON (tool output) */}
+                    {message.content && !askUserTool && !message.content.trim().startsWith('{') && (
                       <div className="text-sm text-gray-900">
                         <Markdown
                           components={{
@@ -315,30 +770,117 @@ export function ChatPanel({
                       </div>
                     )}
 
-                    {/* confirmPlan tool - render as plan card with approve/reject */}
-                    {confirmPlanTool && (
-                      <div className={message.content || askUserTool ? "mt-3" : ""}>
-                        <PlanBlock
-                          title={(confirmPlanTool.args as { title: string }).title}
-                          steps={(confirmPlanTool.args as { steps: string[] }).steps}
-                          summary={(confirmPlanTool.args as { summary: string }).summary}
-                          onApprove={() => onSubmit("Approved! Go ahead.")}
-                          onReject={() => onSubmit("I'd like to make some changes.")}
+                    {/* confirmPlan tool - shows plan with progress tracking */}
+                    {confirmPlanTool && !askUserTool && (() => {
+                      const planArgs = confirmPlanTool.args as { title: string; steps: string[]; summary: string };
+
+                      // Check for canvas tools in THIS message (after confirmPlan)
+                      const thisMessageTools = message.toolInvocations || [];
+                      const confirmPlanIndex = thisMessageTools.findIndex(t => t.toolName === 'confirmPlan');
+                      const toolsAfterPlan = thisMessageTools.slice(confirmPlanIndex + 1);
+                      const hasCanvasToolsInSameMsg = toolsAfterPlan.some(t =>
+                        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow'].includes(t.toolName)
+                      );
+
+                      // Check for activity in LATER messages
+                      const laterMessages = messages.slice(index + 1).filter(m => m.role === 'assistant');
+                      const laterToolCalls = laterMessages.flatMap(m => m.toolInvocations || []);
+
+                      // Check if user approved
+                      const nextUserMsg = messages.slice(index + 1).find(m => m.role === 'user');
+                      const userApproved = nextUserMsg?.content?.toLowerCase().includes('approve');
+
+                      // Combine all tool calls for progress tracking
+                      const allToolCalls = [...toolsAfterPlan, ...laterToolCalls];
+                      const progressCalls = allToolCalls.filter(t => t.toolName === 'showProgress');
+
+                      const hasProgressCalls = progressCalls.length > 0;
+                      const hasCanvasTools = hasCanvasToolsInSameMsg || laterToolCalls.some(t =>
+                        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow'].includes(t.toolName)
+                      );
+                      const hasCheckpoint = allToolCalls.some(t => t.toolName === 'checkpoint');
+
+                      const executionStarted = userApproved || hasProgressCalls || hasCanvasTools || hasCheckpoint;
+
+                      // Calculate current step from progress calls
+                      let completedSteps = 0;
+                      let currentRunningStep: number | undefined;
+                      progressCalls.forEach(call => {
+                        const pargs = call.args as { stepNumber?: number; status?: string };
+                        if (pargs.stepNumber !== undefined) {
+                          if (pargs.status === 'completed') {
+                            completedSteps = Math.max(completedSteps, pargs.stepNumber);
+                          } else if (pargs.status === 'starting') {
+                            currentRunningStep = pargs.stepNumber;
+                          }
+                        }
+                      });
+
+                      const currentStep = executionStarted ? (
+                        isLoading && currentRunningStep !== undefined
+                          ? currentRunningStep - 1
+                          : completedSteps > 0 ? completedSteps - 1 : 0
+                      ) : undefined;
+
+                      return (
+                        <div className={message.content ? "mt-3" : ""}>
+                          <PlanBlock
+                            title={planArgs.title}
+                            steps={planArgs.steps}
+                            summary={planArgs.summary}
+                            onApprove={() => onSubmit("Approved! Go ahead.")}
+                            onReject={() => onSubmit("I'd like to make some changes.")}
+                            isLatest={isLatestMessage && !isLoading}
+                            currentStep={currentStep}
+                            isExecuting={executionStarted && isLoading}
+                          />
+                        </div>
+                      );
+                    })()}
+
+                    {/* requestFeedback tool - render as feedback request with suggestions */}
+                    {requestFeedbackTool && (
+                      <div className={message.content || askUserTool || confirmPlanTool ? "mt-3" : ""}>
+                        <FeedbackBlock
+                          message={(requestFeedbackTool.args as { message: string }).message}
+                          suggestions={(requestFeedbackTool.args as { suggestions: string[] }).suggestions}
+                          onSelect={(answer) => onSubmit(answer)}
                           isLatest={isLatestMessage && !isLoading}
                         />
                       </div>
                     )}
 
-                    {/* showThinking tool - render as status with animated dots */}
-                    {showThinkingTool && isLatestMessage && isLoading && (
-                      <div className={message.content || askUserTool || confirmPlanTool ? "mt-3" : ""}>
-                        <ThinkingBlock
-                          status={(showThinkingTool.args as { status: string }).status}
-                        />
-                      </div>
-                    )}
+                    {/* checkpoint tool - show CompletedBlock if plan is done, otherwise CheckpointBlock */}
+                    {checkpointTool && (() => {
+                      const checkpointArgs = checkpointTool.args as { completed: string; nextUp: string; options: string[] };
 
-                    {/* Other tool invocations shown as collapsible block */}
+                      // Check if plan is complete (activePlan exists and all steps done)
+                      const isPlanComplete = activePlan && !activePlan.isExecuting &&
+                        (activePlan.currentStep >= activePlan.steps.length - 1);
+
+                      return (
+                        <div className={message.content || askUserTool || confirmPlanTool ? "mt-3" : ""}>
+                          {isPlanComplete ? (
+                            <CompletedBlock
+                              summary={checkpointArgs.completed}
+                              options={checkpointArgs.options}
+                              onSelect={(option) => onSubmit(option)}
+                              isLatest={isLatestMessage && !isLoading}
+                            />
+                          ) : (
+                            <CheckpointBlock
+                              completed={checkpointArgs.completed}
+                              nextUp={checkpointArgs.nextUp}
+                              options={checkpointArgs.options}
+                              onSelect={(option) => onSubmit(option)}
+                              isLatest={isLatestMessage && !isLoading}
+                            />
+                          )}
+                        </div>
+                      );
+                    })()}
+
+                    {/* Tool invocations - collapsible list */}
                     {message.toolInvocations && message.toolInvocations.length > 0 && (
                       <div className={message.content || askUserTool || confirmPlanTool ? "mt-3" : ""}>
                         <ToolBlock toolInvocations={message.toolInvocations} />
@@ -351,19 +893,72 @@ export function ChatPanel({
           })
         )}
 
-        {isLoading && (
-          <div className="flex gap-1 py-2">
-            <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" />
-            <span
-              className="w-2 h-2 bg-gray-300 rounded-full animate-bounce"
-              style={{ animationDelay: "0.1s" }}
-            />
-            <span
-              className="w-2 h-2 bg-gray-300 rounded-full animate-bounce"
-              style={{ animationDelay: "0.2s" }}
-            />
-          </div>
+{/* Single unified activity indicator - only show when NO header is visible */}
+        {isLoading && messages.length > 0 && !activePlan && (
+          (() => {
+            const lastMsg = messages[messages.length - 1];
+            const recentTools = lastMsg.role === "assistant" ? lastMsg.toolInvocations || [] : [];
+
+            // Check for various tool types
+            const lastSearchTool = [...recentTools].reverse().find(t => t.toolName === "webSearch");
+            const lastCanvasTool = [...recentTools].reverse().find(t =>
+              ["createSticky", "createShape", "createText", "createFrame", "createArrow", "createWorkingNote"].includes(t.toolName)
+            );
+            const confirmPlanTool = [...recentTools].reverse().find(t => t.toolName === "confirmPlan");
+
+            // Generate activity message based on what's happening
+            const getActivityMessage = () => {
+              // Plan being created
+              if (confirmPlanTool) {
+                return "Creating plan...";
+              }
+              // Web search takes priority
+              if (lastSearchTool) {
+                return "Searching the web...";
+              }
+              // Canvas tools - show what's being created
+              if (lastCanvasTool) {
+                switch (lastCanvasTool.toolName) {
+                  case "createFrame": return `Creating "${(lastCanvasTool.args as {name?: string}).name || "frame"}"...`;
+                  case "createSticky": {
+                    const text = (lastCanvasTool.args as {text?: string}).text || "";
+                    return `Adding "${text.slice(0, 25)}${text.length > 25 ? '...' : ''}"`;
+                  }
+                  case "createShape": return `Creating ${(lastCanvasTool.args as {type?: string}).type || "shape"}...`;
+                  case "createText": {
+                    const text = (lastCanvasTool.args as {text?: string}).text || "";
+                    return `Adding "${text.slice(0, 25)}${text.length > 25 ? '...' : ''}"`;
+                  }
+                  case "createArrow": return "Connecting...";
+                  default: return "Working...";
+                }
+              }
+              return "Thinking...";
+            };
+
+            // Count canvas items being created
+            const canvasItemCount = recentTools.filter(t =>
+              ["createSticky", "createShape", "createText", "createFrame", "createArrow"].includes(t.toolName)
+            ).length;
+
+            return (
+              <div className="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-lg">
+                <span className="flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
+                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
+                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
+                </span>
+                <span className="text-sm text-gray-600">{getActivityMessage()}</span>
+                {canvasItemCount > 1 && (
+                  <span className="text-xs text-gray-400">({canvasItemCount} items)</span>
+                )}
+              </div>
+            );
+          })()
         )}
+
+        {/* Scroll anchor */}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
