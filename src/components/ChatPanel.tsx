@@ -30,6 +30,7 @@ interface ChatPanelProps {
   onSubmit: (text: string) => void;
   isLoading: boolean;
   hideHeader?: boolean;
+  onNavigateToFrames?: (frameIds: string[]) => void;
 }
 
 // Question block with clickable suggestions
@@ -198,12 +199,6 @@ function PlanBlock({
         </div>
       )}
 
-      {/* Completed state */}
-      {hasStarted && completedSteps >= steps.length && (
-        <div className="px-4 py-3 border-t border-gray-200 bg-green-50">
-          <p className="text-sm text-green-700 font-medium text-center">All steps completed!</p>
-        </div>
-      )}
     </div>
   );
 }
@@ -227,19 +222,22 @@ function TaskProgressHeader({
   const progress = steps.length > 0 ? (completedSteps / steps.length) * 100 : 0;
   const isComplete = completedSteps >= steps.length;
 
-  // Get current step text
-  const currentStepText = steps[currentStep] || steps[steps.length - 1];
+  // Get current/next step text
+  // When executing: show current step being worked on
+  // When paused: show next step to be done
+  const nextStepIndex = isExecuting ? currentStep : currentStep + 1;
+  const currentStepText = steps[nextStepIndex] || steps[steps.length - 1];
 
   return (
-    <div className="border-b border-gray-200 bg-gray-50">
+    <div className="border-b border-gray-200 bg-gray-50 overflow-hidden">
       {/* Collapsed header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-2 flex items-center gap-3 hover:bg-gray-100 transition-colors"
+        className="w-full px-4 pt-3 pb-2 flex items-center gap-3 hover:bg-gray-100 transition-colors"
       >
-        {/* Progress ring */}
-        <div className="relative w-8 h-8 flex-shrink-0">
-          <svg className="w-8 h-8 -rotate-90" viewBox="0 0 36 36">
+        {/* Spinner circle */}
+        <div className="relative w-6 h-6 flex-shrink-0">
+          <svg className={`w-6 h-6 ${isExecuting ? 'animate-spin' : '-rotate-90'}`} viewBox="0 0 36 36">
             <path
               d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               fill="none"
@@ -251,13 +249,10 @@ function TaskProgressHeader({
               fill="none"
               stroke={isComplete ? "#22c55e" : "#3b82f6"}
               strokeWidth="3"
-              strokeDasharray={`${progress}, 100`}
+              strokeDasharray={isExecuting ? "25, 100" : `${progress}, 100`}
               className="transition-all duration-300"
             />
           </svg>
-          <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-gray-700">
-            {completedSteps}/{steps.length}
-          </span>
         </div>
 
         {/* Title and current step */}
@@ -273,6 +268,9 @@ function TaskProgressHeader({
           )}
         </div>
 
+        {/* Step count */}
+        <span className="text-xs text-gray-400">{completedSteps}/{steps.length}</span>
+
         {/* Expand icon */}
         <svg
           className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`}
@@ -284,6 +282,16 @@ function TaskProgressHeader({
           <path d="M19 9l-7 7-7-7" />
         </svg>
       </button>
+
+      {/* Progress bar - inset below text, subtle */}
+      <div className="px-4 pb-3">
+        <div className="h-0.5 w-full rounded-full bg-gray-200 overflow-hidden">
+          <div
+            className={`h-full transition-all duration-300 ${isComplete ? 'bg-green-400' : 'bg-blue-300'}`}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
 
       {/* Expanded steps list */}
       {isExpanded && (
@@ -472,51 +480,68 @@ function FeedbackBlock({
 // Checkpoint block - pauses for user feedback during execution
 function CheckpointBlock({
   completed,
-  nextUp,
   onSelect,
+  onNavigate,
   isLatest,
 }: {
   completed: string;
-  nextUp: string;
-  options?: string[]; // Not used anymore - simplified to Continue/Modify
   onSelect: (option: string) => void;
+  onNavigate?: () => void;
   isLatest: boolean;
 }) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  const handleSelect = (option: string) => {
+    setCollapsed(true);
+    onSelect(option);
+  };
+
+  // Collapsed state - simple text
+  if (collapsed || !isLatest) {
+    return (
+      <p className="text-sm text-gray-500">✓ Checkpoint</p>
+    );
+  }
+
+  // Expanded state
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <span className="text-sm font-medium text-blue-900">Checkpoint</span>
+    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Checkpoint</p>
+      <button
+        onClick={onNavigate}
+        className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 transition-colors group mb-3 text-left"
+      >
+        <span>{completed}</span>
+        <svg
+          className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
+      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={() => handleSelect("Continue")}
+          className="px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Continue
+        </button>
+        <button
+          onClick={() => handleSelect("I'd like to make some changes")}
+          className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+        >
+          Make Changes
+        </button>
       </div>
-      <p className="text-sm text-blue-800 mb-1">{completed}</p>
-      <p className="text-xs text-blue-600 mb-3">Next: {nextUp}</p>
-      {isLatest && (
-        <div className="flex gap-2">
-          <button
-            onClick={() => onSelect("Continue")}
-            className="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Continue
-          </button>
-          <button
-            onClick={() => onSelect("I'd like to make some adjustments")}
-            className="flex-1 px-3 py-2 text-sm bg-white border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
-          >
-            Modify
-          </button>
-        </div>
-      )}
     </div>
   );
 }
 
 // Completed block - shown when all plan steps are done
 function CompletedBlock({
-  summary,
   options,
   onSelect,
   isLatest,
@@ -526,31 +551,23 @@ function CompletedBlock({
   onSelect: (option: string) => void;
   isLatest: boolean;
 }) {
+  // Only show for the last message
+  if (!isLatest) return null;
+
   return (
-    <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <span className="text-sm font-semibold text-green-900">All done!</span>
-      </div>
-      <p className="text-sm text-green-800 mb-4">{summary}</p>
-      {isLatest && options.length > 0 && (
-        <div>
-          <p className="text-xs font-medium text-green-700 mb-2">Possible next steps:</p>
-          <div className="flex flex-wrap gap-2">
-            {options.map((option, i) => (
-              <button
-                key={i}
-                onClick={() => onSelect(option)}
-                className="px-3 py-1.5 bg-white border border-green-200 rounded-full text-sm text-green-700 hover:bg-green-100 transition-colors"
-              >
-                {option}
-              </button>
-            ))}
-          </div>
+    <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
+      <p className="text-sm font-medium text-green-700 mb-3">Task completed!</p>
+      {options.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {options.map((option, i) => (
+            <button
+              key={i}
+              onClick={() => onSelect(option)}
+              className="px-3 py-1.5 text-sm bg-white border border-green-200 rounded-lg text-green-700 hover:bg-green-100 transition-colors"
+            >
+              {option}
+            </button>
+          ))}
         </div>
       )}
     </div>
@@ -566,6 +583,7 @@ export function ChatPanel({
   onSubmit,
   isLoading,
   hideHeader = false,
+  onNavigateToFrames,
 }: ChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -649,7 +667,7 @@ export function ChatPanel({
   })();
 
   return (
-    <div className="w-96 h-full bg-white border-l border-gray-200 flex flex-col relative z-50">
+    <div className="w-96 h-full bg-white border-l border-gray-200 flex flex-col shadow-xl">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
@@ -852,27 +870,41 @@ export function ChatPanel({
 
                     {/* checkpoint tool - show CompletedBlock if plan is done, otherwise CheckpointBlock */}
                     {checkpointTool && (() => {
-                      const checkpointArgs = checkpointTool.args as { completed: string; nextUp: string; options: string[] };
+                      const checkpointArgs = checkpointTool.args as { completed: string; options?: string[] };
 
                       // Check if plan is complete (activePlan exists and all steps done)
                       const isPlanComplete = activePlan && !activePlan.isExecuting &&
                         (activePlan.currentStep >= activePlan.steps.length - 1);
+
+                      // Extract frame names from createLayout calls in this message
+                      const frameNames: string[] = [];
+                      message.toolInvocations?.forEach(t => {
+                        if (t.toolName === "createLayout") {
+                          const args = t.args as { frameName?: string };
+                          if (args.frameName) frameNames.push(args.frameName);
+                        }
+                      });
+
+                      const handleNavigate = () => {
+                        if (onNavigateToFrames && frameNames.length > 0) {
+                          onNavigateToFrames(frameNames);
+                        }
+                      };
 
                       return (
                         <div className={message.content || askUserTool || confirmPlanTool ? "mt-3" : ""}>
                           {isPlanComplete ? (
                             <CompletedBlock
                               summary={checkpointArgs.completed}
-                              options={checkpointArgs.options}
+                              options={checkpointArgs.options || ["Make refinements", "Start something new"]}
                               onSelect={(option) => onSubmit(option)}
                               isLatest={isLatestMessage && !isLoading}
                             />
                           ) : (
                             <CheckpointBlock
                               completed={checkpointArgs.completed}
-                              nextUp={checkpointArgs.nextUp}
-                              options={checkpointArgs.options}
                               onSelect={(option) => onSubmit(option)}
+                              onNavigate={handleNavigate}
                               isLatest={isLatestMessage && !isLoading}
                             />
                           )}

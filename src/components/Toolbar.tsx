@@ -104,7 +104,12 @@ export function Toolbar({
   }, [isChatOpen]);
 
   return (
-    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
+    <div
+      className="absolute bottom-6 z-50 flex items-center gap-3 transition-all duration-200 ease-out -translate-x-1/2"
+      style={{
+        left: isChatOpen ? "calc(50% - 192px)" : "50%",
+      }}
+    >
       {/* Main toolbar container */}
       <div
         className="flex items-center bg-white rounded-full border border-gray-200 p-1.5 transition-all duration-300 ease-out"
@@ -226,7 +231,7 @@ export function Toolbar({
               {inputValue.trim() ? (
                 <button
                   type="submit"
-                  className="w-10 h-10 m-1 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:bg-gray-800 flex-shrink-0"
+                  className="w-10 h-10 min-w-[40px] m-1 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-gray-800 flex-shrink-0"
                   title="Send"
                 >
                   <IconArrowUp size="medium" />
@@ -234,7 +239,7 @@ export function Toolbar({
               ) : (
                 <button
                   type="button"
-                  className="w-10 h-10 m-1 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:bg-gray-800 flex-shrink-0"
+                  className="w-10 h-10 min-w-[40px] m-1 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-gray-800 flex-shrink-0"
                   title="Voice mode"
                 >
                   <VoiceWaveIcon />

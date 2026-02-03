@@ -8,11 +8,12 @@ import {
   Arrow,
   SPACING,
   ITEM_SIZES,
+  calculateTextWidth,
+  calculateTextHeight,
 } from "@/types/layout";
 
 /**
  * Find empty space on the canvas for new content.
- * Scans existing shapes and finds a position that doesn't overlap.
  */
 export function findEmptyCanvasSpace(
   editor: Editor,
@@ -22,32 +23,27 @@ export function findEmptyCanvasSpace(
   const shapes = editor.getCurrentPageShapes();
 
   if (shapes.length === 0) {
-    // Empty canvas - start at origin
-    return { x: 0, y: 0 };
+    return { x: 100, y: 100 };
   }
 
-  // Find bounding box of all existing content
   let maxX = -Infinity;
-  let maxY = -Infinity;
   let minY = Infinity;
 
   shapes.forEach((shape) => {
     const bounds = editor.getShapeGeometry(shape.id).bounds;
     maxX = Math.max(maxX, shape.x + bounds.width);
-    maxY = Math.max(maxY, shape.y + bounds.height);
     minY = Math.min(minY, shape.y);
   });
 
-  // Place to the right of existing content, aligned with top
   return {
-    x: maxX + 100,
-    y: Math.max(0, minY),
+    x: maxX + 80,
+    y: Math.max(100, minY),
   };
 }
 
 /**
  * Calculate grid layout positions.
- * Arranges items in rows and columns within a frame.
+ * Uses FIXED sizes for consistent, non-overlapping grids.
  */
 export function calculateGridLayout(
   items: LayoutItem[],
@@ -57,21 +53,29 @@ export function calculateGridLayout(
   const spacingKey = options?.spacing ?? "normal";
   const spacing = SPACING[spacingKey];
 
-  // Calculate item dimensions (use sticky size as default)
-  const itemWidth = ITEM_SIZES.sticky.width;
-  const itemHeight = ITEM_SIZES.sticky.height;
+  // Find the LARGEST dimensions needed across all item types in this grid
+  let maxWidth = 0;
+  let maxHeight = 0;
+  items.forEach((item) => {
+    const sizes = ITEM_SIZES[item.type];
+    maxWidth = Math.max(maxWidth, sizes.width);
+    maxHeight = Math.max(maxHeight, sizes.height);
+  });
 
-  // Calculate grid dimensions
-  const rows = Math.ceil(items.length / columns);
+  // Use the largest dimensions for ALL items (ensures no overlap)
+  const itemWidth = maxWidth;
+  const itemHeight = maxHeight;
+
+  const numRows = Math.ceil(items.length / columns);
   const actualColumns = Math.min(columns, items.length);
 
-  // Calculate frame size
+  // Calculate frame dimensions
   const frameWidth =
     spacing.padding * 2 + actualColumns * itemWidth + (actualColumns - 1) * spacing.itemGap;
   const frameHeight =
-    spacing.padding + 40 + rows * itemHeight + (rows - 1) * spacing.itemGap + spacing.padding;
+    spacing.padding * 2 + 60 + numRows * itemHeight + (numRows - 1) * spacing.itemGap;
 
-  // Calculate positions for each item
+  // Position each item in a simple grid
   const itemPositions: Array<{ item: LayoutItem; position: Position }> = [];
 
   items.forEach((item, index) => {
@@ -79,37 +83,47 @@ export function calculateGridLayout(
     const row = Math.floor(index / columns);
 
     const x = spacing.padding + col * (itemWidth + spacing.itemGap);
-    const y = spacing.padding + 40 + row * (itemHeight + spacing.itemGap); // 40px for frame label
-
-    const size = ITEM_SIZES[item.type] || ITEM_SIZES.sticky;
+    const y = spacing.padding + 60 + row * (itemHeight + spacing.itemGap);
 
     itemPositions.push({
       item,
       position: {
         x,
         y,
-        width: size.width,
-        height: size.height,
+        width: itemWidth,
+        height: itemHeight,
       },
     });
   });
 
   return {
     frame: {
-      x: 0, // Will be set by findEmptyCanvasSpace
+      x: 0,
       y: 0,
-      width: frameWidth,
-      height: frameHeight,
-      name: "", // Will be set by caller
+      width: Math.max(frameWidth, 400),
+      height: Math.max(frameHeight, 300),
+      name: "",
     },
     items: itemPositions,
     arrows: [],
   };
 }
 
+// Tree node for hierarchy layout
+interface TreeNode {
+  item: LayoutItem;
+  index: number;
+  children: TreeNode[];
+  width: number;      // Width of this node's box
+  height: number;     // Height of this node's box
+  subtreeWidth: number;  // Total width needed for this subtree
+  x: number;          // Final x position
+  y: number;          // Final y position
+}
+
 /**
- * Calculate hierarchy layout positions.
- * Arranges items in a tree structure with parent-child relationships.
+ * Calculate hierarchy layout using proper tree algorithm.
+ * Children are positioned centered below their parent.
  */
 export function calculateHierarchyLayout(
   items: LayoutItem[],
@@ -119,29 +133,23 @@ export function calculateHierarchyLayout(
   const spacingKey = options?.spacing ?? "normal";
   const spacing = SPACING[spacingKey];
 
-  // Use shape size for hierarchy items
-  const itemWidth = ITEM_SIZES.shape.width;
-  const itemHeight = ITEM_SIZES.shape.height;
+  const isVertical = direction === "down";
 
-  // Build tree structure from parentIndex
-  interface TreeNode {
-    item: LayoutItem;
-    index: number;
-    children: TreeNode[];
-    level: number;
-    x: number;
-    y: number;
-  }
-
-  // Create nodes
-  const nodes: TreeNode[] = items.map((item, index) => ({
-    item,
-    index,
-    children: [],
-    level: 0,
-    x: 0,
-    y: 0,
-  }));
+  // Create nodes with dynamic widths and heights
+  const nodes: TreeNode[] = items.map((item, index) => {
+    const width = calculateTextWidth(item.text, "shape");
+    const height = calculateTextHeight(item.text, width, "shape");
+    return {
+      item,
+      index,
+      children: [],
+      width,
+      height,
+      subtreeWidth: width,
+      x: 0,
+      y: 0,
+    };
+  });
 
   // Build tree relationships
   const roots: TreeNode[] = [];
@@ -154,7 +162,7 @@ export function calculateHierarchyLayout(
     }
   });
 
-  // If no explicit tree structure, treat as flat list (first item is root, rest are children)
+  // If no explicit tree structure, make first item root and rest children
   if (roots.length === items.length && items.length > 1) {
     roots.length = 0;
     roots.push(nodes[0]);
@@ -163,46 +171,83 @@ export function calculateHierarchyLayout(
     }
   }
 
-  // Calculate levels
-  function setLevels(node: TreeNode, level: number) {
-    node.level = level;
-    node.children.forEach((child) => setLevels(child, level + 1));
+  // Calculate subtree widths (bottom-up)
+  function calculateSubtreeWidth(node: TreeNode): number {
+    if (node.children.length === 0) {
+      node.subtreeWidth = node.width;
+      return node.subtreeWidth;
+    }
+
+    const childrenTotalWidth = node.children.reduce((sum, child, i) => {
+      const childWidth = calculateSubtreeWidth(child);
+      // Add gap between siblings
+      return sum + childWidth + (i > 0 ? spacing.itemGap : 0);
+    }, 0);
+
+    // Subtree width is max of node width and children's total width
+    node.subtreeWidth = Math.max(node.width, childrenTotalWidth);
+    return node.subtreeWidth;
   }
-  roots.forEach((root) => setLevels(root, 0));
 
-  // Group nodes by level
-  const levels: TreeNode[][] = [];
+  // Position nodes (top-down)
+  function positionNode(node: TreeNode, x: number, y: number, level: number) {
+    if (isVertical) {
+      // Center the node within its subtree space
+      node.x = x + (node.subtreeWidth - node.width) / 2;
+      node.y = y;
+
+      // Position children below
+      let childX = x;
+      const childY = y + node.height + spacing.levelGap;
+
+      node.children.forEach((child) => {
+        positionNode(child, childX, childY, level + 1);
+        childX += child.subtreeWidth + spacing.itemGap;
+      });
+    } else {
+      // Horizontal layout
+      node.x = x;
+      node.y = y + (node.subtreeWidth - node.height) / 2;
+
+      let childY = y;
+      const childX = x + node.width + spacing.levelGap;
+
+      node.children.forEach((child) => {
+        positionNode(child, childX, childY, level + 1);
+        childY += child.subtreeWidth + spacing.itemGap;
+      });
+    }
+  }
+
+  // Process all roots
+  let totalWidth = 0;
+  roots.forEach((root) => {
+    calculateSubtreeWidth(root);
+    totalWidth += root.subtreeWidth;
+  });
+  totalWidth += (roots.length - 1) * spacing.itemGap;
+
+  // Position roots
+  let currentX = spacing.padding;
+  const startY = spacing.padding + 50; // Space for frame title
+
+  roots.forEach((root) => {
+    if (isVertical) {
+      positionNode(root, currentX, startY, 0);
+      currentX += root.subtreeWidth + spacing.itemGap;
+    } else {
+      positionNode(root, startY, currentX, 0);
+      currentX += root.subtreeWidth + spacing.itemGap;
+    }
+  });
+
+  // Calculate bounds from actual positions
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   nodes.forEach((node) => {
-    if (!levels[node.level]) levels[node.level] = [];
-    levels[node.level].push(node);
-  });
-
-  // Calculate positions based on direction
-  const isVertical = direction === "down";
-  const levelSpacing = spacing.levelGap;
-  const siblingSpacing = itemWidth + spacing.itemGap;
-
-  // Calculate width needed for each level
-  let maxLevelWidth = 0;
-  levels.forEach((level) => {
-    const levelWidth = level.length * siblingSpacing - spacing.itemGap;
-    maxLevelWidth = Math.max(maxLevelWidth, levelWidth);
-  });
-
-  // Position nodes
-  levels.forEach((level, levelIndex) => {
-    const levelWidth = level.length * siblingSpacing - spacing.itemGap;
-    const startX = (maxLevelWidth - levelWidth) / 2;
-
-    level.forEach((node, nodeIndex) => {
-      if (isVertical) {
-        node.x = spacing.padding + startX + nodeIndex * siblingSpacing;
-        node.y = spacing.padding + 40 + levelIndex * levelSpacing;
-      } else {
-        node.x = spacing.padding + levelIndex * levelSpacing;
-        node.y = spacing.padding + 40 + startX + nodeIndex * siblingSpacing;
-      }
-    });
+    minX = Math.min(minX, node.x);
+    maxX = Math.max(maxX, node.x + node.width);
+    minY = Math.min(minY, node.y);
+    maxY = Math.max(maxY, node.y + node.height);
   });
 
   // Create arrows from parents to children
@@ -210,18 +255,20 @@ export function calculateHierarchyLayout(
   nodes.forEach((node) => {
     node.children.forEach((child) => {
       if (isVertical) {
+        // Arrow goes from bottom center of parent to top center of child
         arrows.push({
-          startX: node.x + itemWidth / 2,
-          startY: node.y + itemHeight,
-          endX: child.x + itemWidth / 2,
+          startX: node.x + node.width / 2,
+          startY: node.y + node.height,
+          endX: child.x + child.width / 2,
           endY: child.y,
         });
       } else {
+        // Arrow goes from right center of parent to left center of child
         arrows.push({
-          startX: node.x + itemWidth,
-          startY: node.y + itemHeight / 2,
+          startX: node.x + node.width,
+          startY: node.y + node.height / 2,
           endX: child.x,
-          endY: child.y + itemHeight / 2,
+          endY: child.y + child.height / 2,
         });
       }
     });
@@ -233,22 +280,37 @@ export function calculateHierarchyLayout(
     position: {
       x: node.x,
       y: node.y,
-      width: itemWidth,
-      height: itemHeight,
+      width: node.width,
+      height: node.height,
     },
   }));
 
-  // Calculate frame size
-  const frameWidth = maxLevelWidth + spacing.padding * 2;
-  const frameHeight =
-    spacing.padding + 40 + levels.length * levelSpacing - (levelSpacing - itemHeight) + spacing.padding;
+  // Calculate frame size with proper padding on all sides
+  const frameWidth = maxX - minX + spacing.padding * 2;
+  const frameHeight = maxY - minY + spacing.padding * 2 + 60; // 60 for title area
+
+  // Offset positions so they're relative to frame (adjust for minX/minY)
+  const offsetX = spacing.padding - minX;
+  const offsetY = spacing.padding + 60 - minY; // 60 for title area
+
+  itemPositions.forEach((pos) => {
+    pos.position.x += offsetX;
+    pos.position.y += offsetY;
+  });
+
+  arrows.forEach((arrow) => {
+    arrow.startX += offsetX;
+    arrow.startY += offsetY;
+    arrow.endX += offsetX;
+    arrow.endY += offsetY;
+  });
 
   return {
     frame: {
       x: 0,
       y: 0,
-      width: Math.max(frameWidth, 300),
-      height: Math.max(frameHeight, 200),
+      width: Math.max(frameWidth, 400),
+      height: Math.max(frameHeight, 250),
       name: "",
     },
     items: itemPositions,
@@ -258,7 +320,6 @@ export function calculateHierarchyLayout(
 
 /**
  * Calculate flow layout positions.
- * Arranges items in a left-to-right sequence with arrows.
  */
 export function calculateFlowLayout(
   items: LayoutItem[],
@@ -267,46 +328,52 @@ export function calculateFlowLayout(
   const spacingKey = options?.spacing ?? "normal";
   const spacing = SPACING[spacingKey];
 
-  // Use shape size for flow items
-  const itemWidth = ITEM_SIZES.shape.width;
-  const itemHeight = ITEM_SIZES.shape.height;
+  const arrowSpace = 60; // Space for arrows between items
 
-  // Horizontal spacing between items (includes arrow space)
-  const horizontalGap = spacing.itemGap + 50; // Extra space for arrows
+  // Calculate dimensions for each item (width first, then height based on text wrapping)
+  const itemDimensions = items.map((item) => {
+    const width = calculateTextWidth(item.text, "shape");
+    const height = calculateTextHeight(item.text, width, "shape");
+    return { width, height };
+  });
 
-  // Calculate positions (single row for now)
+  // Find max height for uniform row height
+  const maxHeight = Math.max(...itemDimensions.map((d) => d.height));
+
   const itemPositions: Array<{ item: LayoutItem; position: Position }> = [];
   const arrows: Arrow[] = [];
 
+  let currentX = spacing.padding;
+  const y = spacing.padding + 60; // Space for frame title
+
   items.forEach((item, index) => {
-    const x = spacing.padding + index * (itemWidth + horizontalGap);
-    const y = spacing.padding + 40;
+    const { width } = itemDimensions[index];
 
     itemPositions.push({
       item,
       position: {
-        x,
+        x: currentX,
         y,
-        width: itemWidth,
-        height: itemHeight,
+        width,
+        height: maxHeight,
       },
     });
 
-    // Add arrow to next item (except for last)
+    // Add arrow to next item
     if (index < items.length - 1) {
       arrows.push({
-        startX: x + itemWidth,
-        startY: y + itemHeight / 2,
-        endX: x + itemWidth + horizontalGap,
-        endY: y + itemHeight / 2,
+        startX: currentX + width,
+        startY: y + maxHeight / 2,
+        endX: currentX + width + arrowSpace,
+        endY: y + maxHeight / 2,
       });
     }
+
+    currentX += width + arrowSpace;
   });
 
-  // Calculate frame size
-  const frameWidth =
-    spacing.padding * 2 + items.length * itemWidth + (items.length - 1) * horizontalGap;
-  const frameHeight = spacing.padding * 2 + 40 + itemHeight;
+  const frameWidth = currentX - arrowSpace + spacing.padding;
+  const frameHeight = spacing.padding * 2 + 60 + maxHeight;
 
   return {
     frame: {

@@ -85,11 +85,9 @@ const reviewCanvasTool = tool({
 
 const checkpointTool = tool({
   name: "checkpoint",
-  description: "STOP and wait for user to review work. Human-in-the-loop pause point. After calling this, STOP working and wait for user response.",
+  description: "Pause for user review. Your message explains the work - this is just a short CTA.",
   parameters: z.object({
-    completed: z.string().describe("What you just finished - be specific"),
-    nextUp: z.string().describe("What you'll do next IF user says continue (or 'Finished!' if plan is complete)"),
-    options: z.array(z.string()).min(2).max(4).describe("If mid-plan: ['Continue', 'Adjust X', 'Add Y']. If plan complete: next step suggestions like ['Add mobile version', 'Create another page']"),
+    completed: z.string().describe("Short CTA starting with 'Review'. Examples: 'Review the sitemap', 'Review homepage layout', 'Review product pages'. Keep it natural."),
   }),
   execute: async (args) => JSON.stringify({ type: "checkpoint", ...args }),
 });
@@ -171,7 +169,7 @@ const generateItemId = () => `item-${Date.now()}-${Math.random().toString(36).sl
 // --- Canvas Creation Tools ---
 const createStickyTool = tool({
   name: "createSticky",
-  description: "Create a sticky note - best for brainstorms, ideas, lists, pros/cons, notes. For diagrams and flowcharts, prefer createShape + createArrow instead! Returns an ID you can use with createArrow or updateSticky.",
+  description: "⚠️ ONLY for adding a SINGLE sticky to existing content. For 2+ stickies, you MUST use createLayout() instead - it handles positioning automatically. Never call this multiple times in sequence.",
   parameters: z.object({
     text: z.string().describe("The text content"),
     x: z.number().describe("X position"),
@@ -200,9 +198,10 @@ const createTextTool = tool({
 
 const createShapeTool = tool({
   name: "createShape",
-  description: "Create a shape - USE THIS for diagrams! Rectangles for org charts, flowcharts, sitemaps. Ellipses for start/end nodes. Diamonds for decisions. Returns an ID - USE THIS ID with createArrow to connect shapes! For labeled shapes, create a text element on top.",
+  description: "⚠️ ONLY for adding a SINGLE shape. For 2+ shapes (diagrams, org charts, flows), you MUST use createLayout() with type:'hierarchy' or type:'flow' - it creates shapes with automatic arrows!",
   parameters: z.object({
     type: z.enum(["rectangle", "ellipse", "triangle", "diamond"]),
+    text: z.string().default("").describe("Label text inside the shape"),
     x: z.number().describe("X position"),
     y: z.number().describe("Y position"),
     width: z.number().describe("Width (typically 150-200 for diagram nodes)"),
@@ -261,15 +260,19 @@ const createWorkingNoteTool = tool({
   },
 });
 
-// --- Layout Tool (PREFERRED for multiple items) ---
+// --- Layout Tool (REQUIRED for multiple items) ---
 const createLayoutTool = tool({
   name: "createLayout",
-  description: `PREFERRED way to create organized content! Creates a frame with items automatically positioned.
-- "grid": For brainstorms, lists, features (items in rows/columns)
-- "hierarchy": For org charts, trees (parent-child with arrows)
-- "flow": For processes, journeys (left-to-right with arrows)
+  description: `🎯 REQUIRED for 2+ items! Creates organized, aligned content in a frame.
 
-The layout engine handles all positioning - you just specify the content!`,
+LAYOUT TYPES:
+- "grid" + type:"sticky" → For brainstorms, style guides, grouped notes (aligned in rows)
+- "grid" + type:"shape" → For navigation items, feature lists (aligned boxes)
+- "hierarchy" + type:"shape" → For org charts, sitemaps, trees (with connecting arrows)
+- "flow" + type:"shape" → For user journeys, processes (left-to-right with arrows)
+
+The layout engine handles ALL positioning - items will be perfectly aligned in a grid or tree structure.
+NEVER use createSticky/createShape multiple times - use this instead!`,
   parameters: z.object({
     type: z.enum(["grid", "hierarchy", "flow"]).describe("Layout type"),
     frameName: z.string().describe("Name for the frame"),
@@ -397,72 +400,126 @@ const executionAgent = new Agent({
   model: "gpt-5.2",
   instructions: `You are executing an approved plan. Create canvas items step by step.
 
+🚨 CRITICAL RULE #1: WHEN USER SAYS "CONTINUE", YOU MUST CONTINUE! 🚨
+If the last user message is "Continue" or similar, you MUST immediately:
+1. Call showProgress() for the next step
+2. Execute that step
+3. Keep going until done or next checkpoint
+
+NEVER respond with just text when user says "Continue" - START WORKING IMMEDIATELY!
+
+⚠️ CRITICAL RULE #2: NEVER call createSticky or createShape multiple times!
+If you need 2+ items, you MUST use createLayout() instead.
+
 EXECUTION FLOW:
+Work through steps in sequence. For each step:
 1. Call showProgress(stepNumber, "step title", "starting")
-2. Create canvas items for that step using createLayout()
+2. Create canvas items using ONE createLayout() call per section
 3. Call showProgress(stepNumber, "step title", "completed")
-4. After 2-3 steps: call checkpoint() and STOP - wait for user to respond
-5. When user says "Continue": resume with next steps
-6. When ALL steps done: call checkpoint() with completion message and STOP
+4. Either: continue to next step OR call checkpoint() at a milestone
 
-CHECKPOINT = STOP AND WAIT:
-- Checkpoint is a human-in-the-loop pause - STOP after calling it
-- Let user review work and decide next action
-- Do NOT keep working after checkpoint - wait for user response
+CHECKPOINTS - PAUSE AT MILESTONES:
+- Call checkpoint() after completing 3-4 related steps
+- After a checkpoint, STOP and wait for user to click "Continue"
+- When user clicks "Continue", IMMEDIATELY resume from next step
 
-WHEN PLAN IS COMPLETE:
-- Call checkpoint() with message like "All done! Created [summary of what was built]"
-- nextUp should be "Finished!" to signal completion
+YOUR MESSAGE BEFORE CHECKPOINT:
+- Brief (1 sentence): "Here's the wireframes so far—take a look."
 
-USE createLayout() - IT HANDLES POSITIONING FOR YOU!
+CHECKPOINT LABEL:
+- Format: "Review [what you created]"
 
-For multiple related items, ALWAYS use createLayout():
+=====================================================
+createLayout() - THE ONLY WAY TO CREATE GROUPED ITEMS
+=====================================================
 
-1. GRID - for brainstorms, lists, feature sets:
-   createLayout({
-     type: "grid",
-     frameName: "Key Features",
-     items: [
-       { type: "sticky", text: "Feature 1", color: "yellow" },
-       { type: "sticky", text: "Feature 2", color: "yellow" },
-       { type: "sticky", text: "Feature 3", color: "blue" }
-     ],
-     options: { columns: 3 }
-   })
+FRAME NAMING:
+- Use descriptive names: "Homepage sections", "Product details", "Checkout flow"
+- DON'T include step numbers: "Step 2 — Homepage" ✗
+- DO use clear labels: "Homepage wireframe" ✓
 
-2. HIERARCHY - for org charts, trees:
-   createLayout({
-     type: "hierarchy",
-     frameName: "Org Chart",
-     items: [
-       { type: "shape", text: "CEO" },
-       { type: "shape", text: "CTO", parentIndex: 0 },
-       { type: "shape", text: "CFO", parentIndex: 0 }
-     ]
-   })
-   // Arrows are drawn automatically!
+WHEN TO USE STICKIES (type: "sticky"):
+- Brainstorms, ideas, notes
+- Style guides, design specs
+- Feature lists, requirements
+→ Keep text SHORT: title + 2-3 bullet points max
+→ Use MORE stickies with LESS text each (better than few stickies with lots of text)
 
-3. FLOW - for processes, user journeys:
-   createLayout({
-     type: "flow",
-     frameName: "User Journey",
-     items: [
-       { type: "shape", text: "Start" },
-       { type: "shape", text: "Step 1" },
-       { type: "shape", text: "Step 2" },
-       { type: "shape", text: "End" }
-     ]
-   })
-   // Arrows are drawn automatically!
+WHEN TO USE SHAPES (type: "shape"):
+- Org charts, hierarchies (with arrows)
+- Flowcharts, user journeys (with arrows)
+- Sitemaps with SHORT labels only (1-3 words per box)
+→ Shapes are for SHORT labels only: "Home", "Cart", "About"
+→ If text is longer than 3 words, USE STICKIES instead!
 
-The layout engine calculates all positions - DON'T specify coordinates!
+GRID + STICKIES (for brainstorms, style guides, notes):
+createLayout({
+  type: "grid",
+  frameName: "Brand Colors",
+  items: [
+    { type: "sticky", text: "Primary Blue\\n#0066CC", color: "blue" },
+    { type: "sticky", text: "Accent Gold\\n#FFD700", color: "yellow" },
+    { type: "sticky", text: "Background\\n#F5F5F5", color: "grey" }
+  ],
+  columns: 3
+})
 
-For single items or modifications, use createSticky/createShape/etc.
+GRID + SHAPES (for wireframes, component grids):
+createLayout({
+  type: "grid",
+  frameName: "Page Sections",
+  items: [
+    { type: "shape", text: "Header", color: "blue" },
+    { type: "shape", text: "Hero", color: "green" },
+    { type: "shape", text: "Footer", color: "blue" }
+  ],
+  columns: 3
+})
 
-IMPORTANT:
-- STOP after every checkpoint
-- Use createLayout() for organized content
-- Layout engine handles positioning automatically`,
+HIERARCHY + SHAPES (for org charts, sitemaps):
+createLayout({
+  type: "hierarchy",
+  frameName: "Site Map",
+  items: [
+    { type: "shape", text: "Home", color: "blue" },
+    { type: "shape", text: "Products", color: "green", parentIndex: 0 },
+    { type: "shape", text: "About", color: "green", parentIndex: 0 }
+  ]
+})
+
+FLOW + SHAPES (for processes, journeys):
+createLayout({
+  type: "flow",
+  frameName: "Checkout Flow",
+  items: [
+    { type: "shape", text: "Cart", color: "blue" },
+    { type: "shape", text: "Payment", color: "yellow" },
+    { type: "shape", text: "Done", color: "green" }
+  ]
+})
+
+COLOR GUIDELINES - USE WITH RESTRAINT:
+⚠️ IMPORTANT: Use color intentionally, not randomly!
+
+WITHIN EACH FRAME/SECTION:
+- Stick to 2-3 colors maximum per frame
+- Use ONE main color for most items
+- Use accent colors only for hierarchy or emphasis
+- Example: Homepage wireframe → all blue shapes (not rainbow)
+- Example: Feature ideas → all yellow stickies (not mixed colors)
+
+ACROSS DIFFERENT FRAMES:
+- Different frames CAN use different color palettes
+- Example: Frame 1 uses blue/green, Frame 2 uses yellow/orange
+- This helps visually separate different sections
+
+FOR HIERARCHY:
+- Parent nodes: one color (e.g., blue for all leadership)
+- Child nodes: another color (e.g., green for all team members)
+- Don't use a different color for every single item
+
+GOOD: 10 yellow stickies for features, 3 blue stickies for constraints
+BAD: 13 stickies each with random different colors`,
   tools: [
     showProgressTool,
     reviewCanvasTool,
@@ -519,22 +576,62 @@ export async function POST(req: Request) {
   let isExecutionMode = false;
 
   if (approvedPlan) {
-    // EXECUTION MODE: Skip conversation history, just execute the plan
+    // EXECUTION MODE: Track completed steps and continue from where we left off
     isExecutionMode = true;
-    conversationContext = `EXECUTION MODE - User approved this plan. Execute it NOW.
+
+    // Find completed steps by looking at showProgress("completed") and checkpoint calls
+    const completedSteps: number[] = [];
+    let lastCheckpointStep = 0;
+
+    for (let i = approvalMessageIndex; i < messages.length; i++) {
+      const msg = messages[i] as MessageWithTools;
+      if (msg.toolInvocations) {
+        msg.toolInvocations.forEach(t => {
+          if (t.toolName === 'showProgress') {
+            const args = t.args as { stepNumber: number; status: string };
+            if (args.status === 'completed' && !completedSteps.includes(args.stepNumber)) {
+              completedSteps.push(args.stepNumber);
+            }
+          }
+          if (t.toolName === 'checkpoint') {
+            lastCheckpointStep = Math.max(...completedSteps, 0);
+          }
+        });
+      }
+    }
+
+    const nextStep = completedSteps.length > 0 ? Math.max(...completedSteps) + 1 : 1;
+    const totalSteps = approvedPlan.steps.length;
+    const isComplete = nextStep > totalSteps;
+
+    // Build context with clear state
+    conversationContext = `EXECUTION MODE - Continuing approved plan.
 
 Plan: "${approvedPlan.title}"
-${approvedPlan.steps.map((s, i) => `Step ${i + 1}: ${s}`).join('\n')}
+${approvedPlan.steps.map((s, i) => {
+  const stepNum = i + 1;
+  const status = completedSteps.includes(stepNum) ? '✓ DONE' : (stepNum === nextStep ? '→ DO NOW' : '  pending');
+  return `${status} Step ${stepNum}: ${s}`;
+}).join('\n')}
 
-YOUR TASK: Execute this plan step by step.
-1. Call showProgress(1, "${approvedPlan.steps[0]}", "starting")
-2. Create canvas items for step 1
-3. Call showProgress(1, "${approvedPlan.steps[0]}", "completed")
-4. Continue with step 2, etc.
-5. Use checkpoint() every 3-4 steps
+${isComplete ? `
+ALL STEPS COMPLETE!
+1. Write a brief message like "All set!" or "Done!" (1-2 words max)
+2. Call checkpoint() with review CTA like "Review all wireframes"
 
-DO NOT call confirmPlan() - the plan is already approved!
-DO NOT output the plan as text - just execute it with tools!`;
+Keep your message VERY brief - the card shows details.
+` : `
+🚨 USER CLICKED "CONTINUE" - START WORKING NOW! 🚨
+
+NEXT STEP IS ${nextStep}: "${approvedPlan.steps[nextStep - 1]}"
+
+DO THIS IMMEDIATELY:
+1. showProgress(${nextStep}, "${approvedPlan.steps[nextStep - 1]}", "starting")
+2. createLayout(...) to make the content
+3. showProgress(${nextStep}, "${approvedPlan.steps[nextStep - 1]}", "completed")
+4. Continue to step ${nextStep + 1} or checkpoint() if milestone reached
+
+DO NOT write explanatory text first - CALL showProgress() IMMEDIATELY!`}`;
   } else {
     // Normal mode: build conversation context
     conversationContext = messages
