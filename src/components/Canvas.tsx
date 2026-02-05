@@ -1152,20 +1152,21 @@ export function Canvas() {
           });
           createdShapesRef.current.push(frameId);
 
-          // Create items (shapes or stickies based on original type)
+          // Create items INSIDE frame with RELATIVE coordinates
           result.items.forEach(({ item, position }, index) => {
             const itemId = createShapeId();
-            const itemX = canvasPos.x + position.x;
-            const itemY = canvasPos.y + position.y;
             const originalItem = layout.items[index];
 
+            console.log(`[LAYOUT] Creating item ${index}: ${item.text?.slice(0,20)}... at relative (${position.x}, ${position.y})`);
+
             if (originalItem.type === "sticky") {
-              // Create sticky note
+              // Create sticky note inside frame
               editor.createShape({
                 id: itemId,
                 type: "note",
-                x: itemX,
-                y: itemY,
+                x: position.x,  // Relative to frame
+                y: position.y,  // Relative to frame
+                parentId: frameId,  // Child of frame
                 props: {
                   richText: toRichText(item.text || ""),
                   color: colorMap[item.color || "yellow"] || "yellow",
@@ -1173,12 +1174,13 @@ export function Canvas() {
                 },
               });
             } else {
-              // Create geo shape (rectangle)
+              // Create geo shape (rectangle) inside frame
               editor.createShape({
                 id: itemId,
                 type: "geo",
-                x: itemX,
-                y: itemY,
+                x: position.x,  // Relative to frame
+                y: position.y,  // Relative to frame
+                parentId: frameId,  // Child of frame
                 props: {
                   geo: "rectangle",
                   w: position.width,
@@ -1191,14 +1193,15 @@ export function Canvas() {
             createdShapesRef.current.push(itemId);
           });
 
-          // Create arrows connecting parent to children
+          // Create arrows inside frame with relative coordinates
           result.arrows.forEach((arrow) => {
             const arrowId = createShapeId();
             editor.createShape({
               id: arrowId,
               type: "arrow",
-              x: canvasPos.x + arrow.startX,
-              y: canvasPos.y + arrow.startY,
+              x: arrow.startX,  // Relative to frame
+              y: arrow.startY,  // Relative to frame
+              parentId: frameId,  // Child of frame
               props: {
                 start: { x: 0, y: 0 },
                 end: {
@@ -1213,15 +1216,28 @@ export function Canvas() {
           return;
         }
 
-        // For grid/flow, use tldraw native layout (dynamic)
-        // Create frame FIRST at the correct position, then add shapes inside it
-        const estimatedWidth = 800;
-        const estimatedHeight = 600;
-        const canvasPos = findEmptyCanvasSpace(editor, estimatedWidth, estimatedHeight);
+        // GRID/FLOW layout: Simple predictable grid (NO packShapes - it breaks relative coords)
+        console.log('[LAYOUT] Using grid/flow layout');
 
-        console.log('[LAYOUT] Creating grid/flow frame at', canvasPos);
+        // Grid settings
+        const columns = layout.columns || 3;
+        const itemWidth = 200;
+        const itemHeight = 150;
+        const gapX = layout.spacing === "compact" ? 20 : layout.spacing === "spacious" ? 50 : 35;
+        const gapY = layout.spacing === "compact" ? 20 : layout.spacing === "spacious" ? 50 : 35;
+        const padding = 60;
+        const titleSpace = 60;
 
-        // Create frame first
+        // Calculate frame size
+        const rows = Math.ceil(layout.items.length / columns);
+        const actualCols = Math.min(columns, layout.items.length);
+        const frameWidth = padding * 2 + actualCols * itemWidth + (actualCols - 1) * gapX;
+        const frameHeight = padding + titleSpace + rows * itemHeight + (rows - 1) * gapY + padding;
+
+        const canvasPos = findEmptyCanvasSpace(editor, frameWidth, frameHeight);
+        console.log('[LAYOUT] Grid frame at', canvasPos, 'size', frameWidth, 'x', frameHeight);
+
+        // Create frame
         const frameId = createShapeId();
         editor.createShape({
           id: frameId,
@@ -1230,97 +1246,55 @@ export function Canvas() {
           y: canvasPos.y,
           props: {
             name: layout.frameName,
-            w: estimatedWidth,
-            h: estimatedHeight,
+            w: frameWidth,
+            h: frameHeight,
           },
         });
         createdShapesRef.current.push(frameId);
 
-        // Create shapes INSIDE the frame with relative coordinates
-        const createdIds: TLShapeId[] = [];
-        const startX = 100; // Start position inside frame
-        const startY = 100;
-
+        // Create shapes in a clean grid INSIDE the frame
         layout.items.forEach((item, index) => {
+          const col = index % columns;
+          const row = Math.floor(index / columns);
           const itemId = createShapeId();
-          // Cluster shapes tightly at start position
-          const tempX = startX + (index % 3) * 30;
-          const tempY = startY + Math.floor(index / 3) * 30;
+
+          // Position in grid (relative to frame)
+          const x = padding + col * (itemWidth + gapX);
+          const y = titleSpace + padding + row * (itemHeight + gapY);
 
           if (item.type === "sticky") {
             editor.createShape({
               id: itemId,
               type: "note",
-              x: tempX,
-              y: tempY,
-              parentId: frameId, // Important: relative coordinates
+              x,
+              y,
+              parentId: frameId,
               props: {
                 richText: toRichText(item.text),
                 color: colorMap[item.color || "yellow"] || "yellow",
                 size: "m",
               },
             });
-          } else if (item.type === "shape") {
+          } else {
             editor.createShape({
               id: itemId,
               type: "geo",
-              x: tempX,
-              y: tempY,
-              parentId: frameId, // Important: relative coordinates
+              x,
+              y,
+              parentId: frameId,
               props: {
                 geo: "rectangle",
-                w: 180,
-                h: 100,
+                w: itemWidth,
+                h: itemHeight,
                 color: colorMap[item.color || "blue"] || "blue",
                 richText: toRichText(item.text || ""),
               },
             });
           }
-          createdIds.push(itemId);
           createdShapesRef.current.push(itemId);
         });
 
-        // Apply tldraw layout AFTER shapes are in frame
-        const gapSize = layout.spacing === "compact" ? 30 : layout.spacing === "spacious" ? 60 : 40;
-
-        if (layout.type === "grid") {
-          editor.packShapes(createdIds, gapSize);
-        } else if (layout.type === "flow") {
-          editor.distributeShapes(createdIds, "horizontal");
-          editor.alignShapes(createdIds, "center-vertical");
-        }
-
-        // Adjust frame size to fit packed shapes
-        setTimeout(() => {
-          const shapes = createdIds.map(id => editor.getShape(id)!).filter(Boolean);
-          if (shapes.length === 0) return;
-
-          // Calculate bounds relative to frame (shapes have relative coordinates)
-          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-          shapes.forEach(shape => {
-            const bounds = editor.getShapeGeometry(shape.id).bounds;
-            minX = Math.min(minX, shape.x);
-            minY = Math.min(minY, shape.y);
-            maxX = Math.max(maxX, shape.x + bounds.width);
-            maxY = Math.max(maxY, shape.y + bounds.height);
-          });
-
-          const padding = 80;
-          const titleSpace = 60;
-
-          // Update frame size to fit content
-          editor.updateShape({
-            id: frameId,
-            type: "frame",
-            props: {
-              w: Math.max(maxX - minX + padding * 2, 400),
-              h: Math.max(maxY - minY + padding * 2 + titleSpace, 300),
-            },
-          });
-
-          console.log('[LAYOUT] Grid/flow frame created and sized');
-        }, 100);
-
+        console.log('[LAYOUT] Grid created with', layout.items.length, 'items in', rows, 'rows x', actualCols, 'cols');
         return;
       }
 
