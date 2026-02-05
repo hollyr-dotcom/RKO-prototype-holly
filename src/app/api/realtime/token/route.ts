@@ -167,11 +167,35 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
             {
               type: "function",
               name: "createLayout",
-              description: "Create organized layouts. HIERARCHY: Use shapes with parentIndex for principles+descriptions (color-code: parents=blue, children=light-blue). GRID: Use stickies for brainstorms. FLOW: Use shapes for processes. Keep shape text under 20 chars.",
+              description: `Create visual layouts on the canvas.
+
+HIERARCHY (use for principles, concepts, org charts):
+- Creates clean COLUMNS with arrows connecting parent→child
+- Each principle = a root (parentIndex: -1)
+- Each description = child of its principle (parentIndex: 0, 2, 4...)
+- Use shapes (not stickies!) with colors: parent=blue, child=light-blue
+- Example for 3 principles with descriptions:
+  items: [
+    {type:"shape", text:"Principle 1", color:"blue", parentIndex:-1},
+    {type:"shape", text:"Description 1", color:"light-blue", parentIndex:0},
+    {type:"shape", text:"Principle 2", color:"blue", parentIndex:-1},
+    {type:"shape", text:"Description 2", color:"light-blue", parentIndex:2},
+    {type:"shape", text:"Principle 3", color:"blue", parentIndex:-1},
+    {type:"shape", text:"Description 3", color:"light-blue", parentIndex:4}
+  ]
+
+GRID (use for brainstorms, lists, collections):
+- Creates a packed grid of stickies
+- Use stickies with varied colors
+- NO parentIndex needed
+
+FLOW (use for processes, timelines):
+- Creates horizontal sequence with arrows
+- Use shapes for each step`,
               parameters: {
                 type: "object",
                 properties: {
-                  type: { type: "string", enum: ["grid", "hierarchy", "flow"] },
+                  type: { type: "string", enum: ["grid", "hierarchy", "flow"], description: "hierarchy=principles/concepts with arrows, grid=brainstorm stickies, flow=process steps" },
                   frameName: { type: "string" },
                   replaceFrame: { type: "string", description: "Optional: name of existing frame to replace." },
                   items: {
@@ -179,10 +203,10 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
                     items: {
                       type: "object",
                       properties: {
-                        type: { type: "string", enum: ["sticky", "shape"], description: "Use sticky for content, shape for short labels only" },
-                        text: { type: "string", description: "For stickies: Title + brief description. For shapes: 1-4 words max" },
-                        color: { type: "string" },
-                        parentIndex: { type: "number" }
+                        type: { type: "string", enum: ["sticky", "shape"], description: "shape for hierarchy/flow, sticky for grid" },
+                        text: { type: "string", description: "Keep under 50 chars for shapes" },
+                        color: { type: "string", description: "blue/light-blue for hierarchy, yellow/green/pink for grid" },
+                        parentIndex: { type: "number", description: "For hierarchy: -1=root (principle), or index of parent item" }
                       },
                       required: ["type", "text"]
                     }

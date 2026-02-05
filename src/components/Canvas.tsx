@@ -1112,13 +1112,17 @@ export function Canvas() {
           }
         }
 
-        // For hierarchy with parentIndex, use original layout engine
-        const hasHierarchy = layout.items.some(item => item.parentIndex !== undefined && item.parentIndex !== -1);
+        // HIERARCHY layout: Always use layout engine for clean columnar structure
+        // Triggers when: type="hierarchy" OR any item has parentIndex set
+        const hasParentIndex = layout.items.some(item => item.parentIndex !== undefined);
+        const useHierarchyLayout = layout.type === "hierarchy" || hasParentIndex;
 
-        if (layout.type === "hierarchy" && hasHierarchy) {
-          // Use original hierarchy layout engine for trees with arrows
+        if (useHierarchyLayout) {
+          console.log('[LAYOUT] Using hierarchy layout engine');
+
+          // Convert items for layout engine (parentIndex -1 = root = undefined)
           const layoutItems: LayoutItem[] = layout.items.map((item) => ({
-            type: item.type,
+            type: item.type === "sticky" ? "shape" : item.type, // Treat stickies as shapes for layout
             text: item.text,
             color: item.color,
             parentIndex: item.parentIndex === -1 ? undefined : item.parentIndex,
@@ -1130,7 +1134,7 @@ export function Canvas() {
             spacing: layout.spacing,
           };
 
-          const result = calculateLayout(layout.type, layoutItems, options);
+          const result = calculateLayout("hierarchy", layoutItems, options);
           const canvasPos = findEmptyCanvasSpace(editor, result.frame.width, result.frame.height);
 
           // Create frame
@@ -1148,13 +1152,28 @@ export function Canvas() {
           });
           createdShapesRef.current.push(frameId);
 
-          // Create shapes and arrows
-          result.items.forEach(({ item, position }) => {
+          // Create items (shapes or stickies based on original type)
+          result.items.forEach(({ item, position }, index) => {
             const itemId = createShapeId();
             const itemX = canvasPos.x + position.x;
             const itemY = canvasPos.y + position.y;
+            const originalItem = layout.items[index];
 
-            if (item.type === "shape") {
+            if (originalItem.type === "sticky") {
+              // Create sticky note
+              editor.createShape({
+                id: itemId,
+                type: "note",
+                x: itemX,
+                y: itemY,
+                props: {
+                  richText: toRichText(item.text || ""),
+                  color: colorMap[item.color || "yellow"] || "yellow",
+                  size: "m",
+                },
+              });
+            } else {
+              // Create geo shape (rectangle)
               editor.createShape({
                 id: itemId,
                 type: "geo",
@@ -1172,7 +1191,7 @@ export function Canvas() {
             createdShapesRef.current.push(itemId);
           });
 
-          // Create arrows
+          // Create arrows connecting parent to children
           result.arrows.forEach((arrow) => {
             const arrowId = createShapeId();
             editor.createShape({
