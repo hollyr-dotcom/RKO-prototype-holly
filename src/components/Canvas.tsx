@@ -1276,7 +1276,7 @@ export function Canvas() {
       if (toolName === "createSources") {
         const { title, sources } = args as {
           title: string;
-          sources: Array<{ title: string; url: string; description?: string }>
+          sources: Array<{ title: string; url: string; description?: string; image?: string }>
         };
 
         // Bookmark dimensions and layout
@@ -1319,7 +1319,7 @@ export function Canvas() {
           const relativeX = padding + col * (bookmarkWidth + gapX);
           const relativeY = padding + row * (bookmarkHeight + gapY);
 
-          // Create bookmark asset with metadata
+          // Create bookmark asset with metadata including image
           const assetId = `asset:bookmark-${Date.now()}-${i}` as any;
           editor.createAssets([{
             id: assetId,
@@ -1329,8 +1329,8 @@ export function Canvas() {
               src: source.url,
               title: source.title || "",
               description: source.description || "",
-              image: "",  // No image from search results
-              favicon: "",  // Will be empty
+              image: source.image || "",  // Thumbnail from search results
+              favicon: "",
             },
             meta: {},
           }]);

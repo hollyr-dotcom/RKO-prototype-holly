@@ -44,7 +44,8 @@ export async function POST(req: Request) {
         search_depth: "basic",
         include_answer: true,
         include_raw_content: false,
-        max_results: 5, // Get 5 sources for display
+        include_images: true,  // Get images for thumbnails
+        max_results: 5,
       }),
       signal: controller.signal,
     });
@@ -57,11 +58,12 @@ export async function POST(req: Request) {
 
     const data = await response.json();
 
-    // Format results for voice mode
-    const results = data.results?.map((r: { title: string; url: string; content: string }) => ({
+    // Format results for voice mode - include images for thumbnails
+    const results = data.results?.map((r: { title: string; url: string; content: string; image?: string }) => ({
       title: r.title,
       url: r.url,
       snippet: r.content?.slice(0, 200) || "",
+      image: r.image || "",  // Include image URL if available
     })) || [];
 
     return NextResponse.json({

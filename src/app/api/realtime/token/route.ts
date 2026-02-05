@@ -56,10 +56,10 @@ When user asks to research, look up, or find information:
 4. Briefly summarize what you found (2-3 key points)
 5. Offer to dive deeper: "Want me to summarize any of these?"
 
-IMPORTANT: Pass the search results directly to createSources:
+IMPORTANT: Pass the search results directly to createSources including images:
 createSources({
   title: "Research: [topic]",
-  sources: results.map(r => ({ title: r.title, url: r.url, description: r.snippet }))
+  sources: results.map(r => ({ title: r.title, url: r.url, description: r.snippet, image: r.image }))
 })
 
 FLOW:
@@ -135,7 +135,8 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
                       properties: {
                         title: { type: "string", description: "Page title from search results" },
                         url: { type: "string", description: "URL of the source" },
-                        description: { type: "string", description: "Snippet/description from search results" }
+                        description: { type: "string", description: "Snippet/description from search results" },
+                        image: { type: "string", description: "Image URL for thumbnail" }
                       },
                       required: ["title", "url"]
                     },
