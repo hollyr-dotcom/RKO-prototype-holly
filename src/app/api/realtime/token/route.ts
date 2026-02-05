@@ -191,11 +191,11 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
             {
               type: "function",
               name: "createLayout",
-              description: "Create visual layouts with shapes. HIERARCHY: for principles/concepts with parent-child arrows. GRID: for brainstorms/lists. FLOW: for processes.",
+              description: "Create visual layouts. GRID: sticky notes for brainstorms. HIERARCHY: shapes for principles with parent-child arrows. FLOW: shapes for processes.",
               parameters: {
                 type: "object",
                 properties: {
-                  type: { type: "string", enum: ["grid", "hierarchy", "flow"], description: "hierarchy for principles with arrows, grid for collections, flow for processes" },
+                  type: { type: "string", enum: ["grid", "hierarchy", "flow"], description: "grid for brainstorm stickies, hierarchy for principles with arrows, flow for processes" },
                   frameName: { type: "string" },
                   replaceFrame: { type: "string", description: "Name of existing frame to replace" },
                   items: {
@@ -203,8 +203,8 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
                     items: {
                       type: "object",
                       properties: {
-                        text: { type: "string", description: "Content text, keep concise" },
-                        color: { type: "string", description: "blue/light-blue for hierarchy, yellow/green/orange/violet for grid" },
+                        text: { type: "string", description: "Content text" },
+                        color: { type: "string", description: "yellow/green/orange/violet/pink for stickies, blue/light-blue for hierarchy" },
                         parentIndex: { type: "number", description: "HIERARCHY ONLY: -1 for root items, or index of parent (0, 2, 4...) for children" }
                       },
                       required: ["text"]

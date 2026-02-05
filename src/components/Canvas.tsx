@@ -1202,15 +1202,17 @@ export function Canvas() {
           return;
         }
 
-        // GRID/FLOW layout: Use geo shapes (NOT stickies - they auto-size unpredictably)
-        console.log('[LAYOUT] Using grid/flow layout with', layout.items.length, 'items');
+        // GRID: Real sticky notes for brainstorming
+        // FLOW: Shapes for processes
+        const isGrid = layout.type === "grid" || layout.type === undefined;
+        console.log('[LAYOUT] Using', isGrid ? 'GRID (stickies)' : 'FLOW (shapes)', 'with', layout.items.length, 'items');
 
-        // Grid settings - generous spacing
+        // Settings - stickies need MORE space because they auto-size
         const columns = layout.columns || 3;
-        const itemWidth = 220;
-        const itemHeight = 120;
-        const gapX = layout.spacing === "compact" ? 30 : layout.spacing === "spacious" ? 60 : 45;
-        const gapY = layout.spacing === "compact" ? 30 : layout.spacing === "spacious" ? 60 : 45;
+        const itemWidth = isGrid ? 200 : 220;  // Stickies are ~200 wide
+        const itemHeight = isGrid ? 200 : 120; // Stickies expand vertically - give lots of room
+        const gapX = layout.spacing === "compact" ? 40 : layout.spacing === "spacious" ? 80 : 60;
+        const gapY = layout.spacing === "compact" ? 40 : layout.spacing === "spacious" ? 80 : 60;
         const padding = 80;
         const titleSpace = 70;
 
@@ -1221,7 +1223,7 @@ export function Canvas() {
         const frameHeight = padding + titleSpace + rows * itemHeight + (rows - 1) * gapY + padding;
 
         const canvasPos = findEmptyCanvasSpace(editor, frameWidth, frameHeight);
-        console.log('[LAYOUT] Grid frame at', canvasPos, 'size', frameWidth, 'x', frameHeight, 'cols', actualCols, 'rows', rows);
+        console.log('[LAYOUT] Frame at', canvasPos, 'size', frameWidth, 'x', frameHeight);
 
         // Create frame
         const frameId = createShapeId();
@@ -1238,8 +1240,7 @@ export function Canvas() {
         });
         createdShapesRef.current.push(frameId);
 
-        // Create ALL items as geo shapes (rectangles) - NOT stickies
-        // Stickies auto-size and cause overlap. Geo shapes have controlled dimensions.
+        // Create items
         layout.items.forEach((item, index) => {
           const col = index % columns;
           const row = Math.floor(index / columns);
@@ -1249,25 +1250,41 @@ export function Canvas() {
           const x = padding + col * (itemWidth + gapX);
           const y = titleSpace + padding + row * (itemHeight + gapY);
 
-          // ALWAYS use geo shape for predictable sizing
-          editor.createShape({
-            id: itemId,
-            type: "geo",
-            x,
-            y,
-            parentId: frameId,
-            props: {
-              geo: "rectangle",
-              w: itemWidth,
-              h: itemHeight,
-              color: colorMap[item.color || "yellow"] || "yellow",
-              richText: toRichText(item.text || ""),
-            },
-          });
+          if (isGrid) {
+            // GRID: Real sticky notes (post-its)
+            editor.createShape({
+              id: itemId,
+              type: "note",
+              x,
+              y,
+              parentId: frameId,
+              props: {
+                richText: toRichText(item.text || ""),
+                color: colorMap[item.color || "yellow"] || "yellow",
+                size: "m",
+              },
+            });
+          } else {
+            // FLOW: Geo shapes
+            editor.createShape({
+              id: itemId,
+              type: "geo",
+              x,
+              y,
+              parentId: frameId,
+              props: {
+                geo: "rectangle",
+                w: itemWidth,
+                h: itemHeight,
+                color: colorMap[item.color || "blue"] || "blue",
+                richText: toRichText(item.text || ""),
+              },
+            });
+          }
           createdShapesRef.current.push(itemId);
         });
 
-        console.log('[LAYOUT] Grid created:', layout.items.length, 'items in', rows, 'x', actualCols);
+        console.log('[LAYOUT] Created', layout.items.length, 'items in', rows, 'rows x', actualCols, 'cols');
         return;
       }
 
