@@ -1276,17 +1276,18 @@ export function Canvas() {
       if (toolName === "createSources") {
         const { title, urls } = args as { title: string; urls: string[] };
 
-        // Bookmark dimensions and layout
-        const bookmarkWidth = 320;
-        const bookmarkHeight = 180;
-        const gap = 30;
+        // Bookmark dimensions (tldraw default) and layout
+        const bookmarkWidth = 300;
+        const bookmarkHeight = 320;  // Bookmarks are tall in tldraw
+        const gapX = 40;  // Horizontal gap
+        const gapY = 40;  // Vertical gap
         const columns = 2;
-        const padding = 50;
+        const padding = 60;
 
         // Calculate frame size based on number of URLs
         const rows = Math.ceil(urls.length / columns);
-        const frameWidth = columns * bookmarkWidth + (columns + 1) * gap + padding * 2;
-        const frameHeight = rows * bookmarkHeight + (rows + 1) * gap + padding * 2;
+        const frameWidth = columns * bookmarkWidth + (columns + 1) * gapX + padding * 2;
+        const frameHeight = rows * bookmarkHeight + (rows + 1) * gapY + padding * 2;
 
         // Find empty space on canvas
         const canvasPos = findEmptyCanvasSpace(editor, frameWidth, frameHeight);
@@ -1313,8 +1314,8 @@ export function Canvas() {
           const row = Math.floor(i / columns);
 
           // Relative position inside frame (starts at 0,0)
-          const relativeX = padding + col * (bookmarkWidth + gap);
-          const relativeY = padding + row * (bookmarkHeight + gap);
+          const relativeX = padding + col * (bookmarkWidth + gapX);
+          const relativeY = padding + row * (bookmarkHeight + gapY);
 
           const bookmarkId = createShapeId();
           editor.createShape({
@@ -1325,8 +1326,7 @@ export function Canvas() {
             parentId: frameId,
             props: {
               url: url,
-              w: bookmarkWidth,
-              h: bookmarkHeight,
+              // Don't set w/h - let tldraw use default bookmark size
             },
           });
           createdShapesRef.current.push(bookmarkId);
