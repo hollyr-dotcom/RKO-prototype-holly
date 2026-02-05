@@ -89,15 +89,15 @@ When creating principles, guidelines, or concepts from research:
 
 CORRECT EXAMPLE for 6 principles in 3 categories:
 createLayout({
-  type: "hierarchy",
-  frameName: "Design Principles",
+  type: 'hierarchy',
+  frameName: 'Design Principles',
   items: [
-    {text:"User Experience", color:"blue", parentIndex:-1},
-    {text:"Prioritize clarity", color:"light-blue", parentIndex:0},
-    {text:"Trust & Ethics", color:"blue", parentIndex:-1},
-    {text:"Be transparent", color:"light-blue", parentIndex:2},
-    {text:"Performance", color:"blue", parentIndex:-1},
-    {text:"Optimize speed", color:"light-blue", parentIndex:4}
+    {text:'User Experience', color:'blue', parentIndex:-1},
+    {text:'Prioritize clarity', color:'light-blue', parentIndex:0},
+    {text:'Trust & Ethics', color:'blue', parentIndex:-1},
+    {text:'Be transparent', color:'light-blue', parentIndex:2},
+    {text:'Performance', color:'blue', parentIndex:-1},
+    {text:'Optimize speed', color:'light-blue', parentIndex:4}
   ]
 })
 
