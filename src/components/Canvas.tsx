@@ -1153,43 +1153,28 @@ export function Canvas() {
           createdShapesRef.current.push(frameId);
 
           // Create items INSIDE frame with RELATIVE coordinates
+          // ALWAYS use geo shapes - stickies auto-size and cause overlap
           result.items.forEach(({ item, position }, index) => {
             const itemId = createShapeId();
             const originalItem = layout.items[index];
 
-            console.log(`[LAYOUT] Creating item ${index}: ${item.text?.slice(0,20)}... at relative (${position.x}, ${position.y})`);
+            console.log(`[LAYOUT] Creating hierarchy item ${index}: ${item.text?.slice(0,20)}... at (${position.x}, ${position.y}) size ${position.width}x${position.height}`);
 
-            if (originalItem.type === "sticky") {
-              // Create sticky note inside frame
-              editor.createShape({
-                id: itemId,
-                type: "note",
-                x: position.x,  // Relative to frame
-                y: position.y,  // Relative to frame
-                parentId: frameId,  // Child of frame
-                props: {
-                  richText: toRichText(item.text || ""),
-                  color: colorMap[item.color || "yellow"] || "yellow",
-                  size: "m",
-                },
-              });
-            } else {
-              // Create geo shape (rectangle) inside frame
-              editor.createShape({
-                id: itemId,
-                type: "geo",
-                x: position.x,  // Relative to frame
-                y: position.y,  // Relative to frame
-                parentId: frameId,  // Child of frame
-                props: {
-                  geo: "rectangle",
-                  w: position.width,
-                  h: position.height,
-                  color: colorMap[item.color || "blue"] || "blue",
-                  richText: toRichText(item.text || ""),
-                },
-              });
-            }
+            // ALWAYS create geo shape (rectangle) for predictable sizing
+            editor.createShape({
+              id: itemId,
+              type: "geo",
+              x: position.x,
+              y: position.y,
+              parentId: frameId,
+              props: {
+                geo: "rectangle",
+                w: position.width,
+                h: position.height,
+                color: colorMap[originalItem.color || item.color || "blue"] || "blue",
+                richText: toRichText(item.text || ""),
+              },
+            });
             createdShapesRef.current.push(itemId);
           });
 
@@ -1216,17 +1201,17 @@ export function Canvas() {
           return;
         }
 
-        // GRID/FLOW layout: Simple predictable grid (NO packShapes - it breaks relative coords)
-        console.log('[LAYOUT] Using grid/flow layout');
+        // GRID/FLOW layout: Use geo shapes (NOT stickies - they auto-size unpredictably)
+        console.log('[LAYOUT] Using grid/flow layout with', layout.items.length, 'items');
 
-        // Grid settings
+        // Grid settings - generous spacing
         const columns = layout.columns || 3;
-        const itemWidth = 200;
-        const itemHeight = 150;
-        const gapX = layout.spacing === "compact" ? 20 : layout.spacing === "spacious" ? 50 : 35;
-        const gapY = layout.spacing === "compact" ? 20 : layout.spacing === "spacious" ? 50 : 35;
-        const padding = 60;
-        const titleSpace = 60;
+        const itemWidth = 220;
+        const itemHeight = 120;
+        const gapX = layout.spacing === "compact" ? 30 : layout.spacing === "spacious" ? 60 : 45;
+        const gapY = layout.spacing === "compact" ? 30 : layout.spacing === "spacious" ? 60 : 45;
+        const padding = 80;
+        const titleSpace = 70;
 
         // Calculate frame size
         const rows = Math.ceil(layout.items.length / columns);
@@ -1235,7 +1220,7 @@ export function Canvas() {
         const frameHeight = padding + titleSpace + rows * itemHeight + (rows - 1) * gapY + padding;
 
         const canvasPos = findEmptyCanvasSpace(editor, frameWidth, frameHeight);
-        console.log('[LAYOUT] Grid frame at', canvasPos, 'size', frameWidth, 'x', frameHeight);
+        console.log('[LAYOUT] Grid frame at', canvasPos, 'size', frameWidth, 'x', frameHeight, 'cols', actualCols, 'rows', rows);
 
         // Create frame
         const frameId = createShapeId();
@@ -1252,7 +1237,8 @@ export function Canvas() {
         });
         createdShapesRef.current.push(frameId);
 
-        // Create shapes in a clean grid INSIDE the frame
+        // Create ALL items as geo shapes (rectangles) - NOT stickies
+        // Stickies auto-size and cause overlap. Geo shapes have controlled dimensions.
         layout.items.forEach((item, index) => {
           const col = index % columns;
           const row = Math.floor(index / columns);
@@ -1262,39 +1248,25 @@ export function Canvas() {
           const x = padding + col * (itemWidth + gapX);
           const y = titleSpace + padding + row * (itemHeight + gapY);
 
-          if (item.type === "sticky") {
-            editor.createShape({
-              id: itemId,
-              type: "note",
-              x,
-              y,
-              parentId: frameId,
-              props: {
-                richText: toRichText(item.text),
-                color: colorMap[item.color || "yellow"] || "yellow",
-                size: "m",
-              },
-            });
-          } else {
-            editor.createShape({
-              id: itemId,
-              type: "geo",
-              x,
-              y,
-              parentId: frameId,
-              props: {
-                geo: "rectangle",
-                w: itemWidth,
-                h: itemHeight,
-                color: colorMap[item.color || "blue"] || "blue",
-                richText: toRichText(item.text || ""),
-              },
-            });
-          }
+          // ALWAYS use geo shape for predictable sizing
+          editor.createShape({
+            id: itemId,
+            type: "geo",
+            x,
+            y,
+            parentId: frameId,
+            props: {
+              geo: "rectangle",
+              w: itemWidth,
+              h: itemHeight,
+              color: colorMap[item.color || "yellow"] || "yellow",
+              richText: toRichText(item.text || ""),
+            },
+          });
           createdShapesRef.current.push(itemId);
         });
 
-        console.log('[LAYOUT] Grid created with', layout.items.length, 'items in', rows, 'rows x', actualCols, 'cols');
+        console.log('[LAYOUT] Grid created:', layout.items.length, 'items in', rows, 'x', actualCols);
         return;
       }
 
