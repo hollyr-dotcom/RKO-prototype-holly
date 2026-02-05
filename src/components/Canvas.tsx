@@ -1100,11 +1100,12 @@ export function Canvas() {
 
         // If replaceFrame is specified, delete the old frame first (atomic operation)
         if (layout.replaceFrame) {
+          const replaceFrameName = layout.replaceFrame;
           const allShapes = editor.getCurrentPageShapes();
           const frameToDelete = allShapes.find(
             (s) => s.type === "frame" &&
-            ((s.props as { name?: string }).name === layout.replaceFrame ||
-             (s.props as { name?: string }).name?.includes(layout.replaceFrame))
+            ((s.props as { name?: string }).name === replaceFrameName ||
+             (s.props as { name?: string }).name?.includes(replaceFrameName))
           );
 
           if (frameToDelete) {
@@ -1269,6 +1270,67 @@ export function Canvas() {
         } else {
           console.warn(`[CANVAS] Frame "${frameName}" not found`);
         }
+      }
+
+      // CREATE SOURCES - display web search results as bookmark cards
+      if (toolName === "createSources") {
+        const { title, urls } = args as { title: string; urls: string[] };
+
+        // Bookmark dimensions and layout
+        const bookmarkWidth = 300;
+        const bookmarkHeight = 160;
+        const gap = 20;
+        const columns = 2;
+        const padding = 40;
+
+        // Calculate frame size based on number of URLs
+        const rows = Math.ceil(urls.length / columns);
+        const frameWidth = columns * bookmarkWidth + (columns - 1) * gap + padding * 2;
+        const frameHeight = rows * bookmarkHeight + (rows - 1) * gap + padding * 2 + 40; // +40 for title
+
+        // Find empty space on canvas
+        const canvasPos = findEmptyCanvasSpace(editor, frameWidth, frameHeight);
+
+        // Create frame
+        const frameId = createShapeId();
+        editor.createShape({
+          id: frameId,
+          type: "frame",
+          x: canvasPos.x,
+          y: canvasPos.y,
+          props: {
+            name: title,
+            w: frameWidth,
+            h: frameHeight,
+          },
+        });
+        createdShapesRef.current.push(frameId);
+
+        // Create bookmark shapes for each URL in 2-column grid
+        urls.forEach((url, i) => {
+          const col = i % columns;
+          const row = Math.floor(i / columns);
+
+          const bookmarkX = canvasPos.x + padding + col * (bookmarkWidth + gap);
+          const bookmarkY = canvasPos.y + padding + row * (bookmarkHeight + gap);
+
+          const bookmarkId = createShapeId();
+          editor.createShape({
+            id: bookmarkId,
+            type: "bookmark",
+            x: bookmarkX,
+            y: bookmarkY,
+            props: {
+              url: url,
+              w: bookmarkWidth,
+              h: bookmarkHeight,
+            },
+          });
+          createdShapesRef.current.push(bookmarkId);
+        });
+
+        console.log(`[CANVAS] Created sources frame "${title}" with ${urls.length} bookmarks`);
+        return;
       }
 
       // Update existing sticky note

@@ -173,19 +173,61 @@ export function useRealtimeVoice() {
               onToolCallRef.current(toolName, args);
             }
 
-            // For all tools, auto-respond and continue
-            // (No interactive tools in voice mode - it's just natural conversation)
-            if (true) {
-              dc.send(JSON.stringify({
-                type: "conversation.item.create",
-                item: {
-                  type: "function_call_output",
-                  call_id: message.call_id,
-                  output: JSON.stringify({ success: true }),
-                },
-              }));
-              dc.send(JSON.stringify({ type: "response.create" }));
+            // webSearch - make async HTTP call for real results
+            if (toolName === "webSearch") {
+              const { query, purpose } = args as { query: string; purpose: string };
+              console.log("[VOICE] webSearch called:", { query, purpose });
+
+              // Make async search request
+              fetch("/api/voice/search", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ query, purpose }),
+              })
+                .then((res) => res.json())
+                .then((searchResults) => {
+                  console.log("[VOICE] Search results:", searchResults);
+
+                  // Send real results back to OpenAI
+                  dc.send(JSON.stringify({
+                    type: "conversation.item.create",
+                    item: {
+                      type: "function_call_output",
+                      call_id: message.call_id,
+                      output: JSON.stringify(searchResults),
+                    },
+                  }));
+                  // Trigger AI to continue with the results
+                  dc.send(JSON.stringify({ type: "response.create" }));
+                })
+                .catch((err) => {
+                  console.error("[VOICE] Search error:", err);
+                  // Send error response
+                  dc.send(JSON.stringify({
+                    type: "conversation.item.create",
+                    item: {
+                      type: "function_call_output",
+                      call_id: message.call_id,
+                      output: JSON.stringify({ error: String(err), results: [] }),
+                    },
+                  }));
+                  dc.send(JSON.stringify({ type: "response.create" }));
+                });
+
+              // Don't send auto-response for webSearch - wait for async results
+              return;
             }
+
+            // For other tools, auto-respond and continue
+            dc.send(JSON.stringify({
+              type: "conversation.item.create",
+              item: {
+                type: "function_call_output",
+                call_id: message.call_id,
+                output: JSON.stringify({ success: true }),
+              },
+            }));
+            dc.send(JSON.stringify({ type: "response.create" }));
           }
 
           // Track AI speaking state

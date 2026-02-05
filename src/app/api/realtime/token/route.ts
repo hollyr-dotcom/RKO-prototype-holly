@@ -48,6 +48,20 @@ You're a helpful colleague, not a robot. Speak naturally and vary your language.
 - Keep it brief (1-2 sentences)
 - React to what the user says
 
+RESEARCH:
+When user asks to research, look up, or find information:
+1. Say "Let me look that up..." or similar
+2. Call webSearch() with a clear query
+3. After getting results, call createSources() to display them visually
+4. Briefly summarize what you found (2-3 key points)
+5. Offer to dive deeper: "Want me to summarize any of these?"
+
+Example research flow:
+- User: "Research the latest AI assistant trends"
+- You: "Let me look that up for you..." → webSearch()
+- After results: "Found some good sources!" → createSources()
+- "I found 4 articles about AI assistants - looks like multimodal and agents are big trends. Want me to dig into any of these?"
+
 FLOW:
 
 1. GREETING: Start naturally
@@ -96,14 +110,31 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
             {
               type: "function",
               name: "webSearch",
-              description: "Search the web for real-world information - current trends, statistics, examples, best practices.",
+              description: "Search the web for current information. Returns actual results with titles, URLs, and snippets. After receiving results, use createSources() to display them visually on the canvas.",
               parameters: {
                 type: "object",
                 properties: {
                   query: { type: "string", description: "What to search for" },
-                  purpose: { type: "string", description: "What you're trying to learn" }
+                  purpose: { type: "string", description: "Why you need this info" }
                 },
                 required: ["query", "purpose"]
+              }
+            },
+            {
+              type: "function",
+              name: "createSources",
+              description: "Display search results visually on canvas as clickable bookmark cards. Call this after webSearch() to show the sources you found.",
+              parameters: {
+                type: "object",
+                properties: {
+                  title: { type: "string", description: "Frame title, e.g. 'Research: AI trends'" },
+                  urls: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "URLs to display as bookmark cards"
+                  }
+                },
+                required: ["title", "urls"]
               }
             },
             {
