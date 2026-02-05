@@ -1366,6 +1366,8 @@ export function Canvas() {
 
   // Handle voice transcripts - add to message history
   const handleVoiceTranscript = useCallback((text: string, role: "user" | "assistant") => {
+    console.log('[VOICE] handleVoiceTranscript called:', { role, text: text.slice(0, 50) });
+
     // Check for conversational endings (user wants to close)
     if (role === "user") {
       const lowerText = text.toLowerCase().trim();

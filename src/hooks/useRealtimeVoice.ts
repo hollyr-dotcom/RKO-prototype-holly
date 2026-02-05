@@ -107,7 +107,10 @@ export function useRealtimeVoice() {
             const userText = message.transcript;
             console.log("[VOICE] User transcript:", userText);
             if (userText && onTranscriptRef.current) {
+              console.log("[VOICE] Calling onTranscript callback with user text");
               onTranscriptRef.current(userText, "user");
+            } else {
+              console.warn("[VOICE] onTranscriptRef.current is not set!");
             }
           }
 
@@ -117,6 +120,7 @@ export function useRealtimeVoice() {
             if (content?.transcript) {
               console.log("[VOICE] AI transcript:", content.transcript.slice(0, 50) + "...");
               if (onTranscriptRef.current) {
+                console.log("[VOICE] Calling onTranscript callback with assistant text");
                 onTranscriptRef.current(content.transcript, "assistant");
               }
             }
