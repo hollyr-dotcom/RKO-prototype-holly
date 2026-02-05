@@ -71,11 +71,11 @@ export function calculateGridLayout(
   const numRows = Math.ceil(items.length / columns);
   const actualColumns = Math.min(columns, items.length);
 
-  // Calculate frame dimensions
+  // Calculate frame dimensions with generous bottom padding
   const frameWidth =
     spacing.padding * 2 + actualColumns * itemWidth + (actualColumns - 1) * spacing.itemGap;
   const frameHeight =
-    spacing.padding * 2 + 60 + numRows * itemHeight + (numRows - 1) * spacing.itemGap;
+    spacing.padding * 2 + 60 + numRows * itemHeight + (numRows - 1) * spacing.itemGap + 80; // Extra bottom padding
 
   // Position each item in a simple grid
   const itemPositions: Array<{ item: LayoutItem; position: Position }> = [];

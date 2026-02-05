@@ -1281,16 +1281,17 @@ export function Canvas() {
 
         // Bookmark dimensions and layout
         const bookmarkWidth = 300;
-        const bookmarkHeight = 320;  // Bookmarks are tall with preview
+        const bookmarkHeight = 380;  // Bookmarks with image + title + description
         const gapX = 40;
-        const gapY = 40;
+        const gapY = 50;
         const columns = 2;
         const padding = 60;
+        const bottomPadding = 100;  // Extra space at bottom for frame border
 
         // Calculate frame size based on number of sources
         const rows = Math.ceil(sources.length / columns);
         const frameWidth = columns * bookmarkWidth + (columns + 1) * gapX + padding * 2;
-        const frameHeight = rows * bookmarkHeight + (rows + 1) * gapY + padding * 2;
+        const frameHeight = rows * bookmarkHeight + (rows + 1) * gapY + padding + bottomPadding;
 
         // Find empty space on canvas
         const canvasPos = findEmptyCanvasSpace(editor, frameWidth, frameHeight);
