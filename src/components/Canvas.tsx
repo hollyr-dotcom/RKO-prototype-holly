@@ -1370,7 +1370,7 @@ export function Canvas() {
     if (role === "user") {
       const lowerText = text.toLowerCase().trim();
 
-      // Check for ending phrases or short conclusive statements
+      // Check for ending phrases or conclusive statements
       const endPhrases = [
         'great thank',
         'thanks that',
@@ -1386,14 +1386,26 @@ export function Canvas() {
         "i'm good",
         "all done",
         "looks good",
+        'never mind thank',
+        'nevermind thank',
       ];
 
-      // Also check for very short thankful statements (likely endings)
-      const shortEndings = ['thank you', 'thanks', 'perfect', 'great', 'awesome', 'done'];
-      const isShortEnding = shortEndings.includes(lowerText) ||
-                            (lowerText.split(' ').length <= 3 && shortEndings.some(phrase => lowerText.includes(phrase)));
+      // Core goodbye words that indicate ending
+      const goodbyeWords = ['thank you', 'thanks', 'bye', 'goodbye'];
 
-      if (endPhrases.some(phrase => lowerText.includes(phrase)) || isShortEnding) {
+      // Check if phrase contains goodbye words (more flexible)
+      // - Exact match: "thank you", "thanks", "bye"
+      // - Short phrase (≤5 words) containing goodbye words
+      // - Phrase containing specific ending patterns
+      const containsGoodbyeWord = goodbyeWords.some(word => lowerText.includes(word));
+      const wordCount = lowerText.split(' ').length;
+      const isShortPhrase = wordCount <= 5;
+
+      const isGoodbye = endPhrases.some(phrase => lowerText.includes(phrase)) ||
+                       (containsGoodbyeWord && isShortPhrase) ||
+                       goodbyeWords.includes(lowerText);
+
+      if (isGoodbye) {
         console.log('[VOICE] Detected conversational ending:', lowerText);
         console.log('[VOICE] Setting waitingForGoodbyeRef to true, will close after AI responds');
         waitingForGoodbyeRef.current = true;
