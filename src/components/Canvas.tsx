@@ -719,6 +719,7 @@ export function Canvas() {
   const [input, setInput] = useState("");
   const createdShapesRef = useRef<TLShapeId[]>([]);
   const waitingForGoodbyeRef = useRef(false);
+  const goodbyeTranscriptLengthRef = useRef(0); // Track goodbye message length for audio timing
   const hasPlayedStartChimeRef = useRef(false); // Track if start chime played for this session
 
   // Voice mode with OpenAI Realtime API
@@ -1362,6 +1363,7 @@ export function Canvas() {
     // Reset session flags
     hasPlayedStartChimeRef.current = false;
     waitingForGoodbyeRef.current = false;
+    goodbyeTranscriptLengthRef.current = 0;
   }, [voice]);
 
   // Handle voice transcripts - add to message history
@@ -1387,8 +1389,11 @@ export function Canvas() {
       const isAiGoodbye = aiGoodbyePatterns.some(pattern => lowerText.includes(pattern));
 
       if (isAiGoodbye) {
-        console.log('[VOICE] AI said goodbye, will auto-close after speaking');
+        console.log('[VOICE] AI said goodbye, will auto-close after audio finishes');
         waitingForGoodbyeRef.current = true;
+        // Store transcript length to estimate audio duration
+        // Average speaking rate: ~2-2.5 words/second (120-150 words/minute)
+        goodbyeTranscriptLengthRef.current = text.split(' ').length;
       }
     }
 
@@ -1441,12 +1446,21 @@ export function Canvas() {
       // AI said goodbye and finished speaking: auto-close
       // (flag set when AI transcript contains goodbye pattern - agentic detection)
       else if (waitingForGoodbyeRef.current) {
-        console.log('[VOICE] AI goodbye complete, auto-closing in 1 second');
+        // Calculate delay based on transcript length
+        // Average speaking rate: 2.5 words/second (conservative estimate)
+        // Add 500ms buffer to ensure audio fully completes
+        const wordCount = goodbyeTranscriptLengthRef.current || 10;
+        const estimatedDuration = (wordCount / 2.5) * 1000; // ms
+        const delay = estimatedDuration + 500; // Add buffer
+
+        console.log(`[VOICE] AI goodbye complete, auto-closing in ${Math.round(delay)}ms (${wordCount} words)`);
         setTimeout(() => {
           console.log('[VOICE] Executing auto-disconnect');
           handleVoiceDisconnect();
-        }, 1000); // Brief delay so user hears the full goodbye
+        }, delay);
+
         waitingForGoodbyeRef.current = false;
+        goodbyeTranscriptLengthRef.current = 0;
       }
     }
   }, [voice.state, handleVoiceDisconnect]);
