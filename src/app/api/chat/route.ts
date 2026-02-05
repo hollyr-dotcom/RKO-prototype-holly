@@ -441,8 +441,12 @@ WHEN TO USE STICKIES (type: "sticky"):
 - Brainstorms, ideas, notes
 - Style guides, design specs
 - Feature lists, requirements
-→ Keep text SHORT: title + 2-3 bullet points max
-→ Use MORE stickies with LESS text each (better than few stickies with lots of text)
+
+⚠️ STICKY TEXT MUST BE SHORT (max 50 chars):
+- BAD: "Principle: User-Centered AI Design - Ensure AI features genuinely benefit users by focusing on user experience, clarity, and usefulness"
+- GOOD: "User-Centered Design\n• Focus on UX\n• Keep it clear"
+- Use bullet points (\n•) for lists
+- One idea per sticky, not paragraphs
 
 WHEN TO USE SHAPES (type: "shape"):
 - Org charts, hierarchies (with arrows)

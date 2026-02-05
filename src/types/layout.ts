@@ -62,26 +62,27 @@ export interface LayoutResult {
 // Spacing constants - generous to prevent overlaps
 export const SPACING = {
   compact: {
-    itemGap: 20,
-    padding: 40,
+    itemGap: 30,
+    padding: 50,
     levelGap: 100,
   },
   normal: {
-    itemGap: 25,
-    padding: 50,
+    itemGap: 40,
+    padding: 60,
     levelGap: 120,
   },
   spacious: {
-    itemGap: 40,
-    padding: 70,
+    itemGap: 60,
+    padding: 80,
     levelGap: 160,
   },
 } as const;
 
-// Item size defaults - FIXED sizes for consistent grids
+// Item size defaults - GENEROUS sizes to prevent overlaps
+// tldraw stickies auto-size, so we estimate conservatively
 export const ITEM_SIZES = {
-  sticky: { width: 200, height: 280, minWidth: 200, minHeight: 280 },
-  shape: { width: 180, height: 140, minWidth: 180, minHeight: 140 }, // Larger for text content
+  sticky: { width: 220, height: 200, minWidth: 220, minHeight: 200 },
+  shape: { width: 180, height: 140, minWidth: 180, minHeight: 140 },
   text: { width: 180, height: 50, minWidth: 100, minHeight: 30 },
 } as const;
 

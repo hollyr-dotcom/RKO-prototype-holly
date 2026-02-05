@@ -43,7 +43,7 @@ export function findEmptyCanvasSpace(
 
 /**
  * Calculate grid layout positions.
- * Uses FIXED sizes for consistent, non-overlapping grids.
+ * Calculates height based on actual text content to prevent overlaps.
  */
 export function calculateGridLayout(
   items: LayoutItem[],
@@ -53,18 +53,20 @@ export function calculateGridLayout(
   const spacingKey = options?.spacing ?? "normal";
   const spacing = SPACING[spacingKey];
 
-  // Find the LARGEST dimensions needed across all item types in this grid
-  let maxWidth = 0;
-  let maxHeight = 0;
-  items.forEach((item) => {
+  // Calculate dimensions for each item based on text content
+  const itemDimensions = items.map((item) => {
     const sizes = ITEM_SIZES[item.type];
-    maxWidth = Math.max(maxWidth, sizes.width);
-    maxHeight = Math.max(maxHeight, sizes.height);
+    const width = sizes.width;
+    // Calculate height based on text length for stickies
+    const textLength = item.text.length;
+    const estimatedLines = Math.ceil(textLength / 20); // ~20 chars per line
+    const estimatedHeight = Math.max(sizes.height, estimatedLines * 24 + 60);
+    return { width, height: estimatedHeight };
   });
 
-  // Use the largest dimensions for ALL items (ensures no overlap)
-  const itemWidth = maxWidth;
-  const itemHeight = maxHeight;
+  // Find the LARGEST dimensions needed for uniform grid
+  const itemWidth = Math.max(...itemDimensions.map(d => d.width));
+  const itemHeight = Math.max(...itemDimensions.map(d => d.height));
 
   const numRows = Math.ceil(items.length / columns);
   const actualColumns = Math.min(columns, items.length);
