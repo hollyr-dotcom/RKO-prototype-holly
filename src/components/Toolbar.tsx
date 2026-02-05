@@ -44,6 +44,7 @@ interface ToolbarProps {
   editor: Editor | null;
   onToggleChat: () => void;
   isChatOpen: boolean;
+  hideInput?: boolean;
   onSubmit: (text: string) => void;
   isLoading: boolean;
 }
@@ -52,6 +53,7 @@ export function Toolbar({
   editor,
   onToggleChat,
   isChatOpen,
+  hideInput = false,
   onSubmit,
   isLoading,
 }: ToolbarProps) {
@@ -105,10 +107,7 @@ export function Toolbar({
 
   return (
     <div
-      className="absolute bottom-6 z-50 flex items-center gap-3 transition-all duration-200 ease-out -translate-x-1/2"
-      style={{
-        left: isChatOpen ? "calc(50% - 192px)" : "50%",
-      }}
+      className="absolute bottom-6 left-1/2 z-50 flex items-center gap-3 -translate-x-1/2"
     >
       {/* Main toolbar container */}
       <div
@@ -170,15 +169,15 @@ export function Toolbar({
           </ToolButton>
         </div>
 
-        {/* Separator line - hidden when expanded or chat open */}
-        {!isExpanded && !isChatOpen && (
+        {/* Separator line - hidden when expanded, chat open, or floating UI showing */}
+        {!isExpanded && !isChatOpen && !hideInput && (
           <div className="self-stretch w-px bg-gray-200 mx-2 my-[-6px] flex-shrink-0" />
         )}
 
-        {/* AI Input Section - on the right now, hidden when chat is open */}
+        {/* AI Input Section - hidden when chat open or floating UI showing */}
         <div
           className={`flex items-center overflow-hidden transition-all duration-300 ease-out ${
-            isChatOpen
+            isChatOpen || hideInput
               ? "w-0 opacity-0 p-0"
               : isExpanded
                 ? "w-[420px] opacity-100"

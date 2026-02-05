@@ -352,7 +352,7 @@ const planningAgent = new Agent({
 WORKFLOW:
 1. Assess if you need real-world context (news, releases, specific data you don't have)
 2. Only if needed → webSearch() for facts/examples
-3. If request is vague or you need user input → askUser() (max 1-2 questions)
+3. Ask exactly 2 questions with askUser() (one at a time)
 4. Create plan with confirmPlan()
 
 USE WEB SEARCH WISELY - Only when you truly need:
@@ -378,13 +378,12 @@ IMPORTANT - NO DUPLICATE CONTENT:
 - When calling confirmPlan(), do NOT write out the steps as text too
 - Just say something brief then call the tool
 
-QUESTIONS: Maximum 1-2 questions total. Only ask what's essential. Research before asking!
+QUESTIONS: Ask exactly 2 questions total (one at a time), then create your plan. No more, no less.
 
 FOR REQUESTS:
-- Real-world topics: webSearch first, then plan
-- Most requests: just make a reasonable plan directly
-- Only truly ambiguous: ask 1-2 questions first
-- Simple: just create items directly
+- Real-world topics: webSearch first, then 2 questions, then plan
+- Most requests: ask 2 questions, then plan
+- Simple tweaks: just do it directly
 
 CANVAS: Check [CANVAS STATE] for positions. Use SAFE ZONES.`,
   tools: [
@@ -634,6 +633,14 @@ DO THIS IMMEDIATELY:
 DO NOT write explanatory text first - CALL showProgress() IMMEDIATELY!`}`;
   } else {
     // Normal mode: build conversation context
+    // Count how many questions have already been asked
+    let questionsAsked = 0;
+    messages.forEach((m: MessageWithTools) => {
+      if (m.toolInvocations?.some(t => t.toolName === 'askUser')) {
+        questionsAsked++;
+      }
+    });
+
     conversationContext = messages
       .map((m: MessageWithTools) => {
         let text = `${m.role}: ${m.content}`;
@@ -648,6 +655,13 @@ DO NOT write explanatory text first - CALL showProgress() IMMEDIATELY!`}`;
         return text;
       })
       .join("\n");
+
+    // Add question tracking to context
+    if (questionsAsked >= 2) {
+      conversationContext += `\n\n🛑 YOU HAVE ALREADY ASKED ${questionsAsked} QUESTIONS. DO NOT ASK MORE. Call confirmPlan() NOW with your plan.`;
+    } else if (questionsAsked === 1) {
+      conversationContext += `\n\n[Questions asked: 1 of 2. Ask 1 more question, then call confirmPlan().]`;
+    }
   }
 
   // Include canvas state if provided

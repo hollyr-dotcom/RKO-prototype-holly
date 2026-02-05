@@ -2,13 +2,242 @@
 
 import { Tldraw, Editor, createShapeId, toRichText, TLShapeId } from "tldraw";
 import "tldraw/tldraw.css";
-import { useState, useCallback, useRef, useMemo } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { useAgent, Message } from "@/hooks/useAgent";
 import { Toolbar } from "./Toolbar";
 import { ChatPanel } from "./ChatPanel";
 import { IconSingleSparksFilled, IconViewSideRight } from "@mirohq/design-system-icons";
 import { calculateLayout, findEmptyCanvasSpace } from "@/lib/layoutEngine";
 import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
+
+// Floating thinking indicator
+function FloatingThinkingIndicator() {
+  return (
+    <div className="absolute bottom-24 left-1/2 z-[60] animate-float-in">
+      <div className="flex items-center gap-3 bg-white rounded-full px-5 py-3 shadow-lg border border-gray-200">
+        <div className="flex gap-1">
+          <span className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" />
+          <span className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
+          <span className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
+        </div>
+        <span className="text-sm text-gray-600">Thinking...</span>
+      </div>
+    </div>
+  );
+}
+
+// Floating question card (Claude Cowork style)
+function FloatingQuestionCard({
+  question,
+  options,
+  onSelect,
+  onSkip,
+}: {
+  question: string;
+  options: string[];
+  onSelect: (answer: string) => void;
+  onSkip: () => void;
+}) {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [customInput, setCustomInput] = useState("");
+  const [showCustomInput, setShowCustomInput] = useState(false);
+
+  // Filter out "something else" from options since we have built-in custom input
+  const filteredOptions = options.filter(opt => !opt.toLowerCase().includes('something else'));
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle if typing in input
+      if (showCustomInput) return;
+
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedIndex((prev) => Math.max(0, prev - 1));
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedIndex((prev) => Math.min(filteredOptions.length, prev + 1));
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (selectedIndex === filteredOptions.length) {
+          setShowCustomInput(true);
+        } else {
+          onSelect(filteredOptions[selectedIndex]);
+        }
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        onSkip();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedIndex, filteredOptions, onSelect, onSkip, showCustomInput]);
+
+  const handleCustomSubmit = () => {
+    if (customInput.trim()) {
+      onSelect(customInput.trim());
+    }
+  };
+
+  return (
+    <div className="absolute bottom-24 left-1/2 z-[60] w-[520px] animate-float-in">
+      <div className="bg-white text-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-4 pb-2">
+          <p className="text-base font-medium flex-1 pr-4">{question}</p>
+          <button
+            onClick={onSkip}
+            className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Options or Custom Input */}
+        {showCustomInput ? (
+          <div className="px-4 pb-4">
+            <input
+              autoFocus
+              value={customInput}
+              onChange={(e) => setCustomInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && customInput.trim()) {
+                  e.preventDefault();
+                  handleCustomSubmit();
+                } else if (e.key === "Escape") {
+                  e.preventDefault();
+                  setShowCustomInput(false);
+                  setCustomInput("");
+                }
+              }}
+              placeholder="Type your answer..."
+              className="w-full px-4 py-3 bg-gray-100 rounded-lg text-gray-900 placeholder-gray-400 outline-none border border-gray-200 focus:border-gray-300"
+            />
+            <div className="flex justify-end gap-2 mt-3">
+              <button
+                onClick={() => {
+                  setShowCustomInput(false);
+                  setCustomInput("");
+                }}
+                className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                Back
+              </button>
+              <button
+                onClick={handleCustomSubmit}
+                disabled={!customInput.trim()}
+                className="px-4 py-1.5 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="px-3 py-2 space-y-1">
+              {filteredOptions.map((option, i) => (
+                <button
+                  key={i}
+                  onClick={() => onSelect(option)}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    selectedIndex === i ? "bg-gray-100" : "hover:bg-gray-50"
+                  }`}
+                >
+                  <span className="w-7 h-7 flex items-center justify-center rounded bg-gray-100 text-sm font-medium text-gray-600">
+                    {i + 1}
+                  </span>
+                  <span className="text-left flex-1">{option}</span>
+                  {selectedIndex === i && (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  )}
+                </button>
+              ))}
+
+              {/* Something else option */}
+              <button
+                onClick={() => setShowCustomInput(true)}
+                className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                  selectedIndex === filteredOptions.length ? "bg-gray-100" : "hover:bg-gray-50"
+                }`}
+              >
+                <span className="w-7 h-7 flex items-center justify-center rounded bg-gray-100 text-gray-500">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </span>
+                <span className="text-gray-400">Something else</span>
+              </button>
+            </div>
+
+            {/* Skip button */}
+            <div className="px-5 py-3 flex justify-end border-t border-gray-100">
+              <button
+                onClick={onSkip}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors"
+              >
+                Skip
+              </button>
+            </div>
+
+            {/* Keyboard hints */}
+            <div className="px-5 py-2 text-xs text-gray-400 text-center border-t border-gray-100">
+              ↑↓ to navigate · Enter to select · Esc to skip
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Floating plan approval toast (simple, like checkpoint)
+function FloatingPlanApproval({
+  title,
+  onApprove,
+  onViewDetails,
+}: {
+  title: string;
+  onApprove: () => void;
+  onViewDetails: () => void;
+}) {
+  return (
+    <div className="absolute bottom-24 left-1/2 z-[60] animate-float-in">
+      <div className="flex items-center gap-3 bg-white text-gray-900 rounded-2xl shadow-lg border border-gray-200 px-4 py-3">
+        {/* Icon */}
+        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+          <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+
+        {/* Title */}
+        <span className="text-sm font-medium flex-1 truncate max-w-[280px]">
+          <span className="text-gray-500">Plan:</span> {title}
+        </span>
+
+        {/* View details link */}
+        <button
+          onClick={onViewDetails}
+          className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          Details
+        </button>
+
+        {/* Approve button */}
+        <button
+          onClick={onApprove}
+          className="px-4 py-1.5 text-sm font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+        >
+          Approve
+        </button>
+      </div>
+    </div>
+  );
+}
 
 // Floating progress indicator when chat panel is closed
 function FloatingProgressIndicator({
@@ -416,8 +645,18 @@ const colorMap: Record<string, TLColor> = {
 export function Canvas() {
   const [editor, setEditor] = useState<Editor | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatClosing, setIsChatClosing] = useState(false);
   const [input, setInput] = useState("");
   const createdShapesRef = useRef<TLShapeId[]>([]);
+
+  // Handle sidebar close with animation
+  const handleCloseChat = useCallback(() => {
+    setIsChatClosing(true);
+    setTimeout(() => {
+      setIsChatOpen(false);
+      setIsChatClosing(false);
+    }, 300); // Match animation duration
+  }, []);
 
   // Navigate to frames by name - zooms to fit all matching frames
   const navigateToFrames = useCallback((frameNames: string[]) => {
@@ -927,12 +1166,85 @@ export function Canvas() {
       if (!text.trim()) return;
       append({ role: "user", content: text });
       setInput("");
-      if (!isChatOpen && options?.openPanel !== false) {
+      // Only open panel if explicitly requested (clicking sparkle button)
+      if (options?.openPanel === true) {
         setIsChatOpen(true);
       }
     },
-    [append, isChatOpen]
+    [append]
   );
+
+  // Find pending askUser question (unanswered) - detect even while loading
+  const pendingQuestion = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (msg.role !== 'assistant') continue;
+
+      const askUserTool = msg.toolInvocations?.find(t => t.toolName === 'askUser');
+      if (askUserTool) {
+        // Check if there's a user response after this
+        const hasResponse = messages.slice(i + 1).some(m => m.role === 'user');
+        if (!hasResponse) {
+          return {
+            question: (askUserTool.args as { question: string }).question,
+            suggestions: (askUserTool.args as { suggestions: string[] }).suggestions,
+          };
+        }
+      }
+    }
+    return null;
+  }, [messages]);
+
+  // Find pending confirmPlan (not yet approved)
+  const pendingPlan = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (msg.role !== 'assistant') continue;
+
+      const planTool = msg.toolInvocations?.find(t => t.toolName === 'confirmPlan');
+      if (planTool) {
+        // Check if there's a user response after this
+        const hasResponse = messages.slice(i + 1).some(m => m.role === 'user');
+        if (!hasResponse) {
+          const args = planTool.args as { title: string; steps: string[]; summary: string };
+          return {
+            title: args.title,
+            steps: args.steps,
+            summary: args.summary,
+          };
+        }
+      }
+    }
+    return null;
+  }, [messages]);
+
+  // Check if there's an active plan (approved and executing)
+  const hasActivePlan = useMemo(() => {
+    for (let i = 0; i < messages.length; i++) {
+      const msg = messages[i];
+      const planTool = msg.toolInvocations?.find(t => t.toolName === 'confirmPlan');
+      if (planTool) {
+        // Check if next user message is approval
+        const nextMsg = messages[i + 1];
+        if (nextMsg?.role === 'user' && nextMsg.content?.toLowerCase().includes('approve')) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }, [messages]);
+
+  // Simple flags for what floating UI to show (only one at a time, in priority order)
+  // Priority: question > plan approval > thinking > progress indicator
+  const showFloatingQuestion = !isChatOpen && !!pendingQuestion && !isLoading;
+  // Plan only shows after loading completes (so thinking can show while processing)
+  const showFloatingPlan = !isChatOpen && !!pendingPlan && !pendingQuestion && !isLoading;
+  // Thinking shows when loading BUT NOT during plan execution (progress indicator handles that)
+  const showFloatingThinking = !isChatOpen && isLoading && !hasActivePlan;
+  const showFloatingProgress = !isChatOpen && hasActivePlan && !showFloatingQuestion && !showFloatingPlan && !showFloatingThinking;
+
+  // Toolbar always visible - prompt input hides itself when sidebar is open
+  const showToolbar = true;
 
   return (
     <div className="h-screen w-screen flex overflow-hidden relative">
@@ -954,8 +1266,8 @@ export function Canvas() {
           </button>
         )}
 
-        {/* Floating progress indicator - shown when panel closed and plan active */}
-        {!isChatOpen && editor && (
+        {/* Floating progress indicator - shown when plan active and no other floating UI */}
+        {showFloatingProgress && editor && (
           <FloatingProgressIndicator
             messages={messages}
             isLoading={isLoading}
@@ -965,21 +1277,52 @@ export function Canvas() {
           />
         )}
 
+        {/* Floating question card */}
+        {showFloatingQuestion && pendingQuestion && (
+          <FloatingQuestionCard
+            question={pendingQuestion.question}
+            options={pendingQuestion.suggestions}
+            onSelect={(answer) => handleSubmit(answer, { openPanel: false })}
+            onSkip={() => handleSubmit("Skip", { openPanel: false })}
+          />
+        )}
+
+        {/* Floating plan approval toast */}
+        {showFloatingPlan && pendingPlan && (
+          <FloatingPlanApproval
+            title={pendingPlan.title}
+            onApprove={() => handleSubmit("Approved! Go ahead.", { openPanel: false })}
+            onViewDetails={() => setIsChatOpen(true)}
+          />
+        )}
+
+        {/* Floating thinking indicator */}
+        {showFloatingThinking && (
+          <FloatingThinkingIndicator />
+        )}
+
         {/* Custom toolbar at bottom center */}
-        <Toolbar
-          editor={editor}
-          onToggleChat={() => setIsChatOpen(!isChatOpen)}
-          isChatOpen={isChatOpen}
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-        />
+        {showToolbar && (
+          <Toolbar
+            editor={editor}
+            onToggleChat={() => setIsChatOpen(!isChatOpen)}
+            isChatOpen={isChatOpen && !isChatClosing}
+            hideInput={
+              showFloatingQuestion || showFloatingThinking || showFloatingPlan ||
+              // Also hide during close animation if floating UI will appear after
+              (isChatClosing && (!!pendingQuestion || !!pendingPlan || (isLoading && !hasActivePlan)))
+            }
+            onSubmit={handleSubmit}
+            isLoading={isLoading}
+          />
+        )}
       </div>
 
-      {/* Side chat panel - overlays canvas */}
-      {isChatOpen && (
-        <div className="absolute top-0 right-0 h-full w-96 z-[999] animate-in slide-in-from-right duration-300">
+      {/* Side chat panel - fixed position, outside flex flow */}
+      {(isChatOpen || isChatClosing) && (
+        <div className={`fixed top-0 right-0 h-full w-96 z-[999] ${isChatClosing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
           <ChatPanel
-            onClose={() => setIsChatOpen(false)}
+            onClose={handleCloseChat}
             messages={messages}
             input={input}
             setInput={setInput}

@@ -109,10 +109,13 @@ export function useAgent(onToolCall?: ToolHandler, getCanvasState?: CanvasStateG
                   bufferedTools.push({ toolName: data.toolName, args: data.args });
 
                   // Show these tools immediately in the UI (don't wait for done)
+                  // - askUser: questions need to show floating immediately
+                  // - confirmPlan: plan approval needs to show floating immediately
                   // - showProgress: step tracking
                   // - checkpoint: feedback pause points
                   // - webSearch: show "Searching..." indicator
-                  if (data.toolName === "showProgress" || data.toolName === "checkpoint" || data.toolName === "webSearch") {
+                  const immediateTools = ["askUser", "confirmPlan", "showProgress", "checkpoint", "webSearch"];
+                  if (immediateTools.includes(data.toolName)) {
                     setMessages((prev) =>
                       prev.map((m) =>
                         m.id === assistantId
