@@ -4,11 +4,54 @@ import { Tldraw, Editor, createShapeId, toRichText, TLShapeId } from "tldraw";
 import "tldraw/tldraw.css";
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { useAgent, Message } from "@/hooks/useAgent";
+import { useRealtimeVoice } from "@/hooks/useRealtimeVoice";
 import { Toolbar } from "./Toolbar";
 import { ChatPanel } from "./ChatPanel";
 import { IconSingleSparksFilled, IconViewSideRight } from "@mirohq/design-system-icons";
 import { calculateLayout, findEmptyCanvasSpace } from "@/lib/layoutEngine";
 import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
+
+// Audio chimes for voice mode
+function playChime(type: 'start' | 'end') {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const now = audioContext.currentTime;
+
+    // Gentle chime parameters
+    const gainNode = audioContext.createGain();
+    gainNode.connect(audioContext.destination);
+    gainNode.gain.value = 0.1; // Very subtle volume
+
+    const playNote = (frequency: number, startTime: number, duration: number) => {
+      const oscillator = audioContext.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      oscillator.connect(gainNode);
+
+      // Gentle envelope
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(0.08, startTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    };
+
+    if (type === 'start') {
+      // Ascending chime: C5 -> E5 -> G5 (welcoming)
+      playNote(523.25, now, 0.15);           // C5
+      playNote(659.25, now + 0.08, 0.15);    // E5
+      playNote(783.99, now + 0.16, 0.2);     // G5
+    } else {
+      // Descending chime: G5 -> E5 -> C5 (gentle closing)
+      playNote(783.99, now, 0.15);           // G5
+      playNote(659.25, now + 0.08, 0.15);    // E5
+      playNote(523.25, now + 0.16, 0.2);     // C5
+    }
+  } catch (err) {
+    console.warn('[AUDIO] Failed to play chime:', err);
+  }
+}
 
 // Floating thinking indicator
 function FloatingThinkingIndicator() {
@@ -21,6 +64,33 @@ function FloatingThinkingIndicator() {
           <span className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
         </div>
         <span className="text-sm text-gray-600">Thinking...</span>
+      </div>
+    </div>
+  );
+}
+
+// Floating voice indicator
+function FloatingVoiceIndicator({ state, onEnd }: { state: "listening" | "speaking"; onEnd: () => void }) {
+  return (
+    <div className="absolute bottom-24 left-1/2 z-[60] animate-float-in">
+      <div className="flex items-center gap-3 bg-white rounded-full pl-5 pr-3 py-3 shadow-lg border border-gray-200">
+        <div className="flex gap-1">
+          <span className={`w-2 h-2 rounded-full ${state === "listening" ? "bg-green-500" : "bg-blue-500"} animate-pulse`} />
+          <span className={`w-2 h-2 rounded-full ${state === "listening" ? "bg-green-500" : "bg-blue-500"} animate-pulse`} style={{ animationDelay: "0.2s" }} />
+          <span className={`w-2 h-2 rounded-full ${state === "listening" ? "bg-green-500" : "bg-blue-500"} animate-pulse`} style={{ animationDelay: "0.4s" }} />
+        </div>
+        <span className="text-sm text-gray-600">
+          {state === "listening" ? "Listening..." : "Speaking..."}
+        </span>
+        <button
+          onClick={onEnd}
+          className="ml-1 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+          title="End voice mode"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
     </div>
   );
@@ -648,6 +718,11 @@ export function Canvas() {
   const [isChatClosing, setIsChatClosing] = useState(false);
   const [input, setInput] = useState("");
   const createdShapesRef = useRef<TLShapeId[]>([]);
+  const waitingForGoodbyeRef = useRef(false);
+  const hasPlayedStartChimeRef = useRef(false); // Track if start chime played for this session
+
+  // Voice mode with OpenAI Realtime API
+  const voice = useRealtimeVoice();
 
   // Handle sidebar close with animation
   const handleCloseChat = useCallback(() => {
@@ -753,6 +828,75 @@ export function Canvas() {
     },
     [editor]
   );
+
+  // Capture canvas screenshot for visual context
+  const captureScreenshot = useCallback(async (): Promise<string | null> => {
+    if (!editor) return null;
+
+    try {
+      // Get the tldraw container element
+      const container = editor.getContainer();
+      const canvasElement = container.querySelector('canvas');
+
+      if (!canvasElement) {
+        console.warn('[CANVAS] No canvas element found');
+        return null;
+      }
+
+      // Create a new canvas to resize and optimize the image
+      const outputCanvas = document.createElement('canvas');
+      const ctx = outputCanvas.getContext('2d');
+      if (!ctx) return null;
+
+      // Set reasonable dimensions (API limits)
+      const maxWidth = 1280;
+      const maxHeight = 720;
+      const scale = Math.min(maxWidth / canvasElement.width, maxHeight / canvasElement.height, 1);
+
+      outputCanvas.width = canvasElement.width * scale;
+      outputCanvas.height = canvasElement.height * scale;
+
+      // Draw the canvas content scaled
+      ctx.drawImage(canvasElement, 0, 0, outputCanvas.width, outputCanvas.height);
+
+      // Convert to base64 PNG
+      return outputCanvas.toDataURL('image/png', 0.8);
+    } catch (err) {
+      console.error('[CANVAS] Screenshot capture failed:', err);
+      return null;
+    }
+  }, [editor]);
+
+  // Get canvas state for agent context (defined before handleToolCall)
+  const getCanvasState = useCallback(() => {
+    if (!editor) return [];
+    const shapes = editor.getCurrentPageShapes();
+    const state = shapes.map((shape) => {
+      const props = shape.props as Record<string, unknown>;
+      // Extract text from richText if present
+      let text: string | undefined;
+      if (props.richText) {
+        const richText = props.richText as { content?: Array<{ content?: Array<{ text?: string }> }> };
+        text = richText.content
+          ?.flatMap((block) => block.content?.map((inline) => inline.text) || [])
+          .join("") || undefined;
+      }
+      // Get bounds for the shape to include width/height
+      const bounds = editor.getShapeGeometry(shape.id).bounds;
+      return {
+        id: shape.id,
+        type: shape.type,
+        text,
+        color: props.color as string | undefined,
+        x: Math.round(shape.x),
+        y: Math.round(shape.y),
+        width: Math.round(bounds.width),
+        height: Math.round(bounds.height),
+      };
+    });
+
+    return state;
+  }, [editor]);
 
   // Handle tool calls from the agent
   const handleToolCall = useCallback(
@@ -941,6 +1085,7 @@ export function Canvas() {
         const layout = args as {
           type: LayoutType;
           frameName: string;
+          replaceFrame?: string;
           items: Array<{
             type: "sticky" | "shape" | "text";
             text: string;
@@ -951,6 +1096,25 @@ export function Canvas() {
           direction?: "down" | "right";
           spacing?: "compact" | "normal" | "spacious";
         };
+
+        // If replaceFrame is specified, delete the old frame first (atomic operation)
+        if (layout.replaceFrame) {
+          const allShapes = editor.getCurrentPageShapes();
+          const frameToDelete = allShapes.find(
+            (s) => s.type === "frame" &&
+            ((s.props as { name?: string }).name === layout.replaceFrame ||
+             (s.props as { name?: string }).name?.includes(layout.replaceFrame))
+          );
+
+          if (frameToDelete) {
+            // Delete children
+            const shapesInFrame = allShapes.filter((s) => s.parentId === frameToDelete.id);
+            shapesInFrame.forEach((shape) => editor.deleteShape(shape.id));
+            // Delete frame
+            editor.deleteShape(frameToDelete.id);
+            console.log(`[CANVAS] Replaced frame "${layout.replaceFrame}"`);
+          }
+        }
 
         // Convert to LayoutItem array
         const layoutItems: LayoutItem[] = layout.items.map((item) => ({
@@ -1074,6 +1238,38 @@ export function Canvas() {
         }
       }
 
+      // Delete frame and all its contents
+      if (toolName === "deleteFrame") {
+        const { frameName } = args as { frameName: string };
+        const allShapes = editor.getCurrentPageShapes();
+
+        // Find frame by name (exact match or contains)
+        const frameToDelete = allShapes.find(
+          (s) => s.type === "frame" &&
+          ((s.props as { name?: string }).name === frameName ||
+           (s.props as { name?: string }).name?.includes(frameName))
+        );
+
+        if (frameToDelete) {
+          // Get all shapes inside the frame
+          const shapesInFrame = allShapes.filter(
+            (s) => s.parentId === frameToDelete.id
+          );
+
+          // Delete all children first
+          shapesInFrame.forEach((shape) => {
+            editor.deleteShape(shape.id);
+          });
+
+          // Then delete the frame itself
+          editor.deleteShape(frameToDelete.id);
+
+          console.log(`[CANVAS] Deleted frame "${frameName}" and ${shapesInFrame.length} items inside`);
+        } else {
+          console.warn(`[CANVAS] Frame "${frameName}" not found`);
+        }
+      }
+
       // Update existing sticky note
       if (toolName === "updateSticky") {
         const { itemId, newText, newColor } = args as {
@@ -1126,36 +1322,7 @@ export function Canvas() {
     [editor, findNonOverlappingPosition]
   );
 
-  // Get canvas state for agent context
-  const getCanvasState = useCallback(() => {
-    if (!editor) return [];
-    const shapes = editor.getCurrentPageShapes();
-    return shapes.map((shape) => {
-      const props = shape.props as Record<string, unknown>;
-      // Extract text from richText if present
-      let text: string | undefined;
-      if (props.richText) {
-        const richText = props.richText as { content?: Array<{ content?: Array<{ text?: string }> }> };
-        text = richText.content
-          ?.flatMap((block) => block.content?.map((inline) => inline.text) || [])
-          .join("") || undefined;
-      }
-      // Get bounds for the shape to include width/height
-      const bounds = editor.getShapeGeometry(shape.id).bounds;
-      return {
-        id: shape.id,
-        type: shape.type,
-        text,
-        color: props.color as string | undefined,
-        x: Math.round(shape.x),
-        y: Math.round(shape.y),
-        width: Math.round(bounds.width),
-        height: Math.round(bounds.height),
-      };
-    });
-  }, [editor]);
-
-  const { messages, append, isLoading } = useAgent(handleToolCall, getCanvasState);
+  const { messages, append, isLoading, setMessages } = useAgent(handleToolCall, getCanvasState);
 
   const handleMount = useCallback((editor: Editor) => {
     setEditor(editor);
@@ -1164,17 +1331,135 @@ export function Canvas() {
   const handleSubmit = useCallback(
     (text: string, options?: { openPanel?: boolean }) => {
       if (!text.trim()) return;
-      append({ role: "user", content: text });
+
+      // If voice is connected, send to voice session instead of chat API
+      if (voice.isConnected) {
+        voice.sendMessage(text);
+        // Also add to messages for display
+        setMessages((prev) => [...prev, {
+          id: `user-voice-${Date.now()}`,
+          role: "user" as const,
+          content: text,
+        }]);
+      } else {
+        // Normal text chat flow
+        append({ role: "user", content: text });
+      }
+
       setInput("");
       // Only open panel if explicitly requested (clicking sparkle button)
       if (options?.openPanel === true) {
         setIsChatOpen(true);
       }
     },
-    [append]
+    [append, voice, setMessages]
   );
 
-  // Find pending askUser question (unanswered) - detect even while loading
+  // Wrapper for disconnect that plays end chime
+  const handleVoiceDisconnect = useCallback(() => {
+    playChime('end');
+    voice.disconnect();
+    // Reset session flags
+    hasPlayedStartChimeRef.current = false;
+    waitingForGoodbyeRef.current = false;
+  }, [voice]);
+
+  // Handle voice transcripts - add to message history
+  const handleVoiceTranscript = useCallback((text: string, role: "user" | "assistant") => {
+    // Check for conversational endings (user wants to close)
+    if (role === "user") {
+      const lowerText = text.toLowerCase().trim();
+
+      // Check for ending phrases or short conclusive statements
+      const endPhrases = [
+        'great thank',
+        'thanks that',
+        'perfect thank',
+        'awesome thank',
+        "that's it",
+        "that's all",
+        'done thank',
+        'thank you bye',
+        'thanks bye',
+        'okay bye',
+        "i'm done",
+        "i'm good",
+        "all done",
+        "looks good",
+      ];
+
+      // Also check for very short thankful statements (likely endings)
+      const shortEndings = ['thank you', 'thanks', 'perfect', 'great', 'awesome', 'done'];
+      const isShortEnding = shortEndings.includes(lowerText) ||
+                            (lowerText.split(' ').length <= 3 && shortEndings.some(phrase => lowerText.includes(phrase)));
+
+      if (endPhrases.some(phrase => lowerText.includes(phrase)) || isShortEnding) {
+        console.log('[VOICE] Detected conversational ending:', lowerText);
+        console.log('[VOICE] Setting waitingForGoodbyeRef to true, will close after AI responds');
+        waitingForGoodbyeRef.current = true;
+        // Don't close immediately - let the AI say goodbye first
+      }
+    }
+
+    setMessages((prev) => {
+      // For assistant transcripts, merge with last assistant message if it has no content
+      if (role === "assistant" && prev.length > 0) {
+        const lastMsg = prev[prev.length - 1];
+        if (lastMsg.role === "assistant" && !lastMsg.content) {
+          return [...prev.slice(0, -1), { ...lastMsg, content: text }];
+        }
+      }
+      return [...prev, { id: `${role}-voice-${Date.now()}`, role, content: text }];
+    });
+  }, [setMessages, handleVoiceDisconnect]);
+
+  // Handle voice tool calls (confirmPlan, checkpoint, showProgress) - add to messages
+  const handleVoiceMessageToolCall = useCallback((toolCall: { toolName: string; args: Record<string, unknown>; call_id?: string }) => {
+    setMessages((prev) => {
+      // Merge with last assistant message if it has no toolInvocations
+      if (prev.length > 0) {
+        const lastMsg = prev[prev.length - 1];
+        if (lastMsg.role === "assistant" && !lastMsg.toolInvocations) {
+          return [...prev.slice(0, -1), { ...lastMsg, toolInvocations: [{ toolName: toolCall.toolName, args: toolCall.args }] }];
+        }
+      }
+      return [...prev, { id: `assistant-voice-${Date.now()}`, role: "assistant", content: "", toolInvocations: [{ toolName: toolCall.toolName, args: toolCall.args }] }];
+    });
+  }, [setMessages]);
+
+  // Handle voice mode toggle
+  const handleVoiceToggle = useCallback(() => {
+    if (voice.isConnected) {
+      playChime('end');
+      voice.disconnect();
+    } else {
+      // Don't play chime here - wait until voice is actually listening
+      voice.connect(handleToolCall, handleVoiceTranscript, handleVoiceMessageToolCall, getCanvasState, captureScreenshot);
+    }
+  }, [voice, handleToolCall, handleVoiceTranscript, handleVoiceMessageToolCall, getCanvasState, captureScreenshot]);
+
+  // Play chime when voice state changes to listening (connection ready)
+  useEffect(() => {
+    if (voice.state === "listening") {
+      // If this is initial connection (haven't played start chime yet), play it once
+      if (!hasPlayedStartChimeRef.current && !waitingForGoodbyeRef.current) {
+        console.log('[VOICE] Initial connection ready, playing start chime');
+        playChime('start');
+        hasPlayedStartChimeRef.current = true;
+      }
+      // If we're waiting for goodbye and AI just finished speaking, close now
+      else if (waitingForGoodbyeRef.current) {
+        console.log('[VOICE] AI finished goodbye, closing voice mode in 1 second');
+        setTimeout(() => {
+          console.log('[VOICE] Executing disconnect now');
+          handleVoiceDisconnect();
+        }, 1000); // Brief delay so user hears the goodbye
+        waitingForGoodbyeRef.current = false;
+      }
+    }
+  }, [voice.state, handleVoiceDisconnect]);
+
+  // Find pending askUser question (unanswered)
   const pendingQuestion = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i];
@@ -1236,6 +1521,7 @@ export function Canvas() {
 
   // Simple flags for what floating UI to show (only one at a time, in priority order)
   // Priority: question > plan approval > thinking > progress indicator
+  // Voice and text both use the same messages-based pendingQuestion
   const showFloatingQuestion = !isChatOpen && !!pendingQuestion && !isLoading;
   // Plan only shows after loading completes (so thinking can show while processing)
   const showFloatingPlan = !isChatOpen && !!pendingPlan && !pendingQuestion && !isLoading;
@@ -1301,6 +1587,11 @@ export function Canvas() {
           <FloatingThinkingIndicator />
         )}
 
+        {/* Floating voice indicator */}
+        {!isChatOpen && (voice.state === "listening" || voice.state === "speaking") && (
+          <FloatingVoiceIndicator state={voice.state} onEnd={handleVoiceDisconnect} />
+        )}
+
         {/* Custom toolbar at bottom center */}
         {showToolbar && (
           <Toolbar
@@ -1310,10 +1601,14 @@ export function Canvas() {
             hideInput={
               showFloatingQuestion || showFloatingThinking || showFloatingPlan ||
               // Also hide during close animation if floating UI will appear after
-              (isChatClosing && (!!pendingQuestion || !!pendingPlan || (isLoading && !hasActivePlan)))
+              (isChatClosing && (!!pendingQuestion || !!pendingPlan || (isLoading && !hasActivePlan))) ||
+              // Hide input when in voice mode
+              voice.isConnected
             }
             onSubmit={handleSubmit}
             isLoading={isLoading}
+            voiceState={voice.state}
+            onVoiceToggle={handleVoiceToggle}
           />
         )}
       </div>

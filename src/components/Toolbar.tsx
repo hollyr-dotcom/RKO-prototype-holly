@@ -47,6 +47,8 @@ interface ToolbarProps {
   hideInput?: boolean;
   onSubmit: (text: string) => void;
   isLoading: boolean;
+  voiceState?: "idle" | "connecting" | "listening" | "speaking" | "error";
+  onVoiceToggle?: () => void;
 }
 
 export function Toolbar({
@@ -56,6 +58,8 @@ export function Toolbar({
   hideInput = false,
   onSubmit,
   isLoading,
+  voiceState = "idle",
+  onVoiceToggle,
 }: ToolbarProps) {
   const [inputValue, setInputValue] = useState("");
   const [activeTool, setActiveTool] = useState("select");
@@ -238,8 +242,21 @@ export function Toolbar({
               ) : (
                 <button
                   type="button"
-                  className="w-10 h-10 min-w-[40px] m-1 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-gray-800 flex-shrink-0"
-                  title="Voice mode"
+                  onClick={onVoiceToggle}
+                  className={`w-10 h-10 min-w-[40px] m-1 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
+                    voiceState === "listening" || voiceState === "speaking"
+                      ? "bg-red-600 hover:bg-red-700 text-white"
+                      : voiceState === "connecting"
+                        ? "bg-gray-500 text-white cursor-wait"
+                        : "bg-gray-900 text-white hover:bg-gray-800"
+                  }`}
+                  title={
+                    voiceState === "listening" ? "Listening... (click to stop)" :
+                    voiceState === "speaking" ? "Speaking... (click to stop)" :
+                    voiceState === "connecting" ? "Connecting..." :
+                    "Voice mode"
+                  }
+                  disabled={voiceState === "connecting"}
                 >
                   <VoiceWaveIcon />
                 </button>

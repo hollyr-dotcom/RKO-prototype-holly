@@ -174,5 +174,6 @@ export function useAgent(onToolCall?: ToolHandler, getCanvasState?: CanvasStateG
     messages,
     append,
     isLoading,
+    setMessages, // Expose for voice transcripts
   };
 }
