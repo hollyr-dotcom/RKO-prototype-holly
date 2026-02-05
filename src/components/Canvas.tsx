@@ -1274,18 +1274,21 @@ export function Canvas() {
 
       // CREATE SOURCES - display web search results as bookmark cards
       if (toolName === "createSources") {
-        const { title, urls } = args as { title: string; urls: string[] };
+        const { title, sources } = args as {
+          title: string;
+          sources: Array<{ title: string; url: string; description?: string }>
+        };
 
-        // Bookmark dimensions (tldraw default) and layout
+        // Bookmark dimensions and layout
         const bookmarkWidth = 300;
-        const bookmarkHeight = 320;  // Bookmarks are tall in tldraw
-        const gapX = 40;  // Horizontal gap
-        const gapY = 40;  // Vertical gap
+        const bookmarkHeight = 320;  // Bookmarks are tall with preview
+        const gapX = 40;
+        const gapY = 40;
         const columns = 2;
         const padding = 60;
 
-        // Calculate frame size based on number of URLs
-        const rows = Math.ceil(urls.length / columns);
+        // Calculate frame size based on number of sources
+        const rows = Math.ceil(sources.length / columns);
         const frameWidth = columns * bookmarkWidth + (columns + 1) * gapX + padding * 2;
         const frameHeight = rows * bookmarkHeight + (rows + 1) * gapY + padding * 2;
 
@@ -1307,9 +1310,8 @@ export function Canvas() {
         });
         createdShapesRef.current.push(frameId);
 
-        // Create bookmark shapes for each URL in 2-column grid
-        // Position them INSIDE the frame as children (coordinates relative to frame)
-        urls.forEach((url, i) => {
+        // Create bookmark assets and shapes for each source
+        sources.forEach((source, i) => {
           const col = i % columns;
           const row = Math.floor(i / columns);
 
@@ -1317,22 +1319,41 @@ export function Canvas() {
           const relativeX = padding + col * (bookmarkWidth + gapX);
           const relativeY = padding + row * (bookmarkHeight + gapY);
 
+          // Create bookmark asset with metadata
+          const assetId = `asset:bookmark-${Date.now()}-${i}` as any;
+          editor.createAssets([{
+            id: assetId,
+            type: "bookmark",
+            typeName: "asset",
+            props: {
+              src: source.url,
+              title: source.title || "",
+              description: source.description || "",
+              image: "",  // No image from search results
+              favicon: "",  // Will be empty
+            },
+            meta: {},
+          }]);
+
+          // Create bookmark shape referencing the asset
           const bookmarkId = createShapeId();
           editor.createShape({
             id: bookmarkId,
             type: "bookmark",
-            x: relativeX,  // Relative to frame, not canvas
-            y: relativeY,  // Relative to frame, not canvas
+            x: relativeX,
+            y: relativeY,
             parentId: frameId,
             props: {
-              url: url,
-              // Don't set w/h - let tldraw use default bookmark size
+              url: source.url,
+              assetId: assetId,
+              w: bookmarkWidth,
+              h: bookmarkHeight,
             },
           });
           createdShapesRef.current.push(bookmarkId);
         });
 
-        console.log(`[CANVAS] Created sources frame "${title}" with ${urls.length} bookmarks`);
+        console.log(`[CANVAS] Created sources frame "${title}" with ${sources.length} bookmarks`);
         return;
       }
 

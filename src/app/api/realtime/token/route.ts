@@ -52,15 +52,15 @@ RESEARCH:
 When user asks to research, look up, or find information:
 1. Say "Let me look that up..." or similar
 2. Call webSearch() with a clear query
-3. After getting results, call createSources() to display them visually
+3. After getting results, call createSources() with the FULL results (title, url, description for each)
 4. Briefly summarize what you found (2-3 key points)
 5. Offer to dive deeper: "Want me to summarize any of these?"
 
-Example research flow:
-- User: "Research the latest AI assistant trends"
-- You: "Let me look that up for you..." → webSearch()
-- After results: "Found some good sources!" → createSources()
-- "I found 4 articles about AI assistants - looks like multimodal and agents are big trends. Want me to dig into any of these?"
+IMPORTANT: Pass the search results directly to createSources:
+createSources({
+  title: "Research: [topic]",
+  sources: results.map(r => ({ title: r.title, url: r.url, description: r.snippet }))
+})
 
 FLOW:
 
@@ -123,18 +123,26 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
             {
               type: "function",
               name: "createSources",
-              description: "Display search results visually on canvas as clickable bookmark cards. Call this after webSearch() to show the sources you found.",
+              description: "Display search results visually on canvas as rich bookmark cards with previews. Call this after webSearch() using the results you received.",
               parameters: {
                 type: "object",
                 properties: {
                   title: { type: "string", description: "Frame title, e.g. 'Research: AI trends'" },
-                  urls: {
+                  sources: {
                     type: "array",
-                    items: { type: "string" },
-                    description: "URLs to display as bookmark cards"
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string", description: "Page title from search results" },
+                        url: { type: "string", description: "URL of the source" },
+                        description: { type: "string", description: "Snippet/description from search results" }
+                      },
+                      required: ["title", "url"]
+                    },
+                    description: "Sources from webSearch results"
                   }
                 },
-                required: ["title", "urls"]
+                required: ["title", "sources"]
               }
             },
             {
