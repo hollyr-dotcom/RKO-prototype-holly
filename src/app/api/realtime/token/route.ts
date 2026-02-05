@@ -167,7 +167,7 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
             {
               type: "function",
               name: "createLayout",
-              description: "Create organized content with auto-positioning. Use stickies for content with descriptions (they wrap text). Use shapes only for short labels in hierarchies/flows.",
+              description: "Create organized layouts. HIERARCHY: Use shapes with parentIndex for principles+descriptions (color-code: parents=blue, children=light-blue). GRID: Use stickies for brainstorms. FLOW: Use shapes for processes. Keep shape text under 20 chars.",
               parameters: {
                 type: "object",
                 properties: {

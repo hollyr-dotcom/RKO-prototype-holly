@@ -437,28 +437,39 @@ FRAME NAMING:
 - DON'T include step numbers: "Step 2 — Homepage" ✗
 - DO use clear labels: "Homepage wireframe" ✓
 
-WHEN TO USE STICKIES (type: "sticky"):
-- Brainstorms, ideas, notes, principles
-- Style guides, design specs
-- Feature lists, requirements
-- ANY content with descriptions
+WHEN TO USE HIERARCHY (type: "hierarchy"):
+When you have principles/concepts with descriptions:
+- Use SHAPES in a hierarchy layout
+- Parent shapes = principles (one color like blue)
+- Child shapes = descriptions (related color like light-blue)
+- This creates visual relationships with arrows
 
-⚠️ STICKY FORMAT - Title + Brief Description:
-- GOOD: "User-Centered Design\n\nFocus on UX and clarity"
-- GOOD: "Agile Approach\n\n• Iterate fast\n• Get feedback"
-- Keep each sticky under 80 chars total
-- One concept per sticky
+Example for "5 Design Principles":
+createLayout({
+  type: "hierarchy",
+  frameName: "Design Principles",
+  items: [
+    { type: "shape", text: "Principle 1", color: "blue", parentIndex: -1 },
+    { type: "shape", text: "Description...", color: "light-blue", parentIndex: 0 },
+    { type: "shape", text: "Principle 2", color: "blue", parentIndex: -1 },
+    { type: "shape", text: "Description...", color: "light-blue", parentIndex: 2 },
+  ]
+})
+
+WHEN TO USE STICKIES (type: "sticky"):
+- Brainstorms, random ideas
+- Feature lists without structure
+- Style guides
+→ Use 2-3 colors MAX per frame for visual grouping
+→ Keep text short: "Title\n\n• Point 1\n• Point 2"
 
 WHEN TO USE SHAPES (type: "shape"):
-- Org charts, hierarchies (with arrows)
-- Flowcharts, user journeys (with arrows)
-- Sitemaps, navigation structures
-→ Shapes are for SHORT labels only: "Home", "Cart", "About"
-→ Max 3-4 words per shape
-
-⚠️ NEVER USE TEXT ITEMS (type: "text") for descriptions!
-Text items don't wrap and will break the layout.
-Always use stickies for any content longer than 3 words.
+- Hierarchies with relationships (with arrows via parentIndex)
+- Flowcharts, processes
+→ Keep text VERY short (max 20 chars)
+→ Use color to show relationships:
+  - Parents: one color (e.g., blue)
+  - Children: lighter shade (e.g., light-blue)
 
 GRID + STICKIES (for brainstorms, style guides, notes):
 createLayout({

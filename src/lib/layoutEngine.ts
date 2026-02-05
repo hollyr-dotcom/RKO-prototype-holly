@@ -14,6 +14,7 @@ import {
 
 /**
  * Find empty space on the canvas for new content.
+ * Places frames side-by-side horizontally.
  */
 export function findEmptyCanvasSpace(
   editor: Editor,
@@ -26,18 +27,29 @@ export function findEmptyCanvasSpace(
     return { x: 100, y: 100 };
   }
 
-  let maxX = -Infinity;
-  let minY = Infinity;
+  // Find all frames and their bounds
+  const frames = shapes.filter(s => s.type === "frame");
 
-  shapes.forEach((shape) => {
-    const bounds = editor.getShapeGeometry(shape.id).bounds;
-    maxX = Math.max(maxX, shape.x + bounds.width);
-    minY = Math.min(minY, shape.y);
+  if (frames.length === 0) {
+    return { x: 100, y: 100 };
+  }
+
+  // Find the rightmost frame
+  let maxX = -Infinity;
+  let alignY = Infinity;
+
+  frames.forEach((frame) => {
+    const bounds = editor.getShapeGeometry(frame.id).bounds;
+    const frameRight = frame.x + bounds.width;
+    if (frameRight > maxX) {
+      maxX = frameRight;
+      alignY = frame.y; // Align with the top of the rightmost frame
+    }
   });
 
   return {
-    x: maxX + 80,
-    y: Math.max(100, minY),
+    x: maxX + 100, // 100px gap between frames
+    y: alignY,
   };
 }
 
