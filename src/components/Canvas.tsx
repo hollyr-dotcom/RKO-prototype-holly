@@ -1277,16 +1277,16 @@ export function Canvas() {
         const { title, urls } = args as { title: string; urls: string[] };
 
         // Bookmark dimensions and layout
-        const bookmarkWidth = 300;
-        const bookmarkHeight = 160;
-        const gap = 20;
+        const bookmarkWidth = 320;
+        const bookmarkHeight = 180;
+        const gap = 30;
         const columns = 2;
-        const padding = 40;
+        const padding = 50;
 
         // Calculate frame size based on number of URLs
         const rows = Math.ceil(urls.length / columns);
-        const frameWidth = columns * bookmarkWidth + (columns - 1) * gap + padding * 2;
-        const frameHeight = rows * bookmarkHeight + (rows - 1) * gap + padding * 2 + 40; // +40 for title
+        const frameWidth = columns * bookmarkWidth + (columns + 1) * gap + padding * 2;
+        const frameHeight = rows * bookmarkHeight + (rows + 1) * gap + padding * 2;
 
         // Find empty space on canvas
         const canvasPos = findEmptyCanvasSpace(editor, frameWidth, frameHeight);
@@ -1307,19 +1307,22 @@ export function Canvas() {
         createdShapesRef.current.push(frameId);
 
         // Create bookmark shapes for each URL in 2-column grid
+        // Position them INSIDE the frame as children
         urls.forEach((url, i) => {
           const col = i % columns;
           const row = Math.floor(i / columns);
 
-          const bookmarkX = canvasPos.x + padding + col * (bookmarkWidth + gap);
-          const bookmarkY = canvasPos.y + padding + row * (bookmarkHeight + gap);
+          // Relative position inside frame
+          const relativeX = padding + col * (bookmarkWidth + gap);
+          const relativeY = padding + row * (bookmarkHeight + gap);
 
           const bookmarkId = createShapeId();
           editor.createShape({
             id: bookmarkId,
             type: "bookmark",
-            x: bookmarkX,
-            y: bookmarkY,
+            x: canvasPos.x + relativeX,
+            y: canvasPos.y + relativeY,
+            parentId: frameId,
             props: {
               url: url,
               w: bookmarkWidth,
