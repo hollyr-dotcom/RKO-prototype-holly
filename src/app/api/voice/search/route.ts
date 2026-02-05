@@ -59,11 +59,13 @@ export async function POST(req: Request) {
     const data = await response.json();
 
     // Format results for voice mode - include images for thumbnails
-    const results = data.results?.map((r: { title: string; url: string; content: string; image?: string }) => ({
+    // Tavily returns images in a separate array, match by index
+    const imageArray = data.images || [];
+    const results = data.results?.map((r: { title: string; url: string; content: string }, index: number) => ({
       title: r.title,
       url: r.url,
       snippet: r.content?.slice(0, 200) || "",
-      image: r.image || "",  // Include image URL if available
+      image: imageArray[index] || "",
     })) || [];
 
     return NextResponse.json({
