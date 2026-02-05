@@ -86,19 +86,18 @@ When creating principles, guidelines, or concepts from research:
 2. Group items by CATEGORY - identify themes like "User Experience", "Ethics", "Performance"
 3. Each CATEGORY = parent node (parentIndex: -1, color: "blue")
 4. Each PRINCIPLE = child of its category (parentIndex: 0/2/4..., color: "light-blue")
-5. Use shapes, NOT stickies
 
 CORRECT EXAMPLE for 6 principles in 3 categories:
 createLayout({
   type: "hierarchy",
   frameName: "Design Principles",
   items: [
-    {type:"shape", text:"User Experience", color:"blue", parentIndex:-1},
-    {type:"shape", text:"Prioritize clarity", color:"light-blue", parentIndex:0},
-    {type:"shape", text:"Trust & Ethics", color:"blue", parentIndex:-1},
-    {type:"shape", text:"Be transparent", color:"light-blue", parentIndex:2},
-    {type:"shape", text:"Performance", color:"blue", parentIndex:-1},
-    {type:"shape", text:"Optimize speed", color:"light-blue", parentIndex:4}
+    {text:"User Experience", color:"blue", parentIndex:-1},
+    {text:"Prioritize clarity", color:"light-blue", parentIndex:0},
+    {text:"Trust & Ethics", color:"blue", parentIndex:-1},
+    {text:"Be transparent", color:"light-blue", parentIndex:2},
+    {text:"Performance", color:"blue", parentIndex:-1},
+    {text:"Optimize speed", color:"light-blue", parentIndex:4}
   ]
 })
 
@@ -192,11 +191,11 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
             {
               type: "function",
               name: "createLayout",
-              description: "Create layouts. HIERARCHY: for principles/concepts, use shapes with parentIndex (-1 for root, 0/2/4 for children), colors blue/light-blue. GRID: for brainstorms, use stickies. FLOW: for processes, use shapes.",
+              description: "Create visual layouts with shapes. HIERARCHY: for principles/concepts with parent-child arrows. GRID: for brainstorms/lists. FLOW: for processes.",
               parameters: {
                 type: "object",
                 properties: {
-                  type: { type: "string", enum: ["grid", "hierarchy", "flow"], description: "hierarchy for principles with parent-child arrows, grid for sticky brainstorms, flow for process steps" },
+                  type: { type: "string", enum: ["grid", "hierarchy", "flow"], description: "hierarchy for principles with arrows, grid for collections, flow for processes" },
                   frameName: { type: "string" },
                   replaceFrame: { type: "string", description: "Name of existing frame to replace" },
                   items: {
@@ -204,12 +203,11 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
                     items: {
                       type: "object",
                       properties: {
-                        type: { type: "string", enum: ["sticky", "shape"], description: "shape for hierarchy/flow, sticky for grid" },
-                        text: { type: "string", description: "Content text, keep under 50 chars for shapes" },
-                        color: { type: "string", description: "blue/light-blue for hierarchy parents/children, yellow/green/pink for grid" },
+                        text: { type: "string", description: "Content text, keep concise" },
+                        color: { type: "string", description: "blue/light-blue for hierarchy, yellow/green/orange/violet for grid" },
                         parentIndex: { type: "number", description: "HIERARCHY ONLY: -1 for root items, or index of parent (0, 2, 4...) for children" }
                       },
-                      required: ["type", "text"]
+                      required: ["text"]
                     }
                   },
                   columns: { type: "number" },

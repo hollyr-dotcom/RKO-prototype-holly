@@ -1121,8 +1121,9 @@ export function Canvas() {
           console.log('[LAYOUT] Using hierarchy layout engine');
 
           // Convert items for layout engine (parentIndex -1 = root = undefined)
+          // All items are shapes now (no stickies)
           const layoutItems: LayoutItem[] = layout.items.map((item) => ({
-            type: item.type === "sticky" ? "shape" : item.type, // Treat stickies as shapes for layout
+            type: "shape" as const,
             text: item.text,
             color: item.color,
             parentIndex: item.parentIndex === -1 ? undefined : item.parentIndex,
