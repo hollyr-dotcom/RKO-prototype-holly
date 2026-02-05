@@ -1307,12 +1307,12 @@ export function Canvas() {
         createdShapesRef.current.push(frameId);
 
         // Create bookmark shapes for each URL in 2-column grid
-        // Position them INSIDE the frame as children
+        // Position them INSIDE the frame as children (coordinates relative to frame)
         urls.forEach((url, i) => {
           const col = i % columns;
           const row = Math.floor(i / columns);
 
-          // Relative position inside frame
+          // Relative position inside frame (starts at 0,0)
           const relativeX = padding + col * (bookmarkWidth + gap);
           const relativeY = padding + row * (bookmarkHeight + gap);
 
@@ -1320,8 +1320,8 @@ export function Canvas() {
           editor.createShape({
             id: bookmarkId,
             type: "bookmark",
-            x: canvasPos.x + relativeX,
-            y: canvasPos.y + relativeY,
+            x: relativeX,  // Relative to frame, not canvas
+            y: relativeY,  // Relative to frame, not canvas
             parentId: frameId,
             props: {
               url: url,
