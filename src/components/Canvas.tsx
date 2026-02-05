@@ -1447,11 +1447,11 @@ export function Canvas() {
       // (flag set when AI transcript contains goodbye pattern - agentic detection)
       else if (waitingForGoodbyeRef.current) {
         // Calculate delay based on transcript length
-        // Average speaking rate: 2.5 words/second (conservative estimate)
-        // Add 500ms buffer to ensure audio fully completes
+        // OpenAI voice speaking rate: ~3.5 words/second (faster than human conversation)
+        // Add minimal 200ms buffer
         const wordCount = goodbyeTranscriptLengthRef.current || 10;
-        const estimatedDuration = (wordCount / 2.5) * 1000; // ms
-        const delay = estimatedDuration + 500; // Add buffer
+        const estimatedDuration = (wordCount / 3.5) * 1000; // ms
+        const delay = estimatedDuration + 200; // Small buffer
 
         console.log(`[VOICE] AI goodbye complete, auto-closing in ${Math.round(delay)}ms (${wordCount} words)`);
         setTimeout(() => {
