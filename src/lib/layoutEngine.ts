@@ -289,7 +289,7 @@ export function calculateHierarchyLayout(
 
   // Calculate frame size with proper padding on all sides
   const frameWidth = maxX - minX + spacing.padding * 2;
-  const frameHeight = maxY - minY + spacing.padding * 2 + 60; // 60 for title area
+  const frameHeight = maxY - minY + spacing.padding * 2 + 60 + 100; // 60 for title, 100 extra bottom padding
 
   // Offset positions so they're relative to frame (adjust for minX/minY)
   const offsetX = spacing.padding - minX;

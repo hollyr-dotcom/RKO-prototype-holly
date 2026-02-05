@@ -106,17 +106,17 @@ export function calculateTextWidth(text: string, type: ItemType): number {
 // Helper to calculate dynamic height based on text and width
 export function calculateTextHeight(text: string, width: number, type: ItemType): number {
   const sizes = ITEM_SIZES[type];
-  const lineHeight = type === "sticky" ? 22 : 18;
-  const padding = type === "sticky" ? 50 : 40;
+  const lineHeight = type === "sticky" ? 24 : 20; // Increased for better spacing
+  const padding = type === "sticky" ? 60 : 50; // More generous padding
   const charWidth = type === "sticky" ? 9 : 8;
 
-  // Estimate characters per line (more conservative)
+  // Estimate characters per line (conservative)
   const effectiveWidth = width - padding;
   const charsPerLine = Math.floor(effectiveWidth / charWidth);
   const lines = Math.ceil(text.length / Math.max(charsPerLine, 10));
 
-  // Calculate height based on lines
-  const calculatedHeight = lines * lineHeight + padding;
+  // Calculate height based on lines, add 20% buffer
+  const calculatedHeight = (lines * lineHeight + padding) * 1.2;
 
   return Math.max(sizes.minHeight, calculatedHeight);
 }
