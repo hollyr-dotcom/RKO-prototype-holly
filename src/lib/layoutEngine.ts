@@ -14,7 +14,7 @@ import {
 
 /**
  * Find empty space on the canvas for new content.
- * Places frames side-by-side horizontally.
+ * Places frames side-by-side horizontally at the same Y level.
  */
 export function findEmptyCanvasSpace(
   editor: Editor,
@@ -24,33 +24,36 @@ export function findEmptyCanvasSpace(
   const shapes = editor.getCurrentPageShapes();
 
   if (shapes.length === 0) {
+    console.log("[LAYOUT] No shapes, starting at (100, 100)");
     return { x: 100, y: 100 };
   }
 
-  // Find all frames and their bounds
+  // Find all frames
   const frames = shapes.filter(s => s.type === "frame");
 
   if (frames.length === 0) {
+    console.log("[LAYOUT] No frames found, starting at (100, 100)");
     return { x: 100, y: 100 };
   }
 
-  // Find the rightmost frame
+  // Find the rightmost frame and use the MINIMUM Y (topmost frame) for alignment
   let maxX = -Infinity;
-  let alignY = Infinity;
+  let minY = Infinity;
 
   frames.forEach((frame) => {
     const bounds = editor.getShapeGeometry(frame.id).bounds;
     const frameRight = frame.x + bounds.width;
-    if (frameRight > maxX) {
-      maxX = frameRight;
-      alignY = frame.y; // Align with the top of the rightmost frame
-    }
+    maxX = Math.max(maxX, frameRight);
+    minY = Math.min(minY, frame.y); // Use minimum Y to align at top
   });
 
-  return {
-    x: maxX + 100, // 100px gap between frames
-    y: alignY,
+  const result = {
+    x: maxX + 100, // 100px gap
+    y: minY, // Align with topmost frame
   };
+
+  console.log(`[LAYOUT] Found ${frames.length} frames, placing next at`, result);
+  return result;
 }
 
 /**
