@@ -1080,9 +1080,8 @@ export function Canvas() {
         });
       }
 
-      // CREATE LAYOUT - auto-positioned content with frame
+      // CREATE LAYOUT - auto-positioned content with frame using tldraw native layout
       if (toolName === "createLayout") {
-        // Args come directly from the tool call
         const layout = args as {
           type: LayoutType;
           frameName: string;
@@ -1098,75 +1097,38 @@ export function Canvas() {
           spacing?: "compact" | "normal" | "spacious";
         };
 
-        // If replaceFrame is specified, delete the old frame first (atomic operation)
+        // If replaceFrame is specified, delete the old frame first
         if (layout.replaceFrame) {
-          const replaceFrameName = layout.replaceFrame;
           const allShapes = editor.getCurrentPageShapes();
           const frameToDelete = allShapes.find(
             (s) => s.type === "frame" &&
-            ((s.props as { name?: string }).name === replaceFrameName ||
-             (s.props as { name?: string }).name?.includes(replaceFrameName))
+            ((s.props as { name?: string }).name === layout.replaceFrame ||
+             (s.props as { name?: string }).name?.includes(layout.replaceFrame))
           );
-
           if (frameToDelete) {
-            // Delete children
             const shapesInFrame = allShapes.filter((s) => s.parentId === frameToDelete.id);
             shapesInFrame.forEach((shape) => editor.deleteShape(shape.id));
-            // Delete frame
             editor.deleteShape(frameToDelete.id);
-            console.log(`[CANVAS] Replaced frame "${layout.replaceFrame}"`);
           }
         }
 
-        // Convert to LayoutItem array
-        const layoutItems: LayoutItem[] = layout.items.map((item) => ({
-          type: item.type,
-          text: item.text,
-          color: item.color,
-          // Convert -1 to undefined for root items
-          parentIndex: item.parentIndex === -1 ? undefined : item.parentIndex,
-        }));
+        // Find empty canvas position
+        const canvasPos = findEmptyCanvasSpace(editor, 400, 300);
 
-        // Build options from flat args
-        const options: LayoutOptions = {
-          columns: layout.columns,
-          direction: layout.direction,
-          spacing: layout.spacing,
-        };
-
-        // Calculate the layout
-        const result = calculateLayout(layout.type, layoutItems, options);
-
-        // Find empty space on canvas for this layout
-        const canvasPos = findEmptyCanvasSpace(editor, result.frame.width, result.frame.height);
-
-        // Create the frame
-        const frameId = createShapeId();
-        editor.createShape({
-          id: frameId,
-          type: "frame",
-          x: canvasPos.x,
-          y: canvasPos.y,
-          props: {
-            name: layout.frameName,
-            w: result.frame.width,
-            h: result.frame.height,
-          },
-        });
-        createdShapesRef.current.push(frameId);
-
-        // Create all items at calculated positions
-        result.items.forEach(({ item, position }) => {
+        // Create all shapes first (let tldraw auto-size them)
+        const createdIds: TLShapeId[] = [];
+        layout.items.forEach((item, index) => {
           const itemId = createShapeId();
-          const itemX = canvasPos.x + position.x;
-          const itemY = canvasPos.y + position.y;
+          // Stack items initially so packShapes can organize them
+          const tempX = canvasPos.x + 100;
+          const tempY = canvasPos.y + 100 + (index * 20);
 
           if (item.type === "sticky") {
             editor.createShape({
               id: itemId,
               type: "note",
-              x: itemX,
-              y: itemY,
+              x: tempX,
+              y: tempY,
               props: {
                 richText: toRichText(item.text),
                 color: colorMap[item.color || "yellow"] || "yellow",
@@ -1174,16 +1136,15 @@ export function Canvas() {
               },
             });
           } else if (item.type === "shape") {
-            // Create shape with native richText label (auto-centered)
             editor.createShape({
               id: itemId,
               type: "geo",
-              x: itemX,
-              y: itemY,
+              x: tempX,
+              y: tempY,
               props: {
                 geo: "rectangle",
-                w: position.width,
-                h: position.height,
+                w: 180,
+                h: 100,
                 color: colorMap[item.color || "blue"] || "blue",
                 richText: toRichText(item.text || ""),
               },
@@ -1192,38 +1153,75 @@ export function Canvas() {
             editor.createShape({
               id: itemId,
               type: "text",
-              x: itemX,
-              y: itemY,
+              x: tempX,
+              y: tempY,
               props: {
                 richText: toRichText(item.text),
                 size: "m",
               },
             });
           }
-
+          createdIds.push(itemId);
           createdShapesRef.current.push(itemId);
         });
 
-        // Create arrows if any
-        result.arrows.forEach((arrow) => {
-          const arrowId = createShapeId();
+        // Use tldraw's native layout methods
+        const gapSize = layout.spacing === "compact" ? 30 : layout.spacing === "spacious" ? 60 : 40;
+
+        if (layout.type === "grid") {
+          // Use packShapes for automatic grid layout
+          editor.packShapes(createdIds, gapSize);
+        } else if (layout.type === "flow") {
+          // Use distributeShapes for horizontal flow
+          editor.distributeShapes(createdIds, "horizontal");
+          editor.alignShapes(createdIds, "center-vertical");
+        } else if (layout.type === "hierarchy") {
+          // For hierarchy, use packShapes then add arrows
+          editor.packShapes(createdIds, gapSize);
+        }
+
+        // Wait a tick for layout to apply, then create frame
+        setTimeout(() => {
+          // Get actual bounds of all created shapes
+          const shapes = createdIds.map(id => editor.getShape(id)!).filter(Boolean);
+          if (shapes.length === 0) return;
+
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          shapes.forEach(shape => {
+            const bounds = editor.getShapeGeometry(shape.id).bounds;
+            minX = Math.min(minX, shape.x);
+            minY = Math.min(minY, shape.y);
+            maxX = Math.max(maxX, shape.x + bounds.width);
+            maxY = Math.max(maxY, shape.y + bounds.height);
+          });
+
+          // Create frame with padding around shapes
+          const padding = 80;
+          const frameX = minX - padding;
+          const frameY = minY - padding - 40; // Extra space for title
+          const frameWidth = maxX - minX + padding * 2;
+          const frameHeight = maxY - minY + padding * 2 + 40;
+
+          const frameId = createShapeId();
           editor.createShape({
-            id: arrowId,
-            type: "arrow",
-            x: canvasPos.x + arrow.startX,
-            y: canvasPos.y + arrow.startY,
+            id: frameId,
+            type: "frame",
+            x: frameX,
+            y: frameY,
             props: {
-              start: { x: 0, y: 0 },
-              end: {
-                x: arrow.endX - arrow.startX,
-                y: arrow.endY - arrow.startY,
-              },
+              name: layout.frameName,
+              w: frameWidth,
+              h: frameHeight,
             },
           });
-          createdShapesRef.current.push(arrowId);
-        });
 
-        // Don't set shapeId since we created multiple shapes
+          // Reparent shapes to frame
+          editor.reparentShapes(createdIds, frameId);
+          createdShapesRef.current.push(frameId);
+
+          console.log(`[CANVAS] Created ${layout.type} layout "${layout.frameName}" with ${createdIds.length} items`);
+        }, 100);
+
         return;
       }
 
