@@ -1368,58 +1368,27 @@ export function Canvas() {
   const handleVoiceTranscript = useCallback((text: string, role: "user" | "assistant") => {
     console.log('[VOICE] handleVoiceTranscript called:', { role, text: text.slice(0, 50) });
 
-    // Check for conversational endings (user wants to close)
-    if (role === "user") {
+    // Detect AI's goodbye responses (we control these via instructions)
+    // More agentic: Let AI decide if conversation is ending, detect AI's response patterns
+    if (role === "assistant") {
       const lowerText = text.toLowerCase().trim();
 
-      // Check for ending phrases or conclusive statements
-      const endPhrases = [
-        'great thank',
-        'thanks that',
-        'perfect thank',
-        'awesome thank',
-        "that's it",
-        "that's all",
-        'done thank',
-        'thank you bye',
-        'thanks bye',
-        'okay bye',
-        "i'm done",
-        "i'm good",
-        "all done",
-        "looks good",
-        'never mind thank',
-        'nevermind thank',
+      // AI goodbye phrases from instructions (route.ts lines 88-92)
+      const aiGoodbyePatterns = [
+        'shout when you need me',
+        'ping me anytime',
+        'catch you later',
+        'just ping me',
+        'talk to you later',
+        'see you later',
+        'take care'
       ];
 
-      // Core goodbye words that indicate ending
-      const goodbyeWords = ['thank you', 'thanks', 'bye', 'goodbye'];
-      const goodbyeEndings = ['thank you', 'thanks', 'bye', 'goodbye', 'thank you bye', 'thank you goodbye', 'thanks bye', 'thanks goodbye'];
+      const isAiGoodbye = aiGoodbyePatterns.some(pattern => lowerText.includes(pattern));
 
-      // Smart detection: check both full phrase and how it ends
-      const containsGoodbyeWord = goodbyeWords.some(word => lowerText.includes(word));
-      const wordCount = lowerText.split(' ').length;
-      const isShortPhrase = wordCount <= 5;
-
-      // Split by punctuation and check last sentence
-      const sentences = lowerText.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 0);
-      const lastSentence = sentences[sentences.length - 1] || lowerText;
-      const lastSentenceWords = lastSentence.split(' ').length;
-
-      // Check if phrase ends with goodbye pattern
-      const endsWithGoodbye = goodbyeEndings.some(ending => lowerText.endsWith(ending)) ||
-                              (lastSentenceWords <= 5 && goodbyeWords.some(word => lastSentence.includes(word)));
-
-      const isGoodbye = endPhrases.some(phrase => lowerText.includes(phrase)) ||
-                       (containsGoodbyeWord && isShortPhrase) ||
-                       goodbyeWords.includes(lowerText) ||
-                       endsWithGoodbye;
-
-      if (isGoodbye) {
-        console.log('[VOICE] Detected conversational ending:', lowerText);
-        console.log('[VOICE] Setting waitingForGoodbyeRef to true, will close after AI responds');
+      if (isAiGoodbye) {
+        console.log('[VOICE] AI said goodbye, will auto-close after speaking');
         waitingForGoodbyeRef.current = true;
-        // Don't close immediately - let the AI say goodbye first
       }
     }
 
@@ -1460,22 +1429,23 @@ export function Canvas() {
     }
   }, [voice, handleToolCall, handleVoiceTranscript, handleVoiceMessageToolCall, getCanvasState, captureScreenshot]);
 
-  // Play chime when voice state changes to listening (connection ready)
+  // Handle voice state transitions and auto-close
   useEffect(() => {
     if (voice.state === "listening") {
-      // If this is initial connection (haven't played start chime yet), play it once
+      // Initial connection: play start chime once
       if (!hasPlayedStartChimeRef.current && !waitingForGoodbyeRef.current) {
         console.log('[VOICE] Initial connection ready, playing start chime');
         playChime('start');
         hasPlayedStartChimeRef.current = true;
       }
-      // If we're waiting for goodbye and AI just finished speaking, close now
+      // AI said goodbye and finished speaking: auto-close
+      // (flag set when AI transcript contains goodbye pattern - agentic detection)
       else if (waitingForGoodbyeRef.current) {
-        console.log('[VOICE] AI finished goodbye, closing voice mode in 1 second');
+        console.log('[VOICE] AI goodbye complete, auto-closing in 1 second');
         setTimeout(() => {
-          console.log('[VOICE] Executing disconnect now');
+          console.log('[VOICE] Executing auto-disconnect');
           handleVoiceDisconnect();
-        }, 1000); // Brief delay so user hears the goodbye
+        }, 1000); // Brief delay so user hears the full goodbye
         waitingForGoodbyeRef.current = false;
       }
     }
