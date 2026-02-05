@@ -438,22 +438,27 @@ FRAME NAMING:
 - DO use clear labels: "Homepage wireframe" ✓
 
 WHEN TO USE STICKIES (type: "sticky"):
-- Brainstorms, ideas, notes
+- Brainstorms, ideas, notes, principles
 - Style guides, design specs
 - Feature lists, requirements
+- ANY content with descriptions
 
-⚠️ STICKY TEXT MUST BE SHORT (max 50 chars):
-- BAD: "Principle: User-Centered AI Design - Ensure AI features genuinely benefit users by focusing on user experience, clarity, and usefulness"
-- GOOD: "User-Centered Design\n• Focus on UX\n• Keep it clear"
-- Use bullet points (\n•) for lists
-- One idea per sticky, not paragraphs
+⚠️ STICKY FORMAT - Title + Brief Description:
+- GOOD: "User-Centered Design\n\nFocus on UX and clarity"
+- GOOD: "Agile Approach\n\n• Iterate fast\n• Get feedback"
+- Keep each sticky under 80 chars total
+- One concept per sticky
 
 WHEN TO USE SHAPES (type: "shape"):
 - Org charts, hierarchies (with arrows)
 - Flowcharts, user journeys (with arrows)
-- Sitemaps with SHORT labels only (1-3 words per box)
+- Sitemaps, navigation structures
 → Shapes are for SHORT labels only: "Home", "Cart", "About"
-→ If text is longer than 3 words, USE STICKIES instead!
+→ Max 3-4 words per shape
+
+⚠️ NEVER USE TEXT ITEMS (type: "text") for descriptions!
+Text items don't wrap and will break the layout.
+Always use stickies for any content longer than 3 words.
 
 GRID + STICKIES (for brainstorms, style guides, notes):
 createLayout({

@@ -167,20 +167,20 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
             {
               type: "function",
               name: "createLayout",
-              description: "Create organized content with auto-positioning. REQUIRED for 2+ items.",
+              description: "Create organized content with auto-positioning. Use stickies for content with descriptions (they wrap text). Use shapes only for short labels in hierarchies/flows.",
               parameters: {
                 type: "object",
                 properties: {
                   type: { type: "string", enum: ["grid", "hierarchy", "flow"] },
                   frameName: { type: "string" },
-                  replaceFrame: { type: "string", description: "Optional: name of existing frame to replace. Will delete the old frame and create the new one atomically." },
+                  replaceFrame: { type: "string", description: "Optional: name of existing frame to replace." },
                   items: {
                     type: "array",
                     items: {
                       type: "object",
                       properties: {
-                        type: { type: "string", enum: ["sticky", "shape", "text"] },
-                        text: { type: "string" },
+                        type: { type: "string", enum: ["sticky", "shape"], description: "Use sticky for content, shape for short labels only" },
+                        text: { type: "string", description: "For stickies: Title + brief description. For shapes: 1-4 words max" },
                         color: { type: "string" },
                         parentIndex: { type: "number" }
                       },
