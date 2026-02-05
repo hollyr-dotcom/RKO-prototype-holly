@@ -100,6 +100,9 @@ export function useRealtimeVoice() {
           // Handle errors
           if (message.type === "error") {
             console.error("[VOICE ERROR]", message);
+            console.error("[VOICE ERROR DETAILS]", JSON.stringify(message, null, 2));
+            setError(message.error?.message || "Voice connection error");
+            setState("error");
           }
 
           // Handle user speech transcripts - add to messages
