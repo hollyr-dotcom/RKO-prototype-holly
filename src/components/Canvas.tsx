@@ -1394,18 +1394,26 @@ export function Canvas() {
 
       // Core goodbye words that indicate ending
       const goodbyeWords = ['thank you', 'thanks', 'bye', 'goodbye'];
+      const goodbyeEndings = ['thank you', 'thanks', 'bye', 'goodbye', 'thank you bye', 'thank you goodbye', 'thanks bye', 'thanks goodbye'];
 
-      // Check if phrase contains goodbye words (more flexible)
-      // - Exact match: "thank you", "thanks", "bye"
-      // - Short phrase (≤5 words) containing goodbye words
-      // - Phrase containing specific ending patterns
+      // Smart detection: check both full phrase and how it ends
       const containsGoodbyeWord = goodbyeWords.some(word => lowerText.includes(word));
       const wordCount = lowerText.split(' ').length;
       const isShortPhrase = wordCount <= 5;
 
+      // Split by punctuation and check last sentence
+      const sentences = lowerText.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 0);
+      const lastSentence = sentences[sentences.length - 1] || lowerText;
+      const lastSentenceWords = lastSentence.split(' ').length;
+
+      // Check if phrase ends with goodbye pattern
+      const endsWithGoodbye = goodbyeEndings.some(ending => lowerText.endsWith(ending)) ||
+                              (lastSentenceWords <= 5 && goodbyeWords.some(word => lastSentence.includes(word)));
+
       const isGoodbye = endPhrases.some(phrase => lowerText.includes(phrase)) ||
                        (containsGoodbyeWord && isShortPhrase) ||
-                       goodbyeWords.includes(lowerText);
+                       goodbyeWords.includes(lowerText) ||
+                       endsWithGoodbye;
 
       if (isGoodbye) {
         console.log('[VOICE] Detected conversational ending:', lowerText);
