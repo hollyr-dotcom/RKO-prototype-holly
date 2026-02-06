@@ -21,6 +21,8 @@ export function useRealtimeVoice() {
   const onToolCallRef = useRef<((toolName: string, args: Record<string, unknown>) => void) | null>(null);
   const onTranscriptRef = useRef<((text: string, role: "user" | "assistant") => void) | null>(null);
   const onMessageToolCallRef = useRef<((toolCall: ToolCall) => void) | null>(null);
+  const getCanvasStateRef = useRef<(() => unknown) | null>(null);
+  const captureScreenshotRef = useRef<(() => Promise<string | null>) | null>(null);
   // Track pending tool call for sending responses back to OpenAI
   const pendingToolCallRef = useRef<{ name: string; call_id: string; arguments: string; addedToMessages: boolean } | null>(null);
 
@@ -29,7 +31,7 @@ export function useRealtimeVoice() {
     onToolCall?: (toolName: string, args: Record<string, unknown>) => void,
     onTranscript?: (text: string, role: "user" | "assistant") => void,
     onMessageToolCall?: (toolCall: ToolCall) => void,
-    getCanvasState?: () => Array<{ type: string; text?: string }>,
+    getCanvasState?: () => unknown,
     captureScreenshot?: () => Promise<string | null>
   ) => {
     try {
@@ -46,6 +48,12 @@ export function useRealtimeVoice() {
       }
       if (onMessageToolCall) {
         onMessageToolCallRef.current = onMessageToolCall;
+      }
+      if (getCanvasState) {
+        getCanvasStateRef.current = getCanvasState;
+      }
+      if (captureScreenshot) {
+        captureScreenshotRef.current = captureScreenshot;
       }
 
       // 1. Get ephemeral token from our server
@@ -90,7 +98,13 @@ export function useRealtimeVoice() {
             return;
           }
 
-          const message = JSON.parse(event.data);
+          let message;
+          try {
+            message = JSON.parse(event.data);
+          } catch {
+            // OpenAI sometimes sends non-JSON data on the channel - safe to ignore
+            return;
+          }
 
           // Debug: log all message types
           if (message.type.includes("function") || message.type.includes("transcript") || message.type.includes("output_item")) {
@@ -155,8 +169,8 @@ export function useRealtimeVoice() {
 
             try {
               args = JSON.parse(message.arguments);
-            } catch (parseErr) {
-              console.error("Failed to parse tool arguments:", parseErr);
+            } catch {
+              console.warn("[VOICE] Skipping malformed tool arguments");
               return;
             }
 
@@ -221,16 +235,55 @@ export function useRealtimeVoice() {
               return;
             }
 
-            // For other tools, auto-respond and continue
-            dc.send(JSON.stringify({
-              type: "conversation.item.create",
-              item: {
-                type: "function_call_output",
-                call_id: message.call_id,
-                output: JSON.stringify({ success: true }),
-              },
-            }));
-            dc.send(JSON.stringify({ type: "response.create" }));
+            // Canvas-modifying tools - send fresh canvas state with the response
+            const canvasTools = ["createSticky", "createShape", "createText", "createFrame",
+              "createArrow", "createWorkingNote", "createLayout", "createSources",
+              "deleteItem", "deleteFrame", "updateSticky", "moveItem"];
+            const isCanvasTool = canvasTools.includes(toolName);
+
+            if (isCanvasTool && getCanvasStateRef.current) {
+              // Small delay to let tldraw process the shape creation, then send updated state
+              const callId = message.call_id;
+              setTimeout(() => {
+                if (!getCanvasStateRef.current) return;
+                const freshState = getCanvasStateRef.current() as {
+                  frames: Array<{ id: string; name?: string; createdBy: string; children: Array<{ id: string; text?: string; type: string; color?: string; createdBy: string }> }>;
+                  orphans: Array<{ id: string; text?: string; type: string; createdBy: string }>;
+                };
+                // Build summary with IDs so AI can use moveItem/deleteItem
+                const escapeText = (text: string) => text.replace(/"/g, '\\"').replace(/\n/g, ' ');
+                const summary = freshState.frames.map(f =>
+                  `Frame "${escapeText(f.name || 'Untitled')}": ${f.children.map(c =>
+                    `[ID: ${c.id}] ${escapeText(c.text?.slice(0, 30) || 'no text')} (${c.type})`
+                  ).join(', ')}`
+                ).join('; ');
+                const orphanSummary = freshState.orphans.length > 0
+                  ? `; Loose: ${freshState.orphans.map(s => `[ID: ${s.id}] ${escapeText(s.text?.slice(0, 30) || 'no text')} (${s.type})`).join(', ')}`
+                  : '';
+
+                const outputData = { success: true, canvasUpdate: (summary + orphanSummary) || "Canvas updated" };
+                dc.send(JSON.stringify({
+                  type: "conversation.item.create",
+                  item: {
+                    type: "function_call_output",
+                    call_id: callId,
+                    output: JSON.stringify(outputData),
+                  },
+                }));
+                dc.send(JSON.stringify({ type: "response.create" }));
+              }, 50);
+            } else {
+              // For non-canvas tools, auto-respond immediately
+              dc.send(JSON.stringify({
+                type: "conversation.item.create",
+                item: {
+                  type: "function_call_output",
+                  call_id: message.call_id,
+                  output: JSON.stringify({ success: true }),
+                },
+              }));
+              dc.send(JSON.stringify({ type: "response.create" }));
+            }
           }
 
           // Track AI speaking state
@@ -253,8 +306,21 @@ export function useRealtimeVoice() {
 
         // Send fresh canvas state as context
         if (getCanvasState) {
-          const canvasState = getCanvasState();
-          if (canvasState.length > 0) {
+          const state = getCanvasState() as {
+            frames: Array<{ id: string; name?: string; children: Array<{ id: string; text?: string; type: string }> }>;
+            orphans: Array<{ id: string; text?: string; type: string }>;
+          };
+          const hasContent = state.frames.length > 0 || state.orphans.length > 0;
+          if (hasContent) {
+            const escapeText = (text: string) => text.replace(/"/g, '\\"').replace(/\n/g, ' ');
+            const parts: string[] = [];
+            state.frames.forEach(f => {
+              const items = f.children.map(c => `[ID: ${c.id}] ${escapeText(c.text?.slice(0, 30) || 'no text')} (${c.type})`).join(', ');
+              parts.push(`Frame "${escapeText(f.name || 'Untitled')}": ${items}`);
+            });
+            if (state.orphans.length > 0) {
+              parts.push(`Loose: ${state.orphans.map(s => `[ID: ${s.id}] ${escapeText(s.text?.slice(0, 30) || 'no text')} (${s.type})`).join(', ')}`);
+            }
             dc.send(JSON.stringify({
               type: "conversation.item.create",
               item: {
@@ -262,7 +328,7 @@ export function useRealtimeVoice() {
                 role: "user",
                 content: [{
                   type: "input_text",
-                  text: `[CANVAS STATE] ${canvasState.length} items on canvas: ${canvasState.map((i: { type: string; text?: string }) => `${i.type}: ${i.text?.slice(0, 30) || 'no text'}`).join(', ')}`
+                  text: `[CANVAS STATE] ${parts.join('; ')}`
                 }]
               }
             }));
@@ -281,6 +347,9 @@ export function useRealtimeVoice() {
                   type: "message",
                   role: "user",
                   content: [{
+                    type: "input_text",
+                    text: "[CANVAS SCREENSHOT] This is what the canvas currently looks like. Study the visual details — shapes, drawings, text, colors, and spatial layout."
+                  }, {
                     type: "input_image",
                     image_url: screenshot
                   }]
@@ -401,6 +470,88 @@ export function useRealtimeVoice() {
     dc.send(JSON.stringify({ type: "response.create" }));
   }, []);
 
+  // Send canvas state update to AI (when user manually adds shapes)
+  const sendCanvasUpdate = useCallback(() => {
+    if (!dataChannelRef.current || dataChannelRef.current.readyState !== "open") {
+      return;
+    }
+    if (!getCanvasStateRef.current) {
+      return;
+    }
+
+    const dc = dataChannelRef.current;
+    const state = getCanvasStateRef.current() as {
+      frames: Array<{ id: string; name?: string; children: Array<{ id: string; text?: string; type: string }> }>;
+      orphans: Array<{ id: string; text?: string; type: string }>;
+    };
+
+    const hasContent = state.frames.length > 0 || state.orphans.length > 0;
+    if (hasContent) {
+      // Escape text and include IDs so AI can use moveItem/deleteItem
+      const escapeText = (text: string) => text.replace(/"/g, '\\"').replace(/\n/g, ' ');
+
+      const parts: string[] = [];
+      state.frames.forEach(f => {
+        const items = f.children.map(c =>
+          `[ID: ${c.id}] ${escapeText(c.text?.slice(0, 30) || 'no text')} (${c.type})`
+        ).join(', ');
+        parts.push(`Frame "${escapeText(f.name || 'Untitled')}": ${items}`);
+      });
+      if (state.orphans.length > 0) {
+        parts.push(`Loose: ${state.orphans.map(s =>
+          `[ID: ${s.id}] ${escapeText(s.text?.slice(0, 30) || 'no text')} (${s.type})`
+        ).join(', ')}`);
+      }
+
+      console.log("[VOICE] Sending canvas update:", parts.join('; '));
+      dc.send(JSON.stringify({
+        type: "conversation.item.create",
+        item: {
+          type: "message",
+          role: "user",
+          content: [{
+            type: "input_text",
+            text: `[CANVAS UPDATED] ${parts.join('; ')}`
+          }]
+        }
+      }));
+    }
+  }, []);
+
+  // Send a screenshot to the AI so it can see what changed visually
+  const sendScreenshot = useCallback(async () => {
+    if (!dataChannelRef.current || dataChannelRef.current.readyState !== "open") {
+      return;
+    }
+    if (!captureScreenshotRef.current) {
+      return;
+    }
+
+    try {
+      const screenshot = await captureScreenshotRef.current();
+      if (!screenshot) return;
+
+      const dc = dataChannelRef.current;
+      console.log("[VOICE] Sending live canvas screenshot");
+      dc.send(JSON.stringify({
+        type: "conversation.item.create",
+        item: {
+          type: "message",
+          role: "user",
+          content: [{
+            type: "input_text",
+            text: "[LIVE CANVAS SCREENSHOT] The user just changed the canvas. Study this image carefully — notice what was drawn, what shapes look like, what they might represent, any text, colors, spatial arrangement, and visual meaning. Be ready to describe what you see if asked."
+          }, {
+            type: "input_image",
+            image_url: screenshot
+          }]
+        }
+      }));
+    } catch (err) {
+      console.error("[VOICE] Failed to send screenshot:", err);
+    }
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -415,6 +566,8 @@ export function useRealtimeVoice() {
     connect,
     disconnect,
     sendMessage,
+    sendCanvasUpdate,
+    sendScreenshot,
     isConnected: state === "listening" || state === "speaking",
   };
 }

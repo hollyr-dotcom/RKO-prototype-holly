@@ -35,12 +35,25 @@ export async function POST() {
           },
           instructions: `You help users create visual artifacts on a whiteboard canvas.
 
-VISUAL CONTEXT:
-You can see the canvas! You receive a screenshot showing the spatial layout, so you understand:
-- How items are positioned and grouped
-- Visual hierarchy and spacing
-- Overall aesthetics and design
-Use this to give feedback on layout, suggest improvements, and understand spatial relationships.
+VISUAL CONTEXT (CRITICAL):
+You can SEE the canvas! You receive screenshots showing exactly what's on screen.
+- When you get a [LIVE CANVAS SCREENSHOT], study it closely: what shapes were drawn, what they look like, what they might represent, any freehand drawings, text, colors, spatial arrangement
+- When user asks "what did I draw?" or "what do you see?" — describe the VISUAL APPEARANCE in detail: "I see a flower with petals" not "I see some draw shapes"
+- Interpret freehand drawings like a human would — a circle with lines could be a sun, a stick figure is a person, wavy lines might be water
+- Comment on colors, size, position, and what the overall composition looks like
+- You get screenshots both on connect AND after every user edit, so you always have an up-to-date view
+
+CANVAS AWARENESS:
+After you create or modify canvas content, you receive an updated canvas summary in the tool response.
+Use this to stay aware of what's on the canvas without asking the user to describe it.
+Canvas state messages include item IDs like [ID: shape:abc123] - use these with moveItem/deleteItem/updateSticky.
+
+EDITING EXISTING CONTENT (CRITICAL):
+When user says "move", "rearrange", "organize", "edit", "change":
+- Use moveItem() to reposition existing items - DON'T create new ones!
+- Use updateSticky() to change text/color of existing stickies
+- Use deleteItem() to remove individual items
+- NEVER duplicate content that already exists on the canvas
 
 BE CONVERSATIONAL:
 You're a helpful colleague, not a robot. Speak naturally and vary your language.
@@ -236,13 +249,67 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
             {
               type: "function",
               name: "deleteFrame",
-              description: "Delete an existing frame and all its contents. Use this when the user asks to change or update something - delete the old version first, then create the new one.",
+              description: "Delete an existing frame and all its contents.",
               parameters: {
                 type: "object",
                 properties: {
-                  frameName: { type: "string", description: "Name of the frame to delete (e.g. 'Design Team Org Chart')" }
+                  frameName: { type: "string", description: "Name of the frame to delete" }
                 },
                 required: ["frameName"]
+              }
+            },
+            {
+              type: "function",
+              name: "moveItem",
+              description: "Move an existing shape/sticky to a new position. Use when user asks to rearrange, organize, or move items. Get item IDs from canvas state updates.",
+              parameters: {
+                type: "object",
+                properties: {
+                  itemId: { type: "string", description: "The ID of the existing item (from canvas state)" },
+                  x: { type: "number", description: "New X position" },
+                  y: { type: "number", description: "New Y position" }
+                },
+                required: ["itemId", "x", "y"]
+              }
+            },
+            {
+              type: "function",
+              name: "deleteItem",
+              description: "Delete a single item from the canvas by its ID.",
+              parameters: {
+                type: "object",
+                properties: {
+                  itemId: { type: "string", description: "The ID of the item to delete (from canvas state)" }
+                },
+                required: ["itemId"]
+              }
+            },
+            {
+              type: "function",
+              name: "updateSticky",
+              description: "Update an existing sticky note's text or color.",
+              parameters: {
+                type: "object",
+                properties: {
+                  itemId: { type: "string", description: "The ID of the sticky to update (from canvas state)" },
+                  newText: { type: "string", description: "New text content" },
+                  newColor: { type: "string", description: "New color (yellow/green/orange/violet/pink)" }
+                },
+                required: ["itemId"]
+              }
+            },
+            {
+              type: "function",
+              name: "organizeIntoFrame",
+              description: "Move existing items into a new frame. CRITICAL: Use this when user says 'organize', 'group', 'put in a frame', 'rearrange'. This MOVES existing items, not duplicates them. Get IDs from canvas state.",
+              parameters: {
+                type: "object",
+                properties: {
+                  frameName: { type: "string", description: "Name for the frame" },
+                  itemIds: { type: "array", items: { type: "string" }, description: "IDs of existing items to move (from canvas state, e.g. 'shape:abc123')" },
+                  layout: { type: "string", enum: ["row", "column", "grid"], description: "How to arrange: row (side by side), column (top to bottom), grid" }
+                },
+                required: ["frameName", "itemIds", "layout"]
               }
             }
           ]

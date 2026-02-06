@@ -718,12 +718,21 @@ export function Canvas() {
   const [isChatClosing, setIsChatClosing] = useState(false);
   const [input, setInput] = useState("");
   const createdShapesRef = useRef<TLShapeId[]>([]);
+  const isProcessingToolCallRef = useRef(false);
+  const userEditsRef = useRef<Array<{ shapeId: string; field: string; oldValue: string; newValue: string }>>([]);
+  const voiceRef = useRef<{ isConnected: boolean; sendCanvasUpdate: () => void; sendScreenshot: () => void } | null>(null);
+  const screenshotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const waitingForGoodbyeRef = useRef(false);
   const goodbyeTranscriptLengthRef = useRef(0); // Track goodbye message length for audio timing
   const hasPlayedStartChimeRef = useRef(false); // Track if start chime played for this session
 
   // Voice mode with OpenAI Realtime API
   const voice = useRealtimeVoice();
+
+  // Keep voiceRef in sync for use in callbacks
+  useEffect(() => {
+    voiceRef.current = voice;
+  }, [voice]);
 
   // Handle sidebar close with animation
   const handleCloseChat = useCallback(() => {
@@ -830,80 +839,101 @@ export function Canvas() {
     [editor]
   );
 
-  // Capture canvas screenshot for visual context
+  // Capture canvas screenshot using tldraw's proper export API
+  // (raw canvas element is WebGL and returns blank when read directly)
   const captureScreenshot = useCallback(async (): Promise<string | null> => {
     if (!editor) return null;
 
     try {
-      // Get the tldraw container element
-      const container = editor.getContainer();
-      const canvasElement = container.querySelector('canvas');
+      const shapeIds = [...editor.getCurrentPageShapeIds()];
+      if (shapeIds.length === 0) return null;
 
-      if (!canvasElement) {
-        console.warn('[CANVAS] No canvas element found');
-        return null;
-      }
+      const { url } = await editor.toImageDataUrl(shapeIds, {
+        format: 'png',
+        pixelRatio: 1,
+      });
 
-      // Create a new canvas to resize and optimize the image
-      const outputCanvas = document.createElement('canvas');
-      const ctx = outputCanvas.getContext('2d');
-      if (!ctx) return null;
-
-      // Set reasonable dimensions (API limits)
-      const maxWidth = 1280;
-      const maxHeight = 720;
-      const scale = Math.min(maxWidth / canvasElement.width, maxHeight / canvasElement.height, 1);
-
-      outputCanvas.width = canvasElement.width * scale;
-      outputCanvas.height = canvasElement.height * scale;
-
-      // Draw the canvas content scaled
-      ctx.drawImage(canvasElement, 0, 0, outputCanvas.width, outputCanvas.height);
-
-      // Convert to base64 PNG
-      return outputCanvas.toDataURL('image/png', 0.8);
+      return url;
     } catch (err) {
       console.error('[CANVAS] Screenshot capture failed:', err);
       return null;
     }
   }, [editor]);
 
-  // Get canvas state for agent context (defined before handleToolCall)
+  // Helper: extract text from tldraw richText prop
+  const extractText = useCallback((props: Record<string, unknown>): string | undefined => {
+    if (!props.richText) return undefined;
+    const richText = props.richText as { content?: Array<{ content?: Array<{ text?: string }> }> };
+    return richText.content
+      ?.flatMap((block) => block.content?.map((inline) => inline.text) || [])
+      .join("") || undefined;
+  }, []);
+
+  // Get canvas state for agent context - structured with frames, children, arrows
   const getCanvasState = useCallback(() => {
-    if (!editor) return [];
+    if (!editor) return { frames: [], orphans: [], arrows: [] };
     const shapes = editor.getCurrentPageShapes();
-    const state = shapes.map((shape) => {
+
+    // Build shape info lookup
+    const shapeInfo = (shape: typeof shapes[number]) => {
       const props = shape.props as Record<string, unknown>;
-      // Extract text from richText if present
-      let text: string | undefined;
-      if (props.richText) {
-        const richText = props.richText as { content?: Array<{ content?: Array<{ text?: string }> }> };
-        text = richText.content
-          ?.flatMap((block) => block.content?.map((inline) => inline.text) || [])
-          .join("") || undefined;
-      }
-      // Get bounds for the shape to include width/height
       const bounds = editor.getShapeGeometry(shape.id).bounds;
+      const meta = shape.meta as Record<string, unknown>;
       return {
         id: shape.id,
         type: shape.type,
-        text,
+        text: extractText(props),
         color: props.color as string | undefined,
+        name: props.name as string | undefined,
         x: Math.round(shape.x),
         y: Math.round(shape.y),
         width: Math.round(bounds.width),
         height: Math.round(bounds.height),
+        createdBy: (meta?.createdBy as string) || "user",
+        parentId: shape.parentId,
+      };
+    };
+
+    // Separate frames from other shapes
+    const frames = shapes.filter(s => s.type === "frame");
+    const arrows = shapes.filter(s => s.type === "arrow");
+    const pageId = editor.getCurrentPageId();
+
+    // Build structured frames with children
+    const frameData = frames.map(frame => {
+      const info = shapeInfo(frame);
+      const children = shapes
+        .filter(s => s.parentId === frame.id && s.type !== "arrow")
+        .map(shapeInfo);
+      const frameArrows = shapes
+        .filter(s => s.parentId === frame.id && s.type === "arrow")
+        .map(shapeInfo);
+      return {
+        ...info,
+        children,
+        arrows: frameArrows,
       };
     });
 
-    return state;
-  }, [editor]);
+    // Orphan shapes: not inside any frame, not arrows, not frames
+    const orphans = shapes
+      .filter(s => s.parentId === pageId && s.type !== "frame" && s.type !== "arrow")
+      .map(shapeInfo);
+
+    // Top-level arrows (not inside frames)
+    const topArrows = arrows
+      .filter(s => s.parentId === pageId)
+      .map(shapeInfo);
+
+    return { frames: frameData, orphans, arrows: topArrows };
+  }, [editor, extractText]);
 
   // Handle tool calls from the agent
   const handleToolCall = useCallback(
     (toolName: string, args: Record<string, unknown>) => {
       if (!editor) return;
 
+      isProcessingToolCallRef.current = true;
       let shapeId: TLShapeId | null = null;
 
       if (toolName === "createSticky") {
@@ -929,6 +959,7 @@ export function Canvas() {
             color: colorMap[color] || "yellow",
             size: "m",
           },
+          meta: { createdBy: "ai" },
         });
       }
 
@@ -973,6 +1004,7 @@ export function Canvas() {
             color: colorMap[color] || "black",
             richText: text ? toRichText(text) : toRichText(""),
           },
+          meta: { createdBy: "ai" },
         });
       }
 
@@ -1000,6 +1032,7 @@ export function Canvas() {
             richText: toRichText(text),
             size: "m",
           },
+          meta: { createdBy: "ai" },
         });
       }
 
@@ -1030,6 +1063,7 @@ export function Canvas() {
             w: validWidth,
             h: validHeight,
           },
+          meta: { createdBy: "ai" },
         });
       }
 
@@ -1051,6 +1085,7 @@ export function Canvas() {
             start: { x: 0, y: 0 },
             end: { x: endX - startX, y: endY - startY },
           },
+          meta: { createdBy: "ai" },
         });
       }
 
@@ -1077,6 +1112,7 @@ export function Canvas() {
             color: "light-violet",
             size: "l",
           },
+          meta: { createdBy: "ai" },
         });
       }
 
@@ -1103,7 +1139,7 @@ export function Canvas() {
           const frameToDelete = allShapes.find(
             (s) => s.type === "frame" &&
             ((s.props as { name?: string }).name === layout.replaceFrame ||
-             (s.props as { name?: string }).name?.includes(layout.replaceFrame))
+             (s.props as { name?: string }).name?.includes(layout.replaceFrame!))
           );
           if (frameToDelete) {
             const shapesInFrame = allShapes.filter((s) => s.parentId === frameToDelete.id);
@@ -1150,6 +1186,7 @@ export function Canvas() {
               w: result.frame.width,
               h: result.frame.height,
             },
+            meta: { createdBy: "ai" },
           });
           createdShapesRef.current.push(frameId);
 
@@ -1175,6 +1212,7 @@ export function Canvas() {
                 color: colorMap[originalItem.color || item.color || "blue"] || "blue",
                 richText: toRichText(item.text || ""),
               },
+              meta: { createdBy: "ai" },
             });
             createdShapesRef.current.push(itemId);
           });
@@ -1195,6 +1233,7 @@ export function Canvas() {
                   y: arrow.endY - arrow.startY,
                 },
               },
+              meta: { createdBy: "ai" },
             });
             createdShapesRef.current.push(arrowId);
           });
@@ -1237,6 +1276,7 @@ export function Canvas() {
             w: frameWidth,
             h: frameHeight,
           },
+          meta: { createdBy: "ai" },
         });
         createdShapesRef.current.push(frameId);
 
@@ -1263,6 +1303,7 @@ export function Canvas() {
                 color: colorMap[item.color || "yellow"] || "yellow",
                 size: "m",
               },
+              meta: { createdBy: "ai" },
             });
           } else {
             // FLOW: Geo shapes
@@ -1279,6 +1320,7 @@ export function Canvas() {
                 color: colorMap[item.color || "blue"] || "blue",
                 richText: toRichText(item.text || ""),
               },
+              meta: { createdBy: "ai" },
             });
           }
           createdShapesRef.current.push(itemId);
@@ -1369,6 +1411,7 @@ export function Canvas() {
             w: frameWidth,
             h: frameHeight,
           },
+          meta: { createdBy: "ai" },
         });
         createdShapesRef.current.push(frameId);
 
@@ -1411,6 +1454,7 @@ export function Canvas() {
               w: bookmarkWidth,
               h: bookmarkHeight,
             },
+            meta: { createdBy: "ai" },
           });
           createdShapesRef.current.push(bookmarkId);
         });
@@ -1463,15 +1507,311 @@ export function Canvas() {
         }
       }
 
+      // Organize existing items into a frame
+      if (toolName === "organizeIntoFrame") {
+        const { frameName, itemIds, layout } = args as {
+          frameName: string;
+          itemIds: string[];
+          layout: "row" | "column" | "grid";
+        };
+
+        const allShapes = editor.getCurrentPageShapes();
+
+        // Find the actual shapes by ID
+        const shapesToMove = itemIds
+          .map(id => allShapes.find(s => s.id === id || s.id === `shape:${id}`))
+          .filter(Boolean) as typeof allShapes;
+
+        if (shapesToMove.length === 0) return;
+
+        // Get dimensions of each shape
+        const shapeInfos = shapesToMove.map(s => {
+          const bounds = editor.getShapeGeometry(s.id).bounds;
+          return { shape: s, width: bounds.width, height: bounds.height };
+        });
+
+        // Calculate layout positions
+        const padding = 60;
+        const gap = 40;
+        const titleSpace = 50;
+        const maxItemWidth = Math.max(...shapeInfos.map(s => s.width));
+        const maxItemHeight = Math.max(...shapeInfos.map(s => s.height));
+
+        let frameWidth: number, frameHeight: number;
+        const positions: Array<{ x: number; y: number }> = [];
+
+        if (layout === "column") {
+          frameWidth = padding * 2 + maxItemWidth;
+          let yPos = titleSpace + padding;
+          shapeInfos.forEach(si => {
+            positions.push({ x: padding, y: yPos });
+            yPos += si.height + gap;
+          });
+          frameHeight = yPos + padding;
+        } else if (layout === "grid") {
+          const cols = Math.ceil(Math.sqrt(shapesToMove.length));
+          const rows = Math.ceil(shapesToMove.length / cols);
+          frameWidth = padding * 2 + cols * maxItemWidth + (cols - 1) * gap;
+          frameHeight = titleSpace + padding * 2 + rows * maxItemHeight + (rows - 1) * gap;
+          shapeInfos.forEach((_, i) => {
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            positions.push({
+              x: padding + col * (maxItemWidth + gap),
+              y: titleSpace + padding + row * (maxItemHeight + gap),
+            });
+          });
+        } else {
+          // Row (default)
+          let xPos = padding;
+          frameWidth = padding;
+          shapeInfos.forEach(si => {
+            positions.push({ x: xPos, y: titleSpace + padding });
+            xPos += si.width + gap;
+          });
+          frameWidth = xPos + padding;
+          frameHeight = titleSpace + padding * 2 + maxItemHeight;
+        }
+
+        // Find empty space for the frame
+        const canvasPos = findEmptyCanvasSpace(editor, frameWidth, frameHeight);
+
+        // Create the frame
+        const frameId = createShapeId();
+        editor.createShape({
+          id: frameId,
+          type: "frame",
+          x: canvasPos.x,
+          y: canvasPos.y,
+          props: {
+            name: frameName,
+            w: frameWidth,
+            h: frameHeight,
+          },
+          meta: { createdBy: "ai" },
+        });
+        createdShapesRef.current.push(frameId);
+
+        // Move each shape into the frame with new positions
+        shapesToMove.forEach((shape, i) => {
+          editor.updateShape({
+            id: shape.id,
+            type: shape.type,
+            x: positions[i].x,
+            y: positions[i].y,
+            parentId: frameId,
+          } as any);
+        });
+
+        console.log(`[CANVAS] Organized ${shapesToMove.length} items into frame "${frameName}"`);
+        return;
+      }
+
       // Track created shape (removed auto-zoom - was too jumpy)
       if (shapeId) {
         createdShapesRef.current.push(shapeId);
       }
+
+      isProcessingToolCallRef.current = false;
     },
     [editor, findNonOverlappingPosition]
   );
 
-  const { messages, append, isLoading, setMessages } = useAgent(handleToolCall, getCanvasState);
+  // Get and clear pending user edits (consumed on each chat request)
+  const getUserEdits = useCallback(() => {
+    const edits = [...userEditsRef.current];
+    userEditsRef.current = [];
+    return edits;
+  }, []);
+
+  // Detect user edits to AI-created shapes
+  useEffect(() => {
+    if (!editor) return;
+
+    const unsub = editor.store.listen((entry) => {
+      // Skip changes made by AI tool calls
+      if (isProcessingToolCallRef.current) return;
+
+      // Helper to extract text from richText prop
+      const extractTextFromRichText = (rt: unknown): string => {
+        if (!rt) return "";
+        const richText = rt as { content?: Array<{ content?: Array<{ text?: string }> }> };
+        return richText.content
+          ?.flatMap((block) => block.content?.map((inline) => inline.text) || [])
+          .join("") || "";
+      };
+
+      // Track user-created shapes (additions)
+      for (const [, shape] of Object.entries(entry.changes.added)) {
+        const record = shape as unknown as Record<string, unknown>;
+
+        // Only track shapes (not pages, assets, etc.)
+        if (typeof record.typeName !== 'string' || record.typeName !== 'shape') continue;
+
+        // Skip AI-created shapes (only track user additions)
+        const meta = record.meta as Record<string, unknown> | undefined;
+        if (meta?.createdBy === 'ai') continue;
+
+        const props = record.props as Record<string, unknown>;
+        const shapeType = record.type as string;
+        const text = extractTextFromRichText(props.richText);
+
+        // Build human-readable description
+        let description = "";
+        if (shapeType === "note") {
+          description = "sticky note";
+        } else if (shapeType === "geo") {
+          const geoType = props.geo as string || "rectangle";
+          description = `${geoType} shape`;
+        } else if (shapeType === "arrow") {
+          description = "arrow";
+        } else if (shapeType === "text") {
+          description = "text label";
+        } else if (shapeType === "frame") {
+          description = "frame";
+        } else {
+          description = shapeType;
+        }
+
+        const textPart = text ? ` with text "${text.slice(0, 40)}"` : "";
+        const color = props.color as string | undefined;
+        const colorPart = color ? ` (${color})` : "";
+
+        userEditsRef.current.push({
+          shapeId: record.id as string,
+          field: "added",
+          oldValue: "",
+          newValue: `${description}${textPart}${colorPart}`
+        });
+
+        // If voice mode is active, send canvas update immediately
+        if (voiceRef.current?.isConnected) {
+          // Small delay to let tldraw finish processing
+          setTimeout(() => {
+            voiceRef.current?.sendCanvasUpdate();
+          }, 150);
+        }
+      }
+
+      // Track edits to shapes (updates) - track ALL changes, not just AI shapes
+      for (const [, change] of Object.entries(entry.changes.updated)) {
+        const [before, after] = change as unknown as [Record<string, unknown>, Record<string, unknown>];
+
+        // Only track shapes (not pages, assets, etc.)
+        if (typeof before.typeName !== 'string' || before.typeName !== 'shape') continue;
+
+        const beforeProps = before.props as Record<string, unknown>;
+        const afterProps = after.props as Record<string, unknown>;
+        const shapeId = before.id as string;
+        const shapeType = before.type as string;
+
+        // Check text changes
+        const oldText = extractTextFromRichText(beforeProps.richText);
+        const newText = extractTextFromRichText(afterProps.richText);
+        if (oldText !== newText && (oldText || newText)) {
+          userEditsRef.current.push({
+            shapeId,
+            field: "text",
+            oldValue: oldText,
+            newValue: newText,
+          });
+        }
+
+        // Check color changes
+        const oldColor = beforeProps.color as string | undefined;
+        const newColor = afterProps.color as string | undefined;
+        if (oldColor !== newColor && newColor) {
+          userEditsRef.current.push({
+            shapeId,
+            field: "color",
+            oldValue: oldColor || "default",
+            newValue: newColor,
+          });
+        }
+
+        // Check position changes (moves)
+        const oldX = Math.round(before.x as number);
+        const oldY = Math.round(before.y as number);
+        const newX = Math.round(after.x as number);
+        const newY = Math.round(after.y as number);
+        if (oldX !== newX || oldY !== newY) {
+          userEditsRef.current.push({
+            shapeId,
+            field: "moved",
+            oldValue: `(${oldX}, ${oldY})`,
+            newValue: `(${newX}, ${newY})`,
+          });
+        }
+      }
+
+      // Track deletions
+      for (const [, shape] of Object.entries(entry.changes.removed)) {
+        const record = shape as unknown as Record<string, unknown>;
+
+        // Only track shapes (not pages, assets, etc.)
+        if (typeof record.typeName !== 'string' || record.typeName !== 'shape') continue;
+
+        const props = record.props as Record<string, unknown>;
+        const shapeType = record.type as string;
+        const text = extractTextFromRichText(props.richText);
+
+        // Build human-readable description
+        let description = "";
+        if (shapeType === "note") {
+          description = "sticky note";
+        } else if (shapeType === "geo") {
+          const geoType = props.geo as string || "rectangle";
+          description = `${geoType} shape`;
+        } else if (shapeType === "arrow") {
+          description = "arrow";
+        } else if (shapeType === "text") {
+          description = "text label";
+        } else if (shapeType === "frame") {
+          description = "frame";
+        } else {
+          description = shapeType;
+        }
+
+        const textPart = text ? ` "${text.slice(0, 40)}"` : "";
+
+        userEditsRef.current.push({
+          shapeId: record.id as string,
+          field: "deleted",
+          oldValue: `${description}${textPart}`,
+          newValue: "",
+        });
+
+        // If voice mode is active, send canvas update for deletions too
+        if (voiceRef.current?.isConnected) {
+          setTimeout(() => {
+            voiceRef.current?.sendCanvasUpdate();
+          }, 150);
+        }
+      }
+
+      // If there were ANY changes and voice is connected, send update + screenshot
+      // (covers edits like text/color/position changes)
+      if (userEditsRef.current.length > 0 && voiceRef.current?.isConnected) {
+        // Send text-based canvas update quickly
+        setTimeout(() => {
+          voiceRef.current?.sendCanvasUpdate();
+        }, 200);
+
+        // Debounce screenshot at 2s so rapid edits (drawing strokes) don't spam
+        if (screenshotTimerRef.current) {
+          clearTimeout(screenshotTimerRef.current);
+        }
+        screenshotTimerRef.current = setTimeout(() => {
+          voiceRef.current?.sendScreenshot();
+          screenshotTimerRef.current = null;
+        }, 2000);
+      }
+    }, { source: "user", scope: "document" });
+
+    return unsub;
+  }, [editor]);
+
+  const { messages, append, isLoading, setMessages } = useAgent(handleToolCall, getCanvasState, getUserEdits);
 
   const handleMount = useCallback((editor: Editor) => {
     setEditor(editor);
