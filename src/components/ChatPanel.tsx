@@ -58,7 +58,8 @@ function QuestionBlock({
             <button
               key={i}
               onClick={() => onSelect(suggestion)}
-              className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-full transition-colors text-gray-700"
+              className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-full transition-colors text-gray-700 animate-slideInFromLeft"
+              style={{ animationDelay: `${i * 60}ms` }}
             >
               {suggestion}
             </button>
@@ -98,7 +99,6 @@ function TaskStatusIcon({ status }: { status: 'pending' | 'running' | 'done' }) 
 function PlanBlock({
   title,
   steps,
-  summary,
   onApprove,
   onReject,
   isLatest,
@@ -114,10 +114,8 @@ function PlanBlock({
   currentStep?: number;
   isExecuting?: boolean;
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
   const hasStarted = currentStep !== undefined;
 
-  // Determine status of each step
   const getStepStatus = (index: number): 'pending' | 'running' | 'done' => {
     if (currentStep === undefined) return 'pending';
     if (isExecuting) {
@@ -130,79 +128,50 @@ function PlanBlock({
     }
   };
 
-  // Count completed steps
   const completedSteps = currentStep !== undefined ? (isExecuting ? currentStep : currentStep + 1) : 0;
-  const progress = steps.length > 0 ? (completedSteps / steps.length) * 100 : 0;
 
   return (
-    <div className="rounded-xl border border-gray-200 overflow-hidden">
-      {/* Header with title */}
-      <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-        <p className="text-sm font-medium text-gray-900">{title}</p>
-        {hasStarted && (
-          <div className="mt-2">
-            <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
-              <div className="h-full bg-green-500 transition-all duration-300" style={{ width: `${progress}%` }} />
-            </div>
-            <p className="text-xs text-gray-500 mt-1">{completedSteps} of {steps.length} steps</p>
-          </div>
-        )}
+    <div className="border border-gray-200 p-4" style={{ borderRadius: '24px' }}>
+      {/* Header */}
+      <div className="mb-3">
+        <p className="text-sm font-semibold text-gray-900">Plan</p>
+        <p className="text-xs text-gray-500">{hasStarted ? `${completedSteps} of ${steps.length}` : 'Awaiting approval'}</p>
       </div>
 
-      {/* Summary (Goal) - at top, expandable */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-2 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
-      >
-        <p className="text-xs text-gray-600 flex-1 pr-2">{summary}</p>
-        <svg
-          className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      {/* Steps - collapsible */}
-      {isExpanded && (
-        <div className="px-4 py-3 space-y-2 border-t border-gray-100">
-          {steps.map((step, i) => {
-            const status = getStepStatus(i);
-            return (
-              <div key={i} className={`flex gap-3 text-sm items-start py-1 ${status === 'running' ? 'bg-blue-50 -mx-2 px-2 rounded' : ''}`}>
-                <div className="mt-0.5 flex-shrink-0">
-                  <TaskStatusIcon status={status} />
-                </div>
-                <span className={`${status === 'done' ? 'text-gray-400 line-through' : status === 'running' ? 'text-blue-700 font-medium' : 'text-gray-700'}`}>
-                  {step}
-                </span>
+      {/* Steps */}
+      <div className="space-y-3">
+        {steps.map((step, i) => {
+          const status = getStepStatus(i);
+          return (
+            <div key={i} className="flex items-start gap-3 text-sm">
+              <div className="mt-0.5 flex-shrink-0">
+                <TaskStatusIcon status={status} />
               </div>
-            );
-          })}
-        </div>
-      )}
+              <span className={status === 'done' ? 'text-gray-400 line-through' : 'text-gray-700'}>
+                {step}
+              </span>
+            </div>
+          );
+        })}
+      </div>
 
-      {/* Approve/Reject buttons - only show if not started yet */}
+      {/* Approve/Reject buttons */}
       {isLatest && !hasStarted && (
-        <div className="px-4 py-3 flex gap-2 border-t border-gray-200">
-          <button
-            onClick={onApprove}
-            className="flex-1 px-3 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            Approve & Start
-          </button>
+        <div className="flex gap-2 mt-4">
           <button
             onClick={onReject}
             className="flex-1 px-3 py-2 text-sm bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
             Modify
           </button>
+          <button
+            onClick={onApprove}
+            className="flex-1 px-3 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            Approve & Start
+          </button>
         </div>
       )}
-
     </div>
   );
 }
@@ -594,6 +563,7 @@ export function ChatPanel({
   onExitFullscreen,
 }: ChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questionAnswers, setQuestionAnswers] = useState<string[]>([]);
   const [lastAskUserId, setLastAskUserId] = useState<string | null>(null);
@@ -612,6 +582,15 @@ export function ChatPanel({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
+
+  // Auto-focus input when panel opens
+  useEffect(() => {
+    // Small delay to ensure panel animation completes
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -688,9 +667,10 @@ export function ChatPanel({
   })();
 
   return (
-    <div className="w-full h-full bg-white border-l border-gray-200 flex flex-col shadow-xl">
+    <div className={`w-full h-full bg-white flex flex-col ${hideHeader ? '' : 'border-l border-gray-200 shadow-xl'}`}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      {!hideHeader && (
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
           {isFullscreen && onExitFullscreen && (
             <button
@@ -739,10 +719,11 @@ export function ChatPanel({
             </svg>
           </button>
         </div>
-      </div>
+        </div>
+      )}
 
-      {/* Task progress header - shows when plan is executing */}
-      {activePlan && (
+      {/* Task progress header - shows when plan is executing (hidden in fullscreen) */}
+      {activePlan && !isFullscreen && (
         <TaskProgressHeader
           title={activePlan.title}
           steps={activePlan.steps}
@@ -907,7 +888,7 @@ export function ChatPanel({
                     })()}
 
                     {/* confirmPlan tool - shows plan with progress tracking */}
-                    {confirmPlanTool && !askUserTool && (() => {
+                    {confirmPlanTool && !askUserTool && (!isLatestMessage || !isLoading) && (() => {
                       const planArgs = confirmPlanTool.args as { title: string; steps: string[]; summary: string };
 
                       // Check for canvas tools in THIS message (after confirmPlan)
@@ -957,6 +938,29 @@ export function ChatPanel({
                           ? currentRunningStep - 1
                           : completedSteps > 0 ? completedSteps - 1 : 0
                       ) : undefined;
+
+                      // In fullscreen: only show approve/reject buttons (steps are in sidebar)
+                      if (isFullscreen) {
+                        if (!isLatestMessage || executionStarted) return null;
+                        return (
+                          <div className={message.content ? "mt-3" : ""}>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => onSubmit("I'd like to make some changes.")}
+                                className="flex-1 px-3 py-2 text-sm bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Modify
+                              </button>
+                              <button
+                                onClick={() => onSubmit("Approved! Go ahead.")}
+                                className="flex-1 px-3 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                              >
+                                Approve & Start
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      }
 
                       return (
                         <div className={message.content ? "mt-3" : ""}>
@@ -1111,8 +1115,43 @@ export function ChatPanel({
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Floating progress indicator - shows current step being worked on */}
+      {activePlan && activePlan.isExecuting && (
+        <div className={`absolute bottom-24 left-1/2 -translate-x-1/2 z-10 pointer-events-none ${isFullscreen ? 'max-w-3xl' : ''}`}>
+          <div className="pointer-events-auto bg-gray-100 text-gray-900 shadow-md hover:bg-gray-200 transition-colors overflow-hidden rounded-full cursor-pointer px-4 py-2">
+            <div className="flex items-center gap-3">
+              {/* Progress indicator */}
+              <div className="flex items-center gap-2">
+                <div className="relative w-6 h-6 flex-shrink-0">
+                  <svg className="w-6 h-6 -rotate-90">
+                    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-300" />
+                    <circle
+                      cx="12" cy="12" r="10"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-blue-500"
+                      strokeDasharray={`${((activePlan.currentStep + 1) / activePlan.steps.length) * 63} 63`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <span className="absolute inset-0 flex items-center justify-center text-[10px] font-medium text-gray-700">
+                    {activePlan.currentStep + 1}/{activePlan.steps.length}
+                  </span>
+                </div>
+
+                {/* Current step text */}
+                <span className="text-sm font-medium truncate max-w-[300px]">
+                  {activePlan.steps[activePlan.currentStep]}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Input */}
-      <form onSubmit={handleSubmit} className={`p-4 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
+      <form onSubmit={handleSubmit} className={`relative p-4 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
         <div className="flex items-center bg-gray-100 rounded-full">
           {/* Plus button */}
           <button
@@ -1125,6 +1164,7 @@ export function ChatPanel({
 
           {/* Input */}
           <input
+            ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}

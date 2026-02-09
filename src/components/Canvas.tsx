@@ -7,7 +7,7 @@ import { useAgent, Message } from "@/hooks/useAgent";
 import { useRealtimeVoice } from "@/hooks/useRealtimeVoice";
 import { Toolbar } from "./Toolbar";
 import { ChatPanel } from "./ChatPanel";
-import { IconSingleSparksFilled, IconViewSideRight } from "@mirohq/design-system-icons";
+import { IconSingleSparksFilled, IconViewSideRight, IconSidebarGlobalOpen, IconSidebarGlobalClosed, IconArrowLeft, IconCross } from "@mirohq/design-system-icons";
 import { calculateLayout, findEmptyCanvasSpace } from "@/lib/layoutEngine";
 import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
 import Markdown from "react-markdown";
@@ -212,9 +212,10 @@ function FloatingQuestionCard({
                 <button
                   key={i}
                   onClick={() => onSelect(option)}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors animate-slideInFromLeft ${
                     selectedIndex === i ? "bg-gray-100" : "hover:bg-gray-50"
                   }`}
+                  style={{ animationDelay: `${i * 60}ms` }}
                 >
                   <span className="w-7 h-7 flex items-center justify-center rounded bg-gray-100 text-sm font-medium text-gray-600">
                     {i + 1}
@@ -260,6 +261,84 @@ function FloatingQuestionCard({
             </div>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+// Plan progress panel for fullscreen chat (matches ChatPanel PlanBlock styling)
+function PlanProgressPanel({
+  plan,
+  isLoading,
+  onToggleVisibility,
+}: {
+  plan: { title: string; steps: string[]; currentStep: number; pending?: boolean } | null;
+  isLoading: boolean;
+  onToggleVisibility?: () => void;
+}) {
+  if (!plan) return null;
+
+  const isPending = plan.pending || plan.currentStep < 0;
+  const completedSteps = isPending ? 0 : plan.currentStep + 1;
+
+  const getStepStatus = (index: number): 'pending' | 'running' | 'done' => {
+    if (isPending) return 'pending';
+    if (index < plan.currentStep) return 'done';
+    if (index === plan.currentStep && isLoading) return 'running';
+    return 'pending';
+  };
+
+  return (
+    <div className="w-80 bg-white border-l border-gray-200 h-full flex-shrink-0 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
+        <div>
+          <h3 className="text-sm font-medium text-gray-900">Plan</h3>
+          <p className="text-xs text-gray-500">{isPending ? 'Awaiting approval' : `${completedSteps} of ${plan.steps.length}`}</p>
+        </div>
+        {onToggleVisibility && (
+          <button
+            onClick={onToggleVisibility}
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+            title="Hide plan"
+          >
+            <IconSidebarGlobalOpen css={{ transform: 'rotate(180deg)' }} />
+          </button>
+        )}
+      </div>
+
+      {/* Steps */}
+      <div className="p-4 overflow-y-auto flex-1">
+        <div className="space-y-3">
+          {plan.steps.map((step, index) => {
+            const status = getStepStatus(index);
+            return (
+              <div key={index} className="flex items-start gap-3 text-sm">
+                {status === 'pending' && (
+                  <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0 mt-0.5" />
+                )}
+                {status === 'running' && (
+                  <div className="w-4 h-4 flex-shrink-0 mt-0.5">
+                    <svg className="animate-spin text-blue-500" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  </div>
+                )}
+                {status === 'done' && (
+                  <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+                <span className={status === 'done' ? 'text-gray-400 line-through' : 'text-gray-700'}>
+                  {step}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -448,8 +527,8 @@ function FloatingProgressIndicator({
     };
 
     return (
-      <div className={`absolute left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300 ${hasToast ? 'bottom-[420px]' : 'bottom-28'}`}>
-        <div className="flex items-center gap-2 bg-green-600 text-white rounded-2xl shadow-lg px-4 py-3 pb-3.5">
+      <div className="absolute left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300 bottom-28">
+        <div className="flex items-center gap-2 bg-green-600 text-white shadow-lg px-4 py-3 pb-3.5 w-[420px]" style={{ borderRadius: '32px' }}>
           {/* Checkmark icon */}
           <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
             <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
@@ -567,17 +646,18 @@ function FloatingProgressIndicator({
     };
 
     return (
-      <div className={`absolute left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300 ${hasToast ? 'bottom-[420px]' : 'bottom-28'}`}>
+      <div className="absolute left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300 bottom-28">
         <div
           onClick={handleReviewBatch}
-          className="bg-blue-600 text-white rounded-2xl shadow-lg overflow-hidden w-80 hover:bg-blue-700 transition-colors cursor-pointer"
+          className="bg-blue-600 text-white shadow-lg overflow-hidden w-[420px] hover:bg-blue-700 transition-colors cursor-pointer"
+          style={{ borderRadius: '32px' }}
         >
           {/* Progress bar at top */}
           <div className="h-1 w-full bg-blue-800">
             <div className="h-full bg-blue-300 transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
 
-          <div className="flex items-center gap-2 px-4 py-3 pb-3.5">
+          <div className="flex items-center gap-2 px-4" style={{ paddingTop: '12px', paddingBottom: '16px' }}>
             {/* Progress circle */}
             <div className="relative w-8 h-8 flex-shrink-0">
               <svg className="w-8 h-8 -rotate-90">
@@ -601,20 +681,9 @@ function FloatingProgressIndicator({
                 e.stopPropagation();
                 onSubmit("Continue", { openPanel: false });
               }}
-              className="ml-2 px-3 py-1 text-sm font-medium bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors"
+              className="ml-2 px-4 py-1.5 text-sm font-medium bg-white text-blue-600 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
             >
               Continue
-            </button>
-
-            {/* Open sidebar button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenPanel();
-              }}
-              className="p-1 text-white/70 hover:text-white transition-colors flex items-center justify-center"
-            >
-              <IconViewSideRight size="small" />
             </button>
           </div>
         </div>
@@ -625,10 +694,11 @@ function FloatingProgressIndicator({
   const progress = (stepNumber / totalSteps) * 100;
 
   return (
-    <div className={`absolute left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ${hasToast ? 'bottom-[420px]' : 'bottom-20'}`}>
+    <div className="absolute left-1/2 -translate-x-1/2 z-50 transition-all duration-300 bottom-28">
       <button
         onClick={onOpenPanel}
-        className="flex flex-col bg-gray-100 text-gray-900 rounded-2xl shadow-md hover:bg-gray-200 transition-colors overflow-hidden w-80"
+        className="flex flex-col bg-gray-100 text-gray-900 shadow-md hover:bg-gray-200 transition-colors overflow-hidden w-[420px]"
+        style={{ borderRadius: '32px' }}
       >
         {/* Progress bar at top */}
         <div className="h-1 w-full bg-gray-200">
@@ -668,10 +738,12 @@ function FloatingProgressIndicator({
             {currentStepText}
           </span>
 
-          {/* Open sidebar icon */}
-          <span className="text-gray-400 flex-shrink-0 flex items-center justify-center">
-            <IconViewSideRight size="small" />
-          </span>
+          {/* Open sidebar icon - only show when not actively working */}
+          {!isLoading && (
+            <span className="text-gray-400 flex-shrink-0 flex items-center justify-center">
+              <IconViewSideRight size="small" />
+            </span>
+          )}
         </div>
       </button>
     </div>
@@ -726,10 +798,12 @@ export function Canvas() {
   const [sidebarWidth, setSidebarWidth] = useState(384); // 384px = w-96
   const [isResizing, setIsResizing] = useState(false);
   const [isFullscreenChat, setIsFullscreenChat] = useState(false);
+  const [isPlanPanelVisible, setIsPlanPanelVisible] = useState(true);
   const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
   const isProcessingToolCallRef = useRef(false);
   const userEditsRef = useRef<Array<{ shapeId: string; field: string; oldValue: string; newValue: string }>>([]);
+  const shouldHideToastRef = useRef(false); // Track if toast should be hidden during new request
   const voiceRef = useRef<{ isConnected: boolean; sendCanvasUpdate: () => void; sendScreenshot: (changeDescription?: string) => void } | null>(null);
   const screenshotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastScreenshotShapeIdsRef = useRef<Set<string>>(new Set());
@@ -1912,6 +1986,11 @@ export function Canvas() {
     (text: string, options?: { openPanel?: boolean }) => {
       if (!text.trim()) return;
 
+      // Hide any existing toast immediately when new request starts
+      setResponseToast(null);
+      setToastCentered(false);
+      shouldHideToastRef.current = true; // Synchronously hide toast to prevent flicker
+
       // If voice is connected, send to voice session instead of chat API
       if (voice.isConnected) {
         voice.sendMessage(text);
@@ -2120,6 +2199,88 @@ export function Canvas() {
     return false;
   }, [messages]);
 
+  // Extract active plan details for progress panel
+  const activePlanDetails = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (msg.role !== 'assistant') continue;
+
+      const planToolIndex = msg.toolInvocations?.findIndex(t => t.toolName === 'confirmPlan');
+      if (planToolIndex === undefined || planToolIndex === -1) continue;
+
+      const planTool = msg.toolInvocations![planToolIndex];
+      const args = planTool.args as { title: string; steps: string[]; summary: string };
+
+      // Check if execution started
+      const toolsAfterPlan = msg.toolInvocations!.slice(planToolIndex + 1);
+      const laterMessages = messages.slice(i + 1).filter(m => m.role === 'assistant');
+      const laterToolCalls = laterMessages.flatMap(m => m.toolInvocations || []);
+      const allToolCalls = [...toolsAfterPlan, ...laterToolCalls];
+      const progressCalls = allToolCalls.filter(t => t.toolName === 'showProgress');
+
+      const nextUserMsg = messages.slice(i + 1).find(m => m.role === 'user');
+      const userApproved = nextUserMsg?.content?.toLowerCase().includes('approve');
+      const hasProgressCalls = progressCalls.length > 0;
+      const executionStarted = userApproved || hasProgressCalls;
+
+      if (!executionStarted) {
+        // Pending plan — show it but with no progress
+        return {
+          title: args.title,
+          steps: args.steps,
+          currentStep: -1, // -1 means pending, not started
+          pending: true,
+        };
+      }
+
+      // Calculate current step
+      let completedSteps = 0;
+      let currentRunningStep = 0;
+      progressCalls.forEach(call => {
+        const pargs = call.args as { stepNumber?: number; status?: string };
+        if (pargs.stepNumber !== undefined) {
+          if (pargs.status === 'completed') {
+            completedSteps = Math.max(completedSteps, pargs.stepNumber);
+          } else if (pargs.status === 'starting') {
+            currentRunningStep = pargs.stepNumber;
+          }
+        }
+      });
+
+      const currentStep = isLoading && currentRunningStep > 0
+        ? currentRunningStep - 1
+        : completedSteps > 0 ? completedSteps - 1 : 0;
+
+      return {
+        title: args.title,
+        steps: args.steps,
+        currentStep: Math.min(currentStep, args.steps.length - 1),
+        pending: false,
+      };
+    }
+    return null;
+  }, [messages, isLoading]);
+
+  // Auto-open plan panel when a plan appears in fullscreen mode
+  useEffect(() => {
+    if (activePlanDetails && isFullscreenChat) {
+      setIsPlanPanelVisible(true);
+    }
+  }, [activePlanDetails, isFullscreenChat]);
+
+  // Update toast in real-time during streaming (when sidebar is closed)
+  useEffect(() => {
+    if (isLoading && !isChatOpen && !voice.isConnected) {
+      // Only update toast if we're actively streaming an assistant response
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg?.role === 'assistant' && lastMsg.content && lastMsg.content.trim()) {
+        shouldHideToastRef.current = false; // Allow toast to show for new response
+        setResponseToast(lastMsg.content.trim());
+        setToastCentered(true);
+      }
+    }
+  }, [messages, isLoading, isChatOpen, voice.isConnected]);
+
   // Detect when AI finishes responding → show toast if sidebar is closed
   useEffect(() => {
     if (isLoading) {
@@ -2281,6 +2442,7 @@ export function Canvas() {
           {!isChatOpen && pendingQuestion && !isLoading && (
             <div className="pointer-events-auto">
               <FloatingQuestionCard
+                key={currentQuestionIndex}
                 question={pendingQuestion.question}
                 options={pendingQuestion.suggestions}
                 onSelect={(answer) => {
@@ -2322,10 +2484,15 @@ export function Canvas() {
             </div>
           )}
 
-          {/* Floating thinking indicator */}
+          {/* Floating thinking indicator - hide once content starts streaming */}
           {!isChatOpen && isLoading && !hasActivePlan && (() => {
-            // Determine what the AI is doing based on recent tool calls
+            // Hide thinking if we already have content streaming
             const lastMsg = messages[messages.length - 1];
+            if (lastMsg?.role === 'assistant' && lastMsg.content && lastMsg.content.trim()) {
+              return null; // Content is streaming, don't show thinking
+            }
+
+            // Determine what the AI is doing based on recent tool calls
             const recentTools = lastMsg?.role === 'assistant' ? lastMsg.toolInvocations || [] : [];
             const lastSearchTool = [...recentTools].reverse().find(t => t.toolName === 'webSearch');
 
@@ -2345,9 +2512,9 @@ export function Canvas() {
           )}
 
           {/* Centered toast */}
-          {toastCentered && responseToast && !showFloatingQuestion && !isChatOpen && (
+          {toastCentered && responseToast && !showFloatingQuestion && !isChatOpen && !shouldHideToastRef.current && (
             <div
-              className={`absolute z-[65] w-[420px] ${showFloatingPlan ? 'bottom-[184px]' : 'bottom-24'}`}
+              className={`absolute z-[65] w-[420px] ${showFloatingPlan || showFloatingProgress ? 'bottom-[188px]' : 'bottom-24'}`}
               style={{
                 left: '50%',
                 transform: 'translateX(-50%)'
@@ -2419,7 +2586,7 @@ export function Canvas() {
             voiceState={voice.state}
             onVoiceToggle={handleVoiceToggle}
             onExpandedChange={setIsToolbarExpanded}
-            responseToast={isChatOpen || toastCentered || showFloatingQuestion ? null : responseToast}
+            responseToast={isChatOpen || toastCentered || showFloatingQuestion || shouldHideToastRef.current ? null : responseToast}
             onDismissToast={() => { setResponseToast(null); setToastCentered(false); }}
             onOpenChat={() => setIsChatOpen(true)}
             hasMessages={messages.length > 0}
@@ -2433,7 +2600,7 @@ export function Canvas() {
       {/* Side chat panel - fixed position, outside flex flow OR fullscreen */}
       {(isChatOpen || isFullscreenChat) && (
         <div
-          className={`fixed top-0 h-full z-[999] ${isFullscreenChat ? 'left-0 right-0' : 'right-0 select-none'}`}
+          className={`fixed top-0 h-full z-[999] ${isFullscreenChat ? 'left-0 right-0 flex' : 'right-0 select-none'}`}
           style={isFullscreenChat ? undefined : { width: `${sidebarWidth}px` }}
         >
           {/* Resize handle (sidebar mode only) */}
@@ -2445,46 +2612,104 @@ export function Canvas() {
               }`}
             />
           )}
-          <ChatPanel
-            onClose={() => {
-              // X button always closes completely - no toasts, no floating UI
-              setIsFullscreenChat(false);
-              handleCloseChat(true); // Dismiss everything
-            }}
-            onCollapse={!isFullscreenChat ? () => {
-              // Minus button = minimize, DON'T dismiss plan, restore toast
-              handleCloseChat(false);
-              // Find the most recent assistant message with actual text content
-              const lastAssistantMsg = messages.findLast(m => m.role === 'assistant' && m.content?.trim());
-              if (lastAssistantMsg?.content) {
-                setResponseToast(lastAssistantMsg.content);
-                setToastCentered(true);
-                setIsToolbarExpanded(true);
-              }
-            } : undefined}
-            onExpand={!isFullscreenChat ? () => {
-              setIsFullscreenChat(true);
-            } : undefined}
-            onExitFullscreen={isFullscreenChat ? () => {
-              // Back arrow: close and show floating UI (minimize behavior)
-              setIsFullscreenChat(false);
-              handleCloseChat(false);
-              // Restore toast if there's a recent message
-              const lastAssistantMsg = messages.findLast(m => m.role === 'assistant' && m.content?.trim());
-              if (lastAssistantMsg?.content) {
-                setResponseToast(lastAssistantMsg.content);
-                setToastCentered(true);
-                setIsToolbarExpanded(true);
-              }
-            } : undefined}
-            isFullscreen={isFullscreenChat}
-            messages={messages}
-            input={input}
-            setInput={setInput}
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-            onNavigateToFrames={navigateToFrames}
-          />
+
+          {isFullscreenChat ? (
+            <div className="flex flex-col h-full flex-1">
+              {/* Full-width header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setIsFullscreenChat(false);
+                      setIsChatOpen(true);
+                    }}
+                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+                    title="Back to canvas"
+                  >
+                    <IconArrowLeft />
+                  </button>
+                  <span className="text-sm font-medium text-gray-900">Chat</span>
+                  <span className="text-xs text-gray-500">with AI</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      setIsFullscreenChat(false);
+                      handleCloseChat(true);
+                    }}
+                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+                    title="Close"
+                  >
+                    <IconCross />
+                  </button>
+                </div>
+              </div>
+
+              {/* Content area: chat + plan side by side */}
+              <div className="flex flex-1 overflow-hidden relative">
+                <div className="flex-1 overflow-hidden">
+                  <ChatPanel
+                    onClose={() => {
+                      setIsFullscreenChat(false);
+                      handleCloseChat(true);
+                    }}
+                    hideHeader={true}
+                    isFullscreen={isFullscreenChat}
+                    messages={messages}
+                    input={input}
+                    setInput={setInput}
+                    onSubmit={handleSubmit}
+                    isLoading={isLoading}
+                    onNavigateToFrames={navigateToFrames}
+                  />
+                </div>
+
+                {/* Plan progress panel or open button */}
+                {activePlanDetails && isPlanPanelVisible && (
+                  <PlanProgressPanel
+                    plan={activePlanDetails}
+                    isLoading={isLoading}
+                    onToggleVisibility={() => setIsPlanPanelVisible(false)}
+                  />
+                )}
+                {activePlanDetails && !isPlanPanelVisible && (
+                  <button
+                    onClick={() => setIsPlanPanelVisible(true)}
+                    className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 z-10"
+                    title="Show plan"
+                  >
+                    <IconSidebarGlobalClosed css={{ transform: 'rotate(180deg)' }} />
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <ChatPanel
+              onClose={() => {
+                setIsFullscreenChat(false);
+                handleCloseChat(true);
+              }}
+              onCollapse={() => {
+                handleCloseChat(false);
+                const lastAssistantMsg = messages.findLast(m => m.role === 'assistant' && m.content?.trim());
+                if (lastAssistantMsg?.content) {
+                  setResponseToast(lastAssistantMsg.content);
+                  setToastCentered(true);
+                  setIsToolbarExpanded(true);
+                }
+              }}
+              onExpand={() => {
+                setIsFullscreenChat(true);
+              }}
+              isFullscreen={false}
+              messages={messages}
+              input={input}
+              setInput={setInput}
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+              onNavigateToFrames={navigateToFrames}
+            />
+          )}
         </div>
       )}
     </div>

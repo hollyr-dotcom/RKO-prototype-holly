@@ -869,9 +869,28 @@ Canvas is empty. Start placing content at (0, 0).`;
           let sentTextLength = 0;
 
           for await (const event of result) {
-            // Handle streaming text deltas
+            // Handle streaming text deltas - try multiple event types
             if (event.type === "raw_model_stream_event") {
               const data = event.data as Record<string, unknown>;
+
+              // Debug: log the data type to see what's inside
+              if (process.env.NODE_ENV === 'development' && data.type) {
+                console.log('[RAW EVENT DATA]', data.type);
+              }
+
+              // Handle output_text_delta (OpenAI Agents format)
+              if (data.type === "output_text_delta") {
+                const delta = data.delta as string;
+                if (delta) {
+                  textContent += delta;
+                  controller.enqueue(
+                    encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
+                  );
+                  sentTextLength = textContent.length;
+                }
+              }
+
+              // Handle response.output_text.delta (Anthropic format - fallback)
               if (data.type === "response.output_text.delta") {
                 const delta = data.delta as string;
                 if (delta) {
@@ -881,6 +900,33 @@ Canvas is empty. Start placing content at (0, 0).`;
                   );
                   sentTextLength = textContent.length;
                 }
+              }
+
+              // Handle content_block_delta (Anthropic format)
+              if (data.type === "content_block_delta") {
+                const deltaData = data.delta as Record<string, unknown>;
+                if (deltaData?.type === "text_delta") {
+                  const delta = deltaData.text as string;
+                  if (delta) {
+                    textContent += delta;
+                    controller.enqueue(
+                      encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
+                    );
+                    sentTextLength = textContent.length;
+                  }
+                }
+              }
+            }
+
+            // Handle text_delta events directly (OpenAI Realtime format)
+            if (event.type === "text_delta" || event.type === "response.text.delta") {
+              const delta = (event as { delta?: string }).delta || (event as { text?: string }).text;
+              if (delta) {
+                textContent += delta;
+                controller.enqueue(
+                  encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
+                );
+                sentTextLength = textContent.length;
               }
             }
 

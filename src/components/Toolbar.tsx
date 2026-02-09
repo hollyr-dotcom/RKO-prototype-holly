@@ -110,8 +110,10 @@ export function Toolbar({
     onSubmit(inputValue);
     setInputValue("");
     setSelectedSuggestionIndex(-1);
-    // Keep expanded + refocus input
-    setTimeout(() => inputRef.current?.focus(), 50);
+    // Keep expanded + refocus input - use requestAnimationFrame for better timing
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
   };
 
   const handleExpand = () => {
@@ -152,6 +154,16 @@ export function Toolbar({
       onExpandedChange?.(false);
     }
   }, [isChatOpen, hideInput]);
+
+  // Refocus input after AI finishes replying (in toast mode)
+  useEffect(() => {
+    if (!isLoading && isExpanded && !isChatOpen && !hideInput) {
+      // Small delay to ensure toast renders first
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [isLoading, isExpanded, isChatOpen, hideInput]);
 
   return (
     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[70]">
@@ -343,7 +355,7 @@ export function Toolbar({
                       }
                     }
                   }}
-                  placeholder={isLoading ? "Reply..." : "Where should we start?"}
+                  placeholder={isLoading || hasMessages ? "Reply..." : "Ask me anything"}
                   disabled={isLoading}
                   className="flex-1 py-2 text-lg bg-transparent border-0 outline-none placeholder:text-gray-400 disabled:opacity-50 min-w-0"
                 />
@@ -353,7 +365,7 @@ export function Toolbar({
                   onClick={handleExpand}
                   className="flex-1 py-2 text-lg text-gray-400 text-left hover:text-gray-500 transition-colors duration-200 whitespace-nowrap font-normal"
                 >
-                  {isLoading ? "Reply..." : "Ask me anything"}
+                  {isLoading || hasMessages ? "Reply..." : "Ask me anything"}
                 </button>
               )}
 

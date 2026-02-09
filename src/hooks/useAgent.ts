@@ -132,6 +132,19 @@ export function useAgent(onToolCall?: ToolHandler, getCanvasState?: CanvasStateG
                 if (data.type === "text") {
                   // Buffer text content
                   bufferedText += data.content;
+
+                  // Update message immediately to show streaming text
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantId
+                        ? {
+                            ...m,
+                            content: bufferedText,
+                            toolInvocations: bufferedTools.length > 0 ? bufferedTools : undefined,
+                          }
+                        : m
+                    )
+                  );
                 }
 
                 if (data.type === "tool") {

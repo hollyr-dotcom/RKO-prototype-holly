@@ -71,3 +71,18 @@
 .animate-suggestions-in {
   animation: suggestions-in 0.2s ease-out forwards;
 }
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slideInFromLeft {
+  animation: slideInFromLeft 0.3s ease-out both;
+}
