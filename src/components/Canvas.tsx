@@ -55,7 +55,7 @@ function playChime(type: 'start' | 'end') {
 }
 
 // Floating thinking indicator
-function FloatingThinkingIndicator() {
+function FloatingThinkingIndicator({ status = "Thinking..." }: { status?: string }) {
   return (
     <div className="absolute bottom-24 left-1/2 -translate-x-1/2">
       <div className="flex items-center gap-3 bg-white rounded-full px-5 py-3 shadow-lg border border-gray-200">
@@ -64,7 +64,7 @@ function FloatingThinkingIndicator() {
           <span className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
           <span className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
         </div>
-        <span className="text-sm text-gray-600">Thinking...</span>
+        <span className="text-sm text-gray-600">{status}</span>
       </div>
     </div>
   );
@@ -152,7 +152,7 @@ function FloatingQuestionCard({
 
   return (
     <div className="absolute bottom-24 left-1/2 -translate-x-1/2 w-[520px]">
-      <div className="bg-white text-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
+      <div className="bg-white text-gray-900 shadow-2xl overflow-hidden border border-gray-200" style={{ borderRadius: '32px' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-2">
           <p className="text-base font-medium flex-1 pr-4">{question}</p>
@@ -279,11 +279,12 @@ function FloatingPlanApproval({
     <div className="absolute bottom-28 left-1/2 -translate-x-1/2 w-[420px]">
       <div
         onClick={onViewDetails}
-        className="flex items-center gap-3 bg-white text-gray-900 rounded-2xl shadow-lg border border-gray-200 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
+        className="flex items-center gap-3 bg-white text-gray-900 shadow-lg border border-gray-200 px-4 cursor-pointer hover:bg-gray-50 transition-colors"
+        style={{ borderRadius: '32px', paddingTop: '16px', paddingBottom: '16px' }}
       >
         {/* Icon */}
-        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-          <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+          <svg className="w-3.5 h-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
         </div>
@@ -296,7 +297,7 @@ function FloatingPlanApproval({
         {/* Approve button */}
         <button
           onClick={(e) => { e.stopPropagation(); onApprove(); }}
-          className="px-4 py-1.5 text-sm font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex-shrink-0"
+          className="px-4 py-1.5 text-sm font-medium bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors flex-shrink-0"
         >
           Approve
         </button>
@@ -722,6 +723,9 @@ export function Canvas() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questionAnswers, setQuestionAnswers] = useState<string[]>([]);
   const [dismissedPlan, setDismissedPlan] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(384); // 384px = w-96
+  const [isResizing, setIsResizing] = useState(false);
+  const [isFullscreenChat, setIsFullscreenChat] = useState(false);
   const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
   const isProcessingToolCallRef = useRef(false);
@@ -749,6 +753,7 @@ export function Canvas() {
       setResponseToast(null);
       setToastCentered(false);
       setDismissedPlan(true); // Mark plan as dismissed so it doesn't float back
+      setIsInQAFlow(false); // Exit Q&A flow to restore hybrid toolbar
     }
     // (Minus button handles restoration explicitly in onCollapse)
   }, []);
@@ -2164,7 +2169,7 @@ export function Canvas() {
   // Voice and text both use the same messages-based pendingQuestion
   const showFloatingQuestion = !isChatOpen && !!pendingQuestion && !isLoading;
   // Plan only shows after loading completes (so thinking can show while processing)
-  const showFloatingPlan = !isChatOpen && !!pendingPlan && !pendingQuestion && !isLoading;
+  const showFloatingPlan = !isChatOpen && !!pendingPlan && !pendingQuestion && !isLoading && !dismissedPlan;
   // Thinking shows when loading BUT NOT during plan execution (progress indicator handles that)
   const showFloatingThinking = !isChatOpen && isLoading && !hasActivePlan;
   const showFloatingProgress = !isChatOpen && hasActivePlan && !showFloatingQuestion && !showFloatingPlan && !showFloatingThinking;
@@ -2201,13 +2206,47 @@ export function Canvas() {
     }
   }, [isChatOpen]);
 
+  // Handle sidebar resize
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newWidth = window.innerWidth - e.clientX;
+      // Min width: 300px, Max width: 800px
+      setSidebarWidth(Math.max(300, Math.min(800, newWidth)));
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
+
   // Toolbar always visible - prompt input hides itself when sidebar is open
   const showToolbar = true;
 
   return (
     <div className="h-screen w-screen flex overflow-hidden relative">
-      {/* Main canvas area */}
-      <div className="flex-1 relative">
+      {/* Main canvas area - hidden in fullscreen chat */}
+      {!isFullscreenChat && (
+        <div
+          className="relative transition-all duration-200"
+          style={{
+            width: isChatOpen ? `calc(100vw - ${sidebarWidth}px)` : '100vw'
+          }}
+        >
         <Tldraw onMount={handleMount} hideUi />
 
         {/* AI Chat button - top right, hidden when panel is open */}
@@ -2284,9 +2323,19 @@ export function Canvas() {
           )}
 
           {/* Floating thinking indicator */}
-          {!isChatOpen && isLoading && !hasActivePlan && (
-            <FloatingThinkingIndicator />
-          )}
+          {!isChatOpen && isLoading && !hasActivePlan && (() => {
+            // Determine what the AI is doing based on recent tool calls
+            const lastMsg = messages[messages.length - 1];
+            const recentTools = lastMsg?.role === 'assistant' ? lastMsg.toolInvocations || [] : [];
+            const lastSearchTool = [...recentTools].reverse().find(t => t.toolName === 'webSearch');
+
+            let status = "Thinking...";
+            if (lastSearchTool) {
+              status = "Searching the web...";
+            }
+
+            return <FloatingThinkingIndicator status={status} />;
+          })()}
 
           {/* Floating voice indicator */}
           {!isChatOpen && (voice.state === "listening" || voice.state === "speaking") && (
@@ -2297,8 +2346,14 @@ export function Canvas() {
 
           {/* Centered toast */}
           {toastCentered && responseToast && !showFloatingQuestion && !isChatOpen && (
-            <div className={`absolute left-1/2 -translate-x-1/2 z-[65] w-[420px] ${showFloatingPlan ? 'bottom-[184px]' : 'bottom-24'}`}>
-              <div className="pointer-events-auto w-full bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative">
+            <div
+              className={`absolute z-[65] w-[420px] ${showFloatingPlan ? 'bottom-[184px]' : 'bottom-24'}`}
+              style={{
+                left: '50%',
+                transform: 'translateX(-50%)'
+              }}
+            >
+              <div className="pointer-events-auto w-full bg-white shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: '32px' }}>
                 {/* Sticky icon */}
                 <div className="absolute top-4 left-4 z-10 bg-white">
                   <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center">
@@ -2306,10 +2361,10 @@ export function Canvas() {
                   </div>
                 </div>
                 {/* Sticky close button */}
-                <div className="absolute top-4 right-4 z-10 bg-white">
+                <div className="absolute top-4 right-4 z-10">
                   <div
                     onClick={() => { setResponseToast(null); setToastCentered(false); }}
-                    className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors rounded cursor-pointer"
+                    className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors rounded-full cursor-pointer"
                     title="Dismiss"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -2369,16 +2424,34 @@ export function Canvas() {
             onOpenChat={() => setIsChatOpen(true)}
             hasMessages={messages.length > 0}
             canvasState={getCanvasState()}
+            canvasWidth={isChatOpen && typeof window !== 'undefined' ? window.innerWidth - sidebarWidth : undefined}
           />
         )}
-      </div>
+        </div>
+      )}
 
-      {/* Side chat panel - fixed position, outside flex flow */}
-      {isChatOpen && (
-        <div className="fixed top-0 right-0 h-full w-96 z-[999]">
+      {/* Side chat panel - fixed position, outside flex flow OR fullscreen */}
+      {(isChatOpen || isFullscreenChat) && (
+        <div
+          className={`fixed top-0 h-full z-[999] ${isFullscreenChat ? 'left-0 right-0' : 'right-0 select-none'}`}
+          style={isFullscreenChat ? undefined : { width: `${sidebarWidth}px` }}
+        >
+          {/* Resize handle (sidebar mode only) */}
+          {!isFullscreenChat && (
+            <div
+              onMouseDown={handleResizeStart}
+              className={`absolute left-0 top-0 bottom-0 w-1 hover:w-1.5 transition-all cursor-col-resize z-[1000] ${
+                isResizing ? 'bg-blue-500 w-1.5' : 'bg-transparent hover:bg-gray-300'
+              }`}
+            />
+          )}
           <ChatPanel
-            onClose={handleCloseChat}
-            onCollapse={() => {
+            onClose={() => {
+              // X button always closes completely - no toasts, no floating UI
+              setIsFullscreenChat(false);
+              handleCloseChat(true); // Dismiss everything
+            }}
+            onCollapse={!isFullscreenChat ? () => {
               // Minus button = minimize, DON'T dismiss plan, restore toast
               handleCloseChat(false);
               // Find the most recent assistant message with actual text content
@@ -2388,7 +2461,23 @@ export function Canvas() {
                 setToastCentered(true);
                 setIsToolbarExpanded(true);
               }
-            }}
+            } : undefined}
+            onExpand={!isFullscreenChat ? () => {
+              setIsFullscreenChat(true);
+            } : undefined}
+            onExitFullscreen={isFullscreenChat ? () => {
+              // Back arrow: close and show floating UI (minimize behavior)
+              setIsFullscreenChat(false);
+              handleCloseChat(false);
+              // Restore toast if there's a recent message
+              const lastAssistantMsg = messages.findLast(m => m.role === 'assistant' && m.content?.trim());
+              if (lastAssistantMsg?.content) {
+                setResponseToast(lastAssistantMsg.content);
+                setToastCentered(true);
+                setIsToolbarExpanded(true);
+              }
+            } : undefined}
+            isFullscreen={isFullscreenChat}
             messages={messages}
             input={input}
             setInput={setInput}

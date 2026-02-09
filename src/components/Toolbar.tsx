@@ -154,10 +154,23 @@ export function Toolbar({
   }, [isChatOpen, hideInput]);
 
   return (
-    <div
-      className="absolute bottom-6 left-1/2 z-[70] flex items-center gap-3 -translate-x-1/2"
-    >
-      {/* Main toolbar container */}
+    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[70]">
+      {/* Tools button - positioned absolutely to the left */}
+      {isExpanded && (
+        <button
+          type="button"
+          onClick={handleCollapse}
+          className="absolute right-[calc(100%+12px)] top-1/2 -translate-y-1/2 p-2.5 bg-white border border-gray-200 text-black rounded-full flex items-center justify-center transition-all duration-200 hover:bg-gray-50 flex-shrink-0"
+          style={{
+            boxShadow: "0 4px 24px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
+          }}
+          title="Show tools"
+        >
+          <IconShapesLinesStacked size="medium" />
+        </button>
+      )}
+
+      {/* Main toolbar container - always centered */}
       <div
         className="flex items-center bg-white rounded-full border border-gray-200 p-1.5 transition-all duration-300 ease-out"
         style={{
@@ -389,21 +402,6 @@ export function Toolbar({
           </div>
         </div>
       </div>
-
-      {/* Tools button - outside toolbar on the left, only when expanded */}
-      {isExpanded && (
-        <button
-          type="button"
-          onClick={handleCollapse}
-          className="p-2.5 bg-white border border-gray-200 text-black rounded-full flex items-center justify-center transition-all duration-200 hover:bg-gray-50 flex-shrink-0 order-first"
-          style={{
-            boxShadow: "0 4px 24px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
-          }}
-          title="Show tools"
-        >
-          <IconShapesLinesStacked size="medium" />
-        </button>
-      )}
     </div>
   );
 }

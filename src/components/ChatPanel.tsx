@@ -25,6 +25,7 @@ function VoiceWaveIcon() {
 interface ChatPanelProps {
   onClose: () => void;
   onCollapse?: () => void;
+  onExpand?: () => void;
   messages: Message[];
   input: string;
   setInput: (input: string) => void;
@@ -32,6 +33,8 @@ interface ChatPanelProps {
   isLoading: boolean;
   hideHeader?: boolean;
   onNavigateToFrames?: (frameIds: string[]) => void;
+  isFullscreen?: boolean;
+  onExitFullscreen?: () => void;
 }
 
 // Question block with clickable suggestions
@@ -579,6 +582,7 @@ function CompletedBlock({
 export function ChatPanel({
   onClose,
   onCollapse,
+  onExpand,
   messages,
   input,
   setInput,
@@ -586,8 +590,23 @@ export function ChatPanel({
   isLoading,
   hideHeader = false,
   onNavigateToFrames,
+  isFullscreen = false,
+  onExitFullscreen,
 }: ChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [questionAnswers, setQuestionAnswers] = useState<string[]>([]);
+  const [lastAskUserId, setLastAskUserId] = useState<string | null>(null);
+
+  // Reset only when a genuinely NEW askUser message appears (not on every message change)
+  useEffect(() => {
+    const latestAskUser = messages.findLast(m => m.toolInvocations?.some(t => t.toolName === 'askUser'));
+    if (latestAskUser && latestAskUser.id !== lastAskUserId) {
+      setLastAskUserId(latestAskUser.id);
+      setCurrentQuestionIndex(0);
+      setQuestionAnswers([]);
+    }
+  }, [messages, lastAskUserId]);
 
   // Auto-scroll to bottom when messages change or loading state changes
   useEffect(() => {
@@ -669,29 +688,44 @@ export function ChatPanel({
   })();
 
   return (
-    <div className="w-96 h-full bg-white border-l border-gray-200 flex flex-col shadow-xl">
+    <div className="w-full h-full bg-white border-l border-gray-200 flex flex-col shadow-xl">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
+          {isFullscreen && onExitFullscreen && (
+            <button
+              onClick={onExitFullscreen}
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+              title="Back to canvas"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
           <span className="text-sm font-medium text-gray-900">Chat</span>
           <span className="text-xs text-gray-500">with AI</span>
         </div>
         <div className="flex items-center gap-1">
-          {onCollapse && (
+          {!isFullscreen && onCollapse && (
             <button
               onClick={onCollapse}
               className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
               title="Minimize to toast"
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M5 12h14" />
+              </svg>
+            </button>
+          )}
+          {!isFullscreen && onExpand && (
+            <button
+              onClick={onExpand}
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+              title="Fullscreen chat"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
               </svg>
             </button>
           )}
@@ -700,14 +734,7 @@ export function ChatPanel({
             className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
             title="Close"
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
           </button>
@@ -725,7 +752,7 @@ export function ChatPanel({
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 text-sm mt-8">
             <p className="mb-2">Ask me anything</p>
@@ -771,12 +798,18 @@ export function ChatPanel({
                   message.role === "user" ? "flex justify-end" : ""
                 }`}
               >
-                {message.role === "user" ? (
-                  /* User message: light gray bg, right aligned */
-                  <div className="max-w-[80%] rounded-2xl px-4 py-2 bg-gray-100 text-gray-900">
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  </div>
-                ) : (
+                {message.role === "user" ? (() => {
+                  // Hide the combined answer message that follows an askUser tool
+                  const prevMsg = index > 0 ? messages[index - 1] : null;
+                  const isAskUserResponse = prevMsg?.role === 'assistant' && prevMsg?.toolInvocations?.some(t => t.toolName === 'askUser');
+                  if (isAskUserResponse) return null;
+
+                  return (
+                    <div className="max-w-[80%] rounded-2xl px-4 py-2 bg-gray-100 text-gray-900">
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    </div>
+                  );
+                })() : (
                   /* AI message: full width, no bg */
                   <div className="w-full">
                     {/* Hide text content if: askUser tool is present OR content looks like JSON (tool output) */}
@@ -798,22 +831,77 @@ export function ChatPanel({
                       </div>
                     )}
 
-                    {/* askUser tool - render as question(s) with suggestions */}
+                    {/* askUser tool - render as sequential Q&A conversation */}
                     {askUserTool && (() => {
                       const args = askUserTool.args as { questions?: Array<{ question: string; suggestions: string[] }>; question?: string; suggestions?: string[] };
                       const questions = args.questions || (args.question ? [{ question: args.question, suggestions: args.suggestions || [] }] : []);
+
+                      // Check if user already submitted all answers
+                      const nextUserMsg = messages.slice(index + 1).find(m => m.role === 'user');
+
+                      if (nextUserMsg) {
+                        // All answered -show static Q&A parsed from the submitted message
+                        const answers = (nextUserMsg.content || '').split('\n');
+                        return (
+                          <div className={message.content ? "mt-3" : ""}>
+                            {questions.map((q, qi) => (
+                              <div key={qi} className={qi > 0 ? "mt-4" : ""}>
+                                <p className="text-sm text-gray-900 mb-2">{q.question}</p>
+                                {answers[qi] && (
+                                  <div className="flex justify-end mb-2">
+                                    <div className="max-w-[80%] rounded-2xl px-4 py-2 bg-gray-100 text-gray-900">
+                                      <p className="text-sm">{answers[qi]}</p>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      }
+
+                      // Active Q&A -show questions one at a time
                       return (
                         <div className={message.content ? "mt-3" : ""}>
-                          {questions.map((q, qi) => (
-                            <div key={qi} className={qi > 0 ? "mt-3" : ""}>
-                              <QuestionBlock
-                                question={q.question}
-                                suggestions={q.suggestions}
-                                onSelect={(answer) => onSubmit(answer)}
-                                isLatest={isLatestMessage && !isLoading}
-                              />
-                            </div>
-                          ))}
+                          {questions.map((q, qi) => {
+                            const hasAnswer = questionAnswers[qi] !== undefined;
+
+                            // Don't show questions we haven't reached yet
+                            if (qi > currentQuestionIndex) return null;
+
+                            return (
+                              <div key={qi} className={qi > 0 ? "mt-4" : ""}>
+                                {hasAnswer ? (
+                                  <>
+                                    {/* Answered -static question text + answer bubble */}
+                                    <p className="text-sm text-gray-900 mb-2">{q.question}</p>
+                                    <div className="flex justify-end mb-2">
+                                      <div className="max-w-[80%] rounded-2xl px-4 py-2 bg-gray-100 text-gray-900">
+                                        <p className="text-sm">{questionAnswers[qi]}</p>
+                                      </div>
+                                    </div>
+                                  </>
+                                ) : (
+                                  /* Current unanswered -QuestionBlock renders question text internally */
+                                  <QuestionBlock
+                                    question={q.question}
+                                    suggestions={q.suggestions}
+                                    onSelect={(answer) => {
+                                      const newAnswers = [...questionAnswers, answer];
+                                      setQuestionAnswers(newAnswers);
+                                      if (qi < questions.length - 1) {
+                                        setCurrentQuestionIndex(prev => prev + 1);
+                                      } else {
+                                        // Last question -submit all answers
+                                        onSubmit(newAnswers.join("\n"));
+                                      }
+                                    }}
+                                    isLatest={isLatestMessage && !isLoading}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       );
                     })()}
@@ -1024,15 +1112,15 @@ export function ChatPanel({
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="p-3 border-t border-gray-200">
+      <form onSubmit={handleSubmit} className={`p-4 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
         <div className="flex items-center bg-gray-100 rounded-full">
           {/* Plus button */}
           <button
             type="button"
-            className="p-2 text-black hover:text-black transition-colors duration-200 flex-shrink-0"
+            className="p-3 text-black hover:text-black transition-colors duration-200 flex-shrink-0 flex items-center justify-center"
             title="Add"
           >
-            <IconPlus size="small" />
+            <IconPlus size="medium" />
           </button>
 
           {/* Input */}
@@ -1042,34 +1130,34 @@ export function ChatPanel({
             onChange={(e) => setInput(e.target.value)}
             placeholder="Enter reply..."
             disabled={isLoading}
-            className="flex-1 py-1.5 text-sm bg-transparent border-0 outline-none placeholder:text-gray-400 disabled:opacity-50 min-w-0"
+            className="flex-1 py-3 text-base bg-transparent border-0 outline-none placeholder:text-gray-400 disabled:opacity-50 min-w-0"
           />
 
           {/* Mic button */}
           <button
             type="button"
-            className="p-2 text-black hover:text-black transition-colors duration-200 flex-shrink-0"
+            className="p-3 text-black hover:text-black transition-colors duration-200 flex-shrink-0 flex items-center justify-center"
             title="Voice input"
           >
-            <IconMicrophone size="small" />
+            <IconMicrophone size="medium" />
           </button>
 
           {/* Voice mode / Submit button */}
           {input.trim() ? (
             <button
               type="submit"
-              className="w-8 h-8 m-0.5 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:bg-gray-800 flex-shrink-0"
+              className="w-10 h-10 m-1 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:bg-gray-800 flex-shrink-0"
               title="Send"
             >
-              <IconArrowUp size="small" />
+              <IconArrowUp size="medium" />
             </button>
           ) : (
             <button
               type="button"
-              className="w-8 h-8 m-0.5 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:bg-gray-800 flex-shrink-0"
+              className="w-10 h-10 m-1 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:bg-gray-800 flex-shrink-0"
               title="Voice mode"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="2" y="9" width="2.5" height="6" rx="1.25" />
                 <rect x="6.5" y="5" width="2.5" height="14" rx="1.25" />
                 <rect x="11" y="3" width="2.5" height="18" rx="1.25" />
