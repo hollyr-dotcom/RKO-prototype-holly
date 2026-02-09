@@ -3,6 +3,7 @@
 import type { Message } from "@/hooks/useAgent";
 import { useState, useEffect, useRef } from "react";
 import Markdown from "react-markdown";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   IconPlus,
   IconMicrophone,
@@ -86,7 +87,7 @@ function TaskStatusIcon({ status }: { status: 'pending' | 'running' | 'done' }) 
       );
     case 'done':
       return (
-        <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+        <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
           <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
@@ -182,11 +183,13 @@ function TaskProgressHeader({
   steps,
   currentStep,
   isExecuting,
+  isFullscreen = false,
 }: {
   title: string;
   steps: string[];
   currentStep: number;
   isExecuting: boolean;
+  isFullscreen?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -206,85 +209,62 @@ function TaskProgressHeader({
       {/* Collapsed header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 pt-3 pb-2 flex items-center gap-3 hover:bg-gray-100 transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-100 transition-colors"
       >
-        {/* Spinner circle */}
-        <div className="relative w-6 h-6 flex-shrink-0">
-          <svg className={`w-6 h-6 ${isExecuting ? 'animate-spin' : '-rotate-90'}`} viewBox="0 0 36 36">
-            <path
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              fill="none"
-              stroke="#e5e7eb"
-              strokeWidth="3"
-            />
-            <path
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              fill="none"
-              stroke={isComplete ? "#22c55e" : "#3b82f6"}
-              strokeWidth="3"
-              strokeDasharray={isExecuting ? "25, 100" : `${progress}, 100`}
-              className="transition-all duration-300"
-            />
+        {/* Title and step count */}
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-medium text-gray-900">Plan</p>
+          {!isExpanded && !isFullscreen && (
+            <span className="text-xs text-gray-400">{completedSteps}/{steps.length}</span>
+          )}
+        </div>
+
+        {/* Expand icon - positioned to align with X button icon */}
+        <div className="pr-1.5">
+          <svg
+            className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M19 9l-7 7-7-7" />
           </svg>
         </div>
-
-        {/* Title and current step */}
-        <div className="flex-1 text-left min-w-0">
-          <p className="text-xs font-medium text-gray-900 truncate">{title}</p>
-          {!isComplete && (
-            <p className="text-xs text-gray-500 truncate">
-              {isExecuting ? "Working on: " : "Next: "}{currentStepText}
-            </p>
-          )}
-          {isComplete && (
-            <p className="text-xs text-green-600 font-medium">Complete!</p>
-          )}
-        </div>
-
-        {/* Step count */}
-        <span className="text-xs text-gray-400">{completedSteps}/{steps.length}</span>
-
-        {/* Expand icon */}
-        <svg
-          className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path d="M19 9l-7 7-7-7" />
-        </svg>
       </button>
 
-      {/* Progress bar - inset below text, subtle */}
-      <div className="px-4 pb-3">
-        <div className="h-0.5 w-full rounded-full bg-gray-200 overflow-hidden">
-          <div
-            className={`h-full transition-all duration-300 ${isComplete ? 'bg-green-400' : 'bg-blue-300'}`}
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-
       {/* Expanded steps list */}
-      {isExpanded && (
-        <div className="px-4 py-2 border-t border-gray-200 bg-white max-h-48 overflow-y-auto">
-          {steps.map((step, i) => {
-            const isDone = i < completedSteps;
-            const isRunning = i === currentStep && isExecuting;
-            return (
-              <div key={i} className="flex gap-2 py-1 text-xs items-start">
-                <div className="mt-0.5">
-                  <TaskStatusIcon status={isDone ? 'done' : isRunning ? 'running' : 'pending'} />
-                </div>
-                <span className={`${isDone ? 'text-gray-400 line-through' : isRunning ? 'text-blue-700' : 'text-gray-600'}`}>
-                  {i + 1}. {step}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.div
+            className="pl-6 pr-4 bg-gray-50 overflow-hidden"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{
+              height: { type: "tween", ease: [0.25, 0.1, 0.25, 1.0], duration: 0.2 },
+              opacity: { type: "tween", ease: [0.25, 0.1, 0.25, 1.0], duration: 0.15 }
+            }}
+          >
+            <div className="pb-6">
+              {steps.map((step, i) => {
+                const isDone = i < completedSteps;
+                const isRunning = i === currentStep && isExecuting;
+                return (
+                  <div key={i} className="flex gap-2 py-1.5 text-xs items-center">
+                    <div>
+                      <TaskStatusIcon status={isDone ? 'done' : isRunning ? 'running' : 'pending'} />
+                    </div>
+                    <span className={`${isDone ? 'text-gray-400 line-through' : isRunning ? 'text-blue-700' : 'text-gray-600'}`}>
+                      {i + 1}. {step}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -729,6 +709,7 @@ export function ChatPanel({
           steps={activePlan.steps}
           currentStep={activePlan.currentStep}
           isExecuting={activePlan.isExecuting}
+          isFullscreen={isFullscreen}
         />
       )}
 
@@ -939,9 +920,12 @@ export function ChatPanel({
                           : completedSteps > 0 ? completedSteps - 1 : 0
                       ) : undefined;
 
+                      // Hide inline plan block once execution starts (shown in header instead)
+                      if (executionStarted) return null;
+
                       // In fullscreen: only show approve/reject buttons (steps are in sidebar)
                       if (isFullscreen) {
-                        if (!isLatestMessage || executionStarted) return null;
+                        if (!isLatestMessage) return null;
                         return (
                           <div className={message.content ? "mt-3" : ""}>
                             <div className="flex gap-2">
@@ -1115,8 +1099,8 @@ export function ChatPanel({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Floating progress indicator - shows current step being worked on */}
-      {activePlan && activePlan.isExecuting && (
+      {/* Floating progress indicator - hidden */}
+      {false && activePlan && activePlan.isExecuting && (
         <div className={`absolute bottom-24 left-1/2 -translate-x-1/2 z-10 pointer-events-none ${isFullscreen ? 'max-w-3xl' : ''}`}>
           <div className="pointer-events-auto bg-gray-100 text-gray-900 shadow-md hover:bg-gray-200 transition-colors overflow-hidden rounded-full cursor-pointer px-4 py-2">
             <div className="flex items-center gap-3">

@@ -113,8 +113,9 @@ export function PromptSuggestions({
   return (
     <div className="absolute bottom-full left-0 right-0 mb-2 animate-suggestions-in">
       <div
-        className="bg-white rounded-2xl border border-gray-200 py-1.5 overflow-hidden"
+        className="bg-white border border-gray-200 py-1.5 overflow-hidden"
         style={{
+          borderRadius: '32px',
           boxShadow: "0 4px 24px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.06)",
         }}
       >
