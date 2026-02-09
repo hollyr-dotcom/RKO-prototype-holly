@@ -16,13 +16,15 @@ type ToolCall = {
 // --- Conversation Tools ---
 const askUserTool = tool({
   name: "askUser",
-  description: "REQUIRED for all questions! Shows clickable button pills the user can tap. NEVER write questions as plain text - always use this tool instead. It creates a much better UX.",
+  description: "Ask the user 1-3 questions at once. Shows clickable button pills. NEVER write questions as plain text. Call this ONCE with ALL your questions — don't call it multiple times.",
   parameters: z.object({
-    question: z.string().describe("The question to ask"),
-    suggestions: z.array(z.string()).min(2).max(4).describe("2-4 clickable answer options"),
+    questions: z.array(z.object({
+      question: z.string().describe("The question to ask"),
+      suggestions: z.array(z.string()).min(2).max(4).describe("2-4 clickable answer options"),
+    })).min(1).max(3).describe("Array of questions to ask (1-3). All shown sequentially without waiting."),
   }),
-  execute: async ({ question, suggestions }) => {
-    return JSON.stringify({ question, suggestions });
+  execute: async ({ questions }) => {
+    return JSON.stringify({ questions });
   },
 });
 
@@ -98,8 +100,9 @@ const webSearchTool = tool({
   parameters: z.object({
     query: z.string().describe("What to search for"),
     purpose: z.string().describe("What you're trying to learn"),
+    maxResults: z.number().min(1).max(20).describe("How many results to fetch — use your judgment: 3-5 for quick lookups, 8-12 for broad research, up to 20 for comprehensive surveys"),
   }),
-  execute: async ({ query, purpose }) => {
+  execute: async ({ query, purpose, maxResults }) => {
     try {
       const apiKey = process.env.TAVILY_API_KEY;
 
@@ -127,7 +130,7 @@ const webSearchTool = tool({
           search_depth: "basic",
           include_answer: true,
           include_raw_content: false,
-          max_results: 3, // Reduced for speed
+          max_results: maxResults,
         }),
         signal: controller.signal,
       });
@@ -328,14 +331,27 @@ const updateStickyTool = tool({
 
 const moveItemTool = tool({
   name: "moveItem",
-  description: "Move an existing item to a new position. Use this to reorganize the canvas layout.",
+  description: "Move an existing shape/sticky to a new position. CRITICAL: Use this when user asks to rearrange, reorganize, reposition, or move items. Get the item ID from [CANVAS STATE]. This edits existing content rather than creating new content.",
   parameters: z.object({
-    itemId: z.string().describe("The ID of the item to move"),
+    itemId: z.string().describe("The ID of the existing item to move (get from canvas state)"),
     x: z.number().describe("New X position"),
     y: z.number().describe("New Y position"),
   }),
   execute: async (args) => {
     return JSON.stringify({ moved: args.itemId, x: args.x, y: args.y });
+  },
+});
+
+const organizeIntoFrameTool = tool({
+  name: "organizeIntoFrame",
+  description: "Move existing items into a frame. Use when user says 'organize these', 'put these in a frame', 'group these', 'rearrange'. This MOVES existing items - it does NOT create duplicates. Get item IDs from [CANVAS STATE].",
+  parameters: z.object({
+    frameName: z.string().describe("Name for the frame"),
+    itemIds: z.array(z.string()).describe("IDs of existing items to move into the frame (from canvas state)"),
+    layout: z.enum(["row", "column", "grid"]).describe("How to arrange items inside the frame").default("row"),
+  }),
+  execute: async (args) => {
+    return JSON.stringify(args);
   },
 });
 
@@ -347,45 +363,52 @@ const moveItemTool = tool({
 const planningAgent = new Agent({
   name: "Canvas Assistant",
   model: "gpt-5.2",
-  instructions: `You create visual artifacts on a whiteboard canvas.
+  instructions: `You're a friendly canvas assistant. You help people create visual artifacts on a whiteboard.
 
-WORKFLOW:
-1. Assess if you need real-world context (news, releases, specific data you don't have)
-2. Only if needed → webSearch() for facts/examples
-3. Ask exactly 2 questions with askUser() (one at a time)
-4. Create plan with confirmPlan()
+FIRST: DECIDE HOW TO RESPOND based on what the user asked:
 
-USE WEB SEARCH WISELY - Only when you truly need:
-- Current events, recent releases, latest versions
-- Real company/product names, actual competitors
-- Statistics, market data, specific examples
-- If user says "latest X" and you're not sure what that is
+1. JUST REPLY (no tools) — for simple/conversational requests:
+   - "What can you do?" → Brief, friendly answer (2-3 sentences)
+   - "Thanks" / "Cool" → Short acknowledgment
+   - General questions not about creating canvas content
+   - Keep replies short and conversational (1-3 sentences max)
 
-DON'T search if:
-- Making wireframes/diagrams (just create them)
-- User gave you all the details already
-- It's a generic task (brainstorm, org chart, flowchart)
+2. RESEARCH + REPLY (webSearch, then text) — for info requests:
+   - "What's the weather?" → search, then summarize
+   - "What are the latest trends in X?" → search, then summarize
+   - Questions that need facts but don't need canvas artifacts
+
+3. QUESTIONS + PLAN (askUser + confirmPlan) — for complex canvas creation:
+   - "Create a project kickoff" → needs scope, format, details
+   - "Design a user flow for checkout" → needs context
+   - "Build a competitive analysis" → needs industry, competitors
+   - Ask 1-2 questions with askUser(), then confirmPlan()
+   - Only use this for substantial, multi-step canvas work
+
+USE YOUR JUDGMENT. The key question: "Does this need visual artifacts on the canvas?"
+- Yes, and it's complex → questions + plan
+- Yes, but it's simple → just do it (you'll be handed to execution)
+- No → just reply with text
+
+WHEN ASKING QUESTIONS (only for complex canvas tasks):
+- Call askUser() ONCE with ALL your questions (1-2 questions) in the questions array
+- NEVER call askUser() multiple times — batch all questions into one call
+- After user answers all questions, create plan with confirmPlan()
+- IMPORTANT: When calling confirmPlan(), also write a brief contextual 1-sentence message. Vary it based on what you're building — e.g. "Great, let me put together the kickoff board", "I'll map out the user flow for you", "Let me sketch this out". Don't just say "Here's the plan:" every time.
+- NEVER list the plan steps in your text message — the plan UI shows them. Keep your message to 1 short sentence only.
 
 PLAN STEP FORMAT - KEEP IT SHORT:
 - Each step should be 3-8 words max
 - Be concise and scannable
-- BAD: "Create a homepage wireframe frame and lay out all the main sections including header, hero, features, testimonials, and footer"
 - GOOD: "Create homepage wireframe frame"
-- BAD: "Add 8-12 packaged service ideas per cluster with problem, AI approach, client, deliverables, and pricing"
-- GOOD: "Add service ideas to each cluster"
+- BAD: "Create a homepage wireframe frame and lay out all the main sections"
 
-IMPORTANT - NO DUPLICATE CONTENT:
-- When calling confirmPlan(), do NOT write out the steps as text too
-- Just say something brief then call the tool
+USE WEB SEARCH when you truly need current info:
+- Current events, recent releases, statistics
+- Real company/product data, actual competitors
+- DON'T search for generic tasks (wireframes, brainstorms, org charts)
 
-QUESTIONS: Ask exactly 2 questions total (one at a time), then create your plan. No more, no less.
-
-FOR REQUESTS:
-- Real-world topics: webSearch first, then 2 questions, then plan
-- Most requests: ask 2 questions, then plan
-- Simple tweaks: just do it directly
-
-CANVAS: Check [CANVAS STATE] for positions. Use SAFE ZONES.`,
+CANVAS: Check [CANVAS STATE] for existing content and positions.`,
   tools: [
     askUserTool,
     confirmPlanTool,
@@ -399,7 +422,27 @@ const executionAgent = new Agent({
   model: "gpt-5.2",
   instructions: `You are executing an approved plan. Create canvas items step by step.
 
-🚨 CRITICAL RULE #1: WHEN USER SAYS "CONTINUE", YOU MUST CONTINUE! 🚨
+🚨 CRITICAL RULE #1: EDIT EXISTING CONTENT, DON'T RECREATE! 🚨
+When user asks to "rearrange", "reorganize", "move", "edit", "change layout", "adjust", "reposition", "put in a frame", "organize":
+
+YOU MUST:
+1. Check [CANVAS STATE] section below to see what's already there
+2. Find the [ID: xxx] for each existing item
+3. Use moveItem(itemId, newX, newY) for EACH existing item
+4. If creating a frame, moveItem AFTER creating the frame to move items inside
+
+YOU MUST NOT:
+- Create new stickies/shapes with the same text as existing ones
+- Use createLayout() when items already exist - that duplicates content!
+- Ignore existing canvas items
+
+EXAMPLE - User says "put these in a frame":
+✓ CORRECT: createFrame() → moveItem(existingId1, ...) → moveItem(existingId2, ...)
+✗ WRONG: createLayout() with new stickies
+
+Check [CANVAS STATE] carefully. Use the IDs you see there!
+
+🚨 CRITICAL RULE #2: WHEN USER SAYS "CONTINUE", YOU MUST CONTINUE! 🚨
 If the last user message is "Continue" or similar, you MUST immediately:
 1. Call showProgress() for the next step
 2. Execute that step
@@ -407,7 +450,7 @@ If the last user message is "Continue" or similar, you MUST immediately:
 
 NEVER respond with just text when user says "Continue" - START WORKING IMMEDIATELY!
 
-⚠️ CRITICAL RULE #2: NEVER call createSticky or createShape multiple times!
+⚠️ CRITICAL RULE #3: NEVER call createSticky or createShape multiple times!
 If you need 2+ items, you MUST use createLayout() instead.
 
 EXECUTION FLOW:
@@ -555,6 +598,7 @@ BAD: 13 stickies each with random different colors`,
     deleteItemTool,
     updateStickyTool,
     moveItemTool,
+    organizeIntoFrameTool,
   ],
 });
 
@@ -563,7 +607,7 @@ BAD: 13 stickies each with random different colors`,
 // ============================================
 
 export async function POST(req: Request) {
-  const { messages, canvasState } = await req.json();
+  const { messages, canvasState, userEdits } = await req.json();
 
   // Build conversation context - include tool calls so agent knows what it proposed
   type MessageWithTools = {
@@ -676,66 +720,133 @@ DO NOT write explanatory text first - CALL showProgress() IMMEDIATELY!`}`;
       })
       .join("\n");
 
-    // Add question tracking to context
-    if (questionsAsked >= 2) {
-      conversationContext += `\n\n🛑 YOU HAVE ALREADY ASKED ${questionsAsked} QUESTIONS. DO NOT ASK MORE. Call confirmPlan() NOW with your plan.`;
-    } else if (questionsAsked === 1) {
-      conversationContext += `\n\n[Questions asked: 1 of 2. Ask 1 more question, then call confirmPlan().]`;
+    // Add question tracking — should only call askUser once (batched)
+    if (questionsAsked >= 1) {
+      conversationContext += `\n\n🛑 YOU ALREADY ASKED QUESTIONS. DO NOT call askUser() again. Call confirmPlan() NOW or just reply with text.`;
     }
   }
 
-  // Include canvas state if provided
-  if (canvasState && canvasState.length > 0) {
-    // Calculate actual bounding box using position + dimensions
-    type CanvasItem = {
-      id: string;
-      type: string;
-      text?: string;
-      color?: string;
-      x?: number;
-      y?: number;
-      width?: number;
-      height?: number;
-    };
+  // Include canvas state if provided (structured format with frames, orphans, arrows)
+  type ShapeInfo = {
+    id: string;
+    type: string;
+    text?: string;
+    color?: string;
+    name?: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    createdBy: string;
+  };
+  type FrameInfo = ShapeInfo & { children: ShapeInfo[]; arrows: ShapeInfo[] };
+  type StructuredCanvas = { frames: FrameInfo[]; orphans: ShapeInfo[]; arrows: ShapeInfo[] };
 
+  const canvas = canvasState as StructuredCanvas | undefined;
+  const hasContent = canvas && (canvas.frames.length > 0 || canvas.orphans.length > 0);
+
+  if (hasContent) {
+    // Calculate bounding box across all shapes
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    canvasState.forEach((item: CanvasItem) => {
-      const x = item.x ?? 0;
-      const y = item.y ?? 0;
-      const w = item.width ?? 200;
-      const h = item.height ?? 150;
-      minX = Math.min(minX, x);
-      minY = Math.min(minY, y);
-      maxX = Math.max(maxX, x + w);
-      maxY = Math.max(maxY, y + h);
+    const updateBounds = (s: ShapeInfo) => {
+      minX = Math.min(minX, s.x);
+      minY = Math.min(minY, s.y);
+      maxX = Math.max(maxX, s.x + s.width);
+      maxY = Math.max(maxY, s.y + s.height);
+    };
+    canvas.frames.forEach(f => { updateBounds(f); f.children.forEach(updateBounds); });
+    canvas.orphans.forEach(updateBounds);
+
+    // Build hierarchical description
+    const tag = (s: ShapeInfo) => s.createdBy === "ai" ? "AI" : "user";
+    const shapeDesc = (s: ShapeInfo) =>
+      `    - [ID: ${s.id}] "${s.text?.slice(0, 50) || 'no text'}" (${s.type}, ${s.color || 'default'}, ${tag(s)})`;
+
+    let canvasDescription = "";
+
+    canvas.frames.forEach(frame => {
+      canvasDescription += `\n  Frame "${frame.name || 'Untitled'}" (${tag(frame)}):`;
+      frame.children.forEach(child => {
+        canvasDescription += `\n${shapeDesc(child)}`;
+      });
+      if (frame.arrows.length > 0) {
+        canvasDescription += `\n    Connections: ${frame.arrows.length} arrows`;
+      }
     });
 
-    const canvasDescription = canvasState
-      .map((item: CanvasItem) => {
-        const w = item.width ?? 200;
-        const h = item.height ?? 150;
-        return `- [${item.id}] ${item.type} at (${item.x ?? 0}, ${item.y ?? 0}) size ${w}x${h}: "${item.text?.slice(0, 40) || 'no text'}"`;
-      })
-      .join("\n");
+    if (canvas.orphans.length > 0) {
+      canvasDescription += `\n  Loose items (not in any frame):`;
+      canvas.orphans.forEach(s => {
+        canvasDescription += `\n${shapeDesc(s)}`;
+      });
+    }
+
+    const totalItems = canvas.frames.reduce((n, f) => n + 1 + f.children.length + f.arrows.length, 0)
+      + canvas.orphans.length + canvas.arrows.length;
 
     conversationContext += `
 
-[CANVAS STATE - ${canvasState.length} items already on canvas]
+[CANVAS STATE - ${totalItems} items already on canvas]
+⚠️ THESE ITEMS ALREADY EXIST! Use their IDs with moveItem() if user asks to rearrange.
+
 OCCUPIED AREA: x=${Math.round(minX)} to ${Math.round(maxX)}, y=${Math.round(minY)} to ${Math.round(maxY)}
 
-⚠️ START NEW CONTENT HERE (pick one):
+⚠️ If adding NEW content, start here (pick one):
   → RIGHT SIDE: x=${Math.round(maxX + 100)}, y=${Math.round(minY)} (creates columns)
   → BELOW: x=${Math.round(minX)}, y=${Math.round(maxY + 100)} (creates rows)
 
-DO NOT place anything in the occupied area above!
-
-Existing items:
+EXISTING ITEMS (use these IDs with moveItem):
 ${canvasDescription}`;
   } else {
     conversationContext += `
 
 [CANVAS STATE - Empty]
 Canvas is empty. Start placing content at (0, 0).`;
+  }
+
+  // Include user edits and additions
+  type UserEdit = { shapeId: string; field: string; oldValue: string; newValue: string };
+  const edits = (userEdits as UserEdit[] | undefined) || [];
+  if (edits.length > 0) {
+    const additions = edits.filter(e => e.field === "added");
+    const deletions = edits.filter(e => e.field === "deleted");
+    const moves = edits.filter(e => e.field === "moved");
+    const textChanges = edits.filter(e => e.field === "text");
+    const colorChanges = edits.filter(e => e.field === "color");
+
+    if (additions.length > 0) {
+      conversationContext += `\n\n[USER ADDED:]`;
+      additions.forEach(edit => {
+        conversationContext += `\n  - ${edit.newValue}`;
+      });
+    }
+
+    if (deletions.length > 0) {
+      conversationContext += `\n\n[USER DELETED:]`;
+      deletions.forEach(edit => {
+        conversationContext += `\n  - "${edit.oldValue}"`;
+      });
+    }
+
+    if (textChanges.length > 0) {
+      conversationContext += `\n\n[USER EDITED TEXT:]`;
+      textChanges.forEach(edit => {
+        conversationContext += `\n  - "${edit.oldValue}" → "${edit.newValue}"`;
+      });
+    }
+
+    if (colorChanges.length > 0) {
+      conversationContext += `\n\n[USER CHANGED COLORS:]`;
+      colorChanges.forEach(edit => {
+        conversationContext += `\n  - ${edit.oldValue} → ${edit.newValue}`;
+      });
+    }
+
+    if (moves.length > 0) {
+      conversationContext += `\n\n[USER MOVED ${moves.length} item(s)]`;
+    }
+
+    conversationContext += `\nAcknowledge these changes naturally if relevant.`;
   }
 
   const prompt = isExecutionMode

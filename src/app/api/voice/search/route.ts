@@ -8,7 +8,7 @@ export const runtime = "nodejs";
  */
 export async function POST(req: Request) {
   try {
-    const { query, purpose } = await req.json();
+    const { query, purpose, maxResults } = await req.json();
 
     if (!query) {
       return NextResponse.json(
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
         include_answer: true,
         include_raw_content: false,
         include_images: true,  // Get images for thumbnails
-        max_results: 5,
+        max_results: Math.min(Math.max(maxResults || 5, 1), 20),
       }),
       signal: controller.signal,
     });

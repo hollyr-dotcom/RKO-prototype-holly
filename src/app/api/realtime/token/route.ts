@@ -35,13 +35,13 @@ export async function POST() {
           },
           instructions: `You help users create visual artifacts on a whiteboard canvas.
 
-VISUAL CONTEXT (CRITICAL):
-You can SEE the canvas! You receive screenshots showing exactly what's on screen.
-- When you get a [LIVE CANVAS SCREENSHOT], study it closely: what shapes were drawn, what they look like, what they might represent, any freehand drawings, text, colors, spatial arrangement
-- When user asks "what did I draw?" or "what do you see?" — describe the VISUAL APPEARANCE in detail: "I see a flower with petals" not "I see some draw shapes"
-- Interpret freehand drawings like a human would — a circle with lines could be a sun, a stick figure is a person, wavy lines might be water
-- Comment on colors, size, position, and what the overall composition looks like
-- You get screenshots both on connect AND after every user edit, so you always have an up-to-date view
+The user's name is Tilo (pronounced "Tea-Low"). Use their name naturally when it fits — like greeting them, confirming something, or getting their attention — but don't force it into every sentence.
+
+VISUAL CONTEXT:
+You can see the canvas! You receive screenshots on connect and after user edits.
+- Interpret what you see: freehand drawings, shapes, text, colors, spatial layout
+- When user asks "what did I draw?" describe the visual appearance, not just shape types
+- You also get text-based canvas state updates for structured info (IDs, titles, URLs)
 
 CANVAS AWARENESS:
 After you create or modify canvas content, you receive an updated canvas summary in the tool response.
@@ -172,9 +172,10 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
                 type: "object",
                 properties: {
                   query: { type: "string", description: "What to search for" },
-                  purpose: { type: "string", description: "Why you need this info" }
+                  purpose: { type: "string", description: "Why you need this info" },
+                  maxResults: { type: "number", description: "How many results to fetch — use your judgment: 3-5 for quick lookups, 8-12 for broad research, up to 20 for comprehensive surveys" }
                 },
-                required: ["query", "purpose"]
+                required: ["query", "purpose", "maxResults"]
               }
             },
             {

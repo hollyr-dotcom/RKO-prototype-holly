@@ -192,14 +192,14 @@ export function useRealtimeVoice() {
 
             // webSearch - make async HTTP call for real results
             if (toolName === "webSearch") {
-              const { query, purpose } = args as { query: string; purpose: string };
-              console.log("[VOICE] webSearch called:", { query, purpose });
+              const { query, purpose, maxResults } = args as { query: string; purpose: string; maxResults?: number };
+              console.log("[VOICE] webSearch called:", { query, purpose, maxResults });
 
               // Make async search request
               fetch("/api/voice/search", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query, purpose }),
+                body: JSON.stringify({ query, purpose, maxResults }),
               })
                 .then((res) => res.json())
                 .then((searchResults) => {
@@ -368,9 +368,12 @@ export function useRealtimeVoice() {
       });
 
       dc.addEventListener("error", (event) => {
-        console.error("Data channel error:", event);
-        setError("Connection error");
-        setState("error");
+        console.warn("Data channel error (non-fatal):", event);
+        // Don't kill the connection for transient errors — only fatal if channel is closed
+        if (dc.readyState === "closed") {
+          setError("Connection error");
+          setState("error");
+        }
       });
 
       // Handle incoming audio from AI
@@ -518,21 +521,21 @@ export function useRealtimeVoice() {
     }
   }, []);
 
-  // Send a screenshot to the AI so it can see what changed visually
-  const sendScreenshot = useCallback(async () => {
-    if (!dataChannelRef.current || dataChannelRef.current.readyState !== "open") {
-      return;
-    }
-    if (!captureScreenshotRef.current) {
-      return;
-    }
+  // Send a fresh screenshot to the AI, with optional description of what changed
+  const sendScreenshot = useCallback(async (changeDescription?: string) => {
+    if (!dataChannelRef.current || dataChannelRef.current.readyState !== "open") return;
+    if (!captureScreenshotRef.current) return;
 
     try {
       const screenshot = await captureScreenshotRef.current();
       if (!screenshot) return;
 
+      const changeNote = changeDescription
+        ? ` The user just: ${changeDescription}. Look for the new additions.`
+        : '';
+
       const dc = dataChannelRef.current;
-      console.log("[VOICE] Sending live canvas screenshot");
+      console.log("[VOICE] Sending live canvas screenshot", changeDescription || "");
       dc.send(JSON.stringify({
         type: "conversation.item.create",
         item: {
@@ -540,7 +543,7 @@ export function useRealtimeVoice() {
           role: "user",
           content: [{
             type: "input_text",
-            text: "[LIVE CANVAS SCREENSHOT] The user just changed the canvas. Study this image carefully — notice what was drawn, what shapes look like, what they might represent, any text, colors, spatial arrangement, and visual meaning. Be ready to describe what you see if asked."
+            text: `[LIVE CANVAS SCREENSHOT]${changeNote} Here is what the canvas looks like now.`
           }, {
             type: "input_image",
             image_url: screenshot

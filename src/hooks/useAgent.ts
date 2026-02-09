@@ -13,14 +13,42 @@ export type Message = {
 };
 
 type ToolHandler = (toolName: string, args: Record<string, unknown>) => void;
-type CanvasStateGetter = () => Array<{
+
+type ShapeInfo = {
   id: string;
   type: string;
   text?: string;
   color?: string;
-}>;
+  name?: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  createdBy: string;
+};
 
-export function useAgent(onToolCall?: ToolHandler, getCanvasState?: CanvasStateGetter) {
+type FrameInfo = ShapeInfo & {
+  children: ShapeInfo[];
+  arrows: ShapeInfo[];
+};
+
+type CanvasState = {
+  frames: FrameInfo[];
+  orphans: ShapeInfo[];
+  arrows: ShapeInfo[];
+};
+
+type UserEdit = {
+  shapeId: string;
+  field: string;
+  oldValue: string;
+  newValue: string;
+};
+
+type CanvasStateGetter = () => CanvasState;
+type UserEditsGetter = () => UserEdit[];
+
+export function useAgent(onToolCall?: ToolHandler, getCanvasState?: CanvasStateGetter, getUserEdits?: UserEditsGetter) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -56,7 +84,8 @@ export function useAgent(onToolCall?: ToolHandler, getCanvasState?: CanvasStateG
 
       try {
         // Get current canvas state if available
-        const canvasState = getCanvasState ? getCanvasState() : [];
+        const canvasState = getCanvasState ? getCanvasState() : { frames: [], orphans: [], arrows: [] };
+        const userEdits = getUserEdits ? getUserEdits() : [];
 
         const response = await fetch("/api/chat", {
           method: "POST",
@@ -68,6 +97,7 @@ export function useAgent(onToolCall?: ToolHandler, getCanvasState?: CanvasStateG
               toolInvocations: m.toolInvocations, // Include tool calls so server can detect approved plans
             })),
             canvasState,
+            userEdits,
           }),
           signal: abortControllerRef.current.signal,
         });
@@ -167,7 +197,7 @@ export function useAgent(onToolCall?: ToolHandler, getCanvasState?: CanvasStateG
         setIsLoading(false);
       }
     },
-    [messages, onToolCall, getCanvasState]
+    [messages, onToolCall, getCanvasState, getUserEdits]
   );
 
   return {

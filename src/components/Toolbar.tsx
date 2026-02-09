@@ -1,7 +1,8 @@
 "use client";
 
 import { Editor } from "tldraw";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import Markdown from "react-markdown";
 import {
   IconPlus,
   IconMicrophone,
@@ -14,6 +15,7 @@ import {
   IconSingleSparksFilled,
   IconArrowUp,
 } from "@mirohq/design-system-icons";
+import { PromptSuggestions } from "./PromptSuggestions";
 
 // Custom voice wave icon (5 bars) - not available in Miro design system
 function VoiceWaveIcon() {
@@ -49,6 +51,12 @@ interface ToolbarProps {
   isLoading: boolean;
   voiceState?: "idle" | "connecting" | "listening" | "speaking" | "error";
   onVoiceToggle?: () => void;
+  canvasState?: { frames: any[]; orphans: any[]; arrows: any[] };
+  onExpandedChange?: (expanded: boolean) => void;
+  responseToast?: string | null;
+  onDismissToast?: () => void;
+  onOpenChat?: () => void;
+  hasMessages?: boolean;
 }
 
 export function Toolbar({
@@ -60,10 +68,17 @@ export function Toolbar({
   isLoading,
   voiceState = "idle",
   onVoiceToggle,
+  canvasState = { frames: [], orphans: [], arrows: [] },
+  onExpandedChange,
+  responseToast,
+  onDismissToast,
+  onOpenChat,
+  hasMessages = false,
 }: ToolbarProps) {
   const [inputValue, setInputValue] = useState("");
   const [activeTool, setActiveTool] = useState("select");
   const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const selectTool = (tool: string) => {
@@ -72,26 +87,54 @@ export function Toolbar({
     setActiveTool(tool);
   };
 
+  const showSuggestions = isExpanded && !isLoading && voiceState === "idle" && inputValue.trim().length > 0 && !hasMessages;
+
+  const handleSuggestionSelect = useCallback((text: string) => {
+    onSubmit(text);
+    setInputValue("");
+    setSelectedSuggestionIndex(-1);
+    // Keep expanded + refocus input
+    setTimeout(() => inputRef.current?.focus(), 50);
+  }, [onSubmit]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim() || isLoading) return;
+    if (isLoading) return;
+
+    // If a suggestion is selected via keyboard, use that
+    if (selectedSuggestionIndex >= 0 && showSuggestions) {
+      return;
+    }
+
+    if (!inputValue.trim()) return;
     onSubmit(inputValue);
     setInputValue("");
-    setIsExpanded(false);
+    setSelectedSuggestionIndex(-1);
+    // Keep expanded + refocus input
+    setTimeout(() => inputRef.current?.focus(), 50);
   };
 
   const handleExpand = () => {
     if (isChatOpen) return;
     setIsExpanded(true);
+    onExpandedChange?.(true);
+    setSelectedSuggestionIndex(-1);
     setTimeout(() => inputRef.current?.focus(), 150);
   };
 
   const handleCollapse = () => {
     setIsExpanded(false);
+    onExpandedChange?.(false);
     setInputValue("");
+    setSelectedSuggestionIndex(-1);
   };
 
-  // Handle Escape key to collapse
+  // Reset selected suggestion when input changes
+  useEffect(() => {
+    setSelectedSuggestionIndex(-1);
+  }, [inputValue]);
+
+  // Handle Escape and arrow key navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isExpanded) {
@@ -102,16 +145,17 @@ export function Toolbar({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isExpanded]);
 
-  // Collapse when chat opens
+  // Collapse when chat opens or floating UI takes over (Q&A modal, plan approval)
   useEffect(() => {
-    if (isChatOpen && isExpanded) {
+    if ((isChatOpen || hideInput) && isExpanded) {
       setIsExpanded(false);
+      onExpandedChange?.(false);
     }
-  }, [isChatOpen]);
+  }, [isChatOpen, hideInput]);
 
   return (
     <div
-      className="absolute bottom-6 left-1/2 z-50 flex items-center gap-3 -translate-x-1/2"
+      className="absolute bottom-6 left-1/2 z-[70] flex items-center gap-3 -translate-x-1/2"
     >
       {/* Main toolbar container */}
       <div
@@ -180,17 +224,79 @@ export function Toolbar({
 
         {/* AI Input Section - hidden when chat open or floating UI showing */}
         <div
-          className={`flex items-center overflow-hidden transition-all duration-300 ease-out ${
+          className={`relative transition-all duration-300 ease-out ${
             isChatOpen || hideInput
-              ? "w-0 opacity-0 p-0"
+              ? "w-0 opacity-0"
               : isExpanded
                 ? "w-[420px] opacity-100"
                 : "w-[320px] opacity-100"
           }`}
         >
-          <form onSubmit={handleSubmit} className="flex items-center w-full">
-            {/* Input pill with light gray bg */}
-            <div className="flex items-center bg-gray-100 rounded-full flex-1">
+          {/* Suggestions dropdown - positioned above the entire section */}
+          {showSuggestions && (
+            <PromptSuggestions
+              canvasState={canvasState}
+              inputValue={inputValue}
+              isVisible={showSuggestions}
+              onSelect={handleSuggestionSelect}
+              selectedIndex={selectedSuggestionIndex}
+            />
+          )}
+
+          {/* Response toast - shown when AI responds and sidebar is closed */}
+          {responseToast && !isLoading && (
+            <div className="absolute bottom-full left-0 right-0 mb-4">
+              <div className="w-full bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative">
+                {/* Sticky icon */}
+                <div className="absolute top-4 left-4 z-10 bg-white">
+                  <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center">
+                    <IconSingleSparksFilled size="small" />
+                  </div>
+                </div>
+                {/* Sticky close button */}
+                <div className="absolute top-4 right-4 z-10 bg-white">
+                  <div
+                    onClick={(e) => { e.stopPropagation(); onDismissToast?.(); }}
+                    className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors rounded cursor-pointer"
+                    title="Dismiss"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+                </div>
+                {/* Scrollable content */}
+                <div
+                  onClick={() => { onOpenChat?.(); onDismissToast?.(); }}
+                  className="overflow-y-auto p-4 pl-14 pr-10 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <div className="text-sm text-gray-700">
+                    <Markdown
+                      components={{
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                        em: ({ children }) => <em className="italic">{children}</em>,
+                        ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
+                        li: ({ children }) => <li className="mb-0.5">{children}</li>,
+                        h1: ({ children }) => <h1 className="text-base font-semibold mt-3 mb-2">{children}</h1>,
+                        h2: ({ children }) => <h2 className="text-base font-semibold mt-3 mb-2">{children}</h2>,
+                        h3: ({ children }) => <h3 className="text-sm font-semibold mt-3 mb-2">{children}</h3>,
+                        code: ({ children }) => <code className="bg-gray-100 px-1 rounded text-xs">{children}</code>,
+                      }}
+                    >
+                      {responseToast}
+                    </Markdown>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className={`flex items-center overflow-hidden ${isChatOpen || hideInput ? "w-0" : ""}`}>
+            <form onSubmit={handleSubmit} className="flex items-center w-full">
+              {/* Input pill with light gray bg */}
+              <div className="flex items-center bg-gray-100 rounded-full flex-1">
               {/* Plus button */}
               <button
                 type="button"
@@ -206,8 +312,25 @@ export function Toolbar({
                   ref={inputRef}
                   type="text"
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder={isLoading ? "Thinking..." : "Where should we start?"}
+                  onChange={(e) => { setInputValue(e.target.value); if (responseToast) onDismissToast?.(); }}
+                  onKeyDown={(e) => {
+                    if (!showSuggestions) return;
+                    if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setSelectedSuggestionIndex((prev) => Math.max(-1, prev - 1));
+                    } else if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setSelectedSuggestionIndex((prev) => prev + 1);
+                    } else if (e.key === "Enter" && selectedSuggestionIndex >= 0) {
+                      e.preventDefault();
+                      const btn = document.querySelector(`[data-suggestion-index="${selectedSuggestionIndex}"]`) as HTMLElement;
+                      if (btn) {
+                        const text = btn.getAttribute("data-suggestion-text");
+                        if (text) handleSuggestionSelect(text);
+                      }
+                    }
+                  }}
+                  placeholder={isLoading ? "Reply..." : "Where should we start?"}
                   disabled={isLoading}
                   className="flex-1 py-2 text-lg bg-transparent border-0 outline-none placeholder:text-gray-400 disabled:opacity-50 min-w-0"
                 />
@@ -217,7 +340,7 @@ export function Toolbar({
                   onClick={handleExpand}
                   className="flex-1 py-2 text-lg text-gray-400 text-left hover:text-gray-500 transition-colors duration-200 whitespace-nowrap font-normal"
                 >
-                  {isLoading ? "Thinking..." : "Ask me anything"}
+                  {isLoading ? "Reply..." : "Ask me anything"}
                 </button>
               )}
 
@@ -262,7 +385,8 @@ export function Toolbar({
                 </button>
               )}
             </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
 

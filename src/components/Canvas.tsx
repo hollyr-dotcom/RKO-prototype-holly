@@ -10,6 +10,7 @@ import { ChatPanel } from "./ChatPanel";
 import { IconSingleSparksFilled, IconViewSideRight } from "@mirohq/design-system-icons";
 import { calculateLayout, findEmptyCanvasSpace } from "@/lib/layoutEngine";
 import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
+import Markdown from "react-markdown";
 
 // Audio chimes for voice mode
 function playChime(type: 'start' | 'end') {
@@ -56,7 +57,7 @@ function playChime(type: 'start' | 'end') {
 // Floating thinking indicator
 function FloatingThinkingIndicator() {
   return (
-    <div className="absolute bottom-24 left-1/2 z-[60] animate-float-in">
+    <div className="absolute bottom-24 left-1/2 -translate-x-1/2">
       <div className="flex items-center gap-3 bg-white rounded-full px-5 py-3 shadow-lg border border-gray-200">
         <div className="flex gap-1">
           <span className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" />
@@ -72,7 +73,7 @@ function FloatingThinkingIndicator() {
 // Floating voice indicator
 function FloatingVoiceIndicator({ state, onEnd }: { state: "listening" | "speaking"; onEnd: () => void }) {
   return (
-    <div className="absolute bottom-24 left-1/2 z-[60] animate-float-in">
+    <div className="absolute bottom-24 left-1/2 -translate-x-1/2">
       <div className="flex items-center gap-3 bg-white rounded-full pl-5 pr-3 py-3 shadow-lg border border-gray-200">
         <div className="flex gap-1">
           <span className={`w-2 h-2 rounded-full ${state === "listening" ? "bg-green-500" : "bg-blue-500"} animate-pulse`} />
@@ -150,7 +151,7 @@ function FloatingQuestionCard({
   };
 
   return (
-    <div className="absolute bottom-24 left-1/2 z-[60] w-[520px] animate-float-in">
+    <div className="absolute bottom-24 left-1/2 -translate-x-1/2 w-[520px]">
       <div className="bg-white text-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-2">
@@ -275,8 +276,11 @@ function FloatingPlanApproval({
   onViewDetails: () => void;
 }) {
   return (
-    <div className="absolute bottom-24 left-1/2 z-[60] animate-float-in">
-      <div className="flex items-center gap-3 bg-white text-gray-900 rounded-2xl shadow-lg border border-gray-200 px-4 py-3">
+    <div className="absolute bottom-28 left-1/2 -translate-x-1/2 w-[420px]">
+      <div
+        onClick={onViewDetails}
+        className="flex items-center gap-3 bg-white text-gray-900 rounded-2xl shadow-lg border border-gray-200 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
+      >
         {/* Icon */}
         <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
           <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -285,22 +289,14 @@ function FloatingPlanApproval({
         </div>
 
         {/* Title */}
-        <span className="text-sm font-medium flex-1 truncate max-w-[280px]">
+        <span className="text-sm font-medium flex-1 truncate">
           <span className="text-gray-500">Plan:</span> {title}
         </span>
 
-        {/* View details link */}
-        <button
-          onClick={onViewDetails}
-          className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-        >
-          Details
-        </button>
-
         {/* Approve button */}
         <button
-          onClick={onApprove}
-          className="px-4 py-1.5 text-sm font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+          onClick={(e) => { e.stopPropagation(); onApprove(); }}
+          className="px-4 py-1.5 text-sm font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex-shrink-0"
         >
           Approve
         </button>
@@ -316,12 +312,14 @@ function FloatingProgressIndicator({
   onOpenPanel,
   onSubmit,
   editor,
+  hasToast = false,
 }: {
   messages: Message[];
   isLoading: boolean;
   onOpenPanel: () => void;
   onSubmit: (text: string, options?: { openPanel?: boolean }) => void;
   editor: Editor;
+  hasToast?: boolean;
 }) {
   const [isCompletionDismissed, setIsCompletionDismissed] = useState(false);
 
@@ -449,7 +447,7 @@ function FloatingProgressIndicator({
     };
 
     return (
-      <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className={`absolute left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300 ${hasToast ? 'bottom-[420px]' : 'bottom-28'}`}>
         <div className="flex items-center gap-2 bg-green-600 text-white rounded-2xl shadow-lg px-4 py-3 pb-3.5">
           {/* Checkmark icon */}
           <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
@@ -568,7 +566,7 @@ function FloatingProgressIndicator({
     };
 
     return (
-      <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className={`absolute left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300 ${hasToast ? 'bottom-[420px]' : 'bottom-28'}`}>
         <div
           onClick={handleReviewBatch}
           className="bg-blue-600 text-white rounded-2xl shadow-lg overflow-hidden w-80 hover:bg-blue-700 transition-colors cursor-pointer"
@@ -626,7 +624,7 @@ function FloatingProgressIndicator({
   const progress = (stepNumber / totalSteps) * 100;
 
   return (
-    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-50 transition-all duration-300">
+    <div className={`absolute left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ${hasToast ? 'bottom-[420px]' : 'bottom-20'}`}>
       <button
         onClick={onOpenPanel}
         className="flex flex-col bg-gray-100 text-gray-900 rounded-2xl shadow-md hover:bg-gray-200 transition-colors overflow-hidden w-80"
@@ -715,13 +713,22 @@ const colorMap: Record<string, TLColor> = {
 export function Canvas() {
   const [editor, setEditor] = useState<Editor | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isChatClosing, setIsChatClosing] = useState(false);
+
   const [input, setInput] = useState("");
+  const [responseToast, setResponseToast] = useState<string | null>(null);
+  const [toastCentered, setToastCentered] = useState(false);
+  const [isToolbarExpanded, setIsToolbarExpanded] = useState(false);
+  const [isInQAFlow, setIsInQAFlow] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [questionAnswers, setQuestionAnswers] = useState<string[]>([]);
+  const [dismissedPlan, setDismissedPlan] = useState(false);
+  const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
   const isProcessingToolCallRef = useRef(false);
   const userEditsRef = useRef<Array<{ shapeId: string; field: string; oldValue: string; newValue: string }>>([]);
-  const voiceRef = useRef<{ isConnected: boolean; sendCanvasUpdate: () => void; sendScreenshot: () => void } | null>(null);
+  const voiceRef = useRef<{ isConnected: boolean; sendCanvasUpdate: () => void; sendScreenshot: (changeDescription?: string) => void } | null>(null);
   const screenshotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastScreenshotShapeIdsRef = useRef<Set<string>>(new Set());
   const waitingForGoodbyeRef = useRef(false);
   const goodbyeTranscriptLengthRef = useRef(0); // Track goodbye message length for audio timing
   const hasPlayedStartChimeRef = useRef(false); // Track if start chime played for this session
@@ -734,13 +741,16 @@ export function Canvas() {
     voiceRef.current = voice;
   }, [voice]);
 
-  // Handle sidebar close with animation
-  const handleCloseChat = useCallback(() => {
-    setIsChatClosing(true);
-    setTimeout(() => {
-      setIsChatOpen(false);
-      setIsChatClosing(false);
-    }, 300); // Match animation duration
+  // Handle sidebar close (instant, no animation)
+  const handleCloseChat = useCallback((dismissPlan = true) => {
+    setIsChatOpen(false);
+    if (dismissPlan) {
+      // X button = close completely, hide ALL floating UI
+      setResponseToast(null);
+      setToastCentered(false);
+      setDismissedPlan(true); // Mark plan as dismissed so it doesn't float back
+    }
+    // (Minus button handles restoration explicitly in onCollapse)
   }, []);
 
   // Navigate to frames by name - zooms to fit all matching frames
@@ -839,19 +849,33 @@ export function Canvas() {
     [editor]
   );
 
-  // Capture canvas screenshot using tldraw's proper export API
-  // (raw canvas element is WebGL and returns blank when read directly)
+  // Capture canvas screenshot for initial voice connect context
+  // Uses tldraw's export API (WebGL canvas is blank when read directly)
+  // Skips bookmarks + their parent frames (external URLs cause CORS errors in SVG export)
   const captureScreenshot = useCallback(async (): Promise<string | null> => {
     if (!editor) return null;
 
     try {
-      const shapeIds = [...editor.getCurrentPageShapeIds()];
-      if (shapeIds.length === 0) return null;
+      const allShapes = editor.getCurrentPageShapes();
 
-      const { url } = await editor.toImageDataUrl(shapeIds, {
-        format: 'png',
-        pixelRatio: 1,
-      });
+      // Frames that contain bookmarks must be excluded too —
+      // exporting a frame renders ALL its children including bookmarks
+      const framesWithBookmarks = new Set(
+        allShapes
+          .filter(s => s.type === 'bookmark')
+          .map(s => s.parentId as string)
+      );
+
+      const exportable = allShapes.filter(s =>
+        s.type !== 'bookmark' &&
+        !framesWithBookmarks.has(s.id as string)
+      );
+      if (exportable.length === 0) return null;
+
+      const { url } = await editor.toImageDataUrl(
+        exportable.map(s => s.id),
+        { format: 'png', pixelRatio: 1 }
+      );
 
       return url;
     } catch (err) {
@@ -879,10 +903,27 @@ export function Canvas() {
       const props = shape.props as Record<string, unknown>;
       const bounds = editor.getShapeGeometry(shape.id).bounds;
       const meta = shape.meta as Record<string, unknown>;
+
+      // Bookmarks store title/URL in their asset, not in richText
+      let text = extractText(props);
+      let url: string | undefined;
+      if (shape.type === 'bookmark') {
+        url = props.url as string | undefined;
+        const assetId = props.assetId as string | undefined;
+        if (assetId) {
+          const asset = editor.getAsset(assetId as any);
+          if (asset) {
+            const assetProps = asset.props as Record<string, unknown>;
+            text = (assetProps.title as string) || url || 'bookmark';
+          }
+        }
+      }
+
       return {
         id: shape.id,
         type: shape.type,
-        text: extractText(props),
+        text,
+        url,
         color: props.color as string | undefined,
         name: props.name as string | undefined,
         x: Math.round(shape.x),
@@ -1789,22 +1830,67 @@ export function Canvas() {
         }
       }
 
-      // If there were ANY changes and voice is connected, send update + screenshot
-      // (covers edits like text/color/position changes)
+      // If voice is connected, send screenshot for ANY user shape change (not just tracked edits)
+      const isShape = (r: unknown) => (r as Record<string, unknown>).typeName === 'shape';
+      const hasShapeChanges =
+        Object.values(entry.changes.added).some(isShape) ||
+        Object.values(entry.changes.removed).some(isShape) ||
+        Object.values(entry.changes.updated).some(([before]) => isShape(before));
+
       if (userEditsRef.current.length > 0 && voiceRef.current?.isConnected) {
-        // Send text-based canvas update quickly
+        // Text update fires fast
         setTimeout(() => {
           voiceRef.current?.sendCanvasUpdate();
         }, 200);
+      }
 
-        // Debounce screenshot at 2s so rapid edits (drawing strokes) don't spam
+      console.log("[EDIT-DETECT] hasShapeChanges:", hasShapeChanges, "voiceConnected:", voiceRef.current?.isConnected, "added:", Object.keys(entry.changes.added).length, "updated:", Object.keys(entry.changes.updated).length, "removed:", Object.keys(entry.changes.removed).length);
+
+      if (hasShapeChanges && voiceRef.current?.isConnected) {
+        // Screenshot debounced so drawing strokes don't spam
+        // Diff shapes vs last screenshot to tell the AI exactly what's new
         if (screenshotTimerRef.current) {
           clearTimeout(screenshotTimerRef.current);
         }
         screenshotTimerRef.current = setTimeout(() => {
-          voiceRef.current?.sendScreenshot();
+          if (!editor) return;
+          const currentShapes = editor.getCurrentPageShapes();
+          const prevIds = lastScreenshotShapeIdsRef.current;
+
+          // Find new and removed shapes
+          const newShapes = currentShapes.filter(s => !prevIds.has(s.id as string));
+          const currentIds = new Set(currentShapes.map(s => s.id as string));
+          const removedCount = [...prevIds].filter(id => !currentIds.has(id)).length;
+
+          // Describe what changed
+          const parts: string[] = [];
+          if (newShapes.length > 0) {
+            const descs = newShapes.map(s => {
+              const props = s.props as Record<string, unknown>;
+              const text = extractText(props);
+              const textPart = text ? ` "${text.slice(0, 30)}"` : '';
+              if (s.type === 'draw') return 'freehand drawing';
+              if (s.type === 'note') return `sticky note${textPart}`;
+              if (s.type === 'geo') return `${(props.geo as string) || 'shape'}${textPart}`;
+              if (s.type === 'text') return `text${textPart}`;
+              if (s.type === 'arrow') return 'arrow';
+              if (s.type === 'frame') return `frame "${(props.name as string) || ''}"`;
+              return s.type;
+            });
+            parts.push(`added: ${descs.join(', ')}`);
+          }
+          if (removedCount > 0) {
+            parts.push(`removed ${removedCount} item${removedCount > 1 ? 's' : ''}`);
+          }
+
+          // Update tracking
+          lastScreenshotShapeIdsRef.current = currentIds;
+
+          const desc = parts.join('; ') || undefined;
+          console.log("[EDIT-DETECT] Sending screenshot with diff:", desc);
+          voiceRef.current?.sendScreenshot(desc);
           screenshotTimerRef.current = null;
-        }, 2000);
+        }, 800);
       }
     }, { source: "user", scope: "document" });
 
@@ -1953,8 +2039,8 @@ export function Canvas() {
     }
   }, [voice.state, handleVoiceDisconnect]);
 
-  // Find pending askUser question (unanswered)
-  const pendingQuestion = useMemo(() => {
+  // Find pending askUser questions (batched - unanswered)
+  const pendingQuestions = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i];
       if (msg.role !== 'assistant') continue;
@@ -1964,15 +2050,31 @@ export function Canvas() {
         // Check if there's a user response after this
         const hasResponse = messages.slice(i + 1).some(m => m.role === 'user');
         if (!hasResponse) {
-          return {
-            question: (askUserTool.args as { question: string }).question,
-            suggestions: (askUserTool.args as { suggestions: string[] }).suggestions,
-          };
+          const args = askUserTool.args as { questions?: Array<{ question: string; suggestions: string[] }>; question?: string; suggestions?: string[] };
+          // Support both new batched format and legacy single format
+          if (args.questions) {
+            return args.questions;
+          } else if (args.question) {
+            return [{ question: args.question, suggestions: args.suggestions || [] }];
+          }
         }
       }
     }
     return null;
   }, [messages]);
+
+  // Current question to show (from batched questions)
+  const pendingQuestion = pendingQuestions && currentQuestionIndex < pendingQuestions.length
+    ? pendingQuestions[currentQuestionIndex]
+    : null;
+
+  // Reset question index when new questions arrive
+  useEffect(() => {
+    if (pendingQuestions) {
+      setCurrentQuestionIndex(0);
+      setQuestionAnswers([]);
+    }
+  }, [pendingQuestions]);
 
   // Find pending confirmPlan (not yet approved)
   const pendingPlan = useMemo(() => {
@@ -2013,6 +2115,50 @@ export function Canvas() {
     return false;
   }, [messages]);
 
+  // Detect when AI finishes responding → show toast if sidebar is closed
+  useEffect(() => {
+    if (isLoading) {
+      wasLoadingRef.current = true;
+    } else if (wasLoadingRef.current) {
+      wasLoadingRef.current = false;
+      // Just finished loading — check if sidebar is closed and not in voice mode
+      if (!isChatOpen && !voice.isConnected) {
+        // Find last assistant message with text content
+        for (let i = messages.length - 1; i >= 0; i--) {
+          const msg = messages[i];
+          if (msg.role === "assistant" && msg.content && msg.content.trim()) {
+            setResponseToast(msg.content.trim());
+            // Always center toast - it will position itself relative to toolbar state
+            setToastCentered(true);
+            break;
+          }
+        }
+      }
+    }
+  }, [isLoading, isChatOpen, voice.isConnected, messages]);
+
+  // Toast stays hidden when sidebar closes via X button (user dismissed the conversation)
+
+  // Dismiss toast when Q&A modal appears (questions provide enough context)
+  useEffect(() => {
+    if (pendingQuestion) {
+      setResponseToast(null);
+      setToastCentered(false);
+    }
+  }, [pendingQuestion]);
+
+  // Update toast positioning when toolbar expands/collapses (without animation)
+  // BUT don't override explicit toastCentered=true from minimize button
+  useEffect(() => {
+    if (responseToast && !toastCentered) {
+      // Only auto-adjust if toast is in toolbar (not centered)
+      // When toolbar expands, toast should hide (it's in the toolbar area)
+      if (isToolbarExpanded) {
+        setResponseToast(null);
+      }
+    }
+  }, [isToolbarExpanded, responseToast, toastCentered]);
+
   // Simple flags for what floating UI to show (only one at a time, in priority order)
   // Priority: question > plan approval > thinking > progress indicator
   // Voice and text both use the same messages-based pendingQuestion
@@ -2022,6 +2168,38 @@ export function Canvas() {
   // Thinking shows when loading BUT NOT during plan execution (progress indicator handles that)
   const showFloatingThinking = !isChatOpen && isLoading && !hasActivePlan;
   const showFloatingProgress = !isChatOpen && hasActivePlan && !showFloatingQuestion && !showFloatingPlan && !showFloatingThinking;
+
+  // Lock toolbar in canvas-tools mode during entire Q&A/plan flow
+  // Enter flow when question/plan appears, exit when plan execution starts or flow ends
+  useEffect(() => {
+    if (showFloatingQuestion || showFloatingPlan) {
+      setIsInQAFlow(true);
+    } else if (hasActivePlan || (!isLoading && !showFloatingQuestion && !showFloatingPlan)) {
+      setIsInQAFlow(false);
+    }
+  }, [showFloatingQuestion, showFloatingPlan, isLoading, hasActivePlan]);
+
+  // Clear toast when plan execution starts (but not if plan approval is still showing)
+  useEffect(() => {
+    if (hasActivePlan && !showFloatingPlan) {
+      setResponseToast(null);
+      setToastCentered(false);
+    }
+  }, [hasActivePlan, showFloatingPlan]);
+
+  // Reset dismissedPlan when a new plan arrives OR when sidebar opens
+  useEffect(() => {
+    if (pendingPlan) {
+      setDismissedPlan(false);
+    }
+  }, [pendingPlan]);
+
+  // Reset dismissedPlan when sidebar opens (so minimize will show plan again)
+  useEffect(() => {
+    if (isChatOpen) {
+      setDismissedPlan(false);
+    }
+  }, [isChatOpen]);
 
   // Toolbar always visible - prompt input hides itself when sidebar is open
   const showToolbar = true;
@@ -2054,48 +2232,130 @@ export function Canvas() {
             onOpenPanel={() => setIsChatOpen(true)}
             onSubmit={handleSubmit}
             editor={editor}
+            hasToast={!!responseToast}
           />
         )}
 
-        {/* Floating question card */}
-        {showFloatingQuestion && pendingQuestion && (
-          <FloatingQuestionCard
-            question={pendingQuestion.question}
-            options={pendingQuestion.suggestions}
-            onSelect={(answer) => handleSubmit(answer, { openPanel: false })}
-            onSkip={() => handleSubmit("Skip", { openPanel: false })}
-          />
-        )}
+        {/* Floating UI wrapper */}
+        <div className="absolute inset-0 z-[60] pointer-events-none">
+          {/* Floating question card */}
+          {!isChatOpen && pendingQuestion && !isLoading && (
+            <div className="pointer-events-auto">
+              <FloatingQuestionCard
+                question={pendingQuestion.question}
+                options={pendingQuestion.suggestions}
+                onSelect={(answer) => {
+                  const newAnswers = [...questionAnswers, answer];
+                  if (pendingQuestions && currentQuestionIndex < pendingQuestions.length - 1) {
+                    setQuestionAnswers(newAnswers);
+                    setCurrentQuestionIndex(prev => prev + 1);
+                  } else {
+                    const combined = newAnswers.join("\n");
+                    handleSubmit(combined, { openPanel: false });
+                    setQuestionAnswers([]);
+                    setCurrentQuestionIndex(0);
+                  }
+                }}
+                onSkip={() => {
+                  const newAnswers = [...questionAnswers, "Skip"];
+                  if (pendingQuestions && currentQuestionIndex < pendingQuestions.length - 1) {
+                    setQuestionAnswers(newAnswers);
+                    setCurrentQuestionIndex(prev => prev + 1);
+                  } else {
+                    const combined = newAnswers.join("\n");
+                    handleSubmit(combined, { openPanel: false });
+                    setQuestionAnswers([]);
+                    setCurrentQuestionIndex(0);
+                  }
+                }}
+              />
+            </div>
+          )}
 
-        {/* Floating plan approval toast */}
-        {showFloatingPlan && pendingPlan && (
-          <FloatingPlanApproval
-            title={pendingPlan.title}
-            onApprove={() => handleSubmit("Approved! Go ahead.", { openPanel: false })}
-            onViewDetails={() => setIsChatOpen(true)}
-          />
-        )}
+          {/* Floating plan approval toast */}
+          {!isChatOpen && pendingPlan && !pendingQuestion && !isLoading && !dismissedPlan && (
+            <div className="pointer-events-auto">
+              <FloatingPlanApproval
+                title={pendingPlan.title}
+                onApprove={() => handleSubmit("Approved! Go ahead.", { openPanel: false })}
+                onViewDetails={() => setIsChatOpen(true)}
+              />
+            </div>
+          )}
 
-        {/* Floating thinking indicator */}
-        {showFloatingThinking && (
-          <FloatingThinkingIndicator />
-        )}
+          {/* Floating thinking indicator */}
+          {!isChatOpen && isLoading && !hasActivePlan && (
+            <FloatingThinkingIndicator />
+          )}
 
-        {/* Floating voice indicator */}
-        {!isChatOpen && (voice.state === "listening" || voice.state === "speaking") && (
-          <FloatingVoiceIndicator state={voice.state} onEnd={handleVoiceDisconnect} />
-        )}
+          {/* Floating voice indicator */}
+          {!isChatOpen && (voice.state === "listening" || voice.state === "speaking") && (
+            <div className="pointer-events-auto">
+              <FloatingVoiceIndicator state={voice.state} onEnd={handleVoiceDisconnect} />
+            </div>
+          )}
+
+          {/* Centered toast */}
+          {toastCentered && responseToast && !showFloatingQuestion && !isChatOpen && (
+            <div className={`absolute left-1/2 -translate-x-1/2 z-[65] w-[420px] ${showFloatingPlan ? 'bottom-[184px]' : 'bottom-24'}`}>
+              <div className="pointer-events-auto w-full bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative">
+                {/* Sticky icon */}
+                <div className="absolute top-4 left-4 z-10 bg-white">
+                  <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center">
+                    <IconSingleSparksFilled size="small" />
+                  </div>
+                </div>
+                {/* Sticky close button */}
+                <div className="absolute top-4 right-4 z-10 bg-white">
+                  <div
+                    onClick={() => { setResponseToast(null); setToastCentered(false); }}
+                    className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors rounded cursor-pointer"
+                    title="Dismiss"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+                </div>
+                {/* Scrollable content */}
+                <div
+                  onClick={() => setIsChatOpen(true)}
+                  className="overflow-y-auto p-4 pl-14 pr-10 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <div className="text-sm text-gray-700">
+                    <Markdown
+                      components={{
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                        em: ({ children }) => <em className="italic">{children}</em>,
+                        ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
+                        li: ({ children }) => <li className="mb-0.5">{children}</li>,
+                        h1: ({ children }) => <h1 className="text-base font-semibold mt-3 mb-2">{children}</h1>,
+                        h2: ({ children }) => <h2 className="text-base font-semibold mt-3 mb-2">{children}</h2>,
+                        h3: ({ children }) => <h3 className="text-sm font-semibold mt-3 mb-2">{children}</h3>,
+                        code: ({ children }) => <code className="bg-gray-100 px-1 rounded text-xs">{children}</code>,
+                      }}
+                    >
+                      {responseToast}
+                    </Markdown>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Custom toolbar at bottom center */}
         {showToolbar && (
           <Toolbar
             editor={editor}
             onToggleChat={() => setIsChatOpen(!isChatOpen)}
-            isChatOpen={isChatOpen && !isChatClosing}
+            isChatOpen={isChatOpen}
             hideInput={
-              showFloatingQuestion || showFloatingThinking || showFloatingPlan ||
-              // Also hide during close animation if floating UI will appear after
-              (isChatClosing && (!!pendingQuestion || !!pendingPlan || (isLoading && !hasActivePlan))) ||
+              showFloatingQuestion || showFloatingPlan ||
+              // Keep toolbar locked in canvas-tools mode during entire Q&A/plan flow
+              isInQAFlow ||
               // Hide input when in voice mode
               voice.isConnected
             }
@@ -2103,15 +2363,32 @@ export function Canvas() {
             isLoading={isLoading}
             voiceState={voice.state}
             onVoiceToggle={handleVoiceToggle}
+            onExpandedChange={setIsToolbarExpanded}
+            responseToast={isChatOpen || toastCentered || showFloatingQuestion ? null : responseToast}
+            onDismissToast={() => { setResponseToast(null); setToastCentered(false); }}
+            onOpenChat={() => setIsChatOpen(true)}
+            hasMessages={messages.length > 0}
+            canvasState={getCanvasState()}
           />
         )}
       </div>
 
       {/* Side chat panel - fixed position, outside flex flow */}
-      {(isChatOpen || isChatClosing) && (
-        <div className={`fixed top-0 right-0 h-full w-96 z-[999] ${isChatClosing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
+      {isChatOpen && (
+        <div className="fixed top-0 right-0 h-full w-96 z-[999]">
           <ChatPanel
             onClose={handleCloseChat}
+            onCollapse={() => {
+              // Minus button = minimize, DON'T dismiss plan, restore toast
+              handleCloseChat(false);
+              // Find the most recent assistant message with actual text content
+              const lastAssistantMsg = messages.findLast(m => m.role === 'assistant' && m.content?.trim());
+              if (lastAssistantMsg?.content) {
+                setResponseToast(lastAssistantMsg.content);
+                setToastCentered(true);
+                setIsToolbarExpanded(true);
+              }
+            }}
             messages={messages}
             input={input}
             setInput={setInput}

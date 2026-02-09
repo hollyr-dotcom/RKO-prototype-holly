@@ -24,6 +24,7 @@ function VoiceWaveIcon() {
 
 interface ChatPanelProps {
   onClose: () => void;
+  onCollapse?: () => void;
   messages: Message[];
   input: string;
   setInput: (input: string) => void;
@@ -577,6 +578,7 @@ function CompletedBlock({
 
 export function ChatPanel({
   onClose,
+  onCollapse,
   messages,
   input,
   setInput,
@@ -674,22 +676,42 @@ export function ChatPanel({
           <span className="text-sm font-medium text-gray-900">Chat</span>
           <span className="text-xs text-gray-500">with AI</span>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-          title="Close"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+        <div className="flex items-center gap-1">
+          {onCollapse && (
+            <button
+              onClick={onCollapse}
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+              title="Minimize to toast"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M5 12h14" />
+              </svg>
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+            title="Close"
           >
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
-        </button>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Task progress header - shows when plan is executing */}
@@ -776,17 +798,25 @@ export function ChatPanel({
                       </div>
                     )}
 
-                    {/* askUser tool - render as question with suggestions */}
-                    {askUserTool && (
-                      <div className={message.content ? "mt-3" : ""}>
-                        <QuestionBlock
-                          question={(askUserTool.args as { question: string }).question}
-                          suggestions={(askUserTool.args as { suggestions: string[] }).suggestions}
-                          onSelect={(answer) => onSubmit(answer)}
-                          isLatest={isLatestMessage && !isLoading}
-                        />
-                      </div>
-                    )}
+                    {/* askUser tool - render as question(s) with suggestions */}
+                    {askUserTool && (() => {
+                      const args = askUserTool.args as { questions?: Array<{ question: string; suggestions: string[] }>; question?: string; suggestions?: string[] };
+                      const questions = args.questions || (args.question ? [{ question: args.question, suggestions: args.suggestions || [] }] : []);
+                      return (
+                        <div className={message.content ? "mt-3" : ""}>
+                          {questions.map((q, qi) => (
+                            <div key={qi} className={qi > 0 ? "mt-3" : ""}>
+                              <QuestionBlock
+                                question={q.question}
+                                suggestions={q.suggestions}
+                                onSelect={(answer) => onSubmit(answer)}
+                                isLatest={isLatestMessage && !isLoading}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
 
                     {/* confirmPlan tool - shows plan with progress tracking */}
                     {confirmPlanTool && !askUserTool && (() => {
