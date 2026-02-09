@@ -11,6 +11,41 @@ import { IconSingleSparksFilled, IconViewSideRight, IconSidebarGlobalOpen, IconS
 import { calculateLayout, findEmptyCanvasSpace } from "@/lib/layoutEngine";
 import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
 import Markdown from "react-markdown";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Animation variants
+const sidebarVariants = {
+  hidden: { x: "100%" },
+  visible: { x: 0 },
+  exit: { x: "100%" },
+};
+
+const floatingCardVariants = {
+  hidden: { opacity: 0, y: 12, scale: 0.98 },
+  visible: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: 8, scale: 0.98 },
+};
+
+const toastVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: 12 },
+};
+
+const fullscreenVariants = {
+  hidden: { x: "100%" },
+  visible: { x: 0 },
+  exit: { x: "100%" },
+};
+
+const planPanelVariants = {
+  hidden: { x: "100%", opacity: 0 },
+  visible: { x: 0, opacity: 1 },
+  exit: { x: "100%", opacity: 0 },
+};
+
+const smoothTransition = { type: "tween" as const, ease: [0.25, 0.1, 0.25, 1.0], duration: 0.25 };
+const floatingTransition = { type: "tween" as const, ease: [0.25, 0.1, 0.25, 1.0], duration: 0.22 };
 
 // Audio chimes for voice mode
 function playChime(type: 'start' | 'end') {
@@ -2335,6 +2370,18 @@ export function Canvas() {
   const showFloatingThinking = !isChatOpen && isLoading && !hasActivePlan;
   const showFloatingProgress = !isChatOpen && hasActivePlan && !showFloatingQuestion && !showFloatingPlan && !showFloatingThinking;
 
+  // Thinking status text (extracted from IIFE so AnimatePresence gets a clean value)
+  const thinkingStatus = useMemo(() => {
+    if (!showFloatingThinking) return null;
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg?.role === 'assistant' && lastMsg.content && lastMsg.content.trim()) {
+      return null; // Content is streaming, don't show thinking
+    }
+    const recentTools = lastMsg?.role === 'assistant' ? lastMsg.toolInvocations || [] : [];
+    const lastSearchTool = [...recentTools].reverse().find(t => t.toolName === 'webSearch');
+    return lastSearchTool ? "Searching the web..." : "Thinking...";
+  }, [showFloatingThinking, messages]);
+
   // Lock toolbar in canvas-tools mode during entire Q&A/plan flow
   // Enter flow when question/plan appears, exit when plan execution starts or flow ends
   useEffect(() => {
@@ -2403,169 +2450,217 @@ export function Canvas() {
       {/* Main canvas area - hidden in fullscreen chat */}
       {!isFullscreenChat && (
         <div
-          className="relative transition-all duration-200"
+          className="relative"
           style={{
-            width: isChatOpen ? `calc(100vw - ${sidebarWidth}px)` : '100vw'
+            width: isChatOpen ? `calc(100vw - ${sidebarWidth}px)` : '100vw',
+            transition: 'width 250ms cubic-bezier(0.25, 0.1, 0.25, 1.0)'
           }}
         >
         <Tldraw onMount={handleMount} hideUi />
 
         {/* AI Chat button - top right, hidden when panel is open */}
-        {!isChatOpen && (
-          <button
-            onClick={() => setIsChatOpen(true)}
-            className="absolute top-4 right-4 z-50 w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:bg-gray-800"
-            style={{
-              boxShadow: "0 4px 24px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)",
-            }}
-            title="AI Chat"
-          >
-            <IconSingleSparksFilled size="medium" />
-          </button>
-        )}
+        <AnimatePresence>
+          {!isChatOpen && (
+            <motion.button
+              key="ai-chat-button"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "tween", ease: [0.25, 0.1, 0.25, 1.0], duration: 0.15 }}
+              onClick={() => setIsChatOpen(true)}
+              className="absolute top-4 right-4 z-50 w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-gray-800"
+              style={{
+                boxShadow: "0 4px 24px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)",
+              }}
+              title="AI Chat"
+            >
+              <IconSingleSparksFilled size="medium" />
+            </motion.button>
+          )}
+        </AnimatePresence>
 
         {/* Floating progress indicator - shown when plan active and no other floating UI */}
-        {showFloatingProgress && editor && (
-          <FloatingProgressIndicator
-            messages={messages}
-            isLoading={isLoading}
-            onOpenPanel={() => setIsChatOpen(true)}
-            onSubmit={handleSubmit}
-            editor={editor}
-            hasToast={!!responseToast}
-          />
-        )}
+        <AnimatePresence>
+          {showFloatingProgress && editor && (
+            <motion.div
+              key="floating-progress"
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={floatingCardVariants}
+              transition={floatingTransition}
+            >
+              <FloatingProgressIndicator
+                messages={messages}
+                isLoading={isLoading}
+                onOpenPanel={() => setIsChatOpen(true)}
+                onSubmit={handleSubmit}
+                editor={editor}
+                hasToast={!!responseToast}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Floating UI wrapper */}
         <div className="absolute inset-0 z-[60] pointer-events-none">
           {/* Floating question card */}
-          {!isChatOpen && pendingQuestion && !isLoading && (
-            <div className="pointer-events-auto">
-              <FloatingQuestionCard
-                key={currentQuestionIndex}
-                question={pendingQuestion.question}
-                options={pendingQuestion.suggestions}
-                onSelect={(answer) => {
-                  const newAnswers = [...questionAnswers, answer];
-                  if (pendingQuestions && currentQuestionIndex < pendingQuestions.length - 1) {
-                    setQuestionAnswers(newAnswers);
-                    setCurrentQuestionIndex(prev => prev + 1);
-                  } else {
-                    const combined = newAnswers.join("\n");
-                    handleSubmit(combined, { openPanel: false });
-                    setQuestionAnswers([]);
-                    setCurrentQuestionIndex(0);
-                  }
-                }}
-                onSkip={() => {
-                  const newAnswers = [...questionAnswers, "Skip"];
-                  if (pendingQuestions && currentQuestionIndex < pendingQuestions.length - 1) {
-                    setQuestionAnswers(newAnswers);
-                    setCurrentQuestionIndex(prev => prev + 1);
-                  } else {
-                    const combined = newAnswers.join("\n");
-                    handleSubmit(combined, { openPanel: false });
-                    setQuestionAnswers([]);
-                    setCurrentQuestionIndex(0);
-                  }
-                }}
-              />
-            </div>
-          )}
+          <AnimatePresence>
+            {!isChatOpen && pendingQuestion && !isLoading && (
+              <motion.div
+                key={`question-${currentQuestionIndex}`}
+                className="pointer-events-auto"
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={floatingCardVariants}
+                transition={floatingTransition}
+              >
+                <FloatingQuestionCard
+                  question={pendingQuestion.question}
+                  options={pendingQuestion.suggestions}
+                  onSelect={(answer) => {
+                    const newAnswers = [...questionAnswers, answer];
+                    if (pendingQuestions && currentQuestionIndex < pendingQuestions.length - 1) {
+                      setQuestionAnswers(newAnswers);
+                      setCurrentQuestionIndex(prev => prev + 1);
+                    } else {
+                      const combined = newAnswers.join("\n");
+                      handleSubmit(combined, { openPanel: false });
+                      setQuestionAnswers([]);
+                      setCurrentQuestionIndex(0);
+                    }
+                  }}
+                  onSkip={() => {
+                    const newAnswers = [...questionAnswers, "Skip"];
+                    if (pendingQuestions && currentQuestionIndex < pendingQuestions.length - 1) {
+                      setQuestionAnswers(newAnswers);
+                      setCurrentQuestionIndex(prev => prev + 1);
+                    } else {
+                      const combined = newAnswers.join("\n");
+                      handleSubmit(combined, { openPanel: false });
+                      setQuestionAnswers([]);
+                      setCurrentQuestionIndex(0);
+                    }
+                  }}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Floating plan approval toast */}
-          {!isChatOpen && pendingPlan && !pendingQuestion && !isLoading && !dismissedPlan && (
-            <div className="pointer-events-auto">
-              <FloatingPlanApproval
-                title={pendingPlan.title}
-                onApprove={() => handleSubmit("Approved! Go ahead.", { openPanel: false })}
-                onViewDetails={() => setIsChatOpen(true)}
-              />
-            </div>
-          )}
+          <AnimatePresence>
+            {!isChatOpen && pendingPlan && !pendingQuestion && !isLoading && !dismissedPlan && (
+              <motion.div
+                key="plan-approval"
+                className="pointer-events-auto"
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={floatingCardVariants}
+                transition={floatingTransition}
+              >
+                <FloatingPlanApproval
+                  title={pendingPlan.title}
+                  onApprove={() => handleSubmit("Approved! Go ahead.", { openPanel: false })}
+                  onViewDetails={() => setIsChatOpen(true)}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Floating thinking indicator - hide once content starts streaming */}
-          {!isChatOpen && isLoading && !hasActivePlan && (() => {
-            // Hide thinking if we already have content streaming
-            const lastMsg = messages[messages.length - 1];
-            if (lastMsg?.role === 'assistant' && lastMsg.content && lastMsg.content.trim()) {
-              return null; // Content is streaming, don't show thinking
-            }
-
-            // Determine what the AI is doing based on recent tool calls
-            const recentTools = lastMsg?.role === 'assistant' ? lastMsg.toolInvocations || [] : [];
-            const lastSearchTool = [...recentTools].reverse().find(t => t.toolName === 'webSearch');
-
-            let status = "Thinking...";
-            if (lastSearchTool) {
-              status = "Searching the web...";
-            }
-
-            return <FloatingThinkingIndicator status={status} />;
-          })()}
+          <AnimatePresence>
+            {thinkingStatus && (
+              <motion.div
+                key="thinking"
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={floatingCardVariants}
+                transition={floatingTransition}
+              >
+                <FloatingThinkingIndicator status={thinkingStatus} />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Floating voice indicator */}
-          {!isChatOpen && (voice.state === "listening" || voice.state === "speaking") && (
-            <div className="pointer-events-auto">
-              <FloatingVoiceIndicator state={voice.state} onEnd={handleVoiceDisconnect} />
-            </div>
-          )}
+          <AnimatePresence>
+            {!isChatOpen && (voice.state === "listening" || voice.state === "speaking") && (
+              <motion.div
+                key="voice"
+                className="pointer-events-auto"
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={floatingCardVariants}
+                transition={floatingTransition}
+              >
+                <FloatingVoiceIndicator state={voice.state} onEnd={handleVoiceDisconnect} />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Centered toast */}
-          {toastCentered && responseToast && !showFloatingQuestion && !isChatOpen && !shouldHideToastRef.current && (
-            <div
-              className={`absolute z-[65] w-[420px] ${showFloatingPlan || showFloatingProgress ? 'bottom-[188px]' : 'bottom-24'}`}
-              style={{
-                left: '50%',
-                transform: 'translateX(-50%)'
-              }}
-            >
-              <div className="pointer-events-auto w-full bg-white shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: '32px' }}>
-                {/* Sticky icon */}
-                <div className="absolute top-4 left-4 z-10 bg-white">
-                  <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center">
-                    <IconSingleSparksFilled size="small" />
+          <AnimatePresence>
+            {toastCentered && responseToast && !showFloatingQuestion && !isChatOpen && !shouldHideToastRef.current && (
+              <motion.div
+                key="centered-toast"
+                className={`absolute z-[65] w-[420px] ${showFloatingPlan || showFloatingProgress ? 'bottom-[188px]' : 'bottom-24'}`}
+                style={{ left: '50%' }}
+                initial={{ ...toastVariants.hidden, x: "-50%" }}
+                animate={{ ...toastVariants.visible, x: "-50%" }}
+                exit={{ ...toastVariants.exit, x: "-50%" }}
+                transition={floatingTransition}
+              >
+                <div className="pointer-events-auto w-full bg-white shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: '32px' }}>
+                  {/* Sticky icon */}
+                  <div className="absolute top-4 left-4 z-10 bg-white">
+                    <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center">
+                      <IconSingleSparksFilled size="small" />
+                    </div>
                   </div>
-                </div>
-                {/* Sticky close button */}
-                <div className="absolute top-4 right-4 z-10">
-                  <div
-                    onClick={() => { setResponseToast(null); setToastCentered(false); }}
-                    className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors rounded-full cursor-pointer"
-                    title="Dismiss"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </div>
-                </div>
-                {/* Scrollable content */}
-                <div
-                  onClick={() => setIsChatOpen(true)}
-                  className="overflow-y-auto p-4 pl-14 pr-10 hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  <div className="text-sm text-gray-700">
-                    <Markdown
-                      components={{
-                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                        em: ({ children }) => <em className="italic">{children}</em>,
-                        ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
-                        ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
-                        li: ({ children }) => <li className="mb-0.5">{children}</li>,
-                        h1: ({ children }) => <h1 className="text-base font-semibold mt-3 mb-2">{children}</h1>,
-                        h2: ({ children }) => <h2 className="text-base font-semibold mt-3 mb-2">{children}</h2>,
-                        h3: ({ children }) => <h3 className="text-sm font-semibold mt-3 mb-2">{children}</h3>,
-                        code: ({ children }) => <code className="bg-gray-100 px-1 rounded text-xs">{children}</code>,
-                      }}
+                  {/* Sticky close button */}
+                  <div className="absolute top-4 right-4 z-10">
+                    <div
+                      onClick={() => { setResponseToast(null); setToastCentered(false); }}
+                      className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors rounded-full cursor-pointer"
+                      title="Dismiss"
                     >
-                      {responseToast}
-                    </Markdown>
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                  </div>
+                  {/* Scrollable content */}
+                  <div
+                    onClick={() => setIsChatOpen(true)}
+                    className="overflow-y-auto p-4 pl-14 pr-10 hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    <div className="text-sm text-gray-700">
+                      <Markdown
+                        components={{
+                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                          strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                          em: ({ children }) => <em className="italic">{children}</em>,
+                          ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
+                          li: ({ children }) => <li className="mb-0.5">{children}</li>,
+                          h1: ({ children }) => <h1 className="text-base font-semibold mt-3 mb-2">{children}</h1>,
+                          h2: ({ children }) => <h2 className="text-base font-semibold mt-3 mb-2">{children}</h2>,
+                          h3: ({ children }) => <h3 className="text-sm font-semibold mt-3 mb-2">{children}</h3>,
+                          code: ({ children }) => <code className="bg-gray-100 px-1 rounded text-xs">{children}</code>,
+                        }}
+                      >
+                        {responseToast}
+                      </Markdown>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Custom toolbar at bottom center */}
@@ -2597,121 +2692,154 @@ export function Canvas() {
         </div>
       )}
 
-      {/* Side chat panel - fixed position, outside flex flow OR fullscreen */}
-      {(isChatOpen || isFullscreenChat) && (
-        <div
-          className={`fixed top-0 h-full z-[999] ${isFullscreenChat ? 'left-0 right-0 flex' : 'right-0 select-none'}`}
-          style={isFullscreenChat ? undefined : { width: `${sidebarWidth}px` }}
-        >
-          {/* Resize handle (sidebar mode only) */}
-          {!isFullscreenChat && (
-            <div
-              onMouseDown={handleResizeStart}
-              className={`absolute left-0 top-0 bottom-0 w-1 hover:w-1.5 transition-all cursor-col-resize z-[1000] ${
-                isResizing ? 'bg-blue-500 w-1.5' : 'bg-transparent hover:bg-gray-300'
-              }`}
-            />
-          )}
+      {/* Side chat panel - morphs between sidebar and fullscreen */}
+      <AnimatePresence>
+        {(isChatOpen || isFullscreenChat) && (
+          <motion.div
+            key="chat-panel"
+            className="fixed top-0 h-full z-[999]"
+            initial={{ x: "100%" }}
+            animate={{
+              x: 0,
+              left: isFullscreenChat ? 0 : "auto",
+              right: isFullscreenChat ? 0 : 0,
+              width: isFullscreenChat ? "100%" : sidebarWidth,
+            }}
+            exit={{ x: "100%" }}
+            transition={smoothTransition}
+            style={{
+              display: isFullscreenChat ? "flex" : "block",
+            }}
+          >
+            {/* Resize handle (sidebar mode only) */}
+            {!isFullscreenChat && (
+              <div
+                onMouseDown={handleResizeStart}
+                className={`absolute left-0 top-0 bottom-0 w-1 hover:w-1.5 transition-all cursor-col-resize z-[1000] ${
+                  isResizing ? 'bg-blue-500 w-1.5' : 'bg-transparent hover:bg-gray-300'
+                }`}
+              />
+            )}
 
-          {isFullscreenChat ? (
-            <div className="flex flex-col h-full flex-1">
-              {/* Full-width header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white flex-shrink-0">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      setIsFullscreenChat(false);
-                      setIsChatOpen(true);
-                    }}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-                    title="Back to canvas"
-                  >
-                    <IconArrowLeft />
-                  </button>
-                  <span className="text-sm font-medium text-gray-900">Chat</span>
-                  <span className="text-xs text-gray-500">with AI</span>
+            {isFullscreenChat ? (
+              <div className="flex flex-col h-full flex-1">
+                {/* Full-width header */}
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white flex-shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-900">Chat</span>
+                    <span className="text-xs text-gray-500">with AI</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => {
+                        setIsFullscreenChat(false);
+                        setIsChatOpen(true);
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+                      title="Exit focus mode"
+                    >
+                      <IconSidebarGlobalOpen />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsFullscreenChat(false);
+                        handleCloseChat(true);
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+                      title="Close"
+                    >
+                      <IconCross />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => {
-                      setIsFullscreenChat(false);
-                      handleCloseChat(true);
-                    }}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-                    title="Close"
-                  >
-                    <IconCross />
-                  </button>
+
+                {/* Content area: chat + plan side by side */}
+                <div className="flex flex-1 overflow-hidden relative">
+                  <div className="flex-1 overflow-hidden">
+                    <ChatPanel
+                      onClose={() => {
+                        setIsFullscreenChat(false);
+                        handleCloseChat(true);
+                      }}
+                      hideHeader={true}
+                      isFullscreen={isFullscreenChat}
+                      messages={messages}
+                      input={input}
+                      setInput={setInput}
+                      onSubmit={handleSubmit}
+                      isLoading={isLoading}
+                      onNavigateToFrames={navigateToFrames}
+                    />
+                  </div>
+
+                  {/* Plan progress panel or open button */}
+                  <AnimatePresence>
+                    {activePlanDetails && isPlanPanelVisible && (
+                      <motion.div
+                        key="plan-panel"
+                        className="flex-shrink-0"
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={planPanelVariants}
+                        transition={smoothTransition}
+                      >
+                        <PlanProgressPanel
+                          plan={activePlanDetails}
+                          isLoading={isLoading}
+                          onToggleVisibility={() => setIsPlanPanelVisible(false)}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <AnimatePresence>
+                    {activePlanDetails && !isPlanPanelVisible && (
+                      <motion.button
+                        key="plan-toggle"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        onClick={() => setIsPlanPanelVisible(true)}
+                        className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 z-10"
+                        title="Show plan"
+                      >
+                        <IconSidebarGlobalClosed css={{ transform: 'rotate(180deg)' }} />
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
-
-              {/* Content area: chat + plan side by side */}
-              <div className="flex flex-1 overflow-hidden relative">
-                <div className="flex-1 overflow-hidden">
-                  <ChatPanel
-                    onClose={() => {
-                      setIsFullscreenChat(false);
-                      handleCloseChat(true);
-                    }}
-                    hideHeader={true}
-                    isFullscreen={isFullscreenChat}
-                    messages={messages}
-                    input={input}
-                    setInput={setInput}
-                    onSubmit={handleSubmit}
-                    isLoading={isLoading}
-                    onNavigateToFrames={navigateToFrames}
-                  />
-                </div>
-
-                {/* Plan progress panel or open button */}
-                {activePlanDetails && isPlanPanelVisible && (
-                  <PlanProgressPanel
-                    plan={activePlanDetails}
-                    isLoading={isLoading}
-                    onToggleVisibility={() => setIsPlanPanelVisible(false)}
-                  />
-                )}
-                {activePlanDetails && !isPlanPanelVisible && (
-                  <button
-                    onClick={() => setIsPlanPanelVisible(true)}
-                    className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 z-10"
-                    title="Show plan"
-                  >
-                    <IconSidebarGlobalClosed css={{ transform: 'rotate(180deg)' }} />
-                  </button>
-                )}
-              </div>
-            </div>
-          ) : (
-            <ChatPanel
-              onClose={() => {
-                setIsFullscreenChat(false);
-                handleCloseChat(true);
-              }}
-              onCollapse={() => {
-                handleCloseChat(false);
-                const lastAssistantMsg = messages.findLast(m => m.role === 'assistant' && m.content?.trim());
-                if (lastAssistantMsg?.content) {
-                  setResponseToast(lastAssistantMsg.content);
-                  setToastCentered(true);
-                  setIsToolbarExpanded(true);
-                }
-              }}
-              onExpand={() => {
-                setIsFullscreenChat(true);
-              }}
-              isFullscreen={false}
-              messages={messages}
-              input={input}
-              setInput={setInput}
-              onSubmit={handleSubmit}
-              isLoading={isLoading}
-              onNavigateToFrames={navigateToFrames}
-            />
-          )}
-        </div>
-      )}
+            ) : (
+              <ChatPanel
+                onClose={() => {
+                  setIsFullscreenChat(false);
+                  handleCloseChat(true);
+                }}
+                onCollapse={() => {
+                  handleCloseChat(false);
+                  const lastAssistantMsg = messages.findLast(m => m.role === 'assistant' && m.content?.trim());
+                  if (lastAssistantMsg?.content) {
+                    setResponseToast(lastAssistantMsg.content);
+                    setToastCentered(true);
+                    setIsToolbarExpanded(true);
+                  }
+                }}
+                onExpand={() => {
+                  setIsFullscreenChat(true);
+                }}
+                isFullscreen={false}
+                messages={messages}
+                input={input}
+                setInput={setInput}
+                onSubmit={handleSubmit}
+                isLoading={isLoading}
+                onNavigateToFrames={navigateToFrames}
+              />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
