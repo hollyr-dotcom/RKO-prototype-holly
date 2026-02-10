@@ -121,10 +121,18 @@ export function PromptSuggestions({
       >
         {filtered.map((suggestion, i) => (
           <button
+            type="button"
             key={suggestion}
             data-suggestion-index={i}
             data-suggestion-text={suggestion}
-            onClick={() => onSelect(suggestion)}
+            onMouseDown={(e) => {
+              console.log('[SUGGESTIONS] Button mousedown:', suggestion);
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('[SUGGESTIONS] Calling onSelect');
+              onSelect(suggestion);
+              console.log('[SUGGESTIONS] onSelect called');
+            }}
             className={`w-full flex items-center gap-3 px-4 py-2.5 transition-colors text-left ${
               selectedIndex === i ? "bg-gray-50" : "hover:bg-gray-50"
             }`}

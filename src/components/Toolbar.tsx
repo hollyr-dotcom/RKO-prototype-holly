@@ -57,7 +57,9 @@ interface ToolbarProps {
   onDismissToast?: () => void;
   onOpenChat?: () => void;
   hasMessages?: boolean;
+  hasPendingQuestion?: boolean;
   onSuggestionsVisibilityChange?: (visible: boolean) => void;
+  onInputChange?: (hasText: boolean) => void;
 }
 
 export function Toolbar({
@@ -75,13 +77,17 @@ export function Toolbar({
   onDismissToast,
   onOpenChat,
   hasMessages = false,
+  hasPendingQuestion = false,
   onSuggestionsVisibilityChange,
+  onInputChange,
 }: ToolbarProps) {
   const [inputValue, setInputValue] = useState("");
   const [activeTool, setActiveTool] = useState("select");
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
 
   const selectTool = (tool: string) => {
     if (!editor) return;
@@ -89,14 +95,21 @@ export function Toolbar({
     setActiveTool(tool);
   };
 
-  const showSuggestions = isExpanded && !isLoading && voiceState === "idle" && inputValue.trim().length > 0 && !hasMessages;
+  const showSuggestions = isExpanded && isInputFocused && !isLoading && voiceState === "idle" && inputValue.trim().length > 0 && !hasPendingQuestion;
 
   // Notify parent when suggestions visibility changes
   useEffect(() => {
     onSuggestionsVisibilityChange?.(showSuggestions);
   }, [showSuggestions, onSuggestionsVisibilityChange]);
 
+  // Notify parent when input has text
+  useEffect(() => {
+    onInputChange?.(inputValue.trim().length > 0);
+  }, [inputValue, onInputChange]);
+
   const handleSuggestionSelect = useCallback((text: string) => {
+    console.log('[TOOLBAR] Suggestion selected:', text);
+    console.log('[TOOLBAR] onSubmit function:', typeof onSubmit, onSubmit);
     onSubmit(text);
     setInputValue("");
     setSelectedSuggestionIndex(-1);
@@ -162,6 +175,19 @@ export function Toolbar({
     }
   }, [isChatOpen, hideInput]);
 
+  // Handle click outside to dismiss autocomplete only (keep toolbar expanded and text)
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (toolbarRef.current && !toolbarRef.current.contains(event.target as Node) && isExpanded) {
+        // Just blur the input to hide autocomplete, don't collapse toolbar
+        inputRef.current?.blur();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isExpanded]);
+
   // Refocus input after AI finishes replying (in toast mode)
   useEffect(() => {
     if (!isLoading && isExpanded && !isChatOpen && !hideInput) {
@@ -173,7 +199,7 @@ export function Toolbar({
   }, [isLoading, isExpanded, isChatOpen, hideInput]);
 
   return (
-    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[70]">
+    <div ref={toolbarRef} className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[70]">
       {/* Tools button - positioned absolutely to the left */}
       {isExpanded && (
         <button
@@ -345,6 +371,8 @@ export function Toolbar({
                   type="text"
                   value={inputValue}
                   onChange={(e) => { setInputValue(e.target.value); if (responseToast) onDismissToast?.(); }}
+                  onFocus={() => setIsInputFocused(true)}
+                  onBlur={() => setIsInputFocused(false)}
                   onKeyDown={(e) => {
                     if (!showSuggestions) return;
                     if (e.key === "ArrowUp") {

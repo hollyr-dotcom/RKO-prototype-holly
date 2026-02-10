@@ -878,6 +878,7 @@ export function Canvas() {
   const [isCompletionDismissed, setIsCompletionDismissed] = useState(false);
   const [shapeCount, setShapeCount] = useState(0);
   const [areSuggestionsVisible, setAreSuggestionsVisible] = useState(false);
+  const [hasToolbarText, setHasToolbarText] = useState(false);
   const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
   const isProcessingToolCallRef = useRef(false);
@@ -1032,8 +1033,16 @@ export function Canvas() {
 
       const { url } = await editor.toImageDataUrl(
         exportable.map(s => s.id),
-        { format: 'png', pixelRatio: 1 }
+        {
+          format: 'jpeg',  // JPEG is much smaller than PNG
+          quality: 0.6,     // 60% quality - good balance of size vs clarity for AI vision
+          pixelRatio: 1
+        }
       );
+
+      // Log size for debugging
+      const sizeKB = Math.round(url.length / 1024);
+      console.log(`[SCREENSHOT] Captured JPEG: ${sizeKB}KB`);
 
       return url;
     } catch (err) {
@@ -1135,6 +1144,8 @@ export function Canvas() {
 
       isProcessingToolCallRef.current = true;
       let shapeId: TLShapeId | null = null;
+
+      try {
 
       if (toolName === "createSticky") {
         const { text, x, y, color } = args as {
@@ -1350,8 +1361,20 @@ export function Canvas() {
 
         // HIERARCHY layout: Always use layout engine for clean columnar structure
         // Triggers when: type="hierarchy" OR any item has parentIndex set
-        const hasParentIndex = layout.items.some(item => item.parentIndex !== undefined);
-        const useHierarchyLayout = layout.type === "hierarchy" || hasParentIndex;
+        const hasParentIndex = layout.items.some(item => item.parentIndex !== undefined && item.parentIndex !== -1);
+
+        // 🚨 DEFENSIVE FIX: If AI calls "hierarchy" but there are NO parent relationships,
+        // convert to a grid with stickies instead (this is what they probably wanted)
+        if (layout.type === "hierarchy" && !hasParentIndex) {
+          console.log('[LAYOUT] Converting hierarchy with no relationships to grid with stickies');
+          layout.type = "grid";
+          // Convert all items to stickies for brainstorming
+          layout.items.forEach(item => {
+            if (item.type === "shape") item.type = "sticky";
+          });
+        }
+
+        const useHierarchyLayout = (layout.type === "hierarchy" || hasParentIndex) && hasParentIndex;
 
         if (useHierarchyLayout) {
           console.log('[LAYOUT] Using hierarchy layout engine');
@@ -1811,8 +1834,10 @@ export function Canvas() {
       if (shapeId) {
         createdShapesRef.current.push(shapeId);
       }
-
-      isProcessingToolCallRef.current = false;
+      } finally {
+        // ALWAYS reset the flag, even if we return early
+        isProcessingToolCallRef.current = false;
+      }
     },
     [editor, findNonOverlappingPosition]
   );
@@ -1829,8 +1854,17 @@ export function Canvas() {
     if (!editor) return;
 
     const unsub = editor.store.listen((entry) => {
+      console.log("[LISTENER] Callback fired! source:", entry.source, "isProcessingToolCall:", isProcessingToolCallRef.current, "changes:", {
+        added: Object.keys(entry.changes.added).length,
+        updated: Object.keys(entry.changes.updated).length,
+        removed: Object.keys(entry.changes.removed).length
+      });
+
       // Skip changes made by AI tool calls
-      if (isProcessingToolCallRef.current) return;
+      if (isProcessingToolCallRef.current) {
+        console.log("[LISTENER] BLOCKED by isProcessingToolCallRef");
+        return;
+      }
 
       // Helper to extract text from richText prop
       const extractTextFromRichText = (rt: unknown): string => {
@@ -1850,7 +1884,11 @@ export function Canvas() {
 
         // Skip AI-created shapes (only track user additions)
         const meta = record.meta as Record<string, unknown> | undefined;
-        if (meta?.createdBy === 'ai') continue;
+        console.log("[EDIT-DETECT] Added shape:", record.type, "meta:", meta, "id:", record.id);
+        if (meta?.createdBy === 'ai') {
+          console.log("[EDIT-DETECT] Skipping AI-created shape:", record.type);
+          continue;
+        }
 
         const props = record.props as Record<string, unknown>;
         const shapeType = record.type as string;
@@ -2049,7 +2087,7 @@ export function Canvas() {
           console.log("[EDIT-DETECT] Sending screenshot with diff:", desc);
           voiceRef.current?.sendScreenshot(desc);
           screenshotTimerRef.current = null;
-        }, 800);
+        }, 400); // Reduced from 800ms to 400ms for faster response
       }
     }, { source: "user", scope: "document" });
 
@@ -2437,7 +2475,7 @@ export function Canvas() {
   const showFloatingPlan = !isChatOpen && !!pendingPlan && !pendingQuestion && !isLoading && !dismissedPlan;
   // Thinking shows when loading BUT NOT during plan execution (progress indicator handles that)
   const showFloatingThinking = !isChatOpen && isLoading && !hasActivePlan;
-  const showFloatingProgress = !isChatOpen && !isFullscreenChat && hasActivePlan && !showFloatingQuestion && !showFloatingPlan && !showFloatingThinking;
+  const showFloatingProgress = !isChatOpen && !isFullscreenChat && hasActivePlan && !showFloatingQuestion && !showFloatingPlan && !showFloatingThinking && !isCompletionDismissed;
 
   // Thinking status text (extracted from IIFE so AnimatePresence gets a clean value)
   const thinkingStatus = useMemo(() => {
@@ -2517,14 +2555,15 @@ export function Canvas() {
   return (
     <div className="h-screen w-screen flex overflow-hidden relative">
       {/* Main canvas area - hidden in fullscreen chat */}
-      {!isFullscreenChat && (
-        <div
-          className="relative"
-          style={{
-            width: isChatOpen ? `calc(100vw - ${sidebarWidth}px)` : '100vw',
-            transition: 'width 250ms cubic-bezier(0.25, 0.1, 0.25, 1.0)'
-          }}
-        >
+      <div
+        className="relative"
+        style={{
+          width: isChatOpen ? `calc(100vw - ${sidebarWidth}px)` : '100vw',
+          transition: 'width 250ms cubic-bezier(0.25, 0.1, 0.25, 1.0)',
+          visibility: isFullscreenChat ? 'hidden' : 'visible',
+          pointerEvents: isFullscreenChat ? 'none' : 'auto'
+        }}
+      >
         <Tldraw onMount={handleMount} hideUi />
 
         {/* Starting prompt cards - only when canvas is empty */}
@@ -2535,7 +2574,9 @@ export function Canvas() {
           hideForSuggestions={areSuggestionsVisible}
           isCanvasEmpty={isCanvasEmpty}
           isChatOpen={isChatOpen}
-          isAIEngaged={showFloatingThinking || showFloatingQuestion || showFloatingPlan}
+          isAIEngaged={showFloatingThinking || showFloatingQuestion || showFloatingPlan || hasActivePlan}
+          hasToolbarText={hasToolbarText}
+          isVoiceActive={voice.isConnected}
         />
 
         {/* AI Chat button - top right, hidden when panel is open */}
@@ -2701,7 +2742,7 @@ export function Canvas() {
 
           {/* Centered toast */}
           <AnimatePresence>
-            {toastCentered && responseToast && !showFloatingQuestion && !isChatOpen && !shouldHideToastRef.current && (
+            {toastCentered && responseToast && !showFloatingQuestion && !isChatOpen && !shouldHideToastRef.current && !areSuggestionsVisible && (
               <motion.div
                 key="centered-toast"
                 className={`absolute z-[65] w-[420px] ${showFloatingPlan || showFloatingProgress ? 'bottom-[188px]' : 'bottom-24'}`}
@@ -2764,10 +2805,7 @@ export function Canvas() {
             )}
           </AnimatePresence>
         </div>
-
-        {/* Custom toolbar at bottom center */}
-        </div>
-      )}
+      </div>
 
       {/* Toolbar - animates down/up when entering/exiting fullscreen */}
       <AnimatePresence>
@@ -2786,9 +2824,6 @@ export function Canvas() {
               onToggleChat={() => setIsChatOpen(!isChatOpen)}
               isChatOpen={isChatOpen}
               hideInput={
-                showFloatingQuestion || showFloatingPlan ||
-                // Keep toolbar locked in canvas-tools mode during entire Q&A/plan flow
-                isInQAFlow ||
                 // Hide input when in voice mode
                 voice.isConnected
               }
@@ -2797,7 +2832,7 @@ export function Canvas() {
               voiceState={voice.state}
               onVoiceToggle={handleVoiceToggle}
               onExpandedChange={setIsToolbarExpanded}
-              responseToast={isChatOpen || toastCentered || showFloatingQuestion || shouldHideToastRef.current ? null : responseToast}
+              responseToast={isChatOpen || toastCentered || showFloatingQuestion || shouldHideToastRef.current || areSuggestionsVisible ? null : responseToast}
               onDismissToast={() => { setResponseToast(null); setToastCentered(false); }}
               onOpenChat={() => {
                 setResponseToast(null);
@@ -2806,9 +2841,11 @@ export function Canvas() {
                 setIsCompletionDismissed(true);
               }}
               hasMessages={messages.length > 0}
+              hasPendingQuestion={!!pendingQuestion}
               canvasState={getCanvasState()}
               canvasWidth={isChatOpen && typeof window !== 'undefined' ? window.innerWidth - sidebarWidth : undefined}
               onSuggestionsVisibilityChange={setAreSuggestionsVisible}
+              onInputChange={setHasToolbarText}
             />
           </motion.div>
         )}

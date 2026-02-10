@@ -78,6 +78,8 @@ interface StartingPromptCardsProps {
   isCanvasEmpty?: boolean;
   isChatOpen?: boolean;
   isAIEngaged?: boolean;
+  hasToolbarText?: boolean;
+  isVoiceActive?: boolean;
 }
 
 export function StartingPromptCards({
@@ -86,6 +88,8 @@ export function StartingPromptCards({
   isCanvasEmpty = true,
   isChatOpen = false,
   isAIEngaged = false,
+  hasToolbarText = false,
+  isVoiceActive = false,
 }: StartingPromptCardsProps) {
   const [isDismissed, setIsDismissed] = useState(false);
   const [shuffleKey, setShuffleKey] = useState(0);
@@ -120,7 +124,7 @@ export function StartingPromptCards({
     return result;
   }, [shuffleKey, isMounted]);
 
-  const shouldShow = isCanvasEmpty && !isChatOpen && !isDismissed && !hideForSuggestions && !isAIEngaged;
+  const shouldShow = isCanvasEmpty && !isChatOpen && !isDismissed && !hideForSuggestions && !isAIEngaged && !hasToolbarText && !isVoiceActive;
 
   return (
     <AnimatePresence>

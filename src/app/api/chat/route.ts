@@ -33,7 +33,7 @@ const confirmPlanTool = tool({
   description: "Propose a plan for substantial work. After calling this, STOP and wait. When user approves, EXECUTE this plan - don't make a new one.",
   parameters: z.object({
     title: z.string().describe("What you're planning to create"),
-    steps: z.array(z.string()).min(1).max(12).describe("The steps you'll take"),
+    steps: z.array(z.string()).min(3).max(5).describe("The steps you'll take (3-5 high-level steps only)"),
     summary: z.string().describe("What the end result will look like"),
   }),
   execute: async ({ title, steps, summary }) => {
@@ -172,7 +172,7 @@ const generateItemId = () => `item-${Date.now()}-${Math.random().toString(36).sl
 // --- Canvas Creation Tools ---
 const createStickyTool = tool({
   name: "createSticky",
-  description: "⚠️ ONLY for adding a SINGLE sticky to existing content. For 2+ stickies, you MUST use createLayout() instead - it handles positioning automatically. Never call this multiple times in sequence.",
+  description: "Create a single post-it note (tldraw sticky note shape). ⚠️ ONLY for adding ONE sticky to existing content. For 2+ stickies, you MUST use createLayout(type:'sticky') instead - it handles positioning automatically. Never call this multiple times in sequence.",
   parameters: z.object({
     text: z.string().describe("The text content"),
     x: z.number().describe("X position"),
@@ -268,11 +268,33 @@ const createLayoutTool = tool({
   name: "createLayout",
   description: `🎯 REQUIRED for 2+ items! Creates organized, aligned content in a frame.
 
-LAYOUT TYPES:
-- "grid" + type:"sticky" → For brainstorms, style guides, grouped notes (aligned in rows)
-- "grid" + type:"shape" → For navigation items, feature lists (aligned boxes)
-- "hierarchy" + type:"shape" → For org charts, sitemaps, trees (with connecting arrows)
-- "flow" + type:"shape" → For user journeys, processes (left-to-right with arrows)
+🚨 CRITICAL: type:"sticky" is the DEFAULT for 99% of cases! 🚨
+
+WHEN TO USE STICKIES (type:"sticky" with "grid" layout):
+✓ User says "stickies", "sticky notes", "post-it notes"
+✓ Brainstorming, ideas, project names, feature lists
+✓ Any list of items that don't need arrows between them
+✓ When you want simple post-it notes on a board
+
+WHEN TO USE SHAPES (type:"shape" - RARE!):
+✗ ONLY when user explicitly asks for: "org chart", "sitemap", "family tree", "hierarchy diagram", "process flow"
+✗ ONLY when items need connecting arrows to show relationships
+✗ If user just wants "ideas" or "names" → USE STICKIES, NOT SHAPES!
+
+CRITICAL EXAMPLES - FOLLOW THESE EXACTLY:
+
+✓ "create yellow stickies for project name ideas"
+→ createLayout({ type: "grid", frameName: "Project Names", items: [{type: "sticky", text: "Atlas", color: "yellow"}, {type: "sticky", text: "Nova", color: "yellow"}], columns: 3 })
+
+✓ "brainstorm feature ideas"
+→ createLayout({ type: "grid", frameName: "Features", items: [{type: "sticky", text: "Dark mode", color: "blue"}, ...], columns: 3 })
+
+✓ "create a sitemap" (ONLY when user wants a diagram with parent-child relationships)
+→ createLayout({ type: "hierarchy", frameName: "Sitemap", items: [{type: "shape", text: "Home", parentIndex: -1}, {type: "shape", text: "About", parentIndex: 0}], direction: "down" })
+
+🚨 DO NOT use type:"hierarchy" for simple lists! ONLY for explicit parent-child diagrams!
+
+⚠️ DO NOT use "hierarchy" layout unless user explicitly asks for a hierarchical diagram!
 
 The layout engine handles ALL positioning - items will be perfectly aligned in a grid or tree structure.
 NEVER use createSticky/createShape multiple times - use this instead!`,
@@ -408,11 +430,40 @@ USE WEB SEARCH when you truly need current info:
 - Real company/product data, actual competitors
 - DON'T search for generic tasks (wireframes, brainstorms, org charts)
 
-CANVAS: Check [CANVAS STATE] for existing content and positions.`,
+CANVAS: Check [CANVAS STATE] for existing content and positions.
+
+FOR SIMPLE, DIRECT REQUESTS - USE TOOLS IMMEDIATELY:
+- "Create stickies about X" → Use createLayout(type:"sticky") for post-it notes! NOT shapes.
+- "Brainstorm ideas for Y" → Use createLayout(type:"sticky") for sticky notes
+- "Add a frame for Z" → Just use createFrame() directly
+- "Draw an arrow from A to B" → Just use createArrow() directly
+- No need for confirmPlan() — just do it!
+
+🎯 STICKY NOTES vs SHAPES:
+- User says "stickies", "sticky notes", "post-its", "brainstorm", "ideas" → createLayout(type:"sticky")
+- User says "diagram", "org chart", "sitemap", "flow" → createLayout(type:"shape")
+- When in doubt, use stickies! They're the default for notes and ideas.
+
+FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
+- Multiple sections/frames with dependencies
+- Requires research or multiple layouts
+- User asks for something substantial ("create a project kickoff", "design a user flow")
+- Then use confirmPlan() to get approval before execution`,
   tools: [
     askUserTool,
     confirmPlanTool,
     webSearchTool,
+    // Canvas creation tools for simple direct requests
+    createLayoutTool,
+    createStickyTool,
+    createTextTool,
+    createShapeTool,
+    createFrameTool,
+    createArrowTool,
+    updateStickyTool,
+    moveItemTool,
+    deleteItemTool,
+    organizeIntoFrameTool,
   ],
 });
 
@@ -499,16 +550,20 @@ createLayout({
   ]
 })
 
-WHEN TO USE STICKIES (type: "sticky"):
-- Brainstorms, random ideas
-- Feature lists without structure
-- Style guides
+🚨 DEFAULT TO STICKIES! Use type:"sticky" unless you need arrows! 🚨
+
+WHEN TO USE STICKIES (type: "sticky") - 99% OF CASES:
+✓ User says "stickies", "sticky notes", "post-its"
+✓ Brainstorms, ideas, project names, feature lists
+✓ ANY list of items without hierarchical relationships
+✓ Default choice when in doubt!
 → Use 2-3 colors MAX per frame for visual grouping
 → Keep text short: "Title\n\n• Point 1\n• Point 2"
 
-WHEN TO USE SHAPES (type: "shape"):
-- Hierarchies with relationships (with arrows via parentIndex)
-- Flowcharts, processes
+WHEN TO USE SHAPES (type: "shape") - RARE! ONLY FOR DIAGRAMS:
+✗ ONLY when user explicitly asks for: "org chart", "sitemap", "hierarchy", "process flow"
+✗ ONLY when items need connecting arrows to show parent-child relationships
+✗ If user wants a simple list of names/ideas → USE STICKIES!
 → Keep text VERY short (max 20 chars)
 → Use color to show relationships:
   - Parents: one color (e.g., blue)

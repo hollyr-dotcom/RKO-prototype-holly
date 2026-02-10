@@ -289,10 +289,12 @@ export function useRealtimeVoice() {
 
           // Track AI speaking state
           if (message.type === "response.audio.delta") {
+            console.log("[VOICE STATE] Changing to 'speaking' (audio delta)");
             setState("speaking");
           }
 
           if (message.type === "response.audio.done" || message.type === "response.done") {
+            console.log("[VOICE STATE] Changing to 'listening' (audio/response done)");
             setState("listening");
           }
 
@@ -303,6 +305,7 @@ export function useRealtimeVoice() {
 
       dc.addEventListener("open", async () => {
         console.log("Data channel opened");
+        console.log("[VOICE STATE] Changing to 'listening' (data channel opened)");
         setState("listening");
 
         // Send fresh canvas state as context
@@ -336,31 +339,9 @@ export function useRealtimeVoice() {
           }
         }
 
-        // Send visual screenshot for spatial understanding
-        if (captureScreenshot) {
-          try {
-            const screenshot = await captureScreenshot();
-            if (screenshot) {
-              console.log("[VOICE] Sending canvas screenshot for visual context");
-              dc.send(JSON.stringify({
-                type: "conversation.item.create",
-                item: {
-                  type: "message",
-                  role: "user",
-                  content: [{
-                    type: "input_text",
-                    text: "[CANVAS SCREENSHOT] This is what the canvas currently looks like. Study the visual details — shapes, drawings, text, colors, and spatial layout."
-                  }, {
-                    type: "input_image",
-                    image_url: screenshot
-                  }]
-                }
-              }));
-            }
-          } catch (err) {
-            console.error("[VOICE] Failed to capture screenshot:", err);
-          }
-        }
+        // Don't send initial screenshot - it's too large and crashes the data channel
+        // The AI will receive fresh screenshots when user makes edits via sendScreenshot()
+        console.log("[VOICE] Skipping initial screenshot (too large for WebRTC channel)");
       });
 
       dc.addEventListener("close", () => {
@@ -542,12 +523,22 @@ export function useRealtimeVoice() {
       const screenshot = await captureScreenshotRef.current();
       if (!screenshot) return;
 
+      // Check screenshot size - WebRTC data channels have ~16-64KB message limits
+      // Base64 images are ~1.33x larger than raw bytes, so we need to be conservative
+      const sizeKB = Math.round(screenshot.length / 1024);
+      const MAX_SIZE_KB = 50; // Conservative limit to stay well below WebRTC limits
+
+      if (sizeKB > MAX_SIZE_KB) {
+        console.warn(`[VOICE] Screenshot too large (${sizeKB}KB), skipping to prevent data channel crash. Complex layouts with many shapes produce large screenshots.`);
+        return;
+      }
+
       const changeNote = changeDescription
         ? ` The user just: ${changeDescription}. Look for the new additions.`
         : '';
 
       const dc = dataChannelRef.current;
-      console.log("[VOICE] Sending live canvas screenshot", changeDescription || "");
+      console.log(`[VOICE] Sending live canvas screenshot (${sizeKB}KB)`, changeDescription || "");
       dc.send(JSON.stringify({
         type: "conversation.item.create",
         item: {
