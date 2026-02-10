@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   IconLightning,
   IconWarning,
@@ -21,61 +22,71 @@ interface Prompt {
 
 const ALL_PROMPTS: Prompt[] = [
   {
-    icon: <IconLightning size="medium" />,
+    icon: <IconLightning size="small" />,
     text: "Set up connectors to Gmail, Asana, and more",
     isTopTip: true,
   },
   {
-    icon: <IconWarning size="medium" />,
+    icon: <IconWarning size="small" />,
     text: "Identify risks and dependencies",
   },
   {
-    icon: <IconBoard size="medium" />,
+    icon: <IconBoard size="small" />,
     text: "Create a stakeholder alignment workshop",
   },
   {
-    icon: <IconMeasurePencil size="medium" />,
+    icon: <IconMeasurePencil size="small" />,
     text: "Draft key success metrics and signals",
   },
   {
-    icon: <IconChartLine size="medium" />,
+    icon: <IconChartLine size="small" />,
     text: "Map out a product roadmap",
   },
   {
-    icon: <IconLightbulb size="medium" />,
+    icon: <IconLightbulb size="small" />,
     text: "Brainstorm feature ideas",
   },
   {
-    icon: <IconUsers size="medium" />,
+    icon: <IconUsers size="small" />,
     text: "Design a user journey map",
   },
   {
-    icon: <IconTargetArrow size="medium" />,
+    icon: <IconTargetArrow size="small" />,
     text: "Define project goals and objectives",
   },
   {
-    icon: <IconBoard size="medium" />,
+    icon: <IconBoard size="small" />,
     text: "Create a competitive analysis",
   },
   {
-    icon: <IconChartLine size="medium" />,
+    icon: <IconChartLine size="small" />,
     text: "Build a feature prioritization matrix",
   },
   {
-    icon: <IconUsers size="medium" />,
+    icon: <IconUsers size="small" />,
     text: "Design user personas",
   },
   {
-    icon: <IconLightning size="medium" />,
+    icon: <IconLightning size="small" />,
     text: "Plan a sprint retrospective",
   },
 ];
 
 interface StartingPromptCardsProps {
   onSelectPrompt: (text: string) => void;
+  hideForSuggestions?: boolean;
+  isCanvasEmpty?: boolean;
+  isChatOpen?: boolean;
+  isAIEngaged?: boolean;
 }
 
-export function StartingPromptCards({ onSelectPrompt }: StartingPromptCardsProps) {
+export function StartingPromptCards({
+  onSelectPrompt,
+  hideForSuggestions = false,
+  isCanvasEmpty = true,
+  isChatOpen = false,
+  isAIEngaged = false,
+}: StartingPromptCardsProps) {
   const [isDismissed, setIsDismissed] = useState(false);
   const [shuffleKey, setShuffleKey] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
@@ -109,19 +120,28 @@ export function StartingPromptCards({ onSelectPrompt }: StartingPromptCardsProps
     return result;
   }, [shuffleKey, isMounted]);
 
-  if (isDismissed) return null;
+  const shouldShow = isCanvasEmpty && !isChatOpen && !isDismissed && !hideForSuggestions && !isAIEngaged;
 
   return (
-    <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-10 flex items-start gap-3">
+    <AnimatePresence>
+      {shouldShow && (
+        <motion.div
+          key="starting-prompts"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 10 }}
+          transition={{ type: "tween", ease: [0.25, 0.1, 0.25, 1.0], duration: 0.25 }}
+          className="absolute bottom-28 left-1/2 -translate-x-1/2 z-10 flex items-start gap-3"
+        >
       {/* Cards */}
-      <div className="flex gap-2.5">
+      <div className="flex gap-2">
         {selectedPrompts.map((prompt, index) => (
           <button
             key={index}
             onClick={() => onSelectPrompt(prompt.text)}
-            className="w-52 bg-white p-5 border border-gray-200 hover:border-gray-300 transition-all text-left flex items-start"
+            className="w-44 bg-white pt-3.5 pb-4 pl-5 pr-3.5 border border-gray-200 hover:border-gray-300 transition-all text-left flex items-start"
             style={{
-              borderRadius: '32px',
+              borderRadius: '24px',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)',
             }}
             onMouseEnter={(e) => {
@@ -131,16 +151,16 @@ export function StartingPromptCards({ onSelectPrompt }: StartingPromptCardsProps
               e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)';
             }}
           >
-            <div className="flex flex-col gap-3 w-full">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2 w-full">
+              <div className="flex items-center gap-1.5">
                 <div className="text-gray-700 flex-shrink-0">{prompt.icon}</div>
                 {prompt.isTopTip && (
-                  <span className="px-2.5 py-1 bg-gray-900 text-white text-xs font-medium rounded-full">
+                  <span className="px-2 py-0.5 bg-gray-900 text-white text-[10px] font-medium rounded-full">
                     Top tip
                   </span>
                 )}
               </div>
-              <p className="text-sm text-gray-900 leading-relaxed">
+              <p className="text-xs text-gray-900 leading-snug">
                 {prompt.text}
               </p>
             </div>
@@ -149,22 +169,22 @@ export function StartingPromptCards({ onSelectPrompt }: StartingPromptCardsProps
       </div>
 
       {/* Action buttons */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         <button
           onClick={() => setIsDismissed(true)}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
           style={{
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)',
           }}
           title="Dismiss"
         >
-          <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <svg className="w-3.5 h-3.5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
         <button
           onClick={() => setShuffleKey(k => k + 1)}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
           style={{
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)',
           }}
@@ -173,6 +193,8 @@ export function StartingPromptCards({ onSelectPrompt }: StartingPromptCardsProps
           <IconShuffle size="small" css={{ color: '#666' }} />
         </button>
       </div>
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

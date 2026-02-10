@@ -877,6 +877,7 @@ export function Canvas() {
   const [isPlanPanelVisible, setIsPlanPanelVisible] = useState(true);
   const [isCompletionDismissed, setIsCompletionDismissed] = useState(false);
   const [shapeCount, setShapeCount] = useState(0);
+  const [areSuggestionsVisible, setAreSuggestionsVisible] = useState(false);
   const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
   const isProcessingToolCallRef = useRef(false);
@@ -2527,13 +2528,15 @@ export function Canvas() {
         <Tldraw onMount={handleMount} hideUi />
 
         {/* Starting prompt cards - only when canvas is empty */}
-        {isCanvasEmpty && !isChatOpen && (
-          <StartingPromptCards
-            onSelectPrompt={(text) => {
-              handleSubmit(text, { openPanel: true });
-            }}
-          />
-        )}
+        <StartingPromptCards
+          onSelectPrompt={(text) => {
+            handleSubmit(text, { openPanel: false });
+          }}
+          hideForSuggestions={areSuggestionsVisible}
+          isCanvasEmpty={isCanvasEmpty}
+          isChatOpen={isChatOpen}
+          isAIEngaged={showFloatingThinking || showFloatingQuestion || showFloatingPlan}
+        />
 
         {/* AI Chat button - top right, hidden when panel is open */}
         <AnimatePresence>
@@ -2805,6 +2808,7 @@ export function Canvas() {
               hasMessages={messages.length > 0}
               canvasState={getCanvasState()}
               canvasWidth={isChatOpen && typeof window !== 'undefined' ? window.innerWidth - sidebarWidth : undefined}
+              onSuggestionsVisibilityChange={setAreSuggestionsVisible}
             />
           </motion.div>
         )}

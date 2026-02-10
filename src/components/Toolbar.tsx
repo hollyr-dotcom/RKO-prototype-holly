@@ -57,6 +57,7 @@ interface ToolbarProps {
   onDismissToast?: () => void;
   onOpenChat?: () => void;
   hasMessages?: boolean;
+  onSuggestionsVisibilityChange?: (visible: boolean) => void;
 }
 
 export function Toolbar({
@@ -74,6 +75,7 @@ export function Toolbar({
   onDismissToast,
   onOpenChat,
   hasMessages = false,
+  onSuggestionsVisibilityChange,
 }: ToolbarProps) {
   const [inputValue, setInputValue] = useState("");
   const [activeTool, setActiveTool] = useState("select");
@@ -88,6 +90,11 @@ export function Toolbar({
   };
 
   const showSuggestions = isExpanded && !isLoading && voiceState === "idle" && inputValue.trim().length > 0 && !hasMessages;
+
+  // Notify parent when suggestions visibility changes
+  useEffect(() => {
+    onSuggestionsVisibilityChange?.(showSuggestions);
+  }, [showSuggestions, onSuggestionsVisibilityChange]);
 
   const handleSuggestionSelect = useCallback((text: string) => {
     onSubmit(text);
