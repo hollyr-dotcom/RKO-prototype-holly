@@ -14,6 +14,7 @@ export function useRealtimeVoice() {
   const [state, setState] = useState<VoiceState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string>("");
+  const [isMuted, setIsMuted] = useState<boolean>(false);
 
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
@@ -430,6 +431,16 @@ export function useRealtimeVoice() {
   }, []);
 
   // Disconnect and cleanup
+  const toggleMute = useCallback(() => {
+    if (!audioStreamRef.current) return;
+
+    const audioTracks = audioStreamRef.current.getAudioTracks();
+    audioTracks.forEach((track) => {
+      track.enabled = !track.enabled;
+    });
+    setIsMuted((prev) => !prev);
+  }, []);
+
   const disconnect = useCallback(() => {
     if (dataChannelRef.current) {
       dataChannelRef.current.close();
@@ -448,6 +459,7 @@ export function useRealtimeVoice() {
 
     pendingToolCallRef.current = null;
     setState("idle");
+    setIsMuted(false);
   }, []);
 
   // Send message to AI (natural conversation)
@@ -568,6 +580,8 @@ export function useRealtimeVoice() {
     transcript,
     connect,
     disconnect,
+    toggleMute,
+    isMuted,
     sendMessage,
     sendCanvasUpdate,
     sendScreenshot,

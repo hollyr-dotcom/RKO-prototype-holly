@@ -209,10 +209,30 @@ function TaskProgressHeader({
       {/* Collapsed header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-100 transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between cursor-pointer"
       >
         {/* Title and step count */}
         <div className="flex items-center gap-2">
+          {!isExpanded && (
+            <div className="relative w-4 h-4 flex-shrink-0">
+              <svg className={`w-4 h-4 ${isExecuting ? 'animate-spin' : '-rotate-90'}`} viewBox="0 0 36 36">
+                <path
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="#e5e7eb"
+                  strokeWidth="3"
+                />
+                <path
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke={isComplete ? "#22c55e" : "#3b82f6"}
+                  strokeWidth="3"
+                  strokeDasharray={isExecuting ? "25, 100" : `${progress}, 100`}
+                  className="transition-all duration-300"
+                />
+              </svg>
+            </div>
+          )}
           <p className="text-xs font-medium text-gray-900">Plan</p>
           {!isExpanded && !isFullscreen && (
             <span className="text-xs text-gray-400">{completedSteps}/{steps.length}</span>
@@ -246,7 +266,7 @@ function TaskProgressHeader({
               opacity: { type: "tween", ease: [0.25, 0.1, 0.25, 1.0], duration: 0.15 }
             }}
           >
-            <div className="pb-6">
+            <div className="pb-3">
               {steps.map((step, i) => {
                 const isDone = i < completedSteps;
                 const isRunning = i === currentStep && isExecuting;

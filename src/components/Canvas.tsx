@@ -7,6 +7,7 @@ import { useAgent, Message } from "@/hooks/useAgent";
 import { useRealtimeVoice } from "@/hooks/useRealtimeVoice";
 import { Toolbar } from "./Toolbar";
 import { ChatPanel } from "./ChatPanel";
+import { StartingPromptCards } from "./StartingPromptCards";
 import { IconSingleSparksFilled, IconViewSideRight, IconSidebarGlobalOpen, IconSidebarGlobalClosed, IconArrowLeft, IconCross } from "@mirohq/design-system-icons";
 import { calculateLayout, findEmptyCanvasSpace } from "@/lib/layoutEngine";
 import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
@@ -106,7 +107,17 @@ function FloatingThinkingIndicator({ status = "Thinking..." }: { status?: string
 }
 
 // Floating voice indicator
-function FloatingVoiceIndicator({ state, onEnd }: { state: "listening" | "speaking"; onEnd: () => void }) {
+function FloatingVoiceIndicator({
+  state,
+  onEnd,
+  isMuted,
+  onToggleMute
+}: {
+  state: "listening" | "speaking";
+  onEnd: () => void;
+  isMuted: boolean;
+  onToggleMute: () => void;
+}) {
   return (
     <div>
       <div className="flex items-center gap-3 bg-white rounded-full pl-5 pr-3 py-3 shadow-lg border border-gray-200">
@@ -115,12 +126,30 @@ function FloatingVoiceIndicator({ state, onEnd }: { state: "listening" | "speaki
           <span className={`w-2 h-2 rounded-full ${state === "listening" ? "bg-green-500" : "bg-blue-500"} animate-pulse`} style={{ animationDelay: "0.2s" }} />
           <span className={`w-2 h-2 rounded-full ${state === "listening" ? "bg-green-500" : "bg-blue-500"} animate-pulse`} style={{ animationDelay: "0.4s" }} />
         </div>
-        <span className="text-sm text-gray-600">
-          {state === "listening" ? "Listening..." : "Speaking..."}
+        <span className="text-sm text-gray-600 w-24 text-left">
+          {isMuted ? "Muted" : state === "listening" ? "Listening..." : "Speaking..."}
         </span>
+        {/* Mute/Unmute button */}
+        <button
+          onClick={onToggleMute}
+          className={`ml-1 p-1.5 rounded-full transition-colors ${isMuted ? 'text-red-500 hover:text-red-600 hover:bg-red-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+          title={isMuted ? "Unmute microphone" : "Mute microphone"}
+        >
+          {isMuted ? (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+          )}
+        </button>
+        {/* End voice mode button */}
         <button
           onClick={onEnd}
-          className="ml-1 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
           title="End voice mode"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -429,6 +458,8 @@ function FloatingProgressIndicator({
   onSubmit,
   editor,
   hasToast = false,
+  isCompletionDismissed,
+  setIsCompletionDismissed,
 }: {
   messages: Message[];
   isLoading: boolean;
@@ -436,8 +467,9 @@ function FloatingProgressIndicator({
   onSubmit: (text: string, options?: { openPanel?: boolean }) => void;
   editor: Editor;
   hasToast?: boolean;
+  isCompletionDismissed: boolean;
+  setIsCompletionDismissed: (dismissed: boolean) => void;
 }) {
-  const [isCompletionDismissed, setIsCompletionDismissed] = useState(false);
 
   // Extract plan state and pending checkpoint from messages
   const { activePlan, pendingCheckpoint } = useMemo(() => {
@@ -577,17 +609,9 @@ function FloatingProgressIndicator({
           {/* View work button */}
           <button
             onClick={handleViewWork}
-            className="px-3 py-1 text-sm font-medium bg-white text-green-600 rounded-lg hover:bg-gray-100 transition-colors"
+            className="px-3 py-1 text-sm font-medium bg-white text-green-600 rounded-full hover:bg-gray-100 transition-colors"
           >
             View work
-          </button>
-
-          {/* Open sidebar icon */}
-          <button
-            onClick={onOpenPanel}
-            className="p-1 text-white/70 hover:text-white transition-colors flex items-center justify-center"
-          >
-            <IconViewSideRight size="small" />
           </button>
 
           {/* Close button */}
@@ -596,9 +620,9 @@ function FloatingProgressIndicator({
               e.stopPropagation();
               setIsCompletionDismissed(true);
             }}
-            className="p-1 text-white/70 hover:text-white transition-colors flex items-center justify-center"
+            className="ml-1 w-6 h-6 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors flex-shrink-0"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -721,6 +745,22 @@ function FloatingProgressIndicator({
             >
               Continue
             </button>
+
+            {/* Close button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onSubmit("Continue", { openPanel: false });
+              }}
+              onMouseEnter={(e) => e.stopPropagation()}
+              onMouseLeave={(e) => e.stopPropagation()}
+              className="ml-1 w-6 h-6 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors flex-shrink-0"
+              title="Dismiss"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
@@ -835,6 +875,8 @@ export function Canvas() {
   const [isResizing, setIsResizing] = useState(false);
   const [isFullscreenChat, setIsFullscreenChat] = useState(false);
   const [isPlanPanelVisible, setIsPlanPanelVisible] = useState(true);
+  const [isCompletionDismissed, setIsCompletionDismissed] = useState(false);
+  const [shapeCount, setShapeCount] = useState(0);
   const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
   const isProcessingToolCallRef = useRef(false);
@@ -2013,6 +2055,26 @@ export function Canvas() {
     return unsub;
   }, [editor]);
 
+  // Track shape count to hide/show starting prompt cards
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateShapeCount = () => {
+      const shapes = editor.getCurrentPageShapes();
+      setShapeCount(shapes.length);
+    };
+
+    // Initial count
+    updateShapeCount();
+
+    // Listen for changes
+    const unsub = editor.store.listen(() => {
+      updateShapeCount();
+    });
+
+    return unsub;
+  }, [editor]);
+
   const { messages, append, isLoading, setMessages } = useAgent(handleToolCall, getCanvasState, getUserEdits);
 
   const handleMount = useCallback((editor: Editor) => {
@@ -2046,6 +2108,7 @@ export function Canvas() {
       // Only open panel if explicitly requested (clicking sparkle button)
       if (options?.openPanel === true) {
         setIsChatOpen(true);
+        setIsCompletionDismissed(true);
       }
     },
     [append, voice, setMessages]
@@ -2298,6 +2361,9 @@ export function Canvas() {
     return null;
   }, [messages, isLoading]);
 
+  // Check if canvas is empty (no shapes)
+  const isCanvasEmpty = shapeCount === 0;
+
   // Auto-open plan panel when a plan appears in fullscreen mode
   useEffect(() => {
     if (activePlanDetails && isFullscreenChat) {
@@ -2460,6 +2526,15 @@ export function Canvas() {
         >
         <Tldraw onMount={handleMount} hideUi />
 
+        {/* Starting prompt cards - only when canvas is empty */}
+        {isCanvasEmpty && !isChatOpen && (
+          <StartingPromptCards
+            onSelectPrompt={(text) => {
+              handleSubmit(text, { openPanel: true });
+            }}
+          />
+        )}
+
         {/* AI Chat button - top right, hidden when panel is open */}
         <AnimatePresence>
           {!isChatOpen && (
@@ -2469,7 +2544,10 @@ export function Canvas() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ type: "tween", ease: [0.25, 0.1, 0.25, 1.0], duration: 0.15 }}
-              onClick={() => setIsChatOpen(true)}
+              onClick={() => {
+                setIsChatOpen(true);
+                setIsCompletionDismissed(true);
+              }}
               className="absolute top-4 right-4 z-50 w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-gray-800"
               style={{
                 boxShadow: "0 4px 24px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)",
@@ -2495,10 +2573,15 @@ export function Canvas() {
               <FloatingProgressIndicator
                 messages={messages}
                 isLoading={isLoading}
-                onOpenPanel={() => setIsChatOpen(true)}
+                onOpenPanel={() => {
+                  setIsChatOpen(true);
+                  setIsCompletionDismissed(true);
+                }}
                 onSubmit={handleSubmit}
                 editor={editor}
                 hasToast={!!responseToast}
+                isCompletionDismissed={isCompletionDismissed}
+                setIsCompletionDismissed={setIsCompletionDismissed}
               />
             </motion.div>
           )}
@@ -2565,7 +2648,10 @@ export function Canvas() {
                 <FloatingPlanApproval
                   title={pendingPlan.title}
                   onApprove={() => handleSubmit("Approved! Go ahead.", { openPanel: false })}
-                  onViewDetails={() => setIsChatOpen(true)}
+                  onViewDetails={() => {
+                    setIsChatOpen(true);
+                    setIsCompletionDismissed(true);
+                  }}
                 />
               </motion.div>
             )}
@@ -2600,7 +2686,12 @@ export function Canvas() {
                 exit={{ opacity: 0, y: 8 }}
                 transition={floatingTransition}
               >
-                <FloatingVoiceIndicator state={voice.state} onEnd={handleVoiceDisconnect} />
+                <FloatingVoiceIndicator
+                  state={voice.state}
+                  onEnd={handleVoiceDisconnect}
+                  isMuted={voice.isMuted}
+                  onToggleMute={voice.toggleMute}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -2638,7 +2729,12 @@ export function Canvas() {
                   </div>
                   {/* Scrollable content */}
                   <div
-                    onClick={() => { setResponseToast(null); setToastCentered(false); setIsChatOpen(true); }}
+                    onClick={() => {
+                      setResponseToast(null);
+                      setToastCentered(false);
+                      setIsChatOpen(true);
+                      setIsCompletionDismissed(true);
+                    }}
                     className="overflow-y-auto p-4 pl-14 pr-10 hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     <div className="text-sm text-gray-700">
@@ -2700,7 +2796,12 @@ export function Canvas() {
               onExpandedChange={setIsToolbarExpanded}
               responseToast={isChatOpen || toastCentered || showFloatingQuestion || shouldHideToastRef.current ? null : responseToast}
               onDismissToast={() => { setResponseToast(null); setToastCentered(false); }}
-              onOpenChat={() => { setResponseToast(null); setToastCentered(false); setIsChatOpen(true); }}
+              onOpenChat={() => {
+                setResponseToast(null);
+                setToastCentered(false);
+                setIsChatOpen(true);
+                setIsCompletionDismissed(true);
+              }}
               hasMessages={messages.length > 0}
               canvasState={getCanvasState()}
               canvasWidth={isChatOpen && typeof window !== 'undefined' ? window.innerWidth - sidebarWidth : undefined}
@@ -2747,6 +2848,7 @@ export function Canvas() {
                       onClick={() => {
                         setIsFullscreenChat(false);
                         setIsChatOpen(true);
+                        setIsCompletionDismissed(true);
                       }}
                       className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
                       title="Exit focus mode"
@@ -2830,6 +2932,7 @@ export function Canvas() {
                   }}
                   onCollapse={() => {
                     handleCloseChat(false);
+                    setIsCompletionDismissed(false); // Reset so completion toast can reappear
                     const lastAssistantMsg = messages.findLast(m => m.role === 'assistant' && m.content?.trim());
                     if (lastAssistantMsg?.content) {
                       setResponseToast(lastAssistantMsg.content);
