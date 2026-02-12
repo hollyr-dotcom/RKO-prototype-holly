@@ -400,22 +400,32 @@ FIRST: DECIDE HOW TO RESPOND based on what the user asked:
    - "What are the latest trends in X?" → search, then summarize
    - Questions that need facts but don't need canvas artifacts
 
-3. QUESTIONS + PLAN (askUser + confirmPlan) — for complex canvas creation:
+3. QUESTIONS + PLAN (askUser, then confirmPlan in SEPARATE turns) — for complex canvas creation:
    - "Create a project kickoff" → needs scope, format, details
    - "Design a user flow for checkout" → needs context
    - "Build a competitive analysis" → needs industry, competitors
-   - Ask 1-2 questions with askUser(), then confirmPlan()
+   - NEVER ask which board or space to use — the system handles that automatically
    - Only use this for substantial, multi-step canvas work
 
+   🚨 CRITICAL TWO-STEP PROCESS:
+   STEP 1: If you need clarification, call askUser() with 1-2 questions, then STOP. DO NOT call confirmPlan() in the same turn.
+   STEP 2: After user answers your questions, THEN call confirmPlan() in your NEXT response.
+
+   ⚠️ NEVER call askUser() AND confirmPlan() in the same turn!
+
 USE YOUR JUDGMENT. The key question: "Does this need visual artifacts on the canvas?"
-- Yes, and it's complex → questions + plan
+- Yes, and it's complex → ask questions (if needed), WAIT for answers, THEN create plan
 - Yes, but it's simple → just do it (you'll be handed to execution)
 - No → just reply with text
 
 WHEN ASKING QUESTIONS (only for complex canvas tasks):
 - Call askUser() ONCE with ALL your questions (1-2 questions) in the questions array
 - NEVER call askUser() multiple times — batch all questions into one call
-- After user answers all questions, create plan with confirmPlan()
+- After calling askUser(), STOP and WAIT for the user to answer
+- DO NOT call confirmPlan() yet — wait for their response first
+
+WHEN CREATING PLAN (only AFTER user has answered your questions):
+- Only call confirmPlan() if you've already received answers to your questions OR if no questions were needed
 - IMPORTANT: When calling confirmPlan(), also write a brief contextual 1-sentence message. Vary it based on what you're building — e.g. "Great, let me put together the kickoff board", "I'll map out the user flow for you", "Let me sketch this out". Don't just say "Here's the plan:" every time.
 - NEVER list the plan steps in your text message — the plan UI shows them. Keep your message to 1 short sentence only.
 
@@ -662,7 +672,8 @@ BAD: 13 stickies each with random different colors`,
 // ============================================
 
 export async function POST(req: Request) {
-  const { messages, canvasState, userEdits } = await req.json();
+  const { messages, canvasState, userEdits, generateTitle } = await req.json();
+  console.log('[Chat API] generateTitle:', generateTitle, 'messages.length:', messages?.length);
 
   // Build conversation context - include tool calls so agent knows what it proposed
   type MessageWithTools = {
@@ -754,9 +765,15 @@ DO NOT write explanatory text first - CALL showProgress() IMMEDIATELY!`}`;
     // Normal mode: build conversation context
     // Count how many questions have already been asked
     let questionsAsked = 0;
-    messages.forEach((m: MessageWithTools) => {
+    let lastMessageHadQuestions = false;
+
+    messages.forEach((m: MessageWithTools, index: number) => {
       if (m.toolInvocations?.some(t => t.toolName === 'askUser')) {
         questionsAsked++;
+        // Check if this was the last assistant message
+        if (index === messages.length - 1 && m.role === 'assistant') {
+          lastMessageHadQuestions = true;
+        }
       }
     });
 
@@ -775,9 +792,14 @@ DO NOT write explanatory text first - CALL showProgress() IMMEDIATELY!`}`;
       })
       .join("\n");
 
-    // Add question tracking — should only call askUser once (batched)
-    if (questionsAsked >= 1) {
+    // Guard against calling askUser() twice
+    if (questionsAsked >= 1 && !lastMessageHadQuestions) {
       conversationContext += `\n\n🛑 YOU ALREADY ASKED QUESTIONS. DO NOT call askUser() again. Call confirmPlan() NOW or just reply with text.`;
+    }
+
+    // Guard against calling confirmPlan() immediately after askUser()
+    if (lastMessageHadQuestions) {
+      conversationContext += `\n\n🚨 YOU JUST ASKED QUESTIONS IN YOUR LAST MESSAGE. STOP AND WAIT FOR USER'S ANSWERS. DO NOT call confirmPlan() yet — the user needs to respond to your questions first!`;
     }
   }
 
@@ -1032,9 +1054,53 @@ Canvas is empty. Start placing content at (0, 0).`;
             }
           }
 
+          // Generate title if requested (first response in a new chat from home)
+          let chatTitle: string | null = null;
+          if (generateTitle && messages.length >= 1) {
+            console.log('[Chat API] Generating title...');
+            const firstUserMsg = messages.find((m: { role: string }) => m.role === "user");
+            if (firstUserMsg?.content) {
+              console.log('[Chat API] First user message:', firstUserMsg.content.substring(0, 50));
+              // Quick title generation with GPT-4o-mini
+              try {
+                const titleResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [
+                      {
+                        role: "system",
+                        content: "Generate a concise, descriptive chat title (max 50 chars) based on the user's message. Return ONLY the title, no quotes or explanation.",
+                      },
+                      {
+                        role: "user",
+                        content: firstUserMsg.content,
+                      },
+                    ],
+                    max_tokens: 20,
+                  }),
+                });
+
+                if (titleResponse.ok) {
+                  const titleData = await titleResponse.json();
+                  chatTitle = titleData.choices?.[0]?.message?.content?.trim() || null;
+                  console.log('[Chat API] Generated title:', chatTitle);
+                } else {
+                  console.error('[Chat API] Title API failed:', titleResponse.status);
+                }
+              } catch (err) {
+                console.error("[Chat API] Title generation failed:", err);
+              }
+            }
+          }
+
           // Send done event
           controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ type: "done", text: textContent, toolCalls })}\n\n`)
+            encoder.encode(`data: ${JSON.stringify({ type: "done", text: textContent, toolCalls, chatTitle })}\n\n`)
           );
         } catch (err) {
           console.error("Stream error:", err);

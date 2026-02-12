@@ -3,7 +3,9 @@
 import { Tldraw, Editor, createShapeId, toRichText, TLShapeId } from "tldraw";
 import "tldraw/tldraw.css";
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
-import { useAgent, Message } from "@/hooks/useAgent";
+import { Message } from "@/hooks/useAgent";
+import { useChat } from "@/hooks/useChat";
+import { useSidebar } from "@/hooks/useSidebar";
 import { useRealtimeVoice } from "@/hooks/useRealtimeVoice";
 import { useStorageStore } from "@/hooks/useStorageStore";
 import { generateId, getSessionUser } from "@/lib/userIdentity";
@@ -874,7 +876,6 @@ export function Canvas() {
   const [dismissedPlan, setDismissedPlan] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(384); // 384px = w-96
   const [isResizing, setIsResizing] = useState(false);
-  const [isFullscreenChat, setIsFullscreenChat] = useState(false);
   const [isPlanPanelVisible, setIsPlanPanelVisible] = useState(true);
   const [isCompletionDismissed, setIsCompletionDismissed] = useState(false);
   const [shapeCount, setShapeCount] = useState(0);
@@ -892,6 +893,9 @@ export function Canvas() {
   const waitingForGoodbyeRef = useRef(false);
   const goodbyeTranscriptLengthRef = useRef(0); // Track goodbye message length for audio timing
   const hasPlayedStartChimeRef = useRef(false); // Track if start chime played for this session
+
+  // App sidebar width (for positioning toolbar/elements)
+  const { sidebarWidth: appSidebarWidth } = useSidebar();
 
   // Voice mode with OpenAI Realtime API
   const voice = useRealtimeVoice();
@@ -2176,7 +2180,43 @@ export function Canvas() {
     return unsub;
   }, [editor]);
 
-  const { messages, append, isLoading, setMessages } = useAgent(handleToolCall, getCanvasState, getUserEdits);
+  // Use chat from provider
+  const { messages, append, isLoading, setMessages, registerHandlers, isFullscreenChat, openFullscreen, closeFullscreen } = useChat();
+
+  // Register real canvas handlers on mount
+  useEffect(() => {
+    registerHandlers({
+      handleToolCall,
+      getCanvasState,
+      getUserEdits,
+    });
+  }, [registerHandlers, handleToolCall, getCanvasState, getUserEdits]);
+
+  // Restore handoff from home page (if coming from plan approval)
+  useEffect(() => {
+    const handoffData = sessionStorage.getItem("canvas-handoff");
+    if (!handoffData) return;
+
+    try {
+      const { messages: restoredMessages, isFullscreenChat: shouldOpenFullscreen } = JSON.parse(handoffData);
+
+      // Restore messages
+      if (restoredMessages && Array.isArray(restoredMessages)) {
+        setMessages(restoredMessages);
+      }
+
+      // Open fullscreen chat
+      if (shouldOpenFullscreen) {
+        openFullscreen();
+      }
+
+      // Clear handoff data (one-time use)
+      sessionStorage.removeItem("canvas-handoff");
+    } catch (err) {
+      console.error("Failed to restore handoff:", err);
+      sessionStorage.removeItem("canvas-handoff");
+    }
+  }, [setMessages, openFullscreen]);
 
   const handleMount = useCallback((editor: Editor) => {
     setEditor(editor);
@@ -2655,12 +2695,12 @@ export function Canvas() {
   const showToolbar = true;
 
   return (
-    <div className="h-screen w-screen flex overflow-hidden relative">
+    <div className="h-full w-full flex overflow-hidden relative">
       {/* Main canvas area - hidden in fullscreen chat */}
       <div
-        className="relative"
+        className="relative flex-1"
         style={{
-          width: isChatOpen ? `calc(100vw - ${sidebarWidth}px)` : '100vw',
+          width: isChatOpen ? `calc(100% - ${sidebarWidth}px)` : '100%',
           transition: 'width 250ms cubic-bezier(0.25, 0.1, 0.25, 1.0)',
           visibility: isFullscreenChat ? 'hidden' : 'visible',
           pointerEvents: isFullscreenChat ? 'none' : 'auto'
@@ -2693,7 +2733,7 @@ export function Canvas() {
           hideForSuggestions={areSuggestionsVisible}
           isCanvasEmpty={isCanvasEmpty}
           isChatOpen={isChatOpen}
-          isAIEngaged={showFloatingThinking || showFloatingQuestion || showFloatingPlan || hasActivePlan}
+          isAIEngaged={showFloatingThinking || showFloatingQuestion || showFloatingPlan || hasActivePlan || messages.length > 0}
           hasToolbarText={hasToolbarText}
           isVoiceActive={voice.isConnected}
         />
@@ -2908,8 +2948,12 @@ export function Canvas() {
         {!isFullscreenChat && showToolbar && (
           <motion.div
             key="toolbar"
-            className="fixed top-0 left-0 h-full z-50 pointer-events-none [&>*]:pointer-events-auto"
-            style={{ width: isChatOpen ? `calc(100vw - ${sidebarWidth}px)` : '100vw' }}
+            className="fixed top-0 h-full z-50 pointer-events-none [&>*]:pointer-events-auto"
+            style={{
+              left: `${appSidebarWidth}px`,
+              width: isChatOpen ? `calc(100vw - ${appSidebarWidth}px - ${sidebarWidth}px)` : `calc(100vw - ${appSidebarWidth}px)`,
+              transition: 'left 0.25s cubic-bezier(0.25, 0.1, 0.25, 1), width 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)'
+            }}
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 40 }}
@@ -2939,6 +2983,7 @@ export function Canvas() {
               hasMessages={messages.length > 0}
               hasPendingQuestion={!!pendingQuestion}
               canvasState={getCanvasState()}
+              canvasWidth={isChatOpen && typeof window !== 'undefined' ? window.innerWidth - appSidebarWidth - sidebarWidth : typeof window !== 'undefined' ? window.innerWidth - appSidebarWidth : undefined}
               onSuggestionsVisibilityChange={setAreSuggestionsVisible}
               onInputChange={setHasToolbarText}
               onCreateDocument={() => {
@@ -2988,9 +3033,9 @@ export function Canvas() {
         )}
       </AnimatePresence>
 
-      {/* Side chat panel - morphs between sidebar and fullscreen */}
+      {/* Side chat panel - sidebar mode only (fullscreen now in provider) */}
       <AnimatePresence>
-        {(isChatOpen || isFullscreenChat) && (
+        {isChatOpen && (
           <motion.div
             key="chat-panel"
             className="fixed top-0 right-0 h-full z-[999] flex flex-col"
@@ -2999,19 +3044,16 @@ export function Canvas() {
             exit={{ x: "100%" }}
             transition={smoothTransition}
             style={{
-              width: isFullscreenChat ? "100vw" : sidebarWidth,
-              transition: "width 250ms cubic-bezier(0.25, 0.1, 0.25, 1.0)",
+              width: sidebarWidth,
             }}
           >
-            {/* Resize handle (sidebar mode only) */}
-            {!isFullscreenChat && (
-              <div
-                onMouseDown={handleResizeStart}
-                className={`absolute left-0 top-0 bottom-0 w-1 hover:w-1.5 transition-all cursor-col-resize z-[1000] ${
-                  isResizing ? 'bg-blue-500 w-1.5' : 'bg-transparent hover:bg-gray-300'
-                }`}
-              />
-            )}
+            {/* Resize handle */}
+            <div
+              onMouseDown={handleResizeStart}
+              className={`absolute left-0 top-0 bottom-0 w-1 hover:w-1.5 transition-all cursor-col-resize z-[1000] ${
+                isResizing ? 'bg-blue-500 w-1.5' : 'bg-transparent hover:bg-gray-300'
+              }`}
+            />
 
             {isFullscreenChat ? (
               <div className="flex flex-col h-full flex-1">
@@ -3101,7 +3143,6 @@ export function Canvas() {
               <div className="w-full h-full flex flex-col flex-1">
                 <ChatPanel
                   onClose={() => {
-                    setIsFullscreenChat(false);
                     handleCloseChat(true);
                   }}
                   onCollapse={() => {
@@ -3114,9 +3155,7 @@ export function Canvas() {
                       setIsToolbarExpanded(true);
                     }
                   }}
-                  onExpand={() => {
-                    setIsFullscreenChat(true);
-                  }}
+                  onExpand={openFullscreen}
                   isFullscreen={false}
                   messages={messages}
                   input={input}

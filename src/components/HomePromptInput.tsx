@@ -1,0 +1,94 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import {
+  IconPlus,
+  IconMicrophone,
+  IconArrowUp,
+} from "@mirohq/design-system-icons";
+
+interface HomePromptInputProps {
+  onSubmit: (text: string) => void;
+  isLoading: boolean;
+}
+
+export function HomePromptInput({ onSubmit, isLoading }: HomePromptInputProps) {
+  const [inputValue, setInputValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim() || isLoading) return;
+    onSubmit(inputValue);
+    setInputValue("");
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full max-w-xl mx-auto">
+      <div
+        className="flex items-center bg-white rounded-full border border-gray-200"
+        style={{
+          boxShadow: "0 4px 24px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
+        }}
+      >
+        {/* Plus button */}
+        <button
+          type="button"
+          className="p-3 text-black hover:text-black transition-colors duration-200 flex-shrink-0"
+          title="Add"
+        >
+          <IconPlus size="medium" />
+        </button>
+
+        {/* Input */}
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Create or ask anything"
+          disabled={isLoading}
+          className="flex-1 py-3 text-base bg-transparent border-0 outline-none placeholder:text-gray-400 disabled:opacity-50 min-w-0"
+        />
+
+        {/* Mic button */}
+        <button
+          type="button"
+          className="p-3 text-black hover:text-black transition-colors duration-200 flex-shrink-0"
+          title="Voice input"
+        >
+          <IconMicrophone size="medium" />
+        </button>
+
+        {/* Submit / Voice wave button */}
+        {inputValue.trim() ? (
+          <button
+            type="submit"
+            className="w-10 h-10 min-w-[40px] m-1 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-gray-800 flex-shrink-0 transition-colors"
+            title="Send"
+          >
+            <IconArrowUp size="medium" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="w-10 h-10 min-w-[40px] m-1 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-gray-800 flex-shrink-0 transition-colors"
+            title="Voice mode"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="2" y="9" width="2.5" height="6" rx="1.25" />
+              <rect x="6.5" y="5" width="2.5" height="14" rx="1.25" />
+              <rect x="11" y="3" width="2.5" height="18" rx="1.25" />
+              <rect x="15.5" y="5" width="2.5" height="14" rx="1.25" />
+              <rect x="20" y="9" width="2.5" height="6" rx="1.25" />
+            </svg>
+          </button>
+        )}
+      </div>
+    </form>
+  );
+}
