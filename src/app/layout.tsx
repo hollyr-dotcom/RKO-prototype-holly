@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Noto_Sans } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./Providers";
+import { ChatProvider } from "@/providers/ChatProvider";
+import { SidebarProvider } from "@/providers/SidebarProvider";
+import { AppSidebar } from "@/components/AppSidebar";
 
-const inter = Inter({
+const notoSans = Noto_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-noto-sans",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -19,8 +24,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>
-        {children}
+      <body className={`${notoSans.variable} font-sans antialiased`}>
+        <Providers>
+          <SidebarProvider>
+            <ChatProvider>
+              <div className="flex h-screen bg-gray-50">
+                <AppSidebar />
+                <main className="flex-1 flex flex-col overflow-hidden">{children}</main>
+              </div>
+            </ChatProvider>
+          </SidebarProvider>
+        </Providers>
       </body>
     </html>
   );

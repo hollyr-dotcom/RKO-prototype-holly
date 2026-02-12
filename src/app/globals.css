@@ -1,4 +1,80 @@
 @import "tailwindcss";
+@import "@liveblocks/react-tiptap/styles.css";
+@import "@liveblocks/react-ui/styles.css";
+
+@theme {
+  --font-sans: var(--font-noto-sans), "Noto Sans", "OpenSans", "Noto Sans KR",
+    "Noto Sans JP", sans-serif;
+  --font-heading: "Roobert PRO", "Roobert", "Noto Sans KR", "Noto Sans JP",
+    sans-serif;
+}
+
+/* Document editor content styles */
+.document-editor-content .tiptap {
+  outline: none;
+  min-height: 60px;
+}
+
+.document-editor-content .tiptap p {
+  margin: 0 0 0.4em;
+}
+
+.document-editor-content .tiptap h1 {
+  font-size: 1.4em;
+  font-weight: 700;
+  margin: 0 0 0.3em;
+}
+
+.document-editor-content .tiptap h2 {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin: 0 0 0.3em;
+}
+
+.document-editor-content .tiptap h3 {
+  font-size: 1.05em;
+  font-weight: 600;
+  margin: 0 0 0.3em;
+}
+
+.document-editor-content .tiptap ul,
+.document-editor-content .tiptap ol {
+  padding-left: 1.2em;
+  margin: 0 0 0.4em;
+}
+
+.document-editor-content .tiptap blockquote {
+  border-left: 3px solid #e5e7eb;
+  padding-left: 0.8em;
+  margin: 0 0 0.4em;
+  color: #6b7280;
+}
+
+.document-editor-content .tiptap code {
+  background: #f3f4f6;
+  border-radius: 3px;
+  padding: 0.1em 0.3em;
+  font-size: 0.9em;
+}
+
+.document-editor-content .tiptap pre {
+  background: #f3f4f6;
+  border-radius: 6px;
+  padding: 0.6em 0.8em;
+  margin: 0 0 0.4em;
+  overflow-x: auto;
+}
+
+.document-editor-content .tiptap pre code {
+  background: none;
+  padding: 0;
+}
+
+/* Dotted canvas background */
+.tl-background {
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
 
 /* Custom animations for floating UI */
 @keyframes float-in {
@@ -85,4 +161,9 @@
 
 .animate-slideInFromLeft {
   animation: slideInFromLeft 0.3s ease-out both;
+}
+
+/* Hide Liveblocks badge */
+#liveblocks-badge, .tl-watermark_SEE-LICENSE {
+  display: none !important;
 }

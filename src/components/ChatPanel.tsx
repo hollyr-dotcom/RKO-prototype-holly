@@ -8,6 +8,14 @@ import {
   IconPlus,
   IconMicrophone,
   IconArrowUp,
+  IconSpinner,
+  IconCheckMark,
+  IconChevronDown,
+  IconArrowRight,
+  IconArrowLeft,
+  IconMinus,
+  IconArrowsOutSimple,
+  IconCross,
 } from "@mirohq/design-system-icons";
 
 // Voice wave icon
@@ -78,19 +86,14 @@ function TaskStatusIcon({ status }: { status: 'pending' | 'running' | 'done' }) 
       return <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0" />;
     case 'running':
       return (
-        <div className="w-4 h-4 flex-shrink-0">
-          <svg className="animate-spin text-blue-500" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
+        <div className="w-4 h-4 flex-shrink-0 text-blue-500 animate-spin">
+          <IconSpinner css={{ width: 16, height: 16 }} />
         </div>
       );
     case 'done':
       return (
-        <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-          <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
+        <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 text-white">
+          <IconCheckMark css={{ width: 10, height: 10 }} />
         </div>
       );
   }
@@ -240,16 +243,8 @@ function TaskProgressHeader({
         </div>
 
         {/* Expand icon - positioned to align with X button icon */}
-        <div className="pr-1.5">
-          <svg
-            className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M19 9l-7 7-7-7" />
-          </svg>
+        <div className={`pr-1.5 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`}>
+          <IconChevronDown css={{ width: 16, height: 16 }} />
         </div>
       </button>
 
@@ -354,17 +349,7 @@ function ToolBlock({ toolInvocations }: { toolInvocations: Message["toolInvocati
         className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 text-left transition-colors"
       >
         <span className="text-sm text-gray-500">{getSummary()}</span>
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          className={`text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
+        <IconChevronDown css={{ width: 16, height: 16, color: '#9ca3af', transition: 'transform 150ms', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
       </button>
 
       {isOpen && (
@@ -422,10 +407,8 @@ function FeedbackBlock({
   return (
     <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-2">
-        <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
+        <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 text-white">
+          <IconCheckMark css={{ width: 12, height: 12 }} />
         </div>
         <span className="text-sm font-medium text-blue-900">Checkpoint</span>
       </div>
@@ -485,15 +468,7 @@ function CheckpointBlock({
         className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 transition-colors group mb-3 text-left"
       >
         <span>{completed}</span>
-        <svg
-          className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-        </svg>
+        <IconArrowRight css={{ width: 16, height: 16, color: '#9ca3af', flexShrink: 0 }} />
       </button>
       <div className="flex gap-2">
         <button
@@ -678,9 +653,7 @@ export function ChatPanel({
               className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
               title="Back to canvas"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
+              <IconArrowLeft css={{ width: 18, height: 18 }} />
             </button>
           )}
           <span className="text-sm font-medium text-gray-900">Chat</span>
@@ -693,9 +666,7 @@ export function ChatPanel({
               className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
               title="Minimize to toast"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5 12h14" />
-              </svg>
+              <IconMinus css={{ width: 18, height: 18 }} />
             </button>
           )}
           {!isFullscreen && onExpand && (
@@ -704,9 +675,7 @@ export function ChatPanel({
               className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
               title="Fullscreen chat"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-              </svg>
+              <IconArrowsOutSimple css={{ width: 18, height: 18 }} />
             </button>
           )}
           <button
@@ -714,9 +683,7 @@ export function ChatPanel({
             className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
             title="Close"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
+            <IconCross css={{ width: 18, height: 18 }} />
           </button>
         </div>
         </div>
@@ -1119,40 +1086,7 @@ export function ChatPanel({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Floating progress indicator - hidden */}
-      {false && activePlan && activePlan.isExecuting && (
-        <div className={`absolute bottom-24 left-1/2 -translate-x-1/2 z-10 pointer-events-none ${isFullscreen ? 'max-w-3xl' : ''}`}>
-          <div className="pointer-events-auto bg-gray-100 text-gray-900 shadow-md hover:bg-gray-200 transition-colors overflow-hidden rounded-full cursor-pointer px-4 py-2">
-            <div className="flex items-center gap-3">
-              {/* Progress indicator */}
-              <div className="flex items-center gap-2">
-                <div className="relative w-6 h-6 flex-shrink-0">
-                  <svg className="w-6 h-6 -rotate-90">
-                    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-300" />
-                    <circle
-                      cx="12" cy="12" r="10"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="text-blue-500"
-                      strokeDasharray={`${((activePlan.currentStep + 1) / activePlan.steps.length) * 63} 63`}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-[10px] font-medium text-gray-700">
-                    {activePlan.currentStep + 1}/{activePlan.steps.length}
-                  </span>
-                </div>
-
-                {/* Current step text */}
-                <span className="text-sm font-medium truncate max-w-[300px]">
-                  {activePlan.steps[activePlan.currentStep]}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Floating progress indicator - removed (was dead code) */}
 
       {/* Input */}
       <form onSubmit={handleSubmit} className={`relative p-4 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>

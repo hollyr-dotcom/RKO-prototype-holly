@@ -48,13 +48,18 @@ type UserEdit = {
 type CanvasStateGetter = () => CanvasState;
 type UserEditsGetter = () => UserEdit[];
 
-export function useAgent(onToolCall?: ToolHandler, getCanvasState?: CanvasStateGetter, getUserEdits?: UserEditsGetter) {
+export function useAgent(
+  onToolCall?: ToolHandler,
+  getCanvasState?: CanvasStateGetter,
+  getUserEdits?: UserEditsGetter,
+  onTitleGenerated?: (title: string) => void
+) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const append = useCallback(
-    async (message: { role: "user"; content: string }) => {
+    async (message: { role: "user"; content: string }, generateTitle = false) => {
       // Add user message
       const userMessage: Message = {
         id: `user-${Date.now()}`,
@@ -98,6 +103,7 @@ export function useAgent(onToolCall?: ToolHandler, getCanvasState?: CanvasStateG
             })),
             canvasState,
             userEdits,
+            generateTitle,
           }),
           signal: abortControllerRef.current.signal,
         });
@@ -191,6 +197,11 @@ export function useAgent(onToolCall?: ToolHandler, getCanvasState?: CanvasStateG
                         : m
                     )
                   );
+
+                  // Handle generated chat title
+                  if (data.chatTitle && onTitleGenerated) {
+                    onTitleGenerated(data.chatTitle);
+                  }
                 }
 
                 if (data.type === "error") {
@@ -210,7 +221,7 @@ export function useAgent(onToolCall?: ToolHandler, getCanvasState?: CanvasStateG
         setIsLoading(false);
       }
     },
-    [messages, onToolCall, getCanvasState, getUserEdits]
+    [messages, onToolCall, getCanvasState, getUserEdits, onTitleGenerated]
   );
 
   return {

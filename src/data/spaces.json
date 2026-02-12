@@ -1,0 +1,30 @@
+[
+  {
+    "id": "space-1",
+    "name": "Product Launch Q3",
+    "description": "Planning and strategy for the Q3 product launch",
+    "createdAt": "2026-01-15T10:00:00Z",
+    "updatedAt": "2026-02-10T14:30:00Z"
+  },
+  {
+    "id": "space-2",
+    "name": "Brand Refresh",
+    "description": "Visual identity exploration and design system updates",
+    "createdAt": "2026-01-22T09:00:00Z",
+    "updatedAt": "2026-02-08T11:15:00Z"
+  },
+  {
+    "id": "space-3",
+    "name": "User Research",
+    "description": "Interview synthesis and journey mapping",
+    "createdAt": "2026-02-01T13:00:00Z",
+    "updatedAt": "2026-02-11T09:00:00Z"
+  },
+  {
+    "id": "space-1770806640263",
+    "name": "Test",
+    "description": "",
+    "createdAt": "2026-02-11T10:44:00.263Z",
+    "updatedAt": "2026-02-11T10:44:00.263Z"
+  }
+]
