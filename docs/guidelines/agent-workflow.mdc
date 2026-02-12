@@ -1,0 +1,122 @@
+---
+description: Enforces a structured plan-execute-test workflow for agents picking up bugs or tasks from the work log.
+globs: _work-log/**/*.md
+alwaysApply: true
+---
+
+# Agent Workflow: Bugs & Tasks
+
+This rule governs how any AI agent (Claude, Cursor, or other) must approach items in the work log. No bug fix or task may be started without following the full workflow below.
+
+---
+
+## General Principles
+
+1. **One item at a time.** Never work on multiple bugs or tasks in parallel. Finish the current item before picking up the next.
+2. **Top-to-bottom priority.** Pick the highest-priority open item unless explicitly directed otherwise.
+3. **Leave a trail.** Update the relevant Markdown file (`_work-log/bugs.md` or `_work-log/tasks.md`) at each stage so progress is visible.
+4. **Do not skip steps.** Every phase is mandatory. If a phase feels unnecessary, document why rather than skipping it.
+
+---
+
+## Workflow for Bugs (`_work-log/bugs.md`)
+
+When picking up a bug, follow these three phases **in order**:
+
+### Phase 1 — Plan
+
+Before writing any code:
+
+1. **Read** the full bug entry and understand the reproduction steps.
+2. **Investigate** the codebase to locate the root cause. Use search, read files, and trace the logic.
+3. **Write a plan** as a comment or sub-section under the bug entry in `_work-log/bugs.md`:
+   - Root cause analysis (what is broken and why).
+   - Proposed fix (which files, which changes, and why this approach).
+   - Risk assessment (what else could this change affect).
+   - Test strategy (how you will verify the fix).
+4. **Update the bug status** to `In Progress`.
+
+### Phase 2 — Execute
+
+Once the plan is written:
+
+1. **Implement** the fix exactly as described in the plan. If you discover the plan needs adjustment, update the plan first, then proceed.
+2. **Keep changes minimal.** Fix the bug — do not refactor unrelated code or introduce new features.
+3. **Check for lint errors** in every file you touched using the linter.
+
+### Phase 3 — Test
+
+After implementation:
+
+1. **Verify the fix** against the reproduction steps in the bug entry. The bug must no longer reproduce.
+2. **Check for regressions.** Confirm that related functionality still works as expected.
+3. **Run any existing tests** that cover the affected area. If tests exist, they must pass. If no tests exist, note this in the bug entry.
+4. **Update the bug status** to `Fixed` and mark the checkbox `[x]`.
+5. **Record the outcome** under the bug entry:
+   - What was changed (files and summary).
+   - Test results.
+   - Any follow-up items or remaining concerns.
+
+---
+
+## Workflow for Tasks (`_work-log/tasks.md`)
+
+When picking up a task, follow these three phases **in order**:
+
+### Phase 1 — Plan
+
+Before writing any code:
+
+1. **Read** the full task entry and understand the acceptance criteria.
+2. **Investigate** the codebase to understand the current state and how the task fits in.
+3. **Write a plan** as a comment or sub-section under the task entry in `_work-log/tasks.md`:
+   - Approach (what you will build or change, and the design rationale).
+   - File-level breakdown (which files will be created, modified, or deleted).
+   - Edge cases and risks (what could go wrong, what needs careful handling).
+   - Test strategy (how you will verify the work meets acceptance criteria).
+4. **Update the task status** to `In Progress`.
+
+### Phase 2 — Execute
+
+Once the plan is written:
+
+1. **Implement** the work as described in the plan. If you discover the plan needs adjustment, update the plan first, then proceed.
+2. **Follow project conventions.** Respect the experience principles, motion tokens, and component patterns already established in the codebase.
+3. **Check for lint errors** in every file you touched using the linter.
+
+### Phase 3 — Test
+
+After implementation:
+
+1. **Verify against acceptance criteria.** Every criterion in the task entry must be satisfied.
+2. **Check for regressions.** Confirm that existing functionality is unaffected.
+3. **Run any existing tests** that cover the affected area. If tests exist, they must pass. If no tests exist, note this in the task entry.
+4. **Update the task status** to `Complete` and mark the checkbox `[x]`.
+5. **Record the outcome** under the task entry:
+   - What was changed (files and summary).
+   - Test results.
+   - Any follow-up items or remaining concerns.
+
+---
+
+## Quick Reference
+
+| Phase   | Bug Workflow                        | Task Workflow                        |
+|---------|-------------------------------------|--------------------------------------|
+| Plan    | Root cause, proposed fix, tests     | Approach, file breakdown, tests      |
+| Execute | Minimal fix, lint check             | Build to plan, follow conventions    |
+| Test    | Repro steps pass, no regressions    | Acceptance criteria met, no regressions |
+
+---
+
+## Status Values
+
+### Bugs
+- **Open** — Known but not yet picked up.
+- **In Progress** — Plan written, fix underway.
+- **Fixed** — Fix implemented and verified.
+
+### Tasks
+- **Open** — Defined but not yet picked up.
+- **In Progress** — Plan written, work underway.
+- **Complete** — Work implemented and verified.

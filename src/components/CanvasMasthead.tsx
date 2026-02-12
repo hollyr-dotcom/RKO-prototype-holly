@@ -15,8 +15,7 @@ import {
   IconTimer,
   IconVideoCamera,
   IconPlay,
-  IconSidebarClosed,
-  IconSidebarOpen,
+  IconLinesThreeHorizontal,
 } from "@mirohq/design-system-icons";
 
 // ─── CanvasMasthead ────────────────────────────────────────────
@@ -89,7 +88,7 @@ export function CanvasMasthead() {
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             onPress={() => toggleSidebar()}
           >
-            {isCollapsed ? <IconSidebarOpen /> : <IconSidebarClosed />}
+            <IconLinesThreeHorizontal />
           </IconButton>
 
           <div className="relative flex items-center gap-1.5 min-w-0">
