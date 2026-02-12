@@ -7,6 +7,19 @@ import { useSidebar } from "@/hooks/useSidebar";
 import { useChat } from "@/hooks/useChat";
 import { IconMiroMark, IconSidebarGlobalOpen, IconSidebarGlobalClosed, IconChatTwo, IconBoard, IconCheckBoxLines, IconHouse } from "@mirohq/design-system-icons";
 
+// Icon components
+function HomeIcon({ active }: { active: boolean }) {
+  return <IconHouse css={{ width: 18, height: 18, strokeWidth: active ? 2 : 1.5 }} />;
+}
+
+function ChatIcon({ active }: { active: boolean }) {
+  return <IconChatTwo css={{ width: 18, height: 18, strokeWidth: active ? 2 : 1.5 }} />;
+}
+
+function TasksIcon({ active }: { active: boolean }) {
+  return <IconCheckBoxLines css={{ width: 18, height: 18, strokeWidth: active ? 2 : 1.5 }} />;
+}
+
 const navItems = [
   { label: "Home", href: "/", icon: HomeIcon },
   { label: "Chats", href: "#", icon: ChatIcon },
@@ -230,16 +243,4 @@ export function AppSidebar() {
       </nav>
     </aside>
   );
-}
-
-function HomeIcon({ active }: { active: boolean }) {
-  return <IconHouse css={{ width: 18, height: 18, strokeWidth: active ? 2 : 1.5 }} />;
-}
-
-function ChatIcon({ active }: { active: boolean }) {
-  return <IconChatTwo css={{ width: 18, height: 18, strokeWidth: active ? 2 : 1.5 }} />;
-}
-
-function TasksIcon({ active }: { active: boolean }) {
-  return <IconCheckBoxLines css={{ width: 18, height: 18, strokeWidth: active ? 2 : 1.5 }} />;
 }
