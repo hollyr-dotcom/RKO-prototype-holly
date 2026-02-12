@@ -2,6 +2,13 @@
 @import "@liveblocks/react-tiptap/styles.css";
 @import "@liveblocks/react-ui/styles.css";
 
+@theme {
+  --font-sans: var(--font-noto-sans), "Noto Sans", "OpenSans", "Noto Sans KR",
+    "Noto Sans JP", sans-serif;
+  --font-heading: "Roobert PRO", "Roobert", "Noto Sans KR", "Noto Sans JP",
+    sans-serif;
+}
+
 /* Document editor content styles */
 .document-editor-content .tiptap {
   outline: none;
