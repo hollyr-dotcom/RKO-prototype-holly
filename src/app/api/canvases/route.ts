@@ -20,13 +20,13 @@ function writeCanvases(canvases: Canvas[]) {
   fs.writeFileSync(CANVASES_PATH, JSON.stringify(canvases, null, 2) + "\n");
 }
 
-/** POST /api/canvases — create a new canvas in a space */
+/** POST /api/canvases — create a new canvas, optionally in a space */
 export async function POST(req: Request) {
   const { name, spaceId } = await req.json();
 
-  if (!name || !spaceId) {
+  if (!name) {
     return NextResponse.json(
-      { error: "Name and spaceId are required" },
+      { error: "Name is required" },
       { status: 400 }
     );
   }
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 
   const newCanvas: Canvas = {
     id: `canvas-${Date.now()}`,
-    spaceId,
+    spaceId: spaceId || "",
     name,
     createdAt: now,
     updatedAt: now,

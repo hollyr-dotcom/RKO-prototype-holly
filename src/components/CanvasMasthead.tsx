@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSidebar } from "@/contexts/SidebarContext";
+import { useSidebar } from "@/hooks/useSidebar";
 import { MastheadAvatars } from "./Avatars";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
@@ -23,7 +23,7 @@ import {
 
 export function CanvasMasthead() {
   const params = useParams<{ spaceId: string; canvasId: string }>();
-  const { collapsed, setCollapsed, sidebarWidth } = useSidebar();
+  const { isCollapsed, toggleSidebar } = useSidebar();
 
   // Look up canvas and space names from static data
   const canvas = canvases.find((c) => c.id === params.canvasId);
@@ -73,29 +73,23 @@ export function CanvasMasthead() {
     }
   };
 
-  // Masthead left offset: when sidebar is visible, clear it (12px margin + width + 12px gap).
-  // When collapsed/hidden, just use the page margin.
-  const mastheadLeft = collapsed ? 12 : 12 + sidebarWidth + 12;
-
   const barShadow = "0 4px 24px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)";
 
   return (
-    <div className="absolute top-3 left-0 right-3 z-[500] flex items-center justify-between pointer-events-none">
+    <div className="absolute top-3 left-3 right-3 z-[500] flex items-center justify-between pointer-events-none">
       {/* ── Left bar: Board identity ── */}
-      <motion.div
+      <div
         className="h-12 bg-white rounded-full border border-gray-200 flex items-center pointer-events-auto p-1.5"
-        style={{ marginLeft: mastheadLeft, boxShadow: barShadow }}
-        animate={{ marginLeft: mastheadLeft }}
-        transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+        style={{ boxShadow: barShadow }}
       >
         <div className="flex items-center gap-2 px-2 min-w-0">
           <IconButton
             variant="ghost"
             size="medium"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            onPress={() => setCollapsed(!collapsed)}
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            onPress={() => toggleSidebar()}
           >
-            {collapsed ? <IconSidebarOpen /> : <IconSidebarClosed />}
+            {isCollapsed ? <IconSidebarOpen /> : <IconSidebarClosed />}
           </IconButton>
 
           <div className="relative flex items-center gap-1.5 min-w-0">
@@ -144,7 +138,7 @@ export function CanvasMasthead() {
             <IconDotsThreeVertical />
           </IconButton>
         </div>
-      </motion.div>
+      </div>
 
       {/* ── Right bar: Actions & presence ── */}
       <div
