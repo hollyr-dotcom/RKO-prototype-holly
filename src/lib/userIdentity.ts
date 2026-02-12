@@ -1,28 +1,12 @@
-const COLORS = [
-  "#FF6B6B",
-  "#4ECDC4",
-  "#45B7D1",
-  "#96CEB4",
-  "#FFEAA7",
-  "#DDA0DD",
-  "#98D8C8",
-  "#FF9F43",
-  "#6C5CE7",
-  "#A8E6CF",
-];
+import { User } from 'firebase/auth';
 
-const NAMES = [
-  "Fox",
-  "Owl",
-  "Bear",
-  "Deer",
-  "Wolf",
-  "Hawk",
-  "Lynx",
-  "Hare",
-  "Orca",
-  "Wren",
-];
+export type SessionUser = {
+  id: string;
+  name: string;
+  color: string;
+  email: string;
+  photoURL: string | null;
+};
 
 /** Generate a random UUID, with fallback for insecure contexts (e.g. plain HTTP on LAN). */
 export function generateId(): string {
@@ -34,27 +18,37 @@ export function generateId(): string {
   );
 }
 
-export type SessionUser = {
-  id: string;
-  name: string;
-  color: string;
-};
-
-export function getSessionUser(): SessionUser {
-  if (typeof window === "undefined") {
-    return { id: "server", name: "Server", color: "#999999" };
+// Hash string to consistent color
+function hashStringToColor(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
+  const hue = Math.abs(hash % 360);
+  return `hsl(${hue}, 70%, 60%)`;
+}
 
-  const stored = sessionStorage.getItem("liveblocks-user");
-  if (stored) {
-    return JSON.parse(stored) as SessionUser;
-  }
+export function getSessionUser(firebaseUser: User): SessionUser {
+  const firstName = firebaseUser.displayName?.split(' ')[0] ||
+                     firebaseUser.email?.split('@')[0] ||
+                     'User';
 
-  const newUser: SessionUser = {
-    id: generateId(),
-    name: NAMES[Math.floor(Math.random() * NAMES.length)],
-    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+  return {
+    id: firebaseUser.uid,
+    name: firstName,
+    color: hashStringToColor(firebaseUser.uid),
+    email: firebaseUser.email!,
+    photoURL: firebaseUser.photoURL,
   };
-  sessionStorage.setItem("liveblocks-user", JSON.stringify(newUser));
-  return newUser;
+}
+
+// Fallback for server-side contexts
+export function getServerSessionUser(): SessionUser {
+  return {
+    id: 'server',
+    name: 'Server',
+    color: '#999999',
+    email: 'server@internal',
+    photoURL: null,
+  };
 }

@@ -1,6 +1,8 @@
 import { Agent, run, tool } from "@openai/agents";
 import { z } from "zod";
 import type { Plan, Task } from "@/types/plan";
+import { requireAuth } from "@/lib/auth/serverAuth";
+import { NextResponse } from "next/server";
 
 export const maxDuration = 300; // 5 minutes for long plans
 
@@ -182,6 +184,12 @@ Use shapes+arrows for diagrams, stickies for brainstorms, frames to group conten
 // ============================================
 
 export async function POST(req: Request) {
+  try {
+    await requireAuth();
+  } catch (error) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { action, goal, plan, taskIndex, canvasState } = await req.json();
 
   const encoder = new TextEncoder();

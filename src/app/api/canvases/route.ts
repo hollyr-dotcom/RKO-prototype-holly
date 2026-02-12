@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { requireAuth } from "@/lib/auth/serverAuth";
 
 const CANVASES_PATH = path.join(process.cwd(), "src/data/canvases.json");
 
@@ -22,28 +23,34 @@ function writeCanvases(canvases: Canvas[]) {
 
 /** POST /api/canvases — create a new canvas, optionally in a space */
 export async function POST(req: Request) {
-  const { name, spaceId } = await req.json();
+  try {
+    await requireAuth();
 
-  if (!name) {
-    return NextResponse.json(
-      { error: "Name is required" },
-      { status: 400 }
-    );
+    const { name, spaceId } = await req.json();
+
+    if (!name) {
+      return NextResponse.json(
+        { error: "Name is required" },
+        { status: 400 }
+      );
+    }
+
+    const canvases = readCanvases();
+    const now = new Date().toISOString();
+
+    const newCanvas: Canvas = {
+      id: `canvas-${Date.now()}`,
+      spaceId: spaceId || "",
+      name,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    canvases.push(newCanvas);
+    writeCanvases(canvases);
+
+    return NextResponse.json(newCanvas, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  const canvases = readCanvases();
-  const now = new Date().toISOString();
-
-  const newCanvas: Canvas = {
-    id: `canvas-${Date.now()}`,
-    spaceId: spaceId || "",
-    name,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  canvases.push(newCanvas);
-  writeCanvases(canvases);
-
-  return NextResponse.json(newCanvas, { status: 201 });
 }

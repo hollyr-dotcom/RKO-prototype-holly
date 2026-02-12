@@ -9,6 +9,7 @@ import { useSidebar } from "@/hooks/useSidebar";
 import { useRealtimeVoice } from "@/hooks/useRealtimeVoice";
 import { useStorageStore } from "@/hooks/useStorageStore";
 import { generateId, getSessionUser } from "@/lib/userIdentity";
+import { useAuth } from "@/hooks/useAuth";
 import { DocumentShapeUtil } from "@/shapes/DocumentShapeUtil";
 import { DataTableShapeUtil } from "@/shapes/DataTableShapeUtil";
 import { CommentShapeUtil } from "@/shapes/CommentShapeUtil";
@@ -858,8 +859,11 @@ const colorMap: Record<string, TLColor> = {
 };
 
 export function Canvas() {
+  // Get authenticated Firebase user
+  const { user: firebaseUser } = useAuth();
+
   // LiveBlocks multiplayer store -- syncs tldraw state across users
-  const [sessionUser] = useState(() => getSessionUser());
+  const [sessionUser] = useState(() => firebaseUser ? getSessionUser(firebaseUser) : undefined);
   const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 

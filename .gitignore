@@ -15,6 +15,15 @@ build/
 .env.test.local
 .env.production.local
 
+# Firebase build artifacts and cache
+.firebase/
+*.cache
+
+# Firebase service account keys (but not firebase.json config)
+*Firebase*SDK*.json
+*Firebase*Admin*.json
+RKO*.json
+
 # debug
 npm-debug.log*
 

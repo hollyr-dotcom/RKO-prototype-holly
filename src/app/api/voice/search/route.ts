@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/serverAuth";
 
 export const runtime = "nodejs";
 
@@ -8,6 +9,8 @@ export const runtime = "nodejs";
  */
 export async function POST(req: Request) {
   try {
+    await requireAuth();
+
     const { query, purpose, maxResults } = await req.json();
 
     if (!query) {

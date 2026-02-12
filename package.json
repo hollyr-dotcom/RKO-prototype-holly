@@ -7,7 +7,9 @@
     "dev:clean": "rm -rf .next && next dev -H 0.0.0.0 -p 5000",
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p 5000",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy": "firebase deploy --only hosting",
+    "deploy:preview": "firebase hosting:channel:deploy preview"
   },
   "dependencies": {
     "@ai-sdk/openai": "0.0.40",
@@ -48,6 +50,8 @@
     "@tiptap/y-tiptap": "^3.0.2",
     "ai": "3.3.0",
     "emoji-mart": "^5.6.0",
+    "firebase": "^11.0.0",
+    "firebase-admin": "^13.0.0",
     "framer-motion": "^12.31.0",
     "lib0": "^0.2.117",
     "next": "15.5.12",

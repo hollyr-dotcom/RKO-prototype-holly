@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { requireAuth } from "@/lib/auth/serverAuth";
 
 const SPACES_PATH = path.join(process.cwd(), "src/data/spaces.json");
 const CANVASES_PATH = path.join(process.cwd(), "src/data/canvases.json");
@@ -34,16 +35,22 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ spaceId: string }> }
 ) {
-  const { spaceId } = await params;
-  const spaces = readSpaces();
-  const space = spaces.find((s) => s.id === spaceId);
+  try {
+    await requireAuth();
 
-  if (!space) {
-    return NextResponse.json({ error: "Space not found" }, { status: 404 });
+    const { spaceId } = await params;
+    const spaces = readSpaces();
+    const space = spaces.find((s) => s.id === spaceId);
+
+    if (!space) {
+      return NextResponse.json({ error: "Space not found" }, { status: 404 });
+    }
+
+    const canvases = readCanvases();
+    const spaceCanvases = canvases.filter((c) => c.spaceId === spaceId);
+
+    return NextResponse.json({ ...space, canvases: spaceCanvases });
+  } catch (error) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  const canvases = readCanvases();
-  const spaceCanvases = canvases.filter((c) => c.spaceId === spaceId);
-
-  return NextResponse.json({ ...space, canvases: spaceCanvases });
 }

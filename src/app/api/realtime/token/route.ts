@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/serverAuth";
 
 export const runtime = "nodejs";
 
@@ -7,6 +8,12 @@ export const runtime = "nodejs";
  * Tokens are short-lived (1-60 min) and safe to use in browser
  */
 export async function POST() {
+  try {
+    await requireAuth();
+  } catch (error) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {

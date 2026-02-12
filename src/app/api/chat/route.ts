@@ -1,5 +1,7 @@
 import { Agent, run, tool } from "@openai/agents";
 import { z } from "zod";
+import { requireAuth } from "@/lib/auth/serverAuth";
+import { NextResponse } from "next/server";
 
 export const maxDuration = 120;
 
@@ -672,6 +674,12 @@ BAD: 13 stickies each with random different colors`,
 // ============================================
 
 export async function POST(req: Request) {
+  try {
+    await requireAuth();
+  } catch (error) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { messages, canvasState, userEdits, generateTitle } = await req.json();
   console.log('[Chat API] generateTitle:', generateTitle, 'messages.length:', messages?.length);
 

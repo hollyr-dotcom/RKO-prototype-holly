@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { requireAuth } from "@/lib/auth/serverAuth";
 
 const SPACES_PATH = path.join(process.cwd(), "src/data/spaces.json");
 const CANVASES_PATH = path.join(process.cwd(), "src/data/canvases.json");
@@ -35,38 +36,50 @@ function readCanvases(): Canvas[] {
 
 /** GET /api/spaces — list all spaces with canvas counts */
 export async function GET() {
-  const spaces = readSpaces();
-  const canvases = readCanvases();
+  try {
+    await requireAuth();
 
-  const spacesWithCounts = spaces.map((space) => ({
-    ...space,
-    canvasCount: canvases.filter((c) => c.spaceId === space.id).length,
-  }));
+    const spaces = readSpaces();
+    const canvases = readCanvases();
 
-  return NextResponse.json(spacesWithCounts);
+    const spacesWithCounts = spaces.map((space) => ({
+      ...space,
+      canvasCount: canvases.filter((c) => c.spaceId === space.id).length,
+    }));
+
+    return NextResponse.json(spacesWithCounts);
+  } catch (error) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 }
 
 /** POST /api/spaces — create a new space */
 export async function POST(req: Request) {
-  const { name, description } = await req.json();
+  try {
+    await requireAuth();
 
-  if (!name) {
-    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    const { name, description } = await req.json();
+
+    if (!name) {
+      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    }
+
+    const spaces = readSpaces();
+    const now = new Date().toISOString();
+
+    const newSpace: Space = {
+      id: `space-${Date.now()}`,
+      name,
+      description: description || "",
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    spaces.push(newSpace);
+    writeSpaces(spaces);
+
+    return NextResponse.json(newSpace, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  const spaces = readSpaces();
-  const now = new Date().toISOString();
-
-  const newSpace: Space = {
-    id: `space-${Date.now()}`,
-    name,
-    description: description || "",
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  spaces.push(newSpace);
-  writeSpaces(spaces);
-
-  return NextResponse.json(newSpace, { status: 201 });
 }

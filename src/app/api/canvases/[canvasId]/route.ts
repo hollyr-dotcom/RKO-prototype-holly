@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { requireAuth } from "@/lib/auth/serverAuth";
 
 const CANVASES_PATH = path.join(process.cwd(), "src/data/canvases.json");
 
@@ -26,15 +27,21 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ canvasId: string }> }
 ) {
-  const { canvasId } = await params;
-  const canvases = readCanvases();
-  const canvas = canvases.find((c) => c.id === canvasId);
+  try {
+    await requireAuth();
 
-  if (!canvas) {
-    return NextResponse.json({ error: "Canvas not found" }, { status: 404 });
+    const { canvasId } = await params;
+    const canvases = readCanvases();
+    const canvas = canvases.find((c) => c.id === canvasId);
+
+    if (!canvas) {
+      return NextResponse.json({ error: "Canvas not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(canvas);
+  } catch (error) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  return NextResponse.json(canvas);
 }
 
 /** PATCH /api/canvases/[canvasId] — update canvas fields (e.g. emoji) */
@@ -42,22 +49,28 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ canvasId: string }> }
 ) {
-  const { canvasId } = await params;
-  const body = await req.json();
-  const canvases = readCanvases();
-  const index = canvases.findIndex((c) => c.id === canvasId);
+  try {
+    await requireAuth();
 
-  if (index === -1) {
-    return NextResponse.json({ error: "Canvas not found" }, { status: 404 });
+    const { canvasId } = await params;
+    const body = await req.json();
+    const canvases = readCanvases();
+    const index = canvases.findIndex((c) => c.id === canvasId);
+
+    if (index === -1) {
+      return NextResponse.json({ error: "Canvas not found" }, { status: 404 });
+    }
+
+    // Only allow updating specific fields
+    if (body.emoji !== undefined) {
+      canvases[index].emoji = body.emoji;
+    }
+
+    canvases[index].updatedAt = new Date().toISOString();
+    writeCanvases(canvases);
+
+    return NextResponse.json(canvases[index]);
+  } catch (error) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  // Only allow updating specific fields
-  if (body.emoji !== undefined) {
-    canvases[index].emoji = body.emoji;
-  }
-
-  canvases[index].updatedAt = new Date().toISOString();
-  writeCanvases(canvases);
-
-  return NextResponse.json(canvases[index]);
 }
