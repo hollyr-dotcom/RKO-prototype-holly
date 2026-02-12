@@ -97,8 +97,7 @@ export default function HomePage() {
       setOriginalPrompt(text); // Store first prompt for canvas naming
     }
     openFullscreen(true); // Set fromHome FIRST before append
-    const shouldGenerateTitle = messages.length === 0;
-    append({ role: "user", content: text }, shouldGenerateTitle);
+    append({ role: "user", content: text });
   };
 
   const handleCreateEmptyCanvas = async () => {

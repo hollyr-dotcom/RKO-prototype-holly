@@ -2983,7 +2983,6 @@ export function Canvas() {
               hasMessages={messages.length > 0}
               hasPendingQuestion={!!pendingQuestion}
               canvasState={getCanvasState()}
-              canvasWidth={isChatOpen && typeof window !== 'undefined' ? window.innerWidth - appSidebarWidth - sidebarWidth : typeof window !== 'undefined' ? window.innerWidth - appSidebarWidth : undefined}
               onSuggestionsVisibilityChange={setAreSuggestionsVisible}
               onInputChange={setHasToolbarText}
               onCreateDocument={() => {
@@ -3066,7 +3065,7 @@ export function Canvas() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => {
-                        setIsFullscreenChat(false);
+                        closeFullscreen();
                         setIsChatOpen(true);
                         setIsCompletionDismissed(true);
                       }}
@@ -3077,7 +3076,7 @@ export function Canvas() {
                     </button>
                     <button
                       onClick={() => {
-                        setIsFullscreenChat(false);
+                        closeFullscreen();
                         handleCloseChat(true);
                       }}
                       className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
@@ -3097,7 +3096,7 @@ export function Canvas() {
                   >
                     <ChatPanel
                       onClose={() => {
-                        setIsFullscreenChat(false);
+                        closeFullscreen();
                         handleCloseChat(true);
                       }}
                       hideHeader={true}
