@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useSidebar } from "@/hooks/useSidebar";
+import { useChat } from "@/hooks/useChat";
 import { IconMiroMark, IconSidebarGlobalOpen, IconSidebarGlobalClosed, IconChatTwo, IconBoard, IconCheckBoxLines, IconHouse } from "@mirohq/design-system-icons";
 
 const navItems = [
@@ -36,6 +37,7 @@ type Canvas = {
 export function AppSidebar() {
   const pathname = usePathname();
   const { isCollapsed, toggleSidebar, sidebarWidth } = useSidebar();
+  const { closeFullscreen } = useChat();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
   const [expandedSpaceIds, setExpandedSpaceIds] = useState<Set<string>>(new Set());
@@ -90,19 +92,21 @@ export function AppSidebar() {
               </div>
             </button>
           ) : (
-            <Link href="/">
+            <Link href="/" onClick={closeFullscreen}>
               <div className="w-7 h-7 bg-gray-900 rounded-lg flex items-center justify-center">
                 <IconMiroMark css={{ width: 16, height: 16, color: 'white' }} />
               </div>
             </Link>
           )}
         </div>
-        <span
-          className="text-sm font-semibold text-gray-900 whitespace-nowrap flex-1 ml-2 transition-opacity duration-200"
-          style={{ opacity: isCollapsed ? 0 : 1 }}
-        >
-          Canvas
-        </span>
+        <Link href="/" onClick={closeFullscreen} className="flex-1">
+          <span
+            className="text-sm font-semibold text-gray-900 whitespace-nowrap ml-2 transition-opacity duration-200 cursor-pointer hover:text-gray-600"
+            style={{ opacity: isCollapsed ? 0 : 1 }}
+          >
+            Miro
+          </span>
+        </Link>
         <button
           onClick={toggleSidebar}
           title="Collapse sidebar"
@@ -125,6 +129,7 @@ export function AppSidebar() {
               <li key={item.label}>
                 <Link
                   href={item.href}
+                  onClick={item.href === "/" ? closeFullscreen : undefined}
                   title={isCollapsed ? item.label : undefined}
                   className={`flex items-center py-2 rounded-lg text-sm transition-colors overflow-hidden ${
                     isActive
