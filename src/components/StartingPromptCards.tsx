@@ -12,6 +12,7 @@ import {
   IconUsers,
   IconTargetArrow,
   IconShuffle,
+  IconCross,
 } from "@mirohq/design-system-icons";
 
 interface Prompt {
@@ -182,9 +183,7 @@ export function StartingPromptCards({
           }}
           title="Dismiss"
         >
-          <svg className="w-3.5 h-3.5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <IconCross css={{ width: 14, height: 14, color: '#4b5563' }} />
         </button>
         <button
           onClick={() => setShuffleKey(k => k + 1)}

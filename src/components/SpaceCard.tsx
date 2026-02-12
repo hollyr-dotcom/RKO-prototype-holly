@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IconGridFour } from "@mirohq/design-system-icons";
 
 interface SpaceCardProps {
   id: string;
@@ -23,21 +24,8 @@ export function SpaceCard({
       className="group block rounded-xl border border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm transition-all"
     >
       {/* Thumbnail placeholder */}
-      <div className="h-36 rounded-t-xl bg-gray-50 flex items-center justify-center">
-        <svg
-          width="40"
-          height="40"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1"
-          className="text-gray-300"
-        >
-          <rect x="3" y="3" width="7" height="7" rx="1" />
-          <rect x="14" y="3" width="7" height="7" rx="1" />
-          <rect x="3" y="14" width="7" height="7" rx="1" />
-          <rect x="14" y="14" width="7" height="7" rx="1" />
-        </svg>
+      <div className="h-36 rounded-t-xl bg-gray-50 flex items-center justify-center text-gray-300">
+        <IconGridFour css={{ width: 40, height: 40 }} />
       </div>
 
       {/* Content */}

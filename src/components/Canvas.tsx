@@ -5,10 +5,32 @@ import "tldraw/tldraw.css";
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { useAgent, Message } from "@/hooks/useAgent";
 import { useRealtimeVoice } from "@/hooks/useRealtimeVoice";
+import { useStorageStore } from "@/hooks/useStorageStore";
+import { generateId, getSessionUser } from "@/lib/userIdentity";
+import { DocumentShapeUtil } from "@/shapes/DocumentShapeUtil";
+import { DataTableShapeUtil } from "@/shapes/DataTableShapeUtil";
+import { CommentShapeUtil } from "@/shapes/CommentShapeUtil";
 import { Toolbar } from "./Toolbar";
 import { ChatPanel } from "./ChatPanel";
 import { StartingPromptCards } from "./StartingPromptCards";
-import { IconSingleSparksFilled, IconViewSideRight, IconSidebarGlobalOpen, IconSidebarGlobalClosed, IconArrowLeft, IconCross } from "@mirohq/design-system-icons";
+import { CanvasComments } from "./CanvasComments";
+import { CanvasMasthead } from "./CanvasMasthead";
+import {
+  IconSingleSparksFilled,
+  IconViewSideRight,
+  IconSidebarGlobalOpen,
+  IconSidebarGlobalClosed,
+  IconArrowLeft,
+  IconCross,
+  IconMicrophoneSlash,
+  IconMicrophone,
+  IconArrowRight,
+  IconSquarePencil,
+  IconSpinner,
+  IconCheckMark,
+  IconNotepad,
+  IconArrowsInSimple,
+} from "@mirohq/design-system-icons";
 import { calculateLayout, findEmptyCanvasSpace } from "@/lib/layoutEngine";
 import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
 import Markdown from "react-markdown";
@@ -45,8 +67,8 @@ const planPanelVariants = {
   exit: { x: "100%", opacity: 0 },
 };
 
-const smoothTransition = { type: "tween" as const, ease: [0.25, 0.1, 0.25, 1.0], duration: 0.25 };
-const floatingTransition = { type: "tween" as const, ease: [0.25, 0.1, 0.25, 1.0], duration: 0.22 };
+const smoothTransition = { type: "tween" as const, ease: [0.25, 0.1, 0.25, 1.0] as [number, number, number, number], duration: 0.25 };
+const floatingTransition = { type: "tween" as const, ease: [0.25, 0.1, 0.25, 1.0] as [number, number, number, number], duration: 0.22 };
 
 // Audio chimes for voice mode
 function playChime(type: 'start' | 'end') {
@@ -136,14 +158,9 @@ function FloatingVoiceIndicator({
           title={isMuted ? "Unmute microphone" : "Mute microphone"}
         >
           {isMuted ? (
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-            </svg>
+            <IconMicrophoneSlash css={{ width: 16, height: 16 }} />
           ) : (
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-            </svg>
+            <IconMicrophone css={{ width: 16, height: 16 }} />
           )}
         </button>
         {/* End voice mode button */}
@@ -152,9 +169,7 @@ function FloatingVoiceIndicator({
           className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
           title="End voice mode"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <IconCross css={{ width: 16, height: 16 }} />
         </button>
       </div>
     </div>
@@ -224,9 +239,7 @@ function FloatingQuestionCard({
             onClick={onSkip}
             className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
+            <IconCross css={{ width: 18, height: 18 }} />
           </button>
         </div>
 
@@ -287,9 +300,7 @@ function FloatingQuestionCard({
                   </span>
                   <span className="text-left flex-1">{option}</span>
                   {selectedIndex === i && (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
+                    <IconArrowRight css={{ width: 18, height: 18, color: '#9ca3af' }} />
                   )}
                 </button>
               ))}
@@ -302,9 +313,7 @@ function FloatingQuestionCard({
                 }`}
               >
                 <span className="w-7 h-7 flex items-center justify-center rounded bg-gray-100 text-gray-500">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                  </svg>
+                  <IconSquarePencil css={{ width: 14, height: 14 }} />
                 </span>
                 <span className="text-gray-400">Something else</span>
               </button>
@@ -384,18 +393,13 @@ function PlanProgressPanel({
                 <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0" />
               )}
               {status === 'running' && (
-                <div className="w-4 h-4 flex-shrink-0">
-                  <svg className="animate-spin text-blue-500" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
+                <div className="w-4 h-4 flex-shrink-0 text-blue-500 animate-spin">
+                  <IconSpinner css={{ width: 16, height: 16 }} />
                 </div>
               )}
               {status === 'done' && (
-                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
+                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 text-white">
+                  <IconCheckMark css={{ width: 10, height: 10 }} />
                 </div>
               )}
               <span className={status === 'done' ? 'text-gray-400 line-through' : status === 'running' ? 'text-blue-700' : 'text-gray-600'}>
@@ -427,10 +431,8 @@ function FloatingPlanApproval({
         style={{ borderRadius: '32px', paddingTop: '16px', paddingBottom: '16px' }}
       >
         {/* Icon */}
-        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-          <svg className="w-3.5 h-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
+        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-600">
+          <IconNotepad css={{ width: 14, height: 14 }} />
         </div>
 
         {/* Title */}
@@ -599,9 +601,7 @@ function FloatingProgressIndicator({
         <div className="flex items-center gap-2 bg-green-600 text-white shadow-lg px-4 py-3 pb-3.5 w-[420px]" style={{ borderRadius: '32px' }}>
           {/* Checkmark icon */}
           <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
+            <IconCheckMark css={{ width: 20, height: 20, color: 'white' }} />
           </div>
 
           <span className="text-sm font-medium flex-1">Task completed</span>
@@ -622,9 +622,7 @@ function FloatingProgressIndicator({
             }}
             className="ml-1 w-6 h-6 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors flex-shrink-0"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <IconCross css={{ width: 14, height: 14 }} />
           </button>
         </div>
       </div>
@@ -757,9 +755,7 @@ function FloatingProgressIndicator({
               className="ml-1 w-6 h-6 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors flex-shrink-0"
               title="Dismiss"
             >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <IconCross css={{ width: 14, height: 14 }} />
             </button>
           </div>
         </div>
@@ -860,6 +856,11 @@ const colorMap: Record<string, TLColor> = {
 };
 
 export function Canvas() {
+  // LiveBlocks multiplayer store -- syncs tldraw state across users
+  const [sessionUser] = useState(() => getSessionUser());
+  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil], []);
+  const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
+
   const [editor, setEditor] = useState<Editor | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
@@ -879,6 +880,7 @@ export function Canvas() {
   const [shapeCount, setShapeCount] = useState(0);
   const [areSuggestionsVisible, setAreSuggestionsVisible] = useState(false);
   const [hasToolbarText, setHasToolbarText] = useState(false);
+  const [isCommentMode, setIsCommentMode] = useState(false);
   const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
   const isProcessingToolCallRef = useRef(false);
@@ -1271,6 +1273,66 @@ export function Canvas() {
           y: pos.y,
           props: {
             name: name || "Frame",
+            w: validWidth,
+            h: validHeight,
+          },
+          meta: { createdBy: "ai" },
+        });
+      }
+
+      if (toolName === "createDocument") {
+        const { title, x, y, width, height } = args as {
+          title?: string;
+          x?: number;
+          y?: number;
+          width?: number;
+          height?: number;
+        };
+
+        const validWidth = Math.max(width || 780, 200);
+        const validHeight = Math.max(height || 660, 200);
+
+        const pos = findNonOverlappingPosition(x || 0, y || 0, validWidth, validHeight, "frame");
+
+        shapeId = createShapeId();
+        editor.createShape({
+          id: shapeId,
+          type: "document",
+          x: pos.x,
+          y: pos.y,
+          props: {
+            docId: generateId(),
+            title: title || "Untitled document",
+            w: validWidth,
+            h: validHeight,
+          },
+          meta: { createdBy: "ai" },
+        });
+      }
+
+      if (toolName === "createDataTable") {
+        const { title, x, y, width, height } = args as {
+          title?: string;
+          x?: number;
+          y?: number;
+          width?: number;
+          height?: number;
+        };
+
+        const validWidth = Math.max(width || 480, 200);
+        const validHeight = Math.max(height || 280, 150);
+
+        const pos = findNonOverlappingPosition(x || 0, y || 0, validWidth, validHeight, "frame");
+
+        shapeId = createShapeId();
+        editor.createShape({
+          id: shapeId,
+          type: "datatable",
+          x: pos.x,
+          y: pos.y,
+          props: {
+            tableId: generateId(),
+            title: title || "Untitled table",
             w: validWidth,
             h: validHeight,
           },
@@ -2118,6 +2180,46 @@ export function Canvas() {
 
   const handleMount = useCallback((editor: Editor) => {
     setEditor(editor);
+
+    // Auto-enter editing mode when a single document/table shape is clicked in its interior
+    editor.sideEffects.registerAfterChangeHandler('instance_page_state', (prev, next) => {
+      const prevSelected = prev.selectedShapeIds;
+      const nextSelected = next.selectedShapeIds;
+
+      // Only trigger on selection change, not other page state updates
+      if (prevSelected === nextSelected) return;
+
+      // Only auto-edit when exactly one shape is selected
+      if (nextSelected.length !== 1) return;
+
+      const shapeId = nextSelected[0];
+      const shape = editor.getShape(shapeId);
+      if (!shape) return;
+
+      // Auto-edit for document and data table shapes
+      if (shape.type === 'document' || shape.type === 'datatable') {
+        // Only enter editing if we're not already editing this shape
+        if (editor.getEditingShapeId() !== shapeId) {
+          // Check if the click landed inside the inner area (past the 20px border)
+          // Clicking the 20px boundary just selects without entering editing mode
+          const BORDER = 20;
+          const point = editor.inputs.currentPagePoint;
+          const innerLeft = shape.x + BORDER;
+          const innerTop = shape.y + BORDER;
+          const innerRight = shape.x + (shape.props as any).w - BORDER;
+          const innerBottom = shape.y + (shape.props as any).h - BORDER;
+
+          if (
+            point.x >= innerLeft &&
+            point.x <= innerRight &&
+            point.y >= innerTop &&
+            point.y <= innerBottom
+          ) {
+            editor.setEditingShape(shapeId);
+          }
+        }
+      }
+    });
   }, []);
 
   const handleSubmit = useCallback(
@@ -2564,7 +2666,24 @@ export function Canvas() {
           pointerEvents: isFullscreenChat ? 'none' : 'auto'
         }}
       >
-        <Tldraw onMount={handleMount} hideUi />
+        <Tldraw store={storeWithStatus} shapeUtils={customShapeUtils} onMount={handleMount} hideUi />
+
+        {/* Canvas comments overlay */}
+        <CanvasComments
+          editor={editor}
+          isCommentMode={isCommentMode}
+          onExitCommentMode={() => setIsCommentMode(false)}
+        />
+
+        {/* Loading overlay while LiveBlocks store is connecting */}
+        {storeWithStatus.status === "loading" && (
+          <div className="absolute inset-0 z-[600] flex items-center justify-center bg-white/80">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+              <p className="text-sm text-gray-500">Syncing canvas...</p>
+            </div>
+          </div>
+        )}
 
         {/* Starting prompt cards - only when canvas is empty */}
         <StartingPromptCards
@@ -2579,29 +2698,8 @@ export function Canvas() {
           isVoiceActive={voice.isConnected}
         />
 
-        {/* AI Chat button - top right, hidden when panel is open */}
-        <AnimatePresence>
-          {!isChatOpen && (
-            <motion.button
-              key="ai-chat-button"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ type: "tween", ease: [0.25, 0.1, 0.25, 1.0], duration: 0.15 }}
-              onClick={() => {
-                setIsChatOpen(true);
-                setIsCompletionDismissed(true);
-              }}
-              className="absolute top-4 right-4 z-50 w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-gray-800"
-              style={{
-                boxShadow: "0 4px 24px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)",
-              }}
-              title="AI Chat"
-            >
-              <IconSingleSparksFilled size="medium" />
-            </motion.button>
-          )}
-        </AnimatePresence>
+        {/* Floating masthead bar (Miro-style) */}
+        <CanvasMasthead />
 
         {/* Floating progress indicator - shown when plan active and no other floating UI */}
         <AnimatePresence>
@@ -2766,9 +2864,7 @@ export function Canvas() {
                       className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors rounded-full cursor-pointer"
                       title="Dismiss"
                     >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                      <IconCross css={{ width: 14, height: 14 }} />
                     </div>
                   </div>
                   {/* Scrollable content */}
@@ -2843,9 +2939,50 @@ export function Canvas() {
               hasMessages={messages.length > 0}
               hasPendingQuestion={!!pendingQuestion}
               canvasState={getCanvasState()}
-              canvasWidth={isChatOpen && typeof window !== 'undefined' ? window.innerWidth - sidebarWidth : undefined}
               onSuggestionsVisibilityChange={setAreSuggestionsVisible}
               onInputChange={setHasToolbarText}
+              onCreateDocument={() => {
+                if (!editor) return;
+                // Get the center of the current viewport
+                const viewportCenter = editor.getViewportScreenCenter();
+                const canvasPoint = editor.screenToPage(viewportCenter);
+                const shapeId = createShapeId();
+                editor.createShape({
+                  id: shapeId,
+                  type: "document",
+                  x: canvasPoint.x - 390,
+                  y: canvasPoint.y - 330,
+                  props: {
+                    docId: generateId(),
+                    title: "Untitled document",
+                    w: 600,
+                    h: 900,
+                  },
+                });
+                // Select the new shape
+                editor.select(shapeId);
+              }}
+              onCreateDataTable={() => {
+                if (!editor) return;
+                const viewportCenter = editor.getViewportScreenCenter();
+                const canvasPoint = editor.screenToPage(viewportCenter);
+                const shapeId = createShapeId();
+                editor.createShape({
+                  id: shapeId,
+                  type: "datatable",
+                  x: canvasPoint.x - 240,
+                  y: canvasPoint.y - 140,
+                  props: {
+                    tableId: generateId(),
+                    title: "Untitled table",
+                    w: 480,
+                    h: 280,
+                  },
+                });
+                editor.select(shapeId);
+              }}
+              isCommentMode={isCommentMode}
+              onToggleCommentMode={() => setIsCommentMode((v) => !v)}
             />
           </motion.div>
         )}
@@ -2894,9 +3031,7 @@ export function Canvas() {
                       className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
                       title="Exit focus mode"
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M4 14h6v6M20 10h-6V4M3 21l7-7M21 3l-7 7" />
-                      </svg>
+                      <IconArrowsInSimple css={{ width: 18, height: 18 }} />
                     </button>
                     <button
                       onClick={() => {
@@ -2906,9 +3041,7 @@ export function Canvas() {
                       className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
                       title="Close"
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M18 6L6 18M6 6l12 12" />
-                      </svg>
+                      <IconCross css={{ width: 18, height: 18 }} />
                     </button>
                   </div>
                 </div>

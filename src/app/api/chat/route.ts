@@ -974,7 +974,7 @@ Canvas is empty. Start placing content at (0, 0).`;
             }
 
             // Handle text_delta events directly (OpenAI Realtime format)
-            if (event.type === "text_delta" || event.type === "response.text.delta") {
+            if ((event.type as string) === "text_delta" || (event.type as string) === "response.text.delta") {
               const delta = (event as { delta?: string }).delta || (event as { text?: string }).text;
               if (delta) {
                 textContent += delta;

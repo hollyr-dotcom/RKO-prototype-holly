@@ -14,6 +14,10 @@ import {
   IconShapesLinesStacked,
   IconSingleSparksFilled,
   IconArrowUp,
+  IconChatLinesDot,
+  IconArticle,
+  IconTable,
+  IconCross,
 } from "@mirohq/design-system-icons";
 import { PromptSuggestions } from "./PromptSuggestions";
 
@@ -30,17 +34,6 @@ function VoiceWaveIcon() {
   );
 }
 
-// Custom comment icon with three dots (outlined)
-function CommentDotsIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 0 1-4.255-.96L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="8" cy="12" r="1" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
-      <circle cx="16" cy="12" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -60,6 +53,10 @@ interface ToolbarProps {
   hasPendingQuestion?: boolean;
   onSuggestionsVisibilityChange?: (visible: boolean) => void;
   onInputChange?: (hasText: boolean) => void;
+  onCreateDocument?: () => void;
+  onCreateDataTable?: () => void;
+  isCommentMode?: boolean;
+  onToggleCommentMode?: () => void;
 }
 
 export function Toolbar({
@@ -80,6 +77,10 @@ export function Toolbar({
   hasPendingQuestion = false,
   onSuggestionsVisibilityChange,
   onInputChange,
+  onCreateDocument,
+  onCreateDataTable,
+  isCommentMode = false,
+  onToggleCommentMode,
 }: ToolbarProps) {
   const [inputValue, setInputValue] = useState("");
   const [activeTool, setActiveTool] = useState("select");
@@ -93,6 +94,10 @@ export function Toolbar({
     if (!editor) return;
     editor.setCurrentTool(tool);
     setActiveTool(tool);
+    // Exit comment mode when selecting any other tool
+    if (isCommentMode) {
+      onToggleCommentMode?.();
+    }
   };
 
   const showSuggestions = isExpanded && isInputFocused && !isLoading && voiceState === "idle" && inputValue.trim().length > 0 && !hasPendingQuestion;
@@ -238,8 +243,19 @@ export function Toolbar({
           </ToolButton>
 
           {/* Comment */}
-          <ToolButton active={false} onClick={() => {}} title="Comment">
-            <CommentDotsIcon />
+          <ToolButton
+            active={isCommentMode}
+            onClick={() => {
+              onToggleCommentMode?.();
+              // When entering comment mode, deselect tldraw tools
+              if (!isCommentMode && editor) {
+                editor.setCurrentTool("select");
+                setActiveTool("select");
+              }
+            }}
+            title="Comment"
+          >
+            <IconChatLinesDot size="medium" />
           </ToolButton>
 
           {/* Draw */}
@@ -269,9 +285,14 @@ export function Toolbar({
             <IconStickyNote size="medium" />
           </ToolButton>
 
-          {/* More */}
-          <ToolButton active={false} onClick={() => {}} title="More">
-            <IconPlusSquare size="medium" />
+          {/* Document */}
+          <ToolButton active={false} onClick={() => onCreateDocument?.()} title="Document">
+            <IconArticle size="medium" />
+          </ToolButton>
+
+          {/* DataTable */}
+          <ToolButton active={false} onClick={() => onCreateDataTable?.()} title="Table">
+            <IconTable size="medium" />
           </ToolButton>
         </div>
 
@@ -318,9 +339,7 @@ export function Toolbar({
                     className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors rounded cursor-pointer"
                     title="Dismiss"
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <IconCross css={{ width: 14, height: 14 }} />
                   </div>
                 </div>
                 {/* Scrollable content */}

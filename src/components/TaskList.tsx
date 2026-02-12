@@ -2,6 +2,14 @@
 
 import { useState } from "react";
 import type { Plan, Task } from "@/types/plan";
+import {
+  IconSpinner,
+  IconCheckMark,
+  IconCross,
+  IconChevronRightDouble,
+  IconChevronDown,
+  IconMagnifyingGlass,
+} from "@mirohq/design-system-icons";
 
 interface TaskListProps {
   plan: Plan | null;
@@ -25,35 +33,26 @@ function TaskStatusIcon({ status }: { status: Task["status"] }) {
       );
     case "running":
       return (
-        <div className="w-5 h-5">
-          <svg className="animate-spin text-blue-500" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
+        <div className="w-5 h-5 text-blue-500 animate-spin">
+          <IconSpinner css={{ width: 20, height: 20 }} />
         </div>
       );
     case "done":
       return (
-        <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
-          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
+        <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center text-white">
+          <IconCheckMark css={{ width: 12, height: 12 }} />
         </div>
       );
     case "error":
       return (
-        <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
-          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+        <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center text-white">
+          <IconCross css={{ width: 12, height: 12 }} />
         </div>
       );
     case "skipped":
       return (
-        <div className="w-5 h-5 rounded-full bg-gray-400 flex items-center justify-center">
-          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-          </svg>
+        <div className="w-5 h-5 rounded-full bg-gray-400 flex items-center justify-center text-white">
+          <IconChevronRightDouble css={{ width: 12, height: 12 }} />
         </div>
       );
   }
@@ -96,16 +95,9 @@ function TaskItem({ task, isActive }: { task: Task; isActive: boolean }) {
             <p className="text-xs text-red-600 mt-0.5">{task.error}</p>
           )}
         </div>
-        <svg
-          className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${
-            isExpanded ? "rotate-180" : ""
-          }`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        <span className={`text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? "rotate-180" : ""}`}>
+          <IconChevronDown css={{ width: 16, height: 16 }} />
+        </span>
       </button>
 
       {isExpanded && (
@@ -150,17 +142,16 @@ export function TaskList({
     return (
       <div className="p-4">
         <div className="flex items-center gap-3 mb-4">
-          <svg className="w-5 h-5 text-blue-500 animate-spin" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
+          <span className="text-blue-500 animate-spin">
+            <IconSpinner css={{ width: 20, height: 20 }} />
+          </span>
           <span className="text-sm font-medium text-gray-900">Creating plan...</span>
         </div>
         {searchStatus && (
           <div className="flex items-center gap-2 py-2 px-3 bg-blue-50 rounded-lg text-sm text-blue-700">
-            <svg className="w-4 h-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <span className="animate-pulse">
+              <IconMagnifyingGlass css={{ width: 16, height: 16 }} />
+            </span>
             {searchStatus}
           </div>
         )}

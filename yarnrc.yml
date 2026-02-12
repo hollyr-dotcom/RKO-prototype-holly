@@ -1,0 +1,114 @@
+yarnPath: .yarn/releases/yarn-4.10.1.cjs
+
+checksumBehavior: 'throw'
+
+logFilters:
+  # Discards all yarn "<workspace> doesn't provide <dependency>" errors
+  - code: YN0002
+    level: discard
+  # Discards all yarn "<workspace> doesn't satisfy what <dependency> requests" errors
+  - code: YN0060
+    level: discard
+
+# Default prefix used in semver ranges created by yarn add and similar
+# commands.
+#
+# Possible values are "^" (the default), "~" or "".
+defaultSemverRangePrefix: '^'
+
+enableTelemetry: false
+
+# Temporarily use this node linker to ease migration to yarn v4+.
+# # See also: https://yarnpkg.com/configuration/yarnrc#nodeLinker
+nodeLinker: 'node-modules'
+
+# If set to `hardlinks-local` Yarn will utilize hardlinks to reduce disk space
+# consumption inside node_modules directories in a current project.
+#
+# With `hardlinks-global` Yarn will use global content addressable storage to
+# reduce node_modules size across all the projects using this option.
+#
+# Note: hardlinks-global does not work in CI since node_modules in the project
+# root dir is a tmpfs mounted disk.
+# TODO use "nmMode: hardlinks-global"
+# nmMode: classic
+
+# Match current behaviour without workspaces to ease the migration
+# This is basically a noHoist anything at all.
+# nmHoistingLimits: dependencies
+
+# In CI, the command "yarn storybook:prod" will fail:
+#
+#   Error: ELOOP: too many symbolic links encountered, stat
+#
+#   'packages/a11y-components/node_modules/@mirohq-internal/a11y-components/...'
+#
+# By disabling self-references, this error is resolved.
+#
+# See also: https://yarnpkg.com/configuration/yarnrc#nmSelfReferences
+# TODO nmSelfReferences: false
+
+# Define whether the cache should be shared between all local projects.
+#
+# If true (the default), Yarn will store the cache files into a folder located
+# within globalFolder instead of respecting cacheFolder.
+# enableGlobalCache: true
+
+npmRegistryServer: 'https://artifactory.tools.devrtb.com/artifactory/api/npm/npm-virtual/'
+
+npmPublishRegistry: 'https://artifactory.tools.devrtb.com/artifactory/api/npm/npm-local/'
+
+npmAlwaysAuth: true
+
+# dependabot does not inject the env secrets when running yarn scripts.
+# in fact, we authorize the artifactory in the dependabot.yml. As we do so,
+# we do not need to provide ARTIFACTORY_USER/ARTIFACTORY_PASSWORD for dependabot.
+# Hence we provide the stub fallback values so yarn does not complain,
+# (recommended by github docs https://docs.github.com/en/enterprise-cloud@latest/code-security/dependabot/working-with-dependabot/configuring-access-to-private-registries-for-dependabot#npm-registry)
+# see also: https://yarnpkg.com/configuration/yarnrc#npmAuthIdent
+# npmAuthToken: '${NPM_AUTH_TOKEN_ARTIFACTORY}'
+npmAuthIdent: '${ARTIFACTORY_USER:-fallback}:${ARTIFACTORY_PASSWORD:-fallback}'
+
+# Array of .env files which will get injected into any subprocess spawned by
+# Yarn.
+#
+# By default Yarn will automatically inject the variables stored in the
+# `.env.yarn` file, but you can use this setting to change this behavior.
+#
+# Note: adding a question mark at the end of the path will silence the error
+# Yarn would throw should the file be missing, which may come in handy when
+# declaring local configuration files.
+#
+# The Dependabot environment does not have an ".env" file available, and would
+# crash without the question mark (making the file optional).
+injectEnvironmentFiles: ['.env?']
+
+patchFolder: './patches'
+# Define whether Yarn should attempt to check for malicious changes.
+#
+# If true, Yarn will query the remote registries to validate that the lockfile
+# content matches the remote information. These checks make installs slower, so
+# you should only run them on branches managed by users outside your circle of
+# trust.
+#
+# Yarn will automatically enable the hardened mode on GitHub pull requests from
+# public repository. Should you want to disable it, explicitly set it to false
+# in your yarnrc file.
+# enableHardenedMode: true
+
+# enableInlineBuilds: true
+# preferInteractive: false
+
+plugins:
+  - path: config/yarn/yarn_telemetry.js
+  - path: config/yarn/after_install.js
+  - path: config/yarn/dedupe.js
+  - path: config/yarn/enforce_node_version.cjs
+  - checksum: 55d54388ad171beb0a12e808e375d3c5f8632556a2eed7d03b38b8304514b07831ef7a9f9e78410287313940d107ea4634cfa2933e08459a165c432cea55bdba
+    path: .yarn/plugins/@yarnpkg/plugin-licenses.cjs
+    spec: 'https://raw.githubusercontent.com/mhassan1/yarn-plugin-licenses/v0.13.1/bundles/@yarnpkg/plugin-licenses.js'
+
+npmMinimalAgeGate: 1440 # 24 hours
+npmPreapprovedPackages: ['@mirohq-internal/*', '@mirohq/*']
+
+enableScripts: false

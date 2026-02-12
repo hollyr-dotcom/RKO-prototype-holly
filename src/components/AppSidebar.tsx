@@ -2,40 +2,58 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import { useSidebar } from "@/contexts/SidebarContext";
+import {
+  IconHouse,
+  IconClock,
+  IconStar,
+  IconSidebarClosed,
+  IconGridFour,
+} from "@mirohq/design-system-icons";
+
+const iconSize = { width: 18, height: 18 };
 
 const navItems = [
-  { label: "Home", href: "/", icon: HomeIcon },
-  { label: "Recent", href: "#", icon: ClockIcon },
-  { label: "Starred", href: "#", icon: StarIcon },
+  { label: "Home", href: "/", icon: IconHouse },
+  { label: "Recent", href: "#", icon: IconClock },
+  { label: "Starred", href: "#", icon: IconStar },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { collapsed, setCollapsed } = useSidebar();
 
   return (
-    <aside className="w-60 h-full bg-white border-r border-gray-200 flex flex-col">
-      {/* Logo */}
-      <div className="px-5 py-5">
+    <motion.aside
+      className="h-full bg-white/90 backdrop-blur-xl border border-gray-200/60 rounded-xl shadow-lg shadow-black/[0.08] flex flex-col overflow-hidden"
+      animate={{ width: collapsed ? 0 : 240, opacity: collapsed ? 0 : 1 }}
+      transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+      style={{ pointerEvents: collapsed ? "none" : "auto" }}
+    >
+      {/* Logo + Collapse toggle */}
+      <div className="flex items-center justify-between px-5 py-5">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-gray-900 rounded-lg flex items-center justify-center">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="3" y="3" width="7" height="7" />
-              <rect x="14" y="3" width="7" height="7" />
-              <rect x="3" y="14" width="7" height="7" />
-              <rect x="14" y="14" width="7" height="7" />
-            </svg>
+          <div className="w-7 h-7 bg-gray-900 rounded-lg flex items-center justify-center shrink-0 text-white">
+            <IconGridFour css={{ width: 16, height: 16 }} />
           </div>
-          <span className="text-sm font-semibold text-gray-900">Canvas</span>
+          <motion.span
+            className="text-sm font-semibold text-gray-900 whitespace-nowrap"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            Canvas
+          </motion.span>
         </Link>
+        <button
+          onClick={() => setCollapsed(true)}
+          className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          title="Collapse sidebar"
+        >
+          <IconSidebarClosed css={{ width: 16, height: 16 }} />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -50,75 +68,31 @@ export function AppSidebar() {
               <li key={item.label}>
                 <Link
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  className={`flex items-center rounded-lg text-sm transition-colors gap-3 px-3 py-2 ${
                     isActive
                       ? "bg-gray-100 text-gray-900 font-medium"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
-                  <item.icon active={isActive} />
-                  {item.label}
+                  <span className="shrink-0">
+                    <item.icon css={iconSize} />
+                  </span>
+                  <motion.span
+                    className="whitespace-nowrap overflow-hidden"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    {item.label}
+                  </motion.span>
                 </Link>
               </li>
             );
           })}
         </ul>
       </nav>
-    </aside>
+    </motion.aside>
   );
 }
 
-// Simple inline icons
 
-function HomeIcon({ active }: { active: boolean }) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={active ? 2 : 1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-      <polyline points="9 22 9 12 15 12 15 22" />
-    </svg>
-  );
-}
-
-function ClockIcon({ active }: { active: boolean }) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={active ? 2 : 1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  );
-}
-
-function StarIcon({ active }: { active: boolean }) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={active ? 2 : 1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  );
-}

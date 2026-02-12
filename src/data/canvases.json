@@ -3,13 +3,15 @@
     "id": "canvas-1",
     "spaceId": "space-1",
     "name": "Go-to-market strategy",
+    "emoji": "🍊",
     "createdAt": "2026-01-16T10:00:00Z",
-    "updatedAt": "2026-02-10T14:30:00Z"
+    "updatedAt": "2026-02-12T08:18:05.746Z"
   },
   {
     "id": "canvas-2",
     "spaceId": "space-1",
     "name": "Feature prioritization",
+    "emoji": "📊",
     "createdAt": "2026-01-18T11:00:00Z",
     "updatedAt": "2026-02-09T16:00:00Z"
   },
@@ -17,6 +19,7 @@
     "id": "canvas-3",
     "spaceId": "space-2",
     "name": "Moodboard",
+    "emoji": "🎨",
     "createdAt": "2026-01-23T09:30:00Z",
     "updatedAt": "2026-02-07T15:45:00Z"
   },
@@ -24,6 +27,7 @@
     "id": "canvas-4",
     "spaceId": "space-2",
     "name": "Logo explorations",
+    "emoji": "✏️",
     "createdAt": "2026-01-25T14:00:00Z",
     "updatedAt": "2026-02-08T11:15:00Z"
   },
@@ -31,7 +35,32 @@
     "id": "canvas-5",
     "spaceId": "space-3",
     "name": "Interview notes",
+    "emoji": "📝",
     "createdAt": "2026-02-02T10:00:00Z",
     "updatedAt": "2026-02-11T09:00:00Z"
+  },
+  {
+    "id": "canvas-1770816946047",
+    "spaceId": "space-1",
+    "name": "sa",
+    "emoji": "📋",
+    "createdAt": "2026-02-11T13:35:46.047Z",
+    "updatedAt": "2026-02-11T13:35:46.047Z"
+  },
+  {
+    "id": "canvas-1770817633378",
+    "spaceId": "space-1",
+    "name": "a",
+    "emoji": "📋",
+    "createdAt": "2026-02-11T13:47:13.378Z",
+    "updatedAt": "2026-02-11T13:47:13.378Z"
+  },
+  {
+    "id": "canvas-1770819794122",
+    "spaceId": "space-1",
+    "name": "s",
+    "emoji": "📋",
+    "createdAt": "2026-02-11T14:23:14.122Z",
+    "updatedAt": "2026-02-11T14:23:14.122Z"
   }
 ]
