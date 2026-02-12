@@ -2205,9 +2205,9 @@ export function Canvas() {
         setMessages(restoredMessages);
       }
 
-      // Open fullscreen chat
+      // Open fullscreen chat (not from home anymore - we're on a canvas now)
       if (shouldOpenFullscreen) {
-        openFullscreen();
+        openFullscreen(false);
       }
 
       // Clear handoff data (one-time use)
@@ -3155,7 +3155,7 @@ export function Canvas() {
                       setIsToolbarExpanded(true);
                     }
                   }}
-                  onExpand={openFullscreen}
+                  onExpand={() => openFullscreen(false)}
                   isFullscreen={false}
                   messages={messages}
                   input={input}
