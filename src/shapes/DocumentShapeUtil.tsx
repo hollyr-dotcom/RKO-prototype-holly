@@ -90,23 +90,33 @@ export class DocumentShapeUtil extends ShapeUtil<IDocumentShape> {
           borderRadius: 8,
           border: "1px solid #d0d5dd",
           background: "#ffffff",
-          display: "flex",
-          flexDirection: "column",
+          pointerEvents: "all",
         }}
       >
-        <DocumentEditor
-          docId={shape.props.docId}
-          title={shape.props.title}
-          isEditing={isEditing}
-          isSelected={isSelected}
-          tldrawEditor={this.editor}
-          shapeId={shape.id}
-          initialContent={initialContent}
-          pendingContent={pendingContent}
-          w={shape.props.w}
-          h={shape.props.h}
-          onEscape={() => this.editor.setEditingShape(null)}
-        />
+        {!isEditing && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 10,
+            }}
+          />
+        )}
+        <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          <DocumentEditor
+            docId={shape.props.docId}
+            title={shape.props.title}
+            isEditing={isEditing}
+            isSelected={isSelected}
+            tldrawEditor={this.editor}
+            shapeId={shape.id}
+            initialContent={initialContent}
+            pendingContent={pendingContent}
+            w={shape.props.w}
+            h={shape.props.h}
+            onEscape={() => this.editor.setEditingShape(null)}
+          />
+        </div>
       </HTMLContainer>
     );
   }

@@ -28,31 +28,32 @@ export function findEmptyCanvasSpace(
     return { x: 100, y: 100 };
   }
 
-  // Find all frames
-  const frames = shapes.filter(s => s.type === "frame");
+  // Find all large standalone items (frames, documents, tables)
+  const largeTypes = ["frame", "document", "datatable"];
+  const largeItems = shapes.filter(s => largeTypes.includes(s.type));
 
-  if (frames.length === 0) {
-    console.log("[LAYOUT] No frames found, starting at (100, 100)");
+  if (largeItems.length === 0) {
+    console.log("[LAYOUT] No large items found, starting at (100, 100)");
     return { x: 100, y: 100 };
   }
 
-  // Find the rightmost frame and use the MINIMUM Y (topmost frame) for alignment
-  let maxX = -Infinity;
+  // Find the rightmost edge and topmost Y across ALL large items for alignment
+  let maxRight = -Infinity;
   let minY = Infinity;
 
-  frames.forEach((frame) => {
-    const bounds = editor.getShapeGeometry(frame.id).bounds;
-    const frameRight = frame.x + bounds.width;
-    maxX = Math.max(maxX, frameRight);
-    minY = Math.min(minY, frame.y); // Use minimum Y to align at top
+  largeItems.forEach((shape) => {
+    const bounds = editor.getShapeGeometry(shape.id).bounds;
+    const shapeRight = shape.x + bounds.width;
+    maxRight = Math.max(maxRight, shapeRight);
+    minY = Math.min(minY, shape.y); // Use minimum Y to top-align
   });
 
   const result = {
-    x: maxX + 100, // 100px gap
-    y: minY, // Align with topmost frame
+    x: maxRight + 100, // 100px gap to the right of everything
+    y: minY, // Align with topmost item
   };
 
-  console.log(`[LAYOUT] Found ${frames.length} frames, placing next at`, result);
+  console.log(`[LAYOUT] Found ${largeItems.length} large items, placing next at`, result);
   return result;
 }
 

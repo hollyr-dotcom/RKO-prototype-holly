@@ -20,8 +20,14 @@ You are a planning agent that breaks down user goals into clear, executable step
 <task>
 When given a goal, create a numbered plan of 3-8 concrete steps. Each step should be:
 - Specific and actionable
-- Achievable with canvas tools (shapes, stickies, arrows, frames, text)
+- Achievable with canvas tools (documents, tables, stickies, shapes, arrows, frames)
 - Clear enough that another agent can execute it
+
+Use the RIGHT format for each step — mix them:
+- Documents: briefs, specs, guidelines, summaries, written content
+- Tables: comparisons, matrices, timelines, structured data
+- Stickies: brainstorms, quick ideas, feedback, categories
+- Shapes + arrows: diagrams, org charts, flows, hierarchies
 </task>
 
 <output>
@@ -96,12 +102,17 @@ const executionAgent = new Agent({
   name: "Task Executor",
   model: "gpt-5.2",
   instructions: `<context>
-You execute a single step of a plan on a whiteboard canvas. You have tools to create shapes, stickies, arrows, frames, and text.
+You execute a single step of a plan on a whiteboard canvas. You have tools to create documents, tables, shapes, stickies, arrows, frames, and text.
 </context>
 
 <task>
 Execute the given step by creating appropriate visual elements on the canvas.
-Use shapes+arrows for diagrams, stickies for brainstorms, frames to group content.
+Pick the best format for each piece of content:
+- createDocument: written content (briefs, specs, guidelines, summaries)
+- createDataTable: structured data (comparisons, matrices, timelines)
+- Stickies: brainstorms, quick ideas, categories
+- Shapes + arrows: diagrams, org charts, flows
+- Frames: group related content together
 </task>
 
 <constraints>
@@ -113,9 +124,9 @@ Use shapes+arrows for diagrams, stickies for brainstorms, frames to group conten
   tools: [
     tool({
       name: "createSticky",
-      description: "Create a sticky note",
+      description: "Create a sticky note. Keep text SHORT: max 6-8 words. Stickies are labels, not paragraphs.",
       parameters: z.object({
-        text: z.string(),
+        text: z.string().describe("SHORT text — max 6-8 words"),
         x: z.number(),
         y: z.number(),
         color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),

@@ -89,21 +89,31 @@ export class DataTableShapeUtil extends ShapeUtil<IDataTableShape> {
           borderRadius: 8,
           border: "1px solid #d0d5dd",
           background: "#ffffff",
-          display: "flex",
-          flexDirection: "column",
+          pointerEvents: "all",
         }}
       >
-        <DataTableEditor
-          tableId={shape.props.tableId}
-          title={shape.props.title}
-          isEditing={isEditing}
-          isSelected={isSelected}
-          tldrawEditor={this.editor}
-          w={shape.props.w}
-          h={shape.props.h}
-          onEscape={() => this.editor.setEditingShape(null)}
-          initialData={initialData}
-        />
+        {!isEditing && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 10,
+            }}
+          />
+        )}
+        <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          <DataTableEditor
+            tableId={shape.props.tableId}
+            title={shape.props.title}
+            isEditing={isEditing}
+            isSelected={isSelected}
+            tldrawEditor={this.editor}
+            w={shape.props.w}
+            h={shape.props.h}
+            onEscape={() => this.editor.setEditingShape(null)}
+            initialData={initialData}
+          />
+        </div>
       </HTMLContainer>
     );
   }

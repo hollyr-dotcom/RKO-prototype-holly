@@ -29,7 +29,7 @@ import {
   IconCheckMark,
   IconNotepad,
 } from "@mirohq/design-system-icons";
-import { calculateLayout, findEmptyCanvasSpace } from "@/lib/layoutEngine";
+import { calculateLayout } from "@/lib/layoutEngine";
 import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
 import Markdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
@@ -788,6 +788,21 @@ type CreationToastInfo = {
   frameName?: string;
 };
 
+// Estimate document height from HTML content so collision detection
+// uses a realistic size before the DOM-based auto-resize kicks in
+function estimateDocumentHeight(html: string, shapeWidth: number = 780): number {
+  const text = html.replace(/<[^>]+>/g, "");
+  const contentWidth = shapeWidth - 148; // 74px padding each side
+  const charsPerLine = Math.floor(contentWidth / 7.5); // ~7.5px per char at 13px
+  const textLines = Math.ceil(text.length / Math.max(charsPerLine, 1));
+  const textHeight = textLines * 21; // 13px * 1.6 line-height
+
+  const blocks = (html.match(/<(h[1-6]|p|li|ul|ol|blockquote)[^>]*>/gi) || []).length;
+  const marginHeight = blocks * 16;
+
+  return Math.max(660, textHeight + marginHeight + 148 + 40);
+}
+
 export function Canvas() {
   // Get authenticated Firebase user
   const { user: firebaseUser } = useAuth();
@@ -796,6 +811,18 @@ export function Canvas() {
   const [sessionUser] = useState(() => firebaseUser ? getSessionUser(firebaseUser) : getLocalDevUser());
   const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
+
+  // Prevent browser back/forward navigation from trackpad gestures (Safari + fallback)
+  useEffect(() => {
+    // Push a guard state so "back" stays on this page
+    window.history.pushState({ canvasGuard: true }, "");
+    const handlePopState = (e: PopStateEvent) => {
+      // Re-push to block the navigation
+      window.history.pushState({ canvasGuard: true }, "");
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const [editor, setEditor] = useState<Editor | null>(null);
   const [responseToast, setResponseToast] = useState<string | null>(null);
@@ -855,14 +882,17 @@ export function Canvas() {
     // (Minus button handles restoration explicitly in onCollapse)
   }, [setChatMode]);
 
-  // Navigate to frames by name - zooms to fit all matching frames
-  const navigateToFrames = useCallback((frameNames: string[]) => {
-    if (!editor || frameNames.length === 0) return;
+  // Navigate to shapes by name/title - zooms to fit all matching shapes
+  const navigateToFrames = useCallback((names: string[]) => {
+    if (!editor || names.length === 0) return;
 
     const shapes = editor.getCurrentPageShapes();
-    const matchingFrames = shapes.filter(
-      s => s.type === "frame" && frameNames.includes((s.props as { name?: string }).name || "")
-    );
+    // Search frames by props.name, documents/datatables by props.title
+    const matchingFrames = shapes.filter(s => {
+      const props = s.props as Record<string, unknown>;
+      const shapeName = (props.name as string) || (props.title as string) || "";
+      return names.some(n => shapeName.includes(n));
+    });
 
     if (matchingFrames.length === 0) return;
 
@@ -884,69 +914,37 @@ export function Canvas() {
     );
   }, [editor]);
 
-  // Find a non-overlapping position for a new item
+  // Unified positioning: place every new item to the right of all existing
+  // root-level shapes, top-aligned. No grid search, no wrapping down.
   const findNonOverlappingPosition = useCallback(
-    (proposedX: number, proposedY: number, width: number, height: number, itemType: string = "default"): { x: number; y: number } => {
-      if (!editor) return { x: proposedX, y: proposedY };
+    (_proposedX: number, _proposedY: number, _width: number, _height: number, _itemType?: string): { x: number; y: number } => {
+      if (!editor) return { x: 100, y: 100 };
 
       const shapes = editor.getCurrentPageShapes();
-      const padding = 20; // Gap between items
+      const pageId = editor.getCurrentPageId();
 
-      // Filter shapes to check against based on item type
-      // - Stickies/shapes/text should NOT collide with frames (they go inside frames)
-      // - Frames should collide with other frames
-      const shapesToCheck = itemType === "frame"
-        ? shapes.filter(s => s.type === "frame")
-        : shapes.filter(s => s.type !== "frame");
+      // Only root-level shapes — children inside frames are positioned relative to their parent
+      const rootShapes = shapes.filter(s => s.parentId === pageId);
 
-      // Get all existing bounding boxes
-      const existingBoxes = shapesToCheck.map((shape) => {
+      if (rootShapes.length === 0) {
+        return { x: 100, y: 100 };
+      }
+
+      const gap = 80;
+      let maxRight = -Infinity;
+      let minY = Infinity;
+
+      rootShapes.forEach(shape => {
         const bounds = editor.getShapeGeometry(shape.id).bounds;
-        return {
-          x: shape.x,
-          y: shape.y,
-          width: bounds.width,
-          height: bounds.height,
-          right: shape.x + bounds.width,
-          bottom: shape.y + bounds.height,
-        };
+        const right = shape.x + bounds.width;
+        if (right > maxRight) maxRight = right;
+        if (shape.y < minY) minY = shape.y;
       });
 
-      // Check if a position overlaps with any existing shape
-      const hasOverlap = (x: number, y: number, w: number, h: number) => {
-        return existingBoxes.some((box) => {
-          return !(
-            x + w + padding < box.x ||
-            x > box.right + padding ||
-            y + h + padding < box.y ||
-            y > box.bottom + padding
-          );
-        });
+      return {
+        x: maxRight + gap,
+        y: minY,
       };
-
-      // If no overlap, use proposed position
-      if (!hasOverlap(proposedX, proposedY, width, height)) {
-        return { x: proposedX, y: proposedY };
-      }
-
-      // Try to find a free position - search in a grid pattern
-      const gridStep = Math.max(width, height) + padding + 30;
-      for (let attempts = 0; attempts < 50; attempts++) {
-        // Try positions to the right first, then below
-        const offsetX = (attempts % 10) * gridStep;
-        const offsetY = Math.floor(attempts / 10) * gridStep;
-
-        const testX = proposedX + offsetX;
-        const testY = proposedY + offsetY;
-
-        if (!hasOverlap(testX, testY, width, height)) {
-          return { x: testX, y: testY };
-        }
-      }
-
-      // Fallback: place far to the right
-      const maxRight = existingBoxes.reduce((max, box) => Math.max(max, box.right), 0);
-      return { x: maxRight + 100, y: proposedY };
     },
     [editor]
   );
@@ -1232,7 +1230,9 @@ export function Canvas() {
         };
 
         const validWidth = Math.max(width || 780, 200);
-        const validHeight = Math.max(height || 660, 200);
+        // Estimate height from content so collision detection uses realistic size
+        const estimatedH = content ? estimateDocumentHeight(content, validWidth) : 660;
+        const validHeight = Math.max(height || estimatedH, 200);
 
         const pos = findNonOverlappingPosition(x || 0, y || 0, validWidth, validHeight, "frame");
 
@@ -1278,8 +1278,8 @@ export function Canvas() {
           height?: number;
         };
 
-        const validWidth = Math.max(width || 480, 200);
-        const validHeight = Math.max(height || 280, 150);
+        const validWidth = Math.max(width || 700, 200);
+        const validHeight = Math.max(height || 460, 150);
 
         const pos = findNonOverlappingPosition(x || 0, y || 0, validWidth, validHeight, "frame");
 
@@ -1419,7 +1419,7 @@ export function Canvas() {
           };
 
           const result = calculateLayout("hierarchy", layoutItems, options);
-          const canvasPos = findEmptyCanvasSpace(editor, result.frame.width, result.frame.height);
+          const canvasPos = findNonOverlappingPosition(0, 0, result.frame.width, result.frame.height);
 
           // Create frame
           const frameId = createShapeId();
@@ -1508,7 +1508,7 @@ export function Canvas() {
         const frameWidth = padding * 2 + actualCols * itemWidth + (actualCols - 1) * gapX;
         const frameHeight = padding + titleSpace + rows * itemHeight + (rows - 1) * gapY + padding;
 
-        const canvasPos = findEmptyCanvasSpace(editor, frameWidth, frameHeight);
+        const canvasPos = findNonOverlappingPosition(0, 0, frameWidth, frameHeight);
         console.log('[LAYOUT] Frame at', canvasPos, 'size', frameWidth, 'x', frameHeight);
 
         // Create frame
@@ -1631,20 +1631,33 @@ export function Canvas() {
 
         // Bookmark dimensions and layout
         const bookmarkWidth = 300;
-        const bookmarkHeight = 380;  // Bookmarks with image + title + description
+        const bookmarkHeightWithImage = 320;
+        const bookmarkHeightNoImage = 100;  // Compact: just title + domain
         const gapX = 40;
-        const gapY = 50;
+        const gapY = 30;
         const columns = 2;
         const padding = 60;
-        const bottomPadding = 100;  // Extra space at bottom for frame border
+        const bottomPadding = 80;
 
-        // Calculate frame size based on number of sources
+        // Determine height per source based on whether it has an image
+        const sourceHeights = sources.map(s => s.image ? bookmarkHeightWithImage : bookmarkHeightNoImage);
+
+        // Calculate frame height: sum of row heights (max height in each row)
         const rows = Math.ceil(sources.length / columns);
+        const rowHeights: number[] = [];
+        for (let r = 0; r < rows; r++) {
+          let maxH = 0;
+          for (let c = 0; c < columns; c++) {
+            const idx = r * columns + c;
+            if (idx < sourceHeights.length) maxH = Math.max(maxH, sourceHeights[idx]);
+          }
+          rowHeights.push(maxH);
+        }
         const frameWidth = columns * bookmarkWidth + (columns + 1) * gapX + padding * 2;
-        const frameHeight = rows * bookmarkHeight + (rows + 1) * gapY + padding + bottomPadding;
+        const frameHeight = rowHeights.reduce((sum, h) => sum + h, 0) + (rows + 1) * gapY + padding + bottomPadding;
 
         // Find empty space on canvas
-        const canvasPos = findEmptyCanvasSpace(editor, frameWidth, frameHeight);
+        const canvasPos = findNonOverlappingPosition(0, 0, frameWidth, frameHeight);
 
         // Create frame
         const frameId = createShapeId();
@@ -1663,13 +1676,27 @@ export function Canvas() {
         createdShapesRef.current.push(frameId);
 
         // Create bookmark assets and shapes for each source
+        // Track cumulative Y offsets per row for variable-height cards
+        const rowYOffsets: number[] = [0];
+        for (let r = 0; r < rowHeights.length; r++) {
+          rowYOffsets.push(rowYOffsets[r] + rowHeights[r] + gapY);
+        }
+
         sources.forEach((source, i) => {
           const col = i % columns;
           const row = Math.floor(i / columns);
+          const thisHeight = sourceHeights[i];
 
-          // Relative position inside frame (starts at 0,0)
+          // Relative position inside frame
           const relativeX = padding + col * (bookmarkWidth + gapX);
-          const relativeY = padding + row * (bookmarkHeight + gapY);
+          const relativeY = padding + rowYOffsets[row];
+
+          // Extract domain for favicon
+          let favicon = "";
+          try {
+            const domain = new URL(source.url).hostname;
+            favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+          } catch { /* ignore bad URLs */ }
 
           // Create bookmark asset with metadata including image
           const assetId = `asset:bookmark-${Date.now()}-${i}` as any;
@@ -1681,8 +1708,8 @@ export function Canvas() {
               src: source.url,
               title: source.title || "",
               description: source.description || "",
-              image: source.image || "",  // Thumbnail from search results
-              favicon: "",
+              image: source.image || "",
+              favicon,
             },
             meta: {},
           }]);
@@ -1699,7 +1726,7 @@ export function Canvas() {
               url: source.url,
               assetId: assetId,
               w: bookmarkWidth,
-              h: bookmarkHeight,
+              h: thisHeight,
             },
             meta: { createdBy: "ai" },
           });
@@ -1821,7 +1848,7 @@ export function Canvas() {
         }
 
         // Find empty space for the frame
-        const canvasPos = findEmptyCanvasSpace(editor, frameWidth, frameHeight);
+        const canvasPos = findNonOverlappingPosition(0, 0, frameWidth, frameHeight);
 
         // Create the frame
         const frameId = createShapeId();
@@ -2145,16 +2172,17 @@ export function Canvas() {
       handleToolCall,
       getCanvasState,
       getUserEdits,
-      navigateToFrames: (frameNames: string[]) => {
+      navigateToFrames: (names: string[]) => {
         if (!editor) return;
         const allShapes = editor.getCurrentPageShapes();
-        const frames = allShapes.filter((s) =>
-          s.type === 'frame' && frameNames.some(name =>
-            (s.props as { name?: string }).name?.includes(name)
-          )
-        );
-        if (frames.length > 0) {
-          editor.select(...frames.map((f) => f.id));
+        // Search frames by props.name, documents/datatables by props.title
+        const matches = allShapes.filter((s) => {
+          const props = s.props as Record<string, unknown>;
+          const shapeName = (props.name as string) || (props.title as string) || "";
+          return names.some(n => shapeName.includes(n));
+        });
+        if (matches.length > 0) {
+          editor.select(...matches.map((s) => s.id));
           editor.zoomToSelection({ animation: { duration: 300 } });
         }
       },
@@ -2504,33 +2532,19 @@ export function Canvas() {
   // Check if canvas is empty (no shapes)
   const isCanvasEmpty = shapeCount === 0;
 
-  // Update toast in real-time during streaming (when sidebar is closed)
-  useEffect(() => {
-    if (isLoading && !isChatOpen && !voice.isConnected) {
-      // Only update toast if we're actively streaming an assistant response
-      const lastMsg = messages[messages.length - 1];
-      if (lastMsg?.role === 'assistant' && lastMsg.content && lastMsg.content.trim()) {
-        shouldHideToastRef.current = false; // Allow toast to show for new response
-        setResponseToast(lastMsg.content.trim());
-        setToastCentered(true);
-      }
-    }
-  }, [messages, isLoading, isChatOpen, voice.isConnected]);
-
-  // Detect when AI finishes responding → show toast if sidebar is closed
+  // Show toast when AI finishes responding (sidebar closed, not in voice mode)
   useEffect(() => {
     if (isLoading) {
       wasLoadingRef.current = true;
     } else if (wasLoadingRef.current) {
       wasLoadingRef.current = false;
-      // Just finished loading — check if sidebar is closed and not in voice mode
       if (!isChatOpen && !voice.isConnected) {
         // Find last assistant message with text content
         for (let i = messages.length - 1; i >= 0; i--) {
           const msg = messages[i];
           if (msg.role === "assistant" && msg.content && msg.content.trim()) {
+            shouldHideToastRef.current = false;
             setResponseToast(msg.content.trim());
-            // Always center toast - it will position itself relative to toolbar state
             setToastCentered(true);
             break;
           }

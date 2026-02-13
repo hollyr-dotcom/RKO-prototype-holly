@@ -62,6 +62,8 @@ export default function HomePage() {
 
       const newCanvas = await response.json();
       const space = newCanvas.spaceId || "unassigned";
+      // Clear any stale chatMode so the canvas opens clean (no fullscreen overlay)
+      localStorage.setItem("chatMode", "minimized");
       router.push(`/space/${space}/canvas/${newCanvas.id}`);
     } catch {
       setIsCreating(false);
@@ -86,7 +88,7 @@ export default function HomePage() {
       <button
         onClick={handleCreateEmptyCanvas}
         disabled={isCreating}
-        className="fixed top-4 right-16 z-[9900] px-4 py-2 bg-gray-100 text-gray-900 text-sm font-medium rounded-full hover:bg-gray-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
+        className="fixed top-4 right-4 z-[9900] px-4 py-2 bg-gray-100 text-gray-900 text-sm font-medium rounded-full hover:bg-gray-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
       >
         {isCreating ? (
           <span className="flex items-center gap-2">
@@ -98,68 +100,71 @@ export default function HomePage() {
         )}
       </button>
 
-      {/* Welcome View */}
-      <div className="h-full w-full bg-white overflow-y-auto">
-            <div className="flex flex-col items-center px-6">
+      {/* Two-section layout: hero centered, cards bleeding off bottom */}
+      <div className="h-full w-full bg-white flex flex-col overflow-hidden">
+        {/* Top spacer — positions hero at ~1/3 from top */}
+        <div className="h-[18vh] shrink-0" />
 
-              {/* Heading */}
-              <h1 className="text-4xl font-bold text-gray-900 mt-12 mb-8">
-                Welcome back, Andy
-              </h1>
+        {/* Hero: welcome + prompt + suggestions */}
+        <div className="flex flex-col items-center px-6 shrink-0">
+          <h1 className="text-4xl font-bold text-gray-900 mb-8">
+            Welcome back, Andy
+          </h1>
 
-              {/* Prompt input */}
-              <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} />
+          <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} />
 
-              {/* Suggestion chips */}
-              <div className="flex flex-wrap justify-center gap-2 mt-5">
-                {suggestions.map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    onClick={() => handleSubmit(suggestion)}
-                    className="px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-white/60 transition-colors"
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-
-              {/* Tab toggle */}
-              <div className="mt-10 bg-gray-200 rounded-full p-1 flex">
-                <button
-                  onClick={() => setActiveTab("foryou")}
-                  className={`px-5 py-1.5 rounded-full text-sm transition-all ${
-                    activeTab === "foryou"
-                      ? "bg-white shadow-sm font-medium text-gray-900"
-                      : "text-gray-500"
-                  }`}
-                >
-                  For you
-                </button>
-                <button
-                  onClick={() => setActiveTab("recent")}
-                  className={`px-5 py-1.5 rounded-full text-sm transition-all ${
-                    activeTab === "recent"
-                      ? "bg-white shadow-sm font-medium text-gray-900"
-                      : "text-gray-500"
-                  }`}
-                >
-                  Recent
-                </button>
-              </div>
-
-              {/* Content cards */}
-              <div className="grid grid-cols-2 gap-4 mt-6 w-full max-w-2xl pb-10">
-                <div className="bg-white rounded-2xl shadow-sm p-5 h-48" />
-                <div className="bg-white rounded-2xl shadow-sm p-5 h-64">
-                  <p className="text-sm font-medium text-gray-900">
-                    Competing priorities!!!!
-                  </p>
-                </div>
-                <div className="bg-white rounded-2xl shadow-sm p-5 h-56" />
-                <div className="bg-white rounded-2xl shadow-sm p-5 h-44" />
-              </div>
-            </div>
+          <div className="flex flex-wrap justify-center gap-2 mt-5">
+            {suggestions.map((suggestion) => (
+              <button
+                key={suggestion}
+                onClick={() => handleSubmit(suggestion)}
+                className="px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-white/60 transition-colors"
+              >
+                {suggestion}
+              </button>
+            ))}
           </div>
+        </div>
+
+        {/* Bottom section — cards bleed off the bottom edge */}
+        <div className="flex-1 flex flex-col items-center pt-40 min-h-[280px]">
+          {/* Tab toggle */}
+          <div className="bg-gray-100 rounded-full p-1 flex shrink-0">
+            <button
+              onClick={() => setActiveTab("foryou")}
+              className={`px-5 py-1.5 rounded-full text-sm transition-all ${
+                activeTab === "foryou"
+                  ? "bg-white shadow-sm font-medium text-gray-900"
+                  : "text-gray-500"
+              }`}
+            >
+              For you
+            </button>
+            <button
+              onClick={() => setActiveTab("recent")}
+              className={`px-5 py-1.5 rounded-full text-sm transition-all ${
+                activeTab === "recent"
+                  ? "bg-white shadow-sm font-medium text-gray-900"
+                  : "text-gray-500"
+              }`}
+            >
+              Recent
+            </button>
+          </div>
+
+          {/* Content cards — no bottom padding, they clip at viewport edge */}
+          <div className="grid grid-cols-2 gap-4 mt-6 w-full max-w-2xl px-6">
+            <div className="bg-white rounded-2xl shadow-sm p-5 h-48" />
+            <div className="bg-white rounded-2xl shadow-sm p-5 h-64">
+              <p className="text-sm font-medium text-gray-900">
+                Competing priorities!!!!
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm p-5 h-56" />
+            <div className="bg-white rounded-2xl shadow-sm p-5 h-44" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

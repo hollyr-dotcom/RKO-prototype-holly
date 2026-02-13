@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { RoomProvider } from "@/liveblocks.config";
 import { LiveMap } from "@liveblocks/client";
 import {
@@ -46,6 +46,30 @@ function TiptapEditor({
   h: number;
   onEscape?: () => void;
 }) {
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Auto-resize shape to fit content after AI injects text
+  const resizeShapeToFit = useCallback(() => {
+    if (!tldrawEditor || !shapeId) return;
+    // Small delay so Tiptap finishes rendering the DOM
+    setTimeout(() => {
+      const el = contentRef.current;
+      if (!el) return;
+      const contentHeight = el.scrollHeight;
+      const shape = tldrawEditor.getShape(shapeId as TLShapeId);
+      if (!shape) return;
+      const currentH = (shape.props as Record<string, unknown>).h as number;
+      // Only grow, never shrink (user might have manually resized smaller)
+      if (contentHeight + 20 > currentH) {
+        tldrawEditor.updateShape({
+          id: shape.id,
+          type: "document",
+          props: { h: contentHeight + 20 },
+        });
+      }
+    }, 150);
+  }, [tldrawEditor, shapeId]);
+
   const liveblocks = useLiveblocksExtension({
     initialContent: initialContent || undefined,
   });
@@ -71,6 +95,36 @@ function TiptapEditor({
     }
   }, [editor, isEditing]);
 
+  // Apply initial content when document is first created
+  const appliedInitialRef = useRef(false);
+
+  useEffect(() => {
+    if (!editor || !initialContent || appliedInitialRef.current) return;
+
+    // Small delay to let Liveblocks finish connecting — if the Yjs doc is still
+    // empty at that point, we inject our HTML content directly.
+    const timer = setTimeout(() => {
+      if (appliedInitialRef.current) return;
+      const isEmpty = !editor.getText().trim();
+      if (isEmpty) {
+        editor.commands.setContent(initialContent);
+        resizeShapeToFit();
+      }
+      appliedInitialRef.current = true;
+
+      // Clear initialContent from shape meta so it doesn't re-apply on reload
+      if (tldrawEditor && shapeId) {
+        const shape = tldrawEditor.getShape(shapeId as TLShapeId);
+        if (shape) {
+          const meta = { ...(shape.meta as Record<string, unknown>) };
+          delete meta.initialContent;
+          tldrawEditor.updateShape({ id: shape.id, type: "document", meta });
+        }
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [editor, initialContent, tldrawEditor, shapeId, resizeShapeToFit]);
+
   // Apply pending content updates from AI (updateDocument tool)
   const appliedPendingRef = useRef<string | null>(null);
 
@@ -79,6 +133,7 @@ function TiptapEditor({
 
     editor.commands.setContent(pendingContent);
     appliedPendingRef.current = pendingContent;
+    resizeShapeToFit();
 
     // Clear pendingContent from shape meta so it doesn't re-apply on reload
     if (tldrawEditor && shapeId) {
@@ -89,15 +144,18 @@ function TiptapEditor({
         tldrawEditor.updateShape({ id: shape.id, type: "document", meta });
       }
     }
-  }, [editor, pendingContent, tldrawEditor, shapeId]);
+  }, [editor, pendingContent, tldrawEditor, shapeId, resizeShapeToFit]);
 
   return (
     <div
+      data-shape-editing={isEditing ? "true" : "false"}
       style={{
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        pointerEvents: (isSelected || isEditing) ? "all" : "none",
+      }}
+      onPointerDown={(e) => {
+        if (isEditing) e.stopPropagation();
       }}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
@@ -108,6 +166,7 @@ function TiptapEditor({
     >
       {/* Editor content */}
       <div
+        ref={contentRef}
         style={{
           flex: 1,
           overflow: "auto",

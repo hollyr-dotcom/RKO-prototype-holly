@@ -62,6 +62,13 @@ When user says "move", "rearrange", "organize", "edit", "change":
 - Use deleteItem() to remove individual items
 - NEVER duplicate content that already exists on the canvas
 
+CHOOSING THE RIGHT FORMAT — MIX THEM:
+A great canvas uses multiple formats. Pick the best tool for each piece of content:
+- createDocument: written content (briefs, specs, guidelines, summaries)
+- createDataTable: structured data (comparisons, matrices, timelines)
+- createLayout(type:"sticky"): brainstorms, quick ideas, categories — KEEP EACH STICKY TO 6-8 WORDS MAX. Use hierarchy for detail.
+- createLayout(type:"shape/hierarchy"): diagrams, org charts, flows
+
 BE CONVERSATIONAL:
 You're a helpful colleague, not a robot. Speak naturally and vary your language.
 - Never use the same phrase twice
@@ -214,7 +221,7 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
             {
               type: "function",
               name: "createLayout",
-              description: "Create visual layouts. GRID: sticky notes for brainstorms. HIERARCHY: shapes for principles with parent-child arrows. FLOW: shapes for processes.",
+              description: "Create visual layouts. GRID: sticky notes for brainstorms. HIERARCHY: shapes/stickies for principles with parent-child arrows. FLOW: shapes for processes. ⚠️ Stickies: MAX 6-8 words each — short labels, not paragraphs. Use hierarchy for detail (parent category → child details).",
               parameters: {
                 type: "object",
                 properties: {
@@ -226,7 +233,7 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
                     items: {
                       type: "object",
                       properties: {
-                        text: { type: "string", description: "Content text" },
+                        text: { type: "string", description: "Content text. Stickies: MAX 6-8 words — like a real post-it." },
                         color: { type: "string", description: "yellow/green/orange/violet/pink for stickies, blue/light-blue for hierarchy" },
                         parentIndex: { type: "number", description: "HIERARCHY ONLY: -1 for root items, or index of parent (0, 2, 4...) for children" }
                       },

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useState, useCallback, useMemo, ReactNode } from "react";
+import { createContext, useState, useCallback, useMemo, useEffect, useRef, ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { generateNavPalette, type NavPalette } from "@/lib/nav-palette";
 
@@ -30,7 +30,21 @@ interface SidebarProviderProps {
 
 export function SidebarProvider({ children, navColor = DEFAULT_NAV_COLOR }: SidebarProviderProps) {
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const isOnCanvas = pathname.includes("/canvas/");
+  const [isCollapsed, setIsCollapsed] = useState(isOnCanvas);
+
+  // Auto-collapse when navigating to a canvas, auto-expand when leaving
+  const prevPathnameRef = useRef(pathname);
+  useEffect(() => {
+    const wasOnCanvas = prevPathnameRef.current.includes("/canvas/");
+    prevPathnameRef.current = pathname;
+
+    if (isOnCanvas && !wasOnCanvas) {
+      setIsCollapsed(true);
+    } else if (!isOnCanvas && wasOnCanvas) {
+      setIsCollapsed(false);
+    }
+  }, [pathname, isOnCanvas]);
 
   // Secondary panel is visible when inside a space route
   const showSecondary = !isCollapsed && pathname.startsWith("/space/");

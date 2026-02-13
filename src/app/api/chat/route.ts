@@ -134,6 +134,7 @@ const webSearchTool = tool({
           search_depth: "basic",
           include_answer: true,
           include_raw_content: false,
+          include_images: true,
           max_results: maxResults,
         }),
         signal: controller.signal,
@@ -152,12 +153,28 @@ const webSearchTool = tool({
         `- ${r.title}: ${r.content?.slice(0, 300)}`
       ).join("\n") || "No results found";
 
+      // Top-level images from Tavily (when include_images is true)
+      const topImages: string[] = data.images || [];
+
+      // Structured sources for createSources tool
+      const sources = data.results?.map((r: { title: string; url: string; content: string; image?: string }, idx: number) => {
+        // Prefer per-result image, fall back to top-level images array
+        const image = r.image || topImages[idx] || "";
+        return {
+          title: r.title,
+          url: r.url,
+          description: r.content?.slice(0, 200),
+          image,
+        };
+      }) || [];
+
       return JSON.stringify({
         query,
         purpose,
         summary: data.answer || "No summary available",
         keyFindings: formattedResults,
-        instruction: "USE THESE SPECIFIC FINDINGS in your stickies! Include real names, numbers, and examples from above."
+        sources,
+        instruction: "NOW DO ALL THREE: 1) createSources() to show source cards, 2) Synthesize the 'so what' — create a document (for detailed findings), stickies (for key takeaways), or table (for comparisons) with what you learned, 3) Use these insights in later steps."
       });
     } catch (error) {
       return JSON.stringify({
@@ -170,15 +187,32 @@ const webSearchTool = tool({
   },
 });
 
+const createSourcesTool = tool({
+  name: "createSources",
+  description: "Display web search results as visual bookmark cards in a frame on the canvas. Call this after webSearch() to show sources visually. Pass the sources array from webSearch results directly.",
+  parameters: z.object({
+    title: z.string().describe("Frame title, e.g. 'Research: competitor landscape'"),
+    sources: z.array(z.object({
+      title: z.string().describe("Page title from search results"),
+      url: z.string().describe("URL of the source"),
+      description: z.string().default("").describe("Snippet/description"),
+      image: z.string().default("").describe("Image URL for thumbnail"),
+    })).min(1).max(20).describe("Sources from webSearch results"),
+  }),
+  execute: async (args) => {
+    return JSON.stringify({ created: "sources", ...args });
+  },
+});
+
 // Helper to generate unique IDs for created items
 const generateItemId = () => `item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 // --- Canvas Creation Tools ---
 const createStickyTool = tool({
   name: "createSticky",
-  description: "Create a single post-it note (tldraw sticky note shape). ⚠️ ONLY for adding ONE sticky to existing content. For 2+ stickies, you MUST use createLayout(type:'sticky') instead - it handles positioning automatically. Never call this multiple times in sequence.",
+  description: "Create a single post-it note (tldraw sticky note shape). ⚠️ ONLY for adding ONE sticky to existing content. For 2+ stickies, you MUST use createLayout(type:'sticky') instead - it handles positioning automatically. Never call this multiple times in sequence. Keep text SHORT: max 6-8 words. Stickies are labels, not paragraphs.",
   parameters: z.object({
-    text: z.string().describe("The text content"),
+    text: z.string().describe("SHORT text — max 6-8 words. A sticky is a label, not a document."),
     x: z.number().describe("X position"),
     y: z.number().describe("Y position"),
     color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
@@ -269,7 +303,7 @@ const createWorkingNoteTool = tool({
 
 const createDocumentTool = tool({
   name: "createDocument",
-  description: "Create a rich text document on the canvas. Use for long-form content: briefs, specs, guidelines. NOT for quick notes (use stickies) or structured data (use createDataTable). ALWAYS provide content — never create empty documents.",
+  description: "Create a rich text document on the canvas. Use for written content: briefs, specs, guidelines, summaries. NOT for quick notes (use stickies) or tabular data (use createDataTable). ALWAYS provide meaningful content — never create empty documents. Default size: 780×660. Space items left-to-right with 50px gaps.",
   parameters: z.object({
     title: z.string().describe("Document title"),
     content: z.string().describe("Document body as HTML. Use <h2>, <p>, <ul>/<li>, <strong>, <em>. Example: '<h2>Overview</h2><p>This project...</p>'"),
@@ -294,7 +328,7 @@ const updateDocumentTool = tool({
 
 const createDataTableTool = tool({
   name: "createDataTable",
-  description: "Create an interactive data table on the canvas. Use for structured data: comparisons, feature matrices, tracking tables. NOT for simple lists (use stickies) or prose (use createDocument). ALWAYS provide columns and rows with meaningful data — never create empty tables.",
+  description: "Create an interactive data table on the canvas. Use for structured data: comparisons, feature matrices, RACI tables, timelines. NOT for simple lists (use stickies) or prose (use createDocument). ALWAYS fill ALL cells with meaningful data — never leave cells empty. Default size: 700×460. Space items left-to-right with 50px gaps.",
   parameters: z.object({
     title: z.string().describe("Table title"),
     columns: z.array(z.string()).min(1).max(8).describe("Column header names"),
@@ -311,44 +345,30 @@ const createDataTableTool = tool({
 // --- Layout Tool (REQUIRED for multiple items) ---
 const createLayoutTool = tool({
   name: "createLayout",
-  description: `🎯 REQUIRED for 2+ items! Creates organized, aligned content in a frame.
+  description: `Creates organized visual items (stickies or shapes) in a frame. Use for brainstorms, idea lists, diagrams, and flows.
 
-🚨 CRITICAL: type:"sticky" is the DEFAULT for 99% of cases! 🚨
+⚠️ DON'T use createLayout for written content (briefs, specs, summaries) → use createDocument instead.
+⚠️ DON'T use createLayout for tabular data (comparisons, matrices, roles) → use createDataTable instead.
 
-WHEN TO USE STICKIES (type:"sticky" with "grid" layout):
-✓ User says "stickies", "sticky notes", "post-it notes"
-✓ Brainstorming, ideas, project names, feature lists
-✓ Any list of items that don't need arrows between them
-✓ When you want simple post-it notes on a board
+WHEN TO USE THIS TOOL:
+- Brainstorms, idea lists, quick notes → type:"sticky" with "grid" layout
+- Diagrams, org charts, sitemaps, flows → type:"shape" with "hierarchy" or "flow" layout
 
-WHEN TO USE SHAPES (type:"shape" - RARE!):
-✗ ONLY when user explicitly asks for: "org chart", "sitemap", "family tree", "hierarchy diagram", "process flow"
-✗ ONLY when items need connecting arrows to show relationships
-✗ If user just wants "ideas" or "names" → USE STICKIES, NOT SHAPES!
+⚠️ STICKY NOTE TEXT RULES:
+- Each sticky: MAX 6-8 words. Think post-it note, not paragraph.
+- GOOD: "Automate CI/CD pipeline" — BAD: "Principle: Reliability enables speed. What it looks like: automate tests, CI/CD, monitoring."
+- Need more detail? Use HIERARCHY: parent sticky with short title → child stickies with details.
+- Or use multiple stickies in a grid — one idea per sticky.
+- If content needs sentences/paragraphs, use createDocument instead.
 
-CRITICAL EXAMPLES - FOLLOW THESE EXACTLY:
-
-✓ "create yellow stickies for project name ideas"
-→ createLayout({ type: "grid", frameName: "Project Names", items: [{type: "sticky", text: "Atlas", color: "yellow"}, {type: "sticky", text: "Nova", color: "yellow"}], columns: 3 })
-
-✓ "brainstorm feature ideas"
-→ createLayout({ type: "grid", frameName: "Features", items: [{type: "sticky", text: "Dark mode", color: "blue"}, ...], columns: 3 })
-
-✓ "create a sitemap" (ONLY when user wants a diagram with parent-child relationships)
-→ createLayout({ type: "hierarchy", frameName: "Sitemap", items: [{type: "shape", text: "Home", parentIndex: -1}, {type: "shape", text: "About", parentIndex: 0}], direction: "down" })
-
-🚨 DO NOT use type:"hierarchy" for simple lists! ONLY for explicit parent-child diagrams!
-
-⚠️ DO NOT use "hierarchy" layout unless user explicitly asks for a hierarchical diagram!
-
-The layout engine handles ALL positioning - items will be perfectly aligned in a grid or tree structure.
-NEVER use createSticky/createShape multiple times - use this instead!`,
+The layout engine handles all positioning. Items are aligned in a grid or tree structure.
+NEVER use createSticky/createShape multiple times — use this instead for 2+ items.`,
   parameters: z.object({
     type: z.enum(["grid", "hierarchy", "flow"]).describe("Layout type"),
     frameName: z.string().describe("Name for the frame"),
     items: z.array(z.object({
       type: z.enum(["sticky", "shape", "text"]).describe("Item type"),
-      text: z.string().describe("Content text"),
+      text: z.string().describe("Content text. For stickies: MAX 6-8 words — short labels, not sentences."),
       color: z.string().default("yellow").describe("Color: yellow, blue, green, pink, orange, violet"),
       parentIndex: z.number().default(-1).describe("For hierarchy: index of parent item (0-based), -1 for root"),
     })).min(1).max(20).describe("Items to place in the layout"),
@@ -531,16 +551,29 @@ WHEN CREATING PLAN (only AFTER user has answered your questions):
 - IMPORTANT: When calling confirmPlan(), also write a brief contextual 1-sentence message. Vary it based on what you're building — e.g. "Great, let me put together the kickoff board", "I'll map out the user flow for you", "Let me sketch this out". Don't just say "Here's the plan:" every time.
 - NEVER list the plan steps in your text message — the plan UI shows them. Keep your message to 1 short sentence only.
 
-PLAN STEP FORMAT - KEEP IT SHORT:
+PLAN STEP FORMAT - KEEP IT SHORT BUT CLEAR:
 - Each step should be 3-8 words max
-- Be concise and scannable
-- GOOD: "Create homepage wireframe frame"
+- Use verbs that hint at the right format:
+  - "Write" / "Draft" → will become a document
+  - "Compare" / "Track" / "List" (tabular) → will become a table
+  - "Research" / "Find" / "Look up" → web research + synthesis (see below)
+  - "Brainstorm" / "Ideate" → will become stickies
+  - "Map" / "Chart" / "Diagram" → will become a diagram
+- GOOD: "Draft project brief", "Research competitor landscape", "Compare features", "Brainstorm risks"
 - BAD: "Create a homepage wireframe frame and lay out all the main sections"
 
-USE WEB SEARCH when you truly need current info:
-- Current events, recent releases, statistics
-- Real company/product data, actual competitors
-- DON'T search for generic tasks (wireframes, brainstorms, org charts)
+RESEARCH IN PLANS — THE "SO WHAT" MATTERS!
+Research is only valuable if you extract insights from it. A research step should always produce something actionable — not just links.
+
+When to include research:
+- User mentions a real topic, industry, company, or product
+- A step would benefit from real-world data, examples, or best practices
+DON'T search for purely creative/layout tasks (wireframes, brainstorms, org charts)
+
+Research steps should IMPLY synthesis — the step title hints at what you'll extract:
+- "Research review frameworks" → you'll search, show sources, AND synthesize key takeaways
+- "Analyze competitor landscape" → you'll search, show sources, AND create a comparison
+The later steps in the plan should BUILD ON what research uncovered — reference insights, use real data.
 
 CANVAS: Check [CANVAS STATE] for existing content and positions.
 
@@ -573,15 +606,47 @@ NEVER use "---" separators in your text.
 - Mentioning board names, item counts, or tool names in your prose
 - Using the same sentence structure twice across different requests
 
-🎯 STICKY NOTES vs SHAPES:
-- User says "stickies", "sticky notes", "post-its", "brainstorm", "ideas" → createLayout(type:"sticky")
-- User says "diagram", "org chart", "sitemap", "flow" → createLayout(type:"shape")
-- When in doubt, use stickies! They're the default for notes and ideas.
+🎯 CHOOSING THE RIGHT FORMAT — MIX THEM!
+A great canvas uses MULTIPLE formats. Don't just spam stickies — pick the best tool for each piece of content:
 
-DOCUMENTS vs TABLES vs STICKIES:
-- Stickies/createLayout: Quick ideas, brainstorms, lists — the default
-- createDocument: Long-form written content — briefs, specs, guidelines, summaries
-- createDataTable: Structured rows/columns — comparisons, feature matrices, tracking tables
+📝 createDocument — for WRITTEN CONTENT:
+  - Briefs, specs, guidelines, summaries, research findings, strategy docs
+  - Anything longer than a few bullet points
+  - "Create a project brief" → document, not stickies
+
+📊 createDataTable — for STRUCTURED DATA:
+  - Comparisons, feature matrices, competitive analysis, tracking tables
+  - Anything with rows and columns
+  - "Compare these options" → table, not stickies
+
+📌 createLayout(type:"sticky") — for QUICK IDEAS:
+  - Brainstorms, idea lists, feedback, tags, categories
+  - Short items that benefit from visual clustering
+  - User explicitly says "stickies", "post-its", "brainstorm"
+  - ⚠️ Each sticky = max 6-8 words. A sticky is a label, NOT a paragraph.
+  - Need detail? Use hierarchy (parent title → child details) or more stickies.
+
+🔲 createLayout(type:"shape") — for DIAGRAMS:
+  - Org charts, sitemaps, flows, hierarchies, process maps
+  - When items need connecting arrows
+
+PLAN EXAMPLES:
+"Create a project kickoff board":
+  Step 1: Draft project brief ← createDocument
+  Step 2: Map team structure ← createLayout(type:"hierarchy")
+  Step 3: Create timeline table ← createDataTable
+  Step 4: Brainstorm risks ← createLayout(type:"sticky")
+
+"Prep for quarterly review":
+  Step 1: Research review best practices ← webSearch + createSources + synthesize key insights
+  Step 2: Draft impact summary ← createDocument (use research findings!)
+  Step 3: Create metrics table ← createDataTable
+  Step 4: Brainstorm learnings ← createLayout(type:"sticky")
+
+"Build a competitive analysis":
+  Step 1: Research competitor landscape ← webSearch + createSources + synthesize findings
+  Step 2: Compare competitors ← createDataTable (populate with REAL data from research)
+  Step 3: Map strategic implications ← createLayout(type:"sticky")
 
 FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
 - Multiple sections/frames with dependencies
@@ -609,6 +674,7 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     createDocumentTool,
     updateDocumentTool,
     createDataTableTool,
+    createSourcesTool,
   ],
 });
 
@@ -657,9 +723,15 @@ WORKSPACE NAVIGATION:
 EXECUTION FLOW:
 Work through steps in sequence. For each step:
 1. Call showProgress(stepNumber, "step title", "starting")
-2. Create canvas items using ONE createLayout() call per section
+2. Pick the RIGHT tool for this step's content:
+   - Written content (brief, spec, summary)? → createDocument
+   - Tabular data (comparison, matrix, timeline)? → createDataTable
+   - Quick ideas, brainstorm items? → createLayout(type:"sticky")
+   - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy"/"flow")
 3. Call showProgress(stepNumber, "step title", "completed")
 4. Either: continue to next step OR call checkpoint() at a milestone
+
+⚠️ DO NOT use createLayout for everything! Read the step title and think about what format serves the content best.
 
 CHECKPOINTS - PAUSE AT MILESTONES:
 - Call checkpoint() after completing 3-4 related steps
@@ -673,88 +745,87 @@ CHECKPOINT LABEL:
 - Format: "Review [what you created]"
 
 =====================================================
-createLayout() - THE ONLY WAY TO CREATE GROUPED ITEMS
+🎯 CHOOSING THE RIGHT TOOL — READ THIS FIRST!
+=====================================================
+Before creating ANYTHING, ask yourself: what format best serves this content?
+
+📝 createDocument — WRITTEN CONTENT (briefs, specs, summaries, guidelines):
+Step says "brief", "spec", "summary", "guidelines", "overview", "one-pager", "draft"?
+→ Use createDocument, NOT stickies!
+
+Example — step "Draft kickoff brief":
+createDocument({
+  title: "Product Kickoff Brief",
+  content: "<h2>Problem</h2><p>Users struggle to find relevant content, leading to 40% drop-off after onboarding.</p><h2>Proposed Solution</h2><p>A personalized feed that surfaces content based on role, team, and past activity.</p><h2>Success Metrics</h2><ul><li>Increase activation by 15%</li><li>Reduce churn by 10%</li></ul><h2>Timeline</h2><p>Design: 2 weeks · Build: 4 weeks · QA: 1 week</p>",
+  x: 0, y: 0
+})
+
+📊 createDataTable — TABULAR/STRUCTURED DATA (comparisons, matrices, roles, timelines):
+Step says "compare", "track", "roles", "timeline", "matrix", "table", "RACI"?
+→ Use createDataTable, NOT stickies!
+
+Example — step "Map roles & responsibilities":
+createDataTable({
+  title: "RACI Matrix",
+  columns: ["Task", "Responsible", "Accountable", "Consulted", "Informed"],
+  rows: [
+    ["Define requirements", "PM", "Director", "Design, Eng", "Stakeholders"],
+    ["Design specs", "Design lead", "PM", "Engineering", "QA"],
+    ["Implementation", "Eng lead", "PM", "Design", "QA"],
+    ["QA & testing", "QA lead", "Eng lead", "Design", "PM"]
+  ],
+  x: 0, y: 0
+})
+
+📌 createLayout(type:"sticky") — QUICK IDEAS (brainstorms, risks, feedback, categories):
+Step says "brainstorm", "ideate", "risks", "ideas", "feedback"?
+→ Stickies are perfect here
+⚠️ KEEP STICKIES SHORT: Max 6-8 words each. One idea per sticky.
+- GOOD: "Tight feedback loops" — BAD: "Principle: Tight feedback loops. What it looks like: prototypes, feature flags, A/B tests."
+- Need detail? Use HIERARCHY layout — parent sticky for the category, child stickies for details.
+- If a sticky needs a sentence, it should be a document instead.
+
+📌 createLayout(type:"shape"/"hierarchy"/"flow") — DIAGRAMS (org charts, flows, sitemaps):
+Step says "map", "chart", "flow", "diagram", "hierarchy"?
+→ Use shapes with arrows
+
+🔍 webSearch + createSources + SYNTHESIS — RESEARCH (competitive analysis, best practices, trends):
+Step says "research", "find", "look up", "competitive analysis", "best practices"?
+A research step has THREE parts — sources are useless without the "so what":
+1. Call webSearch() to find real information
+2. Call createSources() to show the source cards on canvas
+3. SYNTHESIZE what you learned — pick the format that fits:
+   - Key takeaways / principles? → createLayout(type:"sticky") with the insights
+   - Detailed findings / summary? → createDocument with structured analysis
+   - Comparison data? → createDataTable with real data from results
+Use your judgment — what would be most useful for this specific task?
+The synthesis is the POINT of research. Links alone are not helpful.
+CRITICAL: Carry research findings into later steps. Reference real data, real examples, real insights.
+
+POSITIONING — USE x:0, y:0 FOR EVERYTHING:
+The canvas has automatic collision detection that places items left-to-right.
+Just use x:0, y:0 for every tool call — items will never overlap.
+
+=====================================================
+createLayout() REFERENCE — for stickies and diagrams only
 =====================================================
 
 FRAME NAMING:
-- Use descriptive names: "Homepage sections", "Product details", "Checkout flow"
+- Use descriptive names: "Homepage sections", "Product details"
 - DON'T include step numbers: "Step 2 — Homepage" ✗
 - DO use clear labels: "Homepage wireframe" ✓
 
-WHEN TO USE HIERARCHY (type: "hierarchy"):
-When you have principles/concepts with descriptions:
-- Use SHAPES in a hierarchy layout
-- Parent shapes = principles (one color like blue)
-- Child shapes = descriptions (related color like light-blue)
-- This creates visual relationships with arrows
-
-Example for "5 Design Principles":
+HIERARCHY example (org charts, principles):
 createLayout({
   type: "hierarchy",
   frameName: "Design Principles",
   items: [
     { type: "shape", text: "Principle 1", color: "blue", parentIndex: -1 },
     { type: "shape", text: "Description...", color: "light-blue", parentIndex: 0 },
-    { type: "shape", text: "Principle 2", color: "blue", parentIndex: -1 },
-    { type: "shape", text: "Description...", color: "light-blue", parentIndex: 2 },
   ]
 })
 
-🚨 DEFAULT TO STICKIES! Use type:"sticky" unless you need arrows! 🚨
-
-WHEN TO USE STICKIES (type: "sticky") - 99% OF CASES:
-✓ User says "stickies", "sticky notes", "post-its"
-✓ Brainstorms, ideas, project names, feature lists
-✓ ANY list of items without hierarchical relationships
-✓ Default choice when in doubt!
-→ Use 2-3 colors MAX per frame for visual grouping
-→ Keep text short: "Title\n\n• Point 1\n• Point 2"
-
-WHEN TO USE SHAPES (type: "shape") - RARE! ONLY FOR DIAGRAMS:
-✗ ONLY when user explicitly asks for: "org chart", "sitemap", "hierarchy", "process flow"
-✗ ONLY when items need connecting arrows to show parent-child relationships
-✗ If user wants a simple list of names/ideas → USE STICKIES!
-→ Keep text VERY short (max 20 chars)
-→ Use color to show relationships:
-  - Parents: one color (e.g., blue)
-  - Children: lighter shade (e.g., light-blue)
-
-GRID + STICKIES (for brainstorms, style guides, notes):
-createLayout({
-  type: "grid",
-  frameName: "Brand Colors",
-  items: [
-    { type: "sticky", text: "Primary Blue\\n#0066CC", color: "blue" },
-    { type: "sticky", text: "Accent Gold\\n#FFD700", color: "yellow" },
-    { type: "sticky", text: "Background\\n#F5F5F5", color: "grey" }
-  ],
-  columns: 3
-})
-
-GRID + SHAPES (for wireframes, component grids):
-createLayout({
-  type: "grid",
-  frameName: "Page Sections",
-  items: [
-    { type: "shape", text: "Header", color: "blue" },
-    { type: "shape", text: "Hero", color: "green" },
-    { type: "shape", text: "Footer", color: "blue" }
-  ],
-  columns: 3
-})
-
-HIERARCHY + SHAPES (for org charts, sitemaps):
-createLayout({
-  type: "hierarchy",
-  frameName: "Site Map",
-  items: [
-    { type: "shape", text: "Home", color: "blue" },
-    { type: "shape", text: "Products", color: "green", parentIndex: 0 },
-    { type: "shape", text: "About", color: "green", parentIndex: 0 }
-  ]
-})
-
-FLOW + SHAPES (for processes, journeys):
+FLOW example (processes, journeys):
 createLayout({
   type: "flow",
   frameName: "Checkout Flow",
@@ -765,10 +836,33 @@ createLayout({
   ]
 })
 
-DOCUMENTS vs TABLES vs STICKIES:
-- Stickies/createLayout: Quick ideas, brainstorms, lists — the default
-- createDocument: Long-form written content — briefs, specs, guidelines, summaries
-- createDataTable: Structured rows/columns — comparisons, feature matrices, tracking tables
+GRID + STICKIES example (brainstorms, ideas):
+createLayout({
+  type: "grid",
+  frameName: "Key Risks",
+  items: [
+    { type: "sticky", text: "Tight deadline", color: "orange" },
+    { type: "sticky", text: "Need extra dev", color: "orange" },
+    { type: "sticky", text: "Scope creep", color: "yellow" },
+    { type: "sticky", text: "Tech debt", color: "yellow" },
+  ],
+  columns: 3
+})
+⚠️ Each sticky is 2-4 words — like a real post-it note. NEVER put paragraphs on stickies.
+
+HIERARCHY example (when you need categories + details):
+createLayout({
+  type: "hierarchy",
+  frameName: "Key Principles",
+  items: [
+    { type: "sticky", text: "Feedback loops", color: "blue", parentIndex: -1 },
+    { type: "sticky", text: "Ship prototypes fast", color: "yellow", parentIndex: 0 },
+    { type: "sticky", text: "A/B test everything", color: "yellow", parentIndex: 0 },
+    { type: "sticky", text: "Reliability", color: "blue", parentIndex: -1 },
+    { type: "sticky", text: "Automate CI/CD", color: "yellow", parentIndex: 3 },
+    { type: "sticky", text: "Monitor in prod", color: "yellow", parentIndex: 3 },
+  ]
+})
 
 COLOR GUIDELINES - USE WITH RESTRAINT:
 ⚠️ IMPORTANT: Use color intentionally, not randomly!
@@ -816,6 +910,7 @@ BAD: 13 stickies each with random different colors`,
     createDocumentTool,
     updateDocumentTool,
     createDataTableTool,
+    createSourcesTool,
   ],
 });
 
@@ -930,9 +1025,22 @@ NEXT STEP IS ${nextStep}: "${approvedPlan.steps[nextStep - 1]}"
 
 DO THIS IMMEDIATELY:
 1. showProgress(${nextStep}, "${approvedPlan.steps[nextStep - 1]}", "starting")
-2. createLayout(...) to make the content
+2. Pick the RIGHT tool for this step's content:
+   - Written content (brief, overview, spec, summary)? → createDocument
+   - Tabular data (roles, comparison, timeline, matrix)? → createDataTable
+   - Research? → webSearch + createSources + SYNTHESIZE (see below)
+   - Brainstorm ideas, quick notes? → createLayout(type:"sticky")
+   - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy")
 3. showProgress(${nextStep}, "${approvedPlan.steps[nextStep - 1]}", "completed")
 4. Continue to step ${nextStep + 1} or checkpoint() if milestone reached
+
+RESEARCH STEPS — always extract the "so what":
+If this step involves research, do ALL THREE in this step:
+  a) webSearch() → get real information
+  b) createSources() → display source cards
+  c) Synthesize findings — create a doc, stickies, or table with what you learned
+     Pick format based on what's useful: takeaways → stickies, detailed analysis → document, comparison → table
+Then carry those insights into later steps — use real data, cite real examples.
 
 DO NOT write explanatory text first - CALL showProgress() IMMEDIATELY!`}`;
     }

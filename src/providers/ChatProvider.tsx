@@ -208,30 +208,25 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   // Workspace-aware tool call handler — intercepts navigation tools, queues during navigation
   const handleToolCallWithWorkspace = useCallback((toolName: string, args: Record<string, unknown>) => {
-    // Server-side tool result with the real canvasId — navigate now
+    // Server-side tool result — the server already created the canvas, navigate to it
     if (toolName === "createCanvas_result") {
       const { canvasId, spaceId, navigate } = args as { canvasId: string; spaceId: string; navigate?: boolean };
+      if (navigate === false) return;
       sessionCanvasRef.current = { canvasId, spaceId: spaceId || "" };
-      // Skip only if we're already navigating to THIS specific canvas (safety net beat us)
-      if (navigationTargetRef.current === canvasId) {
-        return;
-      }
-      if (navigate !== false && canvasId) {
+      if (canvasId) {
         isNavigatingRef.current = true;
         navigationTargetRef.current = canvasId;
-        // Preserve chat as sidepanel when navigating to a new canvas
         sessionStorage.setItem("canvas-handoff", JSON.stringify({ isFullscreenChat: false }));
         router.push(`/space/${spaceId || "unassigned"}/canvas/${canvasId}`);
       }
       return;
     }
 
-    // Initial createCanvas call (args only, no canvasId yet) — mark as navigating, queue subsequent tools
+    // createCanvas tool call — server creates the canvas, we just flag as navigating
+    // so subsequent tool calls get queued until we arrive at the canvas page
     if (toolName === "createCanvas") {
       const { navigate } = args as { navigate?: boolean };
       if (navigate !== false) {
-        // Clear stale navigation state from previous requests — this is a NEW navigation
-        navigationTargetRef.current = null;
         isNavigatingRef.current = true;
       }
       return;

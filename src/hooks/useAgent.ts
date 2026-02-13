@@ -186,7 +186,7 @@ export function useAgent(
                   // - showProgress: step tracking
                   // - checkpoint: feedback pause points
                   // - webSearch: show "Searching..." indicator
-                  const immediateTools = ["askUser", "confirmPlan", "showProgress", "checkpoint", "webSearch", "createCanvas", "navigateToCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable"];
+                  const immediateTools = ["askUser", "confirmPlan", "showProgress", "checkpoint", "webSearch", "createCanvas", "navigateToCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources"];
                   if (immediateTools.includes(data.toolName)) {
                     setMessages((prev) =>
                       prev.map((m) =>

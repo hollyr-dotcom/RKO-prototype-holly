@@ -2,6 +2,22 @@
 @import "@liveblocks/react-tiptap/styles.css";
 @import "@liveblocks/react-ui/styles.css";
 
+/* Prevent trackpad swipe-to-navigate (Chrome/Edge) */
+html, body {
+  overscroll-behavior: none;
+}
+
+/* When a custom shape (document, datatable) is NOT being edited,
+   block all pointer interaction on its inner content so clicks
+   fall through to tldraw for selection/dragging.
+   !important is needed because Tiptap/Liveblocks inject elements
+   with their own pointer-events. */
+[data-shape-editing="false"],
+[data-shape-editing="false"] * {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
 @theme {
   --font-sans: var(--font-noto-sans), "Noto Sans", "OpenSans", "Noto Sans KR",
     "Noto Sans JP", sans-serif;

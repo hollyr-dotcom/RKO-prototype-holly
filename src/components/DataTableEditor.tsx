@@ -496,11 +496,11 @@ function DataTableGrid({
 
   return (
     <div
+      data-shape-editing={isEditing ? "true" : "false"}
       style={{
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        pointerEvents: "all",
       }}
       onPointerDown={(e) => {
         if (isEditing) {

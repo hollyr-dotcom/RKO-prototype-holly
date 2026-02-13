@@ -365,6 +365,60 @@ function ArtifactCard({
   const indexedInvocations = toolInvocations.map((t, i) => ({ ...t, index: i }));
   const lastToolIndex = toolInvocations.length - 1;
 
+  // Pair webSearch calls with the next canvas tool that follows them
+  const canvasToolNames = ["createSources", "createLayout", "createFrame", "createDocument", "createDataTable"];
+  const pairedToolIndices = new Set<number>();
+  const webSearchInvocations = indexedInvocations.filter(t => t.toolName === "webSearch");
+
+  webSearchInvocations.forEach(ws => {
+    // Look ahead from this webSearch to find the next canvas tool (before another webSearch)
+    let pairedTool: typeof indexedInvocations[0] | null = null;
+    for (let j = ws.index + 1; j < indexedInvocations.length; j++) {
+      const candidate = indexedInvocations[j];
+      if (candidate.toolName === "webSearch") break; // hit another search, stop
+      if (canvasToolNames.includes(candidate.toolName)) {
+        pairedTool = candidate;
+        break;
+      }
+    }
+
+    if (pairedTool) {
+      pairedToolIndices.add(pairedTool.index);
+      // Build the "done" label from the paired canvas tool
+      const pArgs = pairedTool.args as Record<string, unknown>;
+      const doneLabel = pairedTool.toolName === "createSources"
+        ? `Added sources for "${(pArgs.title as string) || "research"}"`
+        : pairedTool.toolName === "createFrame"
+        ? `Created frame "${(pArgs.name as string) || "Untitled"}"`
+        : pairedTool.toolName === "createLayout"
+        ? `Added items to "${(pArgs.frameName as string) || "frame"}"`
+        : pairedTool.toolName === "createDocument"
+        ? `Created document "${(pArgs.title as string) || "Untitled"}"`
+        : `Created table "${(pArgs.title as string) || "Untitled"}"`;
+      const wsArgs = ws.args as { purpose?: string; query?: string };
+      const purpose = wsArgs.purpose || wsArgs.query || "the web";
+      contentLines.push({
+        label: doneLabel,
+        loadingLabel: `Researching ${purpose}...`,
+        onClick: (() => {
+          const name = (pArgs.name as string) || (pArgs.title as string);
+          if (name) return () => onNavigateToFrames?.([name]);
+          return undefined;
+        })(),
+        toolIndex: pairedTool.index, // stays loading until paired tool arrives
+      });
+    } else {
+      // Unpaired webSearch — no canvas tool follows yet
+      const wsArgs = ws.args as { purpose?: string; query?: string };
+      const purpose = wsArgs.purpose || wsArgs.query || "the web";
+      contentLines.push({
+        label: `Researched ${purpose}`,
+        loadingLabel: `Researching ${purpose}...`,
+        toolIndex: ws.index,
+      });
+    }
+  });
+
   const indexedLayouts = indexedInvocations.filter(t => t.toolName === "createLayout");
   const indexedFrames = indexedInvocations.filter(t => t.toolName === "createFrame");
   const indexedLoose = indexedInvocations.filter(t =>
@@ -372,6 +426,7 @@ function ArtifactCard({
   );
 
   indexedLayouts.forEach(lt => {
+    if (pairedToolIndices.has(lt.index)) return;
     const args = lt.args as { frameName?: string; items?: Array<{ type?: string }>; type?: string };
     const count = args.items?.length || 0;
     if (count === 0) return;
@@ -389,6 +444,7 @@ function ArtifactCard({
   });
 
   indexedFrames.forEach(ft => {
+    if (pairedToolIndices.has(ft.index)) return;
     const args = ft.args as { name?: string };
     contentLines.push({
       label: `Created frame "${args.name || "Untitled"}"`,
@@ -400,20 +456,24 @@ function ArtifactCard({
 
   const indexedDocuments = indexedInvocations.filter(t => t.toolName === "createDocument");
   indexedDocuments.forEach(dt => {
+    if (pairedToolIndices.has(dt.index)) return;
     const title = (dt.args as { title?: string }).title || "Untitled document";
     contentLines.push({
       label: `Created document "${title}"`,
       loadingLabel: `Creating document "${title}"...`,
+      onClick: () => onNavigateToFrames?.([title]),
       toolIndex: dt.index,
     });
   });
 
   const indexedTables = indexedInvocations.filter(t => t.toolName === "createDataTable");
   indexedTables.forEach(tt => {
+    if (pairedToolIndices.has(tt.index)) return;
     const title = (tt.args as { title?: string }).title || "Untitled table";
     contentLines.push({
       label: `Created table "${title}"`,
       loadingLabel: `Creating table "${title}"...`,
+      onClick: () => onNavigateToFrames?.([title]),
       toolIndex: tt.index,
     });
   });
@@ -438,6 +498,22 @@ function ArtifactCard({
       });
     });
   }
+
+  // Standalone createSources (no preceding webSearch)
+  const indexedSources = indexedInvocations.filter(t => t.toolName === "createSources");
+  indexedSources.forEach(st => {
+    if (pairedToolIndices.has(st.index)) return;
+    const title = (st.args as { title?: string }).title || "sources";
+    contentLines.push({
+      label: `Added sources for "${title}"`,
+      loadingLabel: `Adding sources for "${title}"...`,
+      onClick: () => onNavigateToFrames?.([title]),
+      toolIndex: st.index,
+    });
+  });
+
+  // Sort all lines by execution order
+  contentLines.sort((a, b) => a.toolIndex - b.toolIndex);
 
   if (!hasBoard && contentLines.length === 0) return null;
 
@@ -728,7 +804,7 @@ export function ChatPanel({
       // Check for canvas tools in THIS message (after confirmPlan)
       const toolsAfterPlan = msg.toolInvocations!.slice(planToolIndex + 1);
       const hasCanvasToolsInSameMsg = toolsAfterPlan.some(t =>
-        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow', 'createDocument', 'createDataTable'].includes(t.toolName)
+        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow', 'createDocument', 'createDataTable', 'createSources'].includes(t.toolName)
       );
 
       // Check for activity in LATER messages
@@ -744,7 +820,7 @@ export function ChatPanel({
       const userApproved = nextUserMsg?.content?.toLowerCase().includes('approve');
       const hasProgressCalls = progressCalls.length > 0;
       const hasCanvasTools = hasCanvasToolsInSameMsg || laterToolCalls.some(t =>
-        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow', 'createDocument', 'createDataTable'].includes(t.toolName)
+        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow', 'createDocument', 'createDataTable', 'createSources'].includes(t.toolName)
       );
       const hasCheckpoint = allToolCalls.some(t => t.toolName === 'checkpoint');
 
@@ -914,9 +990,9 @@ export function ChatPanel({
                   <div className="w-full">
                     {/* Text + artifact cards — split at tool boundary for correct ordering */}
                     {(() => {
-                      const hasText = message.content && !askUserTool && !message.content.trim().startsWith('{');
+                      const hasText = message.content && !message.content.trim().startsWith('{');
                       const hasArtifactTools = message.toolInvocations?.some(t =>
-                        ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable"].includes(t.toolName)
+                        ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "webSearch"].includes(t.toolName)
                       );
 
                       const mdComponents = {
@@ -953,7 +1029,7 @@ export function ChatPanel({
 
                           {/* Artifact card — progressive during streaming, clickable when done */}
                           {hasArtifactTools && (
-                            <div className={ackText ? "mt-2" : ""}>
+                            <div className={ackText ? "mt-4" : ""}>
                               <ArtifactCard
                                 toolInvocations={message.toolInvocations}
                                 isStreaming={isLatestMessage && isLoading}
@@ -965,7 +1041,7 @@ export function ChatPanel({
 
                           {/* Summary text (after tools) */}
                           {summaryText && (
-                            <div className="mt-2 text-sm text-gray-900">
+                            <div className="mt-4 text-sm text-gray-900">
                               <Markdown components={mdComponents}>{summaryText}</Markdown>
                             </div>
                           )}
@@ -985,7 +1061,7 @@ export function ChatPanel({
                         // All answered -show static Q&A parsed from the submitted message
                         const answers = (nextUserMsg.content || '').split('\n');
                         return (
-                          <div className={message.content ? "mt-3" : ""}>
+                          <div className={message.content ? "mt-5" : ""}>
                             {questions.map((q, qi) => (
                               <div key={qi} className={qi > 0 ? "mt-4" : ""}>
                                 <p className="text-sm text-gray-900 mb-2">{q.question}</p>
@@ -1004,7 +1080,7 @@ export function ChatPanel({
 
                       // Active Q&A -show questions one at a time
                       return (
-                        <div className={message.content ? "mt-3" : ""}>
+                        <div className={message.content ? "mt-5" : ""}>
                           {questions.map((q, qi) => {
                             const hasAnswer = questionAnswers[qi] !== undefined;
 
@@ -1057,7 +1133,7 @@ export function ChatPanel({
                       const confirmPlanIndex = thisMessageTools.findIndex(t => t.toolName === 'confirmPlan');
                       const toolsAfterPlan = thisMessageTools.slice(confirmPlanIndex + 1);
                       const hasCanvasToolsInSameMsg = toolsAfterPlan.some(t =>
-                        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow', 'createDocument', 'createDataTable'].includes(t.toolName)
+                        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow', 'createDocument', 'createDataTable', 'createSources'].includes(t.toolName)
                       );
 
                       // Check for activity in LATER messages
@@ -1074,7 +1150,7 @@ export function ChatPanel({
 
                       const hasProgressCalls = progressCalls.length > 0;
                       const hasCanvasTools = hasCanvasToolsInSameMsg || laterToolCalls.some(t =>
-                        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow', 'createDocument', 'createDataTable'].includes(t.toolName)
+                        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow', 'createDocument', 'createDataTable', 'createSources'].includes(t.toolName)
                       );
                       const hasCheckpoint = allToolCalls.some(t => t.toolName === 'checkpoint');
 
@@ -1107,7 +1183,7 @@ export function ChatPanel({
                       if (isFullscreen) {
                         if (!isLatestMessage) return null;
                         return (
-                          <div className={message.content ? "mt-3" : ""}>
+                          <div className={message.content ? "mt-5" : ""}>
                             <div className="flex gap-2">
                               <button
                                 onClick={() => onSubmit("I'd like to make some changes.")}
@@ -1127,7 +1203,7 @@ export function ChatPanel({
                       }
 
                       return (
-                        <div className={message.content ? "mt-3" : ""}>
+                        <div className={message.content ? "mt-5" : ""}>
                           <PlanBlock
                             title={planArgs.title}
                             steps={planArgs.steps}
@@ -1144,7 +1220,7 @@ export function ChatPanel({
 
                     {/* requestFeedback tool - render as feedback request with suggestions */}
                     {requestFeedbackTool && (
-                      <div className={message.content || askUserTool || confirmPlanTool ? "mt-3" : ""}>
+                      <div className={message.content || askUserTool || confirmPlanTool ? "mt-5" : ""}>
                         <FeedbackBlock
                           message={(requestFeedbackTool.args as { message: string }).message}
                           suggestions={(requestFeedbackTool.args as { suggestions: string[] }).suggestions}
@@ -1190,7 +1266,7 @@ export function ChatPanel({
                       };
 
                       return (
-                        <div className={message.content || askUserTool || confirmPlanTool ? "mt-3" : ""}>
+                        <div className={message.content || askUserTool || confirmPlanTool ? "mt-5" : ""}>
                           {isPlanComplete ? (
                             <CompletedBlock
                               summary={checkpointArgs.completed}
@@ -1217,20 +1293,21 @@ export function ChatPanel({
           })
         )}
 
-{/* Single unified activity indicator - only show when NO header is visible */}
-        {isLoading && messages.length > 0 && !activePlan && (
-          (() => {
+{/* Single unified activity indicator - shows current activity */}
+        {isLoading && messages.length > 0 && (() => {
             const lastMsg = messages[messages.length - 1];
             const recentTools = lastMsg.role === "assistant" ? lastMsg.toolInvocations || [] : [];
 
-            // Skip when artifact tools present — the ArtifactCard serves as the activity indicator
+            // During plan execution with artifact tools, the ArtifactCard shows progress
+            // But we still want to show web searches and other non-canvas activities
             const hasArtifactTools = recentTools.some(t =>
-              ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable"].includes(t.toolName)
+              ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "webSearch"].includes(t.toolName)
             );
+
+            // ArtifactCard handles all progress display (including web search)
             if (hasArtifactTools) return null;
 
-            // Check for various tool types
-            const lastSearchTool = [...recentTools].reverse().find(t => t.toolName === "webSearch");
+            // Fallback: non-artifact tool activity (arrows, working notes, etc.)
             const lastCanvasTool = [...recentTools].reverse().find(t =>
               ["createSticky", "createShape", "createText", "createFrame", "createArrow", "createWorkingNote", "createDocument", "createDataTable"].includes(t.toolName)
             );
@@ -1241,10 +1318,6 @@ export function ChatPanel({
               // Plan being created
               if (confirmPlanTool) {
                 return "Creating plan...";
-              }
-              // Web search takes priority
-              if (lastSearchTool) {
-                return "Searching the web...";
               }
               // Canvas tools - show what's being created
               if (lastCanvasTool) {
@@ -1273,6 +1346,8 @@ export function ChatPanel({
               ["createSticky", "createShape", "createText", "createFrame", "createArrow", "createDocument", "createDataTable"].includes(t.toolName)
             ).length;
 
+            const activityMsg = getActivityMessage();
+
             return (
               <div className="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-lg">
                 <span className="flex gap-1">
@@ -1280,14 +1355,14 @@ export function ChatPanel({
                   <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
                   <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
                 </span>
-                <span className="text-sm text-gray-600">{getActivityMessage()}</span>
+                <span className="text-sm text-gray-600">{activityMsg}</span>
                 {canvasItemCount > 1 && (
                   <span className="text-xs text-gray-400">({canvasItemCount} items)</span>
                 )}
               </div>
             );
           })()
-        )}
+        }
 
         {/* Scroll anchor */}
         <div ref={messagesEndRef} />

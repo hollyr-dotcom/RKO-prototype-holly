@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useChat } from "@/hooks/useChat";
 import { useSidebar } from "@/hooks/useSidebar";
@@ -103,15 +103,19 @@ export function ChatShell() {
   const isFullscreen = chatMode === "fullscreen";
   const isHomePage = pathname === "/";
 
-  // Check for immediate open flag and disable transition
-  useEffect(() => {
+  // Check for immediate open flag and disable transition BEFORE paint
+  // useLayoutEffect fires synchronously after DOM commit but before browser paint,
+  // so the transition is killed before anything is visible on screen
+  useLayoutEffect(() => {
     if (isFullscreen && typeof window !== "undefined") {
       const immediate = sessionStorage.getItem("chatOpenImmediate");
       if (immediate === "true") {
         setShouldTransition(false);
         sessionStorage.removeItem("chatOpenImmediate");
-        // Re-enable transitions after this render
-        setTimeout(() => setShouldTransition(true), 50);
+        // Re-enable transitions after the browser has painted the no-transition state
+        requestAnimationFrame(() => {
+          setShouldTransition(true);
+        });
       }
     }
   }, [isFullscreen]);
