@@ -146,7 +146,7 @@ function PlanProgressPanel({
 }
 
 export function ChatProvider({ children }: { children: ReactNode }) {
-  const { sidebarWidth: appSidebarWidth } = useSidebar();
+  const { navWidth: appSidebarWidth } = useSidebar();
   const [isFullscreenChat, setIsFullscreenChat] = useState(false);
   const [isFromHome, setIsFromHome] = useState(false);
   const isFromHomeRef = useRef(false); // Use ref for immediate updates

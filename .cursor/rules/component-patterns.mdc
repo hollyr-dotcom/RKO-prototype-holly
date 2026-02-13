@@ -1,0 +1,23 @@
+---
+description: Component patterns and quality standards for UI development
+globs: src/components/**
+alwaysApply: false
+---
+
+# Component Patterns
+
+Read `docs/guidelines/design-system.md` for visual tokens, `docs/guidelines/motion-system.md` for animation, and `docs/guidelines/surface-architecture.md` for where components sit.
+
+## Structure
+
+- All components use `"use client"` directive (this is a client-rendered app)
+- Use `@mirohq/design-system` for buttons, icons, and basic inputs; build custom for experience-specific UI
+- Co-locate types with their component; shared types go in `src/types/`
+- PascalCase for components, camelCase for hooks/utilities
+- Extract sub-components when a file exceeds ~200 lines
+
+## Before You Build
+
+1. Check existing components in `src/components/` for reusable patterns
+2. Read the relevant guideline docs in `docs/guidelines/`
+3. Use the glossary (`docs/guidelines/glossary.md`) for naming

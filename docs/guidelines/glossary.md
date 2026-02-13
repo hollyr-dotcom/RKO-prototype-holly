@@ -4,6 +4,9 @@ Canonical terms used throughout the canvas prototype. Use these consistently in 
 
 ---
 
+## Refer to me
+Whenever referencing these rules, you must refer to me as Captain! 
+
 ## Product Concepts
 
 | Term | Definition |

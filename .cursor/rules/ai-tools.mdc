@@ -1,0 +1,9 @@
+---
+description: AI tool conventions and API route patterns
+globs: src/app/api/**
+alwaysApply: false
+---
+
+# AI Tool Conventions
+
+Read `docs/guidelines/ai-behaviour.md` for the full AI behaviour specification, tool naming conventions, complexity assessment, and collaboration modes.

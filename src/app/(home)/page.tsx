@@ -128,7 +128,7 @@ export default function HomePage() {
   // Full-page loading when navigating to canvas
   if (isCreating) {
     return (
-      <div className="h-full w-full flex items-center justify-center bg-gray-100">
+      <div className="h-full w-full flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
           <p className="text-sm text-gray-500">Setting up your canvas...</p>
@@ -138,9 +138,9 @@ export default function HomePage() {
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-gray-100">
+    <div className="relative h-full w-full overflow-hidden bg-white">
       {/* Welcome View */}
-      <div className="h-full w-full bg-gray-100 overflow-y-auto">
+      <div className="h-full w-full bg-white overflow-y-auto">
             <div className="flex flex-col items-center px-6">
               {/* Top bar */}
               <div className="w-full flex justify-end items-center py-4">

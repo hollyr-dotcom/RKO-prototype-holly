@@ -1,0 +1,34 @@
+---
+description: tldraw custom shape and canvas integration patterns
+globs: src/shapes/**
+alwaysApply: false
+---
+
+# tldraw Patterns
+
+Reference existing shapes in `src/shapes/` for the established structure.
+
+## Shape Naming
+
+- File: `*ShapeUtil.tsx` (e.g., `DocumentShapeUtil.tsx`)
+- Shape type constant: `const SHAPE_TYPE = "typename" as const`
+- Class: `*ShapeUtil extends ShapeUtil<IShapeType>`
+- Type alias: `type IShapeType = TLShape<typeof SHAPE_TYPE>`
+
+## Standard Overrides
+
+Most custom shapes should override: `canEdit()`, `canScroll()`, `canResize()`, `isAspectRatioLocked()`, `onResize()` (use `resizeBox(shape, info)`).
+
+## Component Rendering
+
+- Use `HTMLContainer` for HTML-based shape content
+- Delegate complex content to dedicated editor components
+- Pass `isEditing` and `isSelected` states to editor components
+
+## Registration
+
+New shapes must be registered in the `shapeUtils` prop in `src/components/Canvas.tsx`.
+
+## Motion
+
+tldraw shapes use `editor.animateShape()`, not framer-motion. See `docs/guidelines/motion-system.md` for details.

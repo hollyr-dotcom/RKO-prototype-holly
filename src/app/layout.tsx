@@ -6,6 +6,7 @@ import { ChatProvider } from "@/providers/ChatProvider";
 import { SidebarProvider } from "@/providers/SidebarProvider";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AuthGate } from "@/components/AuthGate";
+import { NavigationShell } from "@/components/NavigationShell";
 
 const notoSans = Noto_Sans({
   subsets: ["latin"],
@@ -30,10 +31,7 @@ export default function RootLayout({
           <AuthGate>
             <SidebarProvider>
               <ChatProvider>
-                <div className="flex h-screen bg-gray-50">
-                  <AppSidebar />
-                  <main className="flex-1 flex flex-col overflow-hidden">{children}</main>
-                </div>
+                <NavigationShell>{children}</NavigationShell>
               </ChatProvider>
             </SidebarProvider>
           </AuthGate>
