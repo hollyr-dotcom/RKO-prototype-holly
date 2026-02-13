@@ -32,34 +32,41 @@ Built on [tldraw](https://tldraw.dev) and powered by OpenAI, the AI understands 
 
 ## Getting Started
 
+**Quick start:** [Local Setup Guide](docs/LOCAL_SETUP.md)
+
 ### Prerequisites
 
-- [Bun](https://bun.sh) installed
+- [Node.js](https://nodejs.org) 18+ and npm installed
 - An [OpenAI API key](https://platform.openai.com/api-keys)
+- _(Optional)_ Tavily API key for web search
+- _(Optional)_ Liveblocks key for collaboration features
+- _(Optional)_ Firebase credentials for authentication (see [Local Setup Guide](docs/LOCAL_SETUP.md))
 
 ### Setup
 
 ```bash
 # Install dependencies
-bun install
+npm install
 
 # Set up your environment
 cp .env.example .env.local
-# Then add your OpenAI API key to .env.local
+# Add your API keys to .env.local (see .env.example for details)
 ```
+
+**Note:** Firebase authentication is **optional** for local development. The app automatically bypasses auth when Firebase credentials are missing. See the [Local Setup Guide](docs/LOCAL_SETUP.md) for details.
 
 ### Run
 
 ```bash
-bun dev
+npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:5000](http://localhost:5000) in your browser.
 
 If you run into CSS issues after changes, use the clean restart:
 
 ```bash
-bun run dev:clean
+npm run dev:clean
 ```
 
 ## Environment Variables
@@ -68,6 +75,11 @@ bun run dev:clean
 |---|---|---|
 | `OPENAI_API_KEY` | Yes | Your OpenAI API key |
 | `TAVILY_API_KEY` | No | Enables web search on the canvas |
+| `NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY` | No | Enables real-time collaboration |
+| `NEXT_PUBLIC_FIREBASE_*` | No | Firebase client config (optional for local dev) |
+| `FIREBASE_ADMIN_*` | No | Firebase admin config (optional for local dev) |
+
+For full environment setup details, see [Local Setup Guide](docs/LOCAL_SETUP.md).
 
 ## How It Works
 

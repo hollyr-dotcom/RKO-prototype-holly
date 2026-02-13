@@ -23,7 +23,7 @@ export function useAuth() {
           const token = await firebaseUser.getIdToken();
           document.cookie = `auth-token=${token}; path=/; max-age=${AUTH_COOKIE_MAX_AGE}; samesite=strict; secure`;
         } else {
-          await firebaseSignOut(auth);
+          await firebaseSignOut(auth!); // Non-null assertion: we checked auth exists above
           setError(`Only @${ALLOWED_EMAIL_DOMAIN} email addresses are allowed`);
           setUser(null);
         }
@@ -52,7 +52,7 @@ export function useAuth() {
 
   const signOut = async () => {
     if (!auth) return;
-    await firebaseSignOut(auth);
+    await firebaseSignOut(auth!); // Non-null assertion: we checked auth exists above
   };
 
   return { user, loading, error, signInWithGoogle, signOut, isConfigured };

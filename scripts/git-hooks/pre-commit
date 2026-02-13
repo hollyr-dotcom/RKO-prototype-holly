@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# Pre-commit hook to prevent committing non-npm lockfiles
+# This project uses npm exclusively - no bun or yarn allowed
+
+# Check if bun.lock or yarn.lock are being committed
+if git diff --cached --name-only | grep -E "^(bun\.lock|yarn\.lock)$"; then
+    echo "❌ ERROR: Attempting to commit bun.lock or yarn.lock"
+    echo ""
+    echo "This project uses npm exclusively."
+    echo "Please remove these files:"
+    echo ""
+    echo "  git rm --cached bun.lock yarn.lock"
+    echo "  rm bun.lock yarn.lock"
+    echo ""
+    echo "Only package-lock.json should be committed."
+    exit 1
+fi
+
+# Check if someone ran bun/yarn install and created lockfiles
+if [ -f "bun.lock" ] || [ -f "yarn.lock" ]; then
+    echo "⚠️  WARNING: Found bun.lock or yarn.lock in working directory"
+    echo ""
+    echo "These files were likely created by running 'bun install' or 'yarn install'."
+    echo "This project uses npm exclusively."
+    echo ""
+    echo "To fix:"
+    echo "  rm bun.lock yarn.lock"
+    echo "  npm install"
+    echo ""
+fi
+
+exit 0

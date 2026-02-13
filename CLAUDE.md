@@ -24,6 +24,7 @@ Read every file in that directory before starting any work. The key files are:
 2. **Guidelines are authoritative.** If your instinct conflicts with a guideline, follow the guideline. If you believe a guideline is wrong, flag it — do not silently override it.
 3. **Work log workflow is mandatory.** When picking up items from `_work-log/bugs.md` or `_work-log/tasks.md`, follow the three-phase workflow (Plan, Execute, Test) defined in `docs/guidelines/agent-workflow.mdc`. No exceptions.
 4. **Keep guidelines up to date.** If your work introduces new conventions or changes existing ones, update the relevant guideline file as part of your work.
+5. **npm only.** This project uses npm exclusively. Never suggest, reference, or use `bun`, `yarn`, or `pnpm` commands. Always use `npm install`, `npm run dev`, etc. If you see `bun.lock` or `yarn.lock` files, flag them as errors.
 
 ---
 
@@ -31,23 +32,23 @@ Read every file in that directory before starting any work. The key files are:
 
 ```bash
 # Development (runs on http://0.0.0.0:5000)
-bun dev
+npm run dev
 
 # Clean rebuild (if CSS issues)
-bun run dev:clean
+npm run dev:clean
 
 # Production build
-bun run build
+npm run build
 
 # Lint
-bun run lint
+npm run lint
 
 # Deploy to Firebase
-bun run deploy              # Production
-bun run deploy:preview      # Preview channel
+npm run deploy              # Production
+npm run deploy:preview      # Preview channel
 ```
 
-**Note**: This project uses Bun as the package manager. Always use `bun install` instead of `npm install`.
+**Note**: This project uses npm as the package manager. Always use `npm install`.
 
 ## Authentication Architecture
 
