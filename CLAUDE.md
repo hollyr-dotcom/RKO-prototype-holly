@@ -25,6 +25,7 @@ Read every file in that directory before starting any work. The key files are:
 3. **Work log workflow is mandatory.** When picking up items from `_work-log/bugs.md` or `_work-log/tasks.md`, follow the three-phase workflow (Plan, Execute, Test) defined in `docs/guidelines/agent-workflow.mdc`. No exceptions.
 4. **Keep guidelines up to date.** If your work introduces new conventions or changes existing ones, update the relevant guideline file as part of your work.
 5. **npm only.** This project uses npm exclusively. Never suggest, reference, or use `bun`, `yarn`, or `pnpm` commands. Always use `npm install`, `npm run dev`, etc. If you see `bun.lock` or `yarn.lock` files, flag them as errors.
+6. **Verify git hooks installed.** At the start of any session where you'll be making commits, check if the pre-commit hook exists at `.git/hooks/pre-commit`. If it doesn't exist or isn't executable, remind the user to run `./scripts/setup-hooks.sh` to install git hooks that prevent accidental non-npm lockfile commits.
 
 ---
 
