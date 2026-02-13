@@ -4,7 +4,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
-  const { user, loading, error, signInWithGoogle } = useAuth();
+  const { user, loading, error, signInWithGoogle, isConfigured } = useAuth();
+
+  // Bypass auth when Firebase isn't configured (local dev)
+  if (!isConfigured) return <>{children}</>;
 
   if (loading) {
     return (

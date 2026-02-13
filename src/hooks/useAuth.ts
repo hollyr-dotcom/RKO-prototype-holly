@@ -6,12 +6,15 @@ import { auth } from '@/lib/firebase/clientApp';
 import { isAllowedEmail } from '@/lib/auth/validation';
 import { ALLOWED_EMAIL_DOMAIN, AUTH_COOKIE_MAX_AGE } from '@/lib/auth/constants';
 
+const isConfigured = !!auth;
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isConfigured);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         if (isAllowedEmail(firebaseUser.email)) {
@@ -35,6 +38,7 @@ export function useAuth() {
   }, []);
 
   const signInWithGoogle = async () => {
+    if (!auth) return;
     setError(null);
     try {
       const provider = new GoogleAuthProvider();
@@ -47,8 +51,9 @@ export function useAuth() {
   };
 
   const signOut = async () => {
+    if (!auth) return;
     await firebaseSignOut(auth);
   };
 
-  return { user, loading, error, signInWithGoogle, signOut };
+  return { user, loading, error, signInWithGoogle, signOut, isConfigured };
 }
