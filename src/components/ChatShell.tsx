@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useChat } from "@/hooks/useChat";
 import { useSidebar } from "@/hooks/useSidebar";
 import { ChatPanel } from "./ChatPanel";
 import {
   IconSidebarGlobalOpen,
-  IconSpinner,
   IconCheckMark,
   IconSingleSparksFilled,
 } from "@mirohq/design-system-icons";
@@ -65,9 +64,7 @@ function PlanProgressPanel({
                 <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0" />
               )}
               {status === 'running' && (
-                <div className="w-4 h-4 flex-shrink-0 text-blue-500 animate-spin">
-                  <IconSpinner css={{ width: 16, height: 16 }} />
-                </div>
+                <div className="w-4 h-4 flex-shrink-0 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
               )}
               {status === 'done' && (
                 <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 text-white">
@@ -99,8 +96,9 @@ export function ChatShell() {
     navigateToFrames,
     navigateToCanvas,
   } = useChat();
-  const { sidebarWidth: appSidebarWidth } = useSidebar();
+  const { navWidth: appSidebarWidth } = useSidebar();
   const [isPlanPanelVisible, setIsPlanPanelVisible] = useState(true);
+  const [shouldTransition, setShouldTransition] = useState(true);
 
   const handleSubmit = (text: string) => {
     append({ role: "user", content: text });
@@ -109,6 +107,19 @@ export function ChatShell() {
   const isMinimized = chatMode === "minimized";
   const isSidePanel = chatMode === "sidepanel";
   const isFullscreen = chatMode === "fullscreen";
+
+  // Check for immediate open flag and disable transition
+  useEffect(() => {
+    if (isFullscreen && typeof window !== "undefined") {
+      const immediate = sessionStorage.getItem("chatOpenImmediate");
+      if (immediate === "true") {
+        setShouldTransition(false);
+        sessionStorage.removeItem("chatOpenImmediate");
+        // Re-enable transitions after this render
+        setTimeout(() => setShouldTransition(true), 50);
+      }
+    }
+  }, [isFullscreen]);
 
   // Compute the left edge of the fixed chat container
   const chatLeft = isMinimized
@@ -147,7 +158,7 @@ export function ChatShell() {
           right: 0,
           bottom: 0,
           left: chatLeft,
-          transition: `left ${TRANSITION}`,
+          transition: shouldTransition ? `left ${TRANSITION}` : "none",
           visibility: isMinimized ? "hidden" : "visible",
           pointerEvents: isMinimized ? "none" : "auto",
           zIndex: 10000,

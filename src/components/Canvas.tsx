@@ -28,7 +28,6 @@ import {
   IconSquarePencil,
   IconCheckMark,
   IconNotepad,
-  IconSpinner,
 } from "@mirohq/design-system-icons";
 import { calculateLayout, findEmptyCanvasSpace } from "@/lib/layoutEngine";
 import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
@@ -2930,9 +2929,7 @@ export function Canvas() {
                       style={{ borderRadius: '32px' }}
                     >
                       {creationToast.isCreating ? (
-                        <div className="w-5 h-5 flex-shrink-0 text-blue-500 animate-spin">
-                          <IconSpinner css={{ width: 20, height: 20 }} />
-                        </div>
+                        <div className="w-5 h-5 flex-shrink-0 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
                       ) : (
                         <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center flex-shrink-0">
                           <IconCheckMark css={{ width: 12, height: 12 }} />

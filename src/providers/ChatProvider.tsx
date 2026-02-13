@@ -81,6 +81,8 @@ interface ChatContextType {
   setInput: (input: string) => void;
   activeCanvas: { canvasId: string; spaceId: string } | null;
   setActiveCanvas: (canvas: { canvasId: string; spaceId: string } | null) => void;
+  openFullscreen: (immediate?: boolean) => void;
+  closeFullscreen: () => void;
 }
 
 export const ChatContext = createContext<ChatContextType | null>(null);
@@ -99,13 +101,18 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const [chatMode, setChatModeState] = useState<ChatMode>("minimized");
 
-  // Restore chatMode from localStorage after hydration
+  // Restore chatMode from localStorage after hydration (but not on home page)
   useEffect(() => {
+    if (pathname === "/") {
+      // Always start minimized on home page
+      setChatModeState("minimized");
+      return;
+    }
     const stored = localStorage.getItem("chatMode");
     if (stored === "sidepanel" || stored === "fullscreen") {
       setChatModeState(stored);
     }
-  }, []);
+  }, [pathname]);
   const [input, setInput] = useState("");
   const [activeCanvas, setActiveCanvasState] = useState<{ canvasId: string; spaceId: string } | null>(null);
 
@@ -420,6 +427,18 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     navigationTargetRef.current = null;
   }, [setMessages]);
 
+  const openFullscreen = useCallback((immediate = false) => {
+    setChatMode("fullscreen");
+    // Store immediate flag in sessionStorage for ChatShell to read
+    if (immediate && typeof window !== "undefined") {
+      sessionStorage.setItem("chatOpenImmediate", "true");
+    }
+  }, [setChatMode]);
+
+  const closeFullscreen = useCallback(() => {
+    setChatMode("minimized");
+  }, [setChatMode]);
+
   const contextValue: ChatContextType = {
     messages,
     append,
@@ -436,6 +455,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setInput,
     activeCanvas,
     setActiveCanvas,
+    openFullscreen,
+    closeFullscreen,
   };
 
   return (
