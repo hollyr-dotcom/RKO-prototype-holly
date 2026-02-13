@@ -1,5 +1,5 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -10,5 +10,32 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-export const auth = getAuth(app);
+let _app: FirebaseApp | null = null;
+let _auth: Auth | null = null;
+
+function getFirebaseApp(): FirebaseApp {
+  if (_app) return _app;
+
+  if (!firebaseConfig.apiKey) {
+    throw new Error(
+      'Firebase client is not configured. Set NEXT_PUBLIC_FIREBASE_API_KEY in .env.local'
+    );
+  }
+
+  const apps = getApps();
+  _app = apps.length > 0 ? apps[0] : initializeApp(firebaseConfig);
+  return _app;
+}
+
+export function getFirebaseAuth(): Auth {
+  if (_auth) return _auth;
+  _auth = getAuth(getFirebaseApp());
+  return _auth;
+}
+
+/** Lazy-initialized auth — only creates the Firebase app when first accessed at runtime */
+export const auth = new Proxy({} as Auth, {
+  get(_target, prop, receiver) {
+    return Reflect.get(getFirebaseAuth(), prop, receiver);
+  },
+});
