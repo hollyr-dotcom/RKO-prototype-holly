@@ -269,9 +269,10 @@ const createWorkingNoteTool = tool({
 
 const createDocumentTool = tool({
   name: "createDocument",
-  description: "Create a rich text document on the canvas. Use for long-form content: briefs, specs, guidelines. NOT for quick notes (use stickies) or structured data (use createDataTable).",
+  description: "Create a rich text document on the canvas. Use for long-form content: briefs, specs, guidelines. NOT for quick notes (use stickies) or structured data (use createDataTable). ALWAYS provide content — never create empty documents.",
   parameters: z.object({
     title: z.string().describe("Document title"),
+    content: z.string().describe("Document body as HTML. Use <h2>, <p>, <ul>/<li>, <strong>, <em>. Example: '<h2>Overview</h2><p>This project...</p>'"),
     x: z.number().describe("X position"),
     y: z.number().describe("Y position"),
   }),
@@ -279,6 +280,16 @@ const createDocumentTool = tool({
     const id = generateItemId();
     return JSON.stringify({ created: "document", id, ...args });
   },
+});
+
+const updateDocumentTool = tool({
+  name: "updateDocument",
+  description: "Replace the content of an existing document on the canvas. Get the document's ID from [CANVAS STATE]. Use HTML formatting.",
+  parameters: z.object({
+    itemId: z.string().describe("The shape ID of the document to update (from canvas state)"),
+    content: z.string().describe("New document body as HTML"),
+  }),
+  execute: async (args) => JSON.stringify({ updated: "document", ...args }),
 });
 
 const createDataTableTool = tool({
@@ -596,6 +607,7 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     deleteItemTool,
     organizeIntoFrameTool,
     createDocumentTool,
+    updateDocumentTool,
     createDataTableTool,
   ],
 });
@@ -802,6 +814,7 @@ BAD: 13 stickies each with random different colors`,
     moveItemTool,
     organizeIntoFrameTool,
     createDocumentTool,
+    updateDocumentTool,
     createDataTableTool,
   ],
 });

@@ -1222,8 +1222,9 @@ export function Canvas() {
       }
 
       if (toolName === "createDocument") {
-        const { title, x, y, width, height } = args as {
+        const { title, content, x, y, width, height } = args as {
           title?: string;
+          content?: string;
           x?: number;
           y?: number;
           width?: number;
@@ -1247,8 +1248,23 @@ export function Canvas() {
             w: validWidth,
             h: validHeight,
           },
-          meta: { createdBy: "ai" },
+          meta: {
+            createdBy: "ai",
+            initialContent: content || undefined,
+          },
         });
+      }
+
+      if (toolName === "updateDocument") {
+        const { itemId, content } = args as { itemId: string; content: string };
+        const shape = editor.getShape(itemId as TLShapeId);
+        if (shape && shape.type === "document") {
+          editor.updateShape({
+            id: shape.id,
+            type: "document",
+            meta: { ...shape.meta, pendingContent: content },
+          });
+        }
       }
 
       if (toolName === "createDataTable") {

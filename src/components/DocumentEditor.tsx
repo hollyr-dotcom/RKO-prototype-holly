@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { RoomProvider } from "@/liveblocks.config";
 import { LiveMap } from "@liveblocks/client";
 import {
@@ -9,7 +9,7 @@ import {
 } from "@liveblocks/react-tiptap";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import type { Editor as TldrawEditor } from "tldraw";
+import type { Editor as TldrawEditor, TLShapeId } from "tldraw";
 
 interface DocumentEditorProps {
   docId: string;
@@ -17,6 +17,9 @@ interface DocumentEditorProps {
   isEditing: boolean;
   isSelected?: boolean;
   tldrawEditor?: TldrawEditor;
+  shapeId?: string;
+  initialContent?: string;
+  pendingContent?: string;
   w: number;
   h: number;
   onEscape?: () => void;
@@ -27,6 +30,9 @@ function TiptapEditor({
   isEditing,
   isSelected,
   tldrawEditor,
+  shapeId,
+  initialContent,
+  pendingContent,
   h,
   onEscape,
 }: {
@@ -34,10 +40,15 @@ function TiptapEditor({
   isEditing: boolean;
   isSelected?: boolean;
   tldrawEditor?: TldrawEditor;
+  shapeId?: string;
+  initialContent?: string;
+  pendingContent?: string;
   h: number;
   onEscape?: () => void;
 }) {
-  const liveblocks = useLiveblocksExtension();
+  const liveblocks = useLiveblocksExtension({
+    initialContent: initialContent || undefined,
+  });
 
   const editor = useEditor({
     extensions: [
@@ -59,6 +70,26 @@ function TiptapEditor({
       }
     }
   }, [editor, isEditing]);
+
+  // Apply pending content updates from AI (updateDocument tool)
+  const appliedPendingRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!editor || !pendingContent || pendingContent === appliedPendingRef.current) return;
+
+    editor.commands.setContent(pendingContent);
+    appliedPendingRef.current = pendingContent;
+
+    // Clear pendingContent from shape meta so it doesn't re-apply on reload
+    if (tldrawEditor && shapeId) {
+      const shape = tldrawEditor.getShape(shapeId as TLShapeId);
+      if (shape) {
+        const meta = { ...(shape.meta as Record<string, unknown>) };
+        delete meta.pendingContent;
+        tldrawEditor.updateShape({ id: shape.id, type: "document", meta });
+      }
+    }
+  }, [editor, pendingContent, tldrawEditor, shapeId]);
 
   return (
     <div
@@ -100,6 +131,9 @@ export function DocumentEditor({
   isEditing,
   isSelected,
   tldrawEditor,
+  shapeId,
+  initialContent,
+  pendingContent,
   w,
   h,
   onEscape,
@@ -129,7 +163,17 @@ export function DocumentEditor({
       initialPresence={{ presence: null }}
       initialStorage={{ records: new LiveMap() }}
     >
-      <TiptapEditor title={title} isEditing={isEditing} isSelected={isSelected} tldrawEditor={tldrawEditor} h={h} onEscape={onEscape} />
+      <TiptapEditor
+        title={title}
+        isEditing={isEditing}
+        isSelected={isSelected}
+        tldrawEditor={tldrawEditor}
+        shapeId={shapeId}
+        initialContent={initialContent}
+        pendingContent={pendingContent}
+        h={h}
+        onEscape={onEscape}
+      />
     </RoomProvider>
   );
 }

@@ -77,6 +77,9 @@ export class DocumentShapeUtil extends ShapeUtil<IDocumentShape> {
   component(shape: IDocumentShape) {
     const isEditing = this.editor.getEditingShapeId() === shape.id;
     const isSelected = this.editor.getSelectedShapeIds().includes(shape.id);
+    const meta = shape.meta as Record<string, unknown>;
+    const initialContent = meta?.initialContent as string | undefined;
+    const pendingContent = meta?.pendingContent as string | undefined;
 
     return (
       <HTMLContainer
@@ -97,6 +100,9 @@ export class DocumentShapeUtil extends ShapeUtil<IDocumentShape> {
           isEditing={isEditing}
           isSelected={isSelected}
           tldrawEditor={this.editor}
+          shapeId={shape.id}
+          initialContent={initialContent}
+          pendingContent={pendingContent}
           w={shape.props.w}
           h={shape.props.h}
           onEscape={() => this.editor.setEditingShape(null)}
