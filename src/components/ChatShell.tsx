@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useChat } from "@/hooks/useChat";
 import { useSidebar } from "@/hooks/useSidebar";
 import { ChatPanel } from "./ChatPanel";
@@ -36,22 +37,14 @@ function PlanProgressPanel({
   };
 
   return (
-    <div className="w-80 bg-gray-50 border-l border-gray-200 h-full flex-shrink-0 flex flex-col">
-      {/* Header */}
+    <div className="h-full flex flex-col">
+      {/* Header — close button handled by ChatPanel overlay */}
       <div className="px-4 py-3 flex items-center gap-3 flex-shrink-0">
         <div className="flex-1 text-left min-w-0">
           <p className="text-xs font-medium text-gray-900">Plan</p>
         </div>
-
-        {onToggleVisibility && (
-          <button
-            onClick={onToggleVisibility}
-            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 flex-shrink-0"
-            title="Hide plan"
-          >
-            <IconSidebarGlobalOpen css={{ transform: 'rotate(180deg)', width: 18, height: 18 }} />
-          </button>
-        )}
+        {/* Spacer for the toggle button rendered by ChatPanel */}
+        <div className="w-7 h-7 flex-shrink-0" />
       </div>
 
       {/* Steps */}
@@ -83,6 +76,7 @@ function PlanProgressPanel({
 }
 
 export function ChatShell() {
+  const pathname = usePathname();
   const {
     chatMode,
     setChatMode,
@@ -107,6 +101,7 @@ export function ChatShell() {
   const isMinimized = chatMode === "minimized";
   const isSidePanel = chatMode === "sidepanel";
   const isFullscreen = chatMode === "fullscreen";
+  const isHomePage = pathname === "/";
 
   // Check for immediate open flag and disable transition
   useEffect(() => {
@@ -130,8 +125,8 @@ export function ChatShell() {
 
   return (
     <>
-      {/* Floating spark button — visible only when chat is minimized */}
-      {isMinimized && (
+      {/* Floating spark button — visible only when chat is minimized and not on home page */}
+      {isMinimized && !isHomePage && (
         <button
           onClick={() => setChatMode("sidepanel")}
           className="fixed top-4 right-4 z-[9900] w-10 h-10 bg-gray-900 rounded-full shadow-md flex items-center justify-center text-white hover:bg-gray-700 hover:shadow-lg transition-all"
@@ -165,56 +160,31 @@ export function ChatShell() {
         }}
         className="border-l border-gray-200"
       >
-        <div className="flex h-full">
-          {/* Chat area */}
-          <div className="flex-1 flex flex-col min-w-0">
-            <ChatPanel
-              isFullscreen={isFullscreen}
-              isVisible={!isMinimized}
-              onClose={() => setChatMode("minimized")}
-              onCollapse={() => setChatMode("minimized")}
-              onExpand={() => setChatMode("fullscreen")}
-              onExitFullscreen={() => setChatMode("sidepanel")}
-              onNewChat={startNewChat}
-              messages={messages}
-              input={input}
-              setInput={setInput}
-              onSubmit={handleSubmit}
+        <ChatPanel
+          isFullscreen={isFullscreen}
+          isVisible={!isMinimized}
+          onClose={() => setChatMode("minimized")}
+          onCollapse={() => setChatMode("minimized")}
+          onExpand={() => setChatMode("fullscreen")}
+          onExitFullscreen={() => setChatMode("sidepanel")}
+          onNewChat={startNewChat}
+          messages={messages}
+          input={input}
+          setInput={setInput}
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+          onNavigateToFrames={navigateToFrames}
+          onNavigateToCanvas={navigateToCanvas}
+          planPanel={isFullscreen && activePlanDetails ? (
+            <PlanProgressPanel
+              plan={activePlanDetails}
               isLoading={isLoading}
-              onNavigateToFrames={navigateToFrames}
-              onNavigateToCanvas={navigateToCanvas}
+              onToggleVisibility={() => setIsPlanPanelVisible(false)}
             />
-          </div>
-
-          {/* Plan sidebar — fullscreen only, slides in/out */}
-          {isFullscreen && activePlanDetails && (
-            <div
-              style={{
-                width: PLAN_SIDEBAR_WIDTH,
-                marginRight: isPlanPanelVisible ? 0 : -PLAN_SIDEBAR_WIDTH,
-                transition: `margin-right ${TRANSITION}`,
-              }}
-              className="flex-shrink-0"
-            >
-              <PlanProgressPanel
-                plan={activePlanDetails}
-                isLoading={isLoading}
-                onToggleVisibility={() => setIsPlanPanelVisible(false)}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Show plan toggle — when plan exists but panel is hidden */}
-        {isFullscreen && activePlanDetails && !isPlanPanelVisible && (
-          <button
-            onClick={() => setIsPlanPanelVisible(true)}
-            className="absolute top-3 right-4 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 z-10"
-            title="Show plan"
-          >
-            <IconSidebarGlobalOpen css={{ transform: 'rotate(180deg)', width: 18, height: 18 }} />
-          </button>
-        )}
+          ) : undefined}
+          isPlanPanelVisible={isPlanPanelVisible}
+          onTogglePlanPanel={() => setIsPlanPanelVisible(!isPlanPanelVisible)}
+        />
       </div>
     </>
   );

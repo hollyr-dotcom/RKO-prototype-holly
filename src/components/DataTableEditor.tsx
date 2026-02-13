@@ -38,6 +38,7 @@ interface DataTableEditorProps {
   w: number;
   h: number;
   onEscape?: () => void;
+  initialData?: { columns: string[]; rows: string[][] };
 }
 
 // Editable header component with type icon and config menu
@@ -762,7 +763,28 @@ export function DataTableEditor({
   w,
   h,
   onEscape,
+  initialData,
 }: DataTableEditorProps) {
+  // Build initial Liveblocks storage from AI-provided data (or fall back to defaults).
+  // initialStorage only applies when the room is first created — existing rooms keep their data.
+  const initialRecords = useMemo(() => {
+    if (!initialData) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return [["meta", DEFAULT_META]] as [string, any][];
+    }
+    const cols: ColumnConfig[] = initialData.columns.map((name) => ({ name, type: "text" as ColumnType }));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const entries: [string, any][] = [
+      ["meta", { columns: cols, rowCount: initialData.rows.length }],
+    ];
+    initialData.rows.forEach((row, rowIdx) => {
+      row.forEach((cell, colIdx) => {
+        entries.push([`cell:${rowIdx}:${colIdx}`, cell]);
+      });
+    });
+    return entries;
+  }, [initialData]);
+
   if (!tableId) {
     return (
       <div
@@ -788,9 +810,7 @@ export function DataTableEditor({
       initialPresence={{ presence: null }}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       initialStorage={{
-        records: new LiveMap([
-          ["meta", DEFAULT_META as any],
-        ]) as any,
+        records: new LiveMap(initialRecords) as any,
       }}
     >
       <Suspense

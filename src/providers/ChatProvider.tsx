@@ -108,6 +108,24 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setChatModeState("minimized");
       return;
     }
+
+    // Check for canvas handoff from navigation
+    const handoffData = sessionStorage.getItem("canvas-handoff");
+    if (handoffData) {
+      try {
+        const handoff = JSON.parse(handoffData);
+        // Set chat mode based on handoff data — also update localStorage to stay in sync
+        const mode = handoff.isFullscreenChat ? "fullscreen" : "sidepanel";
+        setChatModeState(mode);
+        localStorage.setItem("chatMode", mode);
+        // Clear handoff after using it
+        sessionStorage.removeItem("canvas-handoff");
+        return;
+      } catch {
+        // If parsing fails, fall through to normal restoration
+      }
+    }
+
     const stored = localStorage.getItem("chatMode");
     if (stored === "sidepanel" || stored === "fullscreen") {
       setChatModeState(stored);
@@ -186,7 +204,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   pathnameRef.current = pathname;
 
   // Canvas tools that need a Canvas component to be mounted
-  const CANVAS_TOOLS = ['createLayout', 'createSticky', 'createText', 'createShape', 'createFrame', 'createArrow', 'createWorkingNote', 'deleteItem', 'updateSticky', 'moveItem', 'organizeIntoFrame'];
+  const CANVAS_TOOLS = ['createLayout', 'createSticky', 'createText', 'createShape', 'createFrame', 'createArrow', 'createWorkingNote', 'deleteItem', 'updateSticky', 'moveItem', 'organizeIntoFrame', 'createDocument', 'createDataTable'];
 
   // Workspace-aware tool call handler — intercepts navigation tools, queues during navigation
   const handleToolCallWithWorkspace = useCallback((toolName: string, args: Record<string, unknown>) => {
@@ -194,13 +212,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     if (toolName === "createCanvas_result") {
       const { canvasId, spaceId, navigate } = args as { canvasId: string; spaceId: string; navigate?: boolean };
       sessionCanvasRef.current = { canvasId, spaceId: spaceId || "" };
-      // Skip navigation if we already navigated (safety net beat us to it)
-      if (navigationTargetRef.current) {
+      // Skip only if we're already navigating to THIS specific canvas (safety net beat us)
+      if (navigationTargetRef.current === canvasId) {
         return;
       }
       if (navigate !== false && canvasId) {
         isNavigatingRef.current = true;
         navigationTargetRef.current = canvasId;
+        // Preserve chat as sidepanel when navigating to a new canvas
+        sessionStorage.setItem("canvas-handoff", JSON.stringify({ isFullscreenChat: false }));
         router.push(`/space/${spaceId || "unassigned"}/canvas/${canvasId}`);
       }
       return;
@@ -210,6 +230,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     if (toolName === "createCanvas") {
       const { navigate } = args as { navigate?: boolean };
       if (navigate !== false) {
+        // Clear stale navigation state from previous requests — this is a NEW navigation
+        navigationTargetRef.current = null;
         isNavigatingRef.current = true;
       }
       return;
@@ -230,6 +252,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     if (CANVAS_TOOLS.includes(toolName) && !pathnameRef.current.includes('/canvas/') && !isNavigatingRef.current) {
       isNavigatingRef.current = true;
       pendingToolCallsRef.current.push({ toolName, args });
+      // If on home page, store handoff so chat transitions from fullscreen → sidepanel
+      if (pathnameRef.current === "/") {
+        sessionStorage.setItem("canvas-handoff", JSON.stringify({ isFullscreenChat: false }));
+      }
       fetch('/api/canvases', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -307,6 +333,21 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           }
         }
       });
+
+      // Plan is complete if all steps marked done OR a checkpoint was called (AI wraps up)
+      const hasCheckpoint = allToolCalls.some(t => t.toolName === 'checkpoint');
+      const planComplete = completedSteps >= args.steps.length || hasCheckpoint;
+      if (planComplete) {
+        // Check if user sent a NEW request after completion — dismiss the plan panel
+        const laterUserMsgs = messages.slice(i + 1).filter(m => m.role === 'user');
+        const lastUserMsg = laterUserMsgs[laterUserMsgs.length - 1];
+        const isNewRequest = lastUserMsg
+          && !lastUserMsg.content?.toLowerCase().includes('approve')
+          && lastUserMsg.content?.toLowerCase() !== 'continue';
+        if (isNewRequest) {
+          return null; // Plan is done and dismissed — don't show progress panel
+        }
+      }
 
       const currentStep = isLoading && currentRunningStep > 0
         ? currentRunningStep - 1

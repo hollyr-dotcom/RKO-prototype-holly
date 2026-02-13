@@ -1252,8 +1252,10 @@ export function Canvas() {
       }
 
       if (toolName === "createDataTable") {
-        const { title, x, y, width, height } = args as {
+        const { title, columns, rows, x, y, width, height } = args as {
           title?: string;
+          columns?: string[];
+          rows?: string[][];
           x?: number;
           y?: number;
           width?: number;
@@ -1277,7 +1279,10 @@ export function Canvas() {
             w: validWidth,
             h: validHeight,
           },
-          meta: { createdBy: "ai" },
+          meta: {
+            createdBy: "ai",
+            initialData: (columns && rows) ? { columns, rows } : undefined,
+          },
         });
       }
 

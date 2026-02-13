@@ -77,6 +77,8 @@ export class DataTableShapeUtil extends ShapeUtil<IDataTableShape> {
   component(shape: IDataTableShape) {
     const isEditing = this.editor.getEditingShapeId() === shape.id;
     const isSelected = this.editor.getSelectedShapeIds().includes(shape.id);
+    const meta = shape.meta as Record<string, unknown>;
+    const initialData = meta?.initialData as { columns: string[]; rows: string[][] } | undefined;
 
     return (
       <HTMLContainer
@@ -100,6 +102,7 @@ export class DataTableShapeUtil extends ShapeUtil<IDataTableShape> {
           w={shape.props.w}
           h={shape.props.h}
           onEscape={() => this.editor.setEditingShape(null)}
+          initialData={initialData}
         />
       </HTMLContainer>
     );

@@ -267,6 +267,36 @@ const createWorkingNoteTool = tool({
   },
 });
 
+const createDocumentTool = tool({
+  name: "createDocument",
+  description: "Create a rich text document on the canvas. Use for long-form content: briefs, specs, guidelines. NOT for quick notes (use stickies) or structured data (use createDataTable).",
+  parameters: z.object({
+    title: z.string().describe("Document title"),
+    x: z.number().describe("X position"),
+    y: z.number().describe("Y position"),
+  }),
+  execute: async (args) => {
+    const id = generateItemId();
+    return JSON.stringify({ created: "document", id, ...args });
+  },
+});
+
+const createDataTableTool = tool({
+  name: "createDataTable",
+  description: "Create an interactive data table on the canvas. Use for structured data: comparisons, feature matrices, tracking tables. NOT for simple lists (use stickies) or prose (use createDocument). ALWAYS provide columns and rows with meaningful data — never create empty tables.",
+  parameters: z.object({
+    title: z.string().describe("Table title"),
+    columns: z.array(z.string()).min(1).max(8).describe("Column header names"),
+    rows: z.array(z.array(z.string())).describe("Row data — each inner array must match the number of columns"),
+    x: z.number().describe("X position"),
+    y: z.number().describe("Y position"),
+  }),
+  execute: async (args) => {
+    const id = generateItemId();
+    return JSON.stringify({ created: "datatable", id, ...args });
+  },
+});
+
 // --- Layout Tool (REQUIRED for multiple items) ---
 const createLayoutTool = tool({
   name: "createLayout",
@@ -537,6 +567,11 @@ NEVER use "---" separators in your text.
 - User says "diagram", "org chart", "sitemap", "flow" → createLayout(type:"shape")
 - When in doubt, use stickies! They're the default for notes and ideas.
 
+DOCUMENTS vs TABLES vs STICKIES:
+- Stickies/createLayout: Quick ideas, brainstorms, lists — the default
+- createDocument: Long-form written content — briefs, specs, guidelines, summaries
+- createDataTable: Structured rows/columns — comparisons, feature matrices, tracking tables
+
 FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
 - Multiple sections/frames with dependencies
 - Requires research or multiple layouts
@@ -560,6 +595,8 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     moveItemTool,
     deleteItemTool,
     organizeIntoFrameTool,
+    createDocumentTool,
+    createDataTableTool,
   ],
 });
 
@@ -716,6 +753,11 @@ createLayout({
   ]
 })
 
+DOCUMENTS vs TABLES vs STICKIES:
+- Stickies/createLayout: Quick ideas, brainstorms, lists — the default
+- createDocument: Long-form written content — briefs, specs, guidelines, summaries
+- createDataTable: Structured rows/columns — comparisons, feature matrices, tracking tables
+
 COLOR GUIDELINES - USE WITH RESTRAINT:
 ⚠️ IMPORTANT: Use color intentionally, not randomly!
 
@@ -759,6 +801,8 @@ BAD: 13 stickies each with random different colors`,
     updateStickyTool,
     moveItemTool,
     organizeIntoFrameTool,
+    createDocumentTool,
+    createDataTableTool,
   ],
 });
 
@@ -807,11 +851,10 @@ export async function POST(req: Request) {
 
   if (approvedPlan) {
     // EXECUTION MODE: Track completed steps and continue from where we left off
-    isExecutionMode = true;
 
     // Find completed steps by looking at showProgress("completed") and checkpoint calls
     const completedSteps: number[] = [];
-    let lastCheckpointStep = 0;
+    let hasCheckpoint = false;
 
     for (let i = approvalMessageIndex; i < messages.length; i++) {
       const msg = messages[i] as MessageWithTools;
@@ -824,7 +867,7 @@ export async function POST(req: Request) {
             }
           }
           if (t.toolName === 'checkpoint') {
-            lastCheckpointStep = Math.max(...completedSteps, 0);
+            hasCheckpoint = true;
           }
         });
       }
@@ -832,10 +875,27 @@ export async function POST(req: Request) {
 
     const nextStep = completedSteps.length > 0 ? Math.max(...completedSteps) + 1 : 1;
     const totalSteps = approvedPlan.steps.length;
-    const isComplete = nextStep > totalSteps;
+    // Plan is complete if all steps marked done OR a checkpoint was called (AI wraps up)
+    const isComplete = nextStep > totalSteps || hasCheckpoint;
 
-    // Build context with clear state
-    conversationContext = `EXECUTION MODE - Continuing approved plan.
+    // If the plan is complete and the latest user message is a NEW request
+    // (not "Continue" or the approval itself), exit execution mode entirely
+    if (isComplete) {
+      const latestUserMsg = messages[messages.length - 1];
+      const isNewRequest = latestUserMsg?.role === 'user'
+        && !latestUserMsg.content?.toLowerCase().includes('approve')
+        && latestUserMsg.content?.toLowerCase() !== 'continue';
+      if (isNewRequest) {
+        approvedPlan = null;
+      }
+    }
+
+    if (approvedPlan) {
+      // Still in execution mode (plan not complete, or user said "Continue")
+      isExecutionMode = true;
+
+      // Build context with clear state
+      conversationContext = `EXECUTION MODE - Continuing approved plan.
 
 Plan: "${approvedPlan.title}"
 ${approvedPlan.steps.map((s, i) => {
@@ -862,7 +922,10 @@ DO THIS IMMEDIATELY:
 4. Continue to step ${nextStep + 1} or checkpoint() if milestone reached
 
 DO NOT write explanatory text first - CALL showProgress() IMMEDIATELY!`}`;
-  } else {
+    }
+  }
+
+  if (!approvedPlan) {
     // Normal mode: build conversation context
     // Count how many questions have already been asked
     let questionsAsked = 0;
@@ -1065,6 +1128,8 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
     const stream = new ReadableStream({
       async start(controller) {
         const toolCalls: ToolCall[] = [];
+        const callIdToToolName = new Map<string, string>();
+        let pendingCreateCanvas = false;
         let textContent = "";
         let controllerClosed = false;
 
@@ -1173,6 +1238,16 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
                 const rawItem = item.rawItem as Record<string, unknown>;
                 const toolName = rawItem?.name as string;
                 const rawArgs = rawItem?.arguments as string;
+                // Agents SDK uses camelCase callId (not snake_case call_id)
+                const callId = (rawItem?.callId || rawItem?.call_id) as string;
+
+                // Track callId → toolName for matching output items
+                if (callId && toolName) {
+                  callIdToToolName.set(callId, toolName);
+                }
+                if (toolName === "createCanvas") {
+                  pendingCreateCanvas = true;
+                }
 
                 if (toolName && rawArgs) {
                   try {
@@ -1190,15 +1265,40 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
               // Handle tool call outputs (separate event type from Agents SDK)
               if (item.type === "tool_call_output_item") {
                 const rawItem = item.rawItem as Record<string, unknown>;
-                const toolName = rawItem?.name as string;
-                const rawOutput = rawItem?.output;
+                // Agents SDK uses camelCase callId and includes name on output items
+                const callId = (rawItem?.callId || rawItem?.call_id) as string;
+                const outputItemName = rawItem?.name as string;
+                const rawOutput = rawItem?.output as Record<string, unknown> | string | undefined;
 
-                if (toolName === "createCanvas" && rawOutput) {
-                  // Output may be an object or a JSON string
-                  const result = typeof rawOutput === "string" ? JSON.parse(rawOutput) : rawOutput;
-                  safeEnqueue(
-                    encoder.encode(`data: ${JSON.stringify({ type: "tool_result", toolName, result })}\n\n`)
-                  );
+                // Unwrap Agents SDK output wrapper: {type: "text", text: "{...}"}
+                let outputString: string | undefined;
+                if (typeof rawOutput === "string") {
+                  outputString = rawOutput;
+                } else if (rawOutput && typeof rawOutput === "object" && rawOutput.type === "text" && typeof rawOutput.text === "string") {
+                  outputString = rawOutput.text;
+                }
+
+                // Match createCanvas by: direct name, callId lookup, or pending flag
+                const matchedToolName = outputItemName || callIdToToolName.get(callId || "");
+                let isCreateCanvas = matchedToolName === "createCanvas";
+
+                if (!isCreateCanvas && pendingCreateCanvas && outputString) {
+                  try {
+                    const parsed = JSON.parse(outputString);
+                    if (parsed && typeof parsed === "object" && "canvasId" in parsed) {
+                      isCreateCanvas = true;
+                    }
+                  } catch {}
+                }
+
+                if (isCreateCanvas && outputString) {
+                  pendingCreateCanvas = false;
+                  try {
+                    const result = JSON.parse(outputString);
+                    safeEnqueue(
+                      encoder.encode(`data: ${JSON.stringify({ type: "tool_result", toolName: "createCanvas", result })}\n\n`)
+                    );
+                  } catch {}
                 }
               }
             }

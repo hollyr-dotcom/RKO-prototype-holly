@@ -8,7 +8,6 @@ import {
   IconPlus,
   IconMicrophone,
   IconArrowUp,
-  IconSpinner,
   IconCheckMark,
   IconChevronDown,
   IconArrowRight,
@@ -17,7 +16,18 @@ import {
   IconArrowsInSimple,
   IconCross,
   IconSquarePencil,
+  IconSidebarGlobalOpen,
 } from "@mirohq/design-system-icons";
+
+// Shimmer animation for loading text (Claude-style glimmer)
+const shimmerStyle = {
+  background: "linear-gradient(90deg, #9ca3af 0%, #9ca3af 40%, #d1d5db 50%, #9ca3af 60%, #9ca3af 100%)",
+  backgroundSize: "200% 100%",
+  WebkitBackgroundClip: "text",
+  WebkitTextFillColor: "transparent",
+  backgroundClip: "text",
+  animation: "shimmer 2s ease-in-out infinite",
+} as React.CSSProperties;
 
 // Voice wave icon
 function VoiceWaveIcon() {
@@ -47,6 +57,9 @@ interface ChatPanelProps {
   isFullscreen?: boolean;
   onExitFullscreen?: () => void;
   isVisible?: boolean;
+  planPanel?: React.ReactNode;
+  isPlanPanelVisible?: boolean;
+  onTogglePlanPanel?: () => void;
 }
 
 // Question block with clickable suggestions
@@ -89,9 +102,7 @@ function TaskStatusIcon({ status }: { status: 'pending' | 'running' | 'done' }) 
       return <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0" />;
     case 'running':
       return (
-        <div className="w-4 h-4 flex-shrink-0 text-blue-500 animate-spin">
-          <IconSpinner css={{ width: 16, height: 16 }} />
-        </div>
+        <div className="w-4 h-4 flex-shrink-0 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
       );
     case 'done':
       return (
@@ -345,11 +356,22 @@ function ArtifactCard({
   const canvasId = resultArgs?.canvasId;
   const boardName = (createCanvasTool?.args as { name?: string })?.name || "New Board";
 
-  // Build content lines
-  type ContentLine = { label: string; loadingLabel: string; onClick?: () => void };
+  // Build content lines with per-line completion tracking
+  // Tools arrive sequentially from the SDK — if tool N+1 has arrived, tool N is done.
+  type ContentLine = { label: string; loadingLabel: string; onClick?: () => void; toolIndex: number };
   const contentLines: ContentLine[] = [];
 
-  layoutTools.forEach(lt => {
+  // Track original indices in toolInvocations for per-line completion
+  const indexedInvocations = toolInvocations.map((t, i) => ({ ...t, index: i }));
+  const lastToolIndex = toolInvocations.length - 1;
+
+  const indexedLayouts = indexedInvocations.filter(t => t.toolName === "createLayout");
+  const indexedFrames = indexedInvocations.filter(t => t.toolName === "createFrame");
+  const indexedLoose = indexedInvocations.filter(t =>
+    ["createSticky", "createShape", "createText"].includes(t.toolName)
+  );
+
+  indexedLayouts.forEach(lt => {
     const args = lt.args as { frameName?: string; items?: Array<{ type?: string }>; type?: string };
     const count = args.items?.length || 0;
     if (count === 0) return;
@@ -362,23 +384,47 @@ function ArtifactCard({
       label: args.frameName ? `Added ${count} ${typeLabel} to ${args.frameName}` : `Added ${count} ${typeLabel}`,
       loadingLabel: `Adding ${count} ${typeLabel}${args.frameName ? ` to ${args.frameName}` : ""}...`,
       onClick: args.frameName ? () => onNavigateToFrames?.([args.frameName!]) : undefined,
+      toolIndex: lt.index,
     });
   });
 
-  frameTools.forEach(ft => {
+  indexedFrames.forEach(ft => {
     const args = ft.args as { name?: string };
     contentLines.push({
       label: `Created frame "${args.name || "Untitled"}"`,
       loadingLabel: `Creating frame "${args.name || "Untitled"}"...`,
       onClick: args.name ? () => onNavigateToFrames?.([args.name!]) : undefined,
+      toolIndex: ft.index,
     });
   });
 
-  if (looseItems.length > 0 && layoutTools.length === 0) {
+  const indexedDocuments = indexedInvocations.filter(t => t.toolName === "createDocument");
+  indexedDocuments.forEach(dt => {
+    const title = (dt.args as { title?: string }).title || "Untitled document";
+    contentLines.push({
+      label: `Created document "${title}"`,
+      loadingLabel: `Creating document "${title}"...`,
+      toolIndex: dt.index,
+    });
+  });
+
+  const indexedTables = indexedInvocations.filter(t => t.toolName === "createDataTable");
+  indexedTables.forEach(tt => {
+    const title = (tt.args as { title?: string }).title || "Untitled table";
+    contentLines.push({
+      label: `Created table "${title}"`,
+      loadingLabel: `Creating table "${title}"...`,
+      toolIndex: tt.index,
+    });
+  });
+
+  if (indexedLoose.length > 0 && indexedLayouts.length === 0) {
     const counts: Record<string, number> = {};
-    looseItems.forEach(t => {
+    let maxIndex = 0;
+    indexedLoose.forEach(t => {
       const name = t.toolName.replace("create", "").toLowerCase();
       counts[name] = (counts[name] || 0) + 1;
+      maxIndex = Math.max(maxIndex, t.index);
     });
     Object.entries(counts).forEach(([name, count]) => {
       const plural = count !== 1;
@@ -388,6 +434,7 @@ function ArtifactCard({
       contentLines.push({
         label: `Added ${count} ${typeLabel}`,
         loadingLabel: `Adding ${count} ${typeLabel}...`,
+        toolIndex: maxIndex,
       });
     });
   }
@@ -410,19 +457,18 @@ function ArtifactCard({
               isClickable ? "hover:bg-gray-50 cursor-pointer group" : "cursor-default"
             }`}
           >
-            {showName ? (
+            {showName && (
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0 text-gray-400">
                 <rect x="0.5" y="0.5" width="5.5" height="5.5" rx="1.25" fill="currentColor" />
                 <rect x="8" y="0.5" width="5.5" height="5.5" rx="1.25" fill="currentColor" opacity="0.5" />
                 <rect x="0.5" y="8" width="5.5" height="5.5" rx="1.25" fill="currentColor" opacity="0.5" />
                 <rect x="8" y="8" width="5.5" height="5.5" rx="1.25" fill="currentColor" opacity="0.3" />
               </svg>
-            ) : (
-              <div className="w-3.5 h-3.5 flex-shrink-0 text-blue-500 animate-spin">
-                <IconSpinner css={{ width: 14, height: 14 }} />
-              </div>
             )}
-            <span className={`text-sm flex-1 truncate ${showName ? "font-medium text-gray-900" : "text-gray-500"}`}>
+            <span
+              className={`text-sm flex-1 truncate ${showName ? "font-medium text-gray-900" : ""}`}
+              style={showName ? undefined : shimmerStyle}
+            >
               {showName ? `Created ${boardName}` : `Creating ${boardName}...`}
             </span>
             {isClickable && (
@@ -436,8 +482,10 @@ function ArtifactCard({
 
       {/* Nested content lines with tree connectors */}
       {contentLines.map((line, i) => {
-        const isLast = i === contentLines.length - 1;
-        const isClickable = allDone && !!(line.onClick || onNavigateToCanvas);
+        const isLastLine = i === contentLines.length - 1;
+        // A line is done if: stream ended, OR a later tool has arrived (sequential execution)
+        const lineDone = allDone || line.toolIndex < lastToolIndex;
+        const isClickable = lineDone && !!(line.onClick || onNavigateToCanvas);
         return (
           <button
             key={i}
@@ -454,19 +502,15 @@ function ArtifactCard({
             {/* Tree connector when nested under a board */}
             {hasBoard && (
               <span className="text-gray-300 pl-3 text-sm select-none w-7 flex-shrink-0 font-mono">
-                {isLast ? "\u2514" : "\u251C"}
+                {isLastLine ? "\u2514" : "\u251C"}
               </span>
             )}
             <div className={`flex items-center gap-2 py-2 flex-1 min-w-0 ${hasBoard ? "pr-3" : "px-3"}`}>
-              {allDone ? (
-                <div className="w-1.5 h-1.5 rounded-full bg-gray-300 flex-shrink-0" />
-              ) : (
-                <div className="w-3.5 h-3.5 flex-shrink-0 text-blue-500 animate-spin">
-                  <IconSpinner css={{ width: 14, height: 14 }} />
-                </div>
-              )}
-              <span className={`text-sm flex-1 truncate ${allDone ? "text-gray-600" : "text-gray-500"}`}>
-                {allDone ? line.label : line.loadingLabel}
+              <span
+                className={`text-sm flex-1 truncate ${lineDone ? "text-gray-600" : ""}`}
+                style={lineDone ? undefined : shimmerStyle}
+              >
+                {lineDone ? line.label : line.loadingLabel}
               </span>
               {isClickable && (
                 <span className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
@@ -627,6 +671,9 @@ export function ChatPanel({
   isFullscreen = false,
   onExitFullscreen,
   isVisible = true,
+  planPanel,
+  isPlanPanelVisible = true,
+  onTogglePlanPanel,
 }: ChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -681,7 +728,7 @@ export function ChatPanel({
       // Check for canvas tools in THIS message (after confirmPlan)
       const toolsAfterPlan = msg.toolInvocations!.slice(planToolIndex + 1);
       const hasCanvasToolsInSameMsg = toolsAfterPlan.some(t =>
-        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow'].includes(t.toolName)
+        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow', 'createDocument', 'createDataTable'].includes(t.toolName)
       );
 
       // Check for activity in LATER messages
@@ -697,7 +744,7 @@ export function ChatPanel({
       const userApproved = nextUserMsg?.content?.toLowerCase().includes('approve');
       const hasProgressCalls = progressCalls.length > 0;
       const hasCanvasTools = hasCanvasToolsInSameMsg || laterToolCalls.some(t =>
-        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow'].includes(t.toolName)
+        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow', 'createDocument', 'createDataTable'].includes(t.toolName)
       );
       const hasCheckpoint = allToolCalls.some(t => t.toolName === 'checkpoint');
 
@@ -788,6 +835,11 @@ export function ChatPanel({
         </div>
       </div>
 
+      {/* Content area: chat + plan side by side, below header */}
+      <div className="flex flex-1 min-h-0">
+        {/* Chat column */}
+        <div className="flex-1 flex flex-col min-w-0">
+
       {/* Task progress header - shows when plan is executing (hidden in fullscreen) */}
       {activePlan && !isFullscreen && (
         <TaskProgressHeader
@@ -864,7 +916,7 @@ export function ChatPanel({
                     {(() => {
                       const hasText = message.content && !askUserTool && !message.content.trim().startsWith('{');
                       const hasArtifactTools = message.toolInvocations?.some(t =>
-                        ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText"].includes(t.toolName)
+                        ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable"].includes(t.toolName)
                       );
 
                       const mdComponents = {
@@ -1005,7 +1057,7 @@ export function ChatPanel({
                       const confirmPlanIndex = thisMessageTools.findIndex(t => t.toolName === 'confirmPlan');
                       const toolsAfterPlan = thisMessageTools.slice(confirmPlanIndex + 1);
                       const hasCanvasToolsInSameMsg = toolsAfterPlan.some(t =>
-                        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow'].includes(t.toolName)
+                        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow', 'createDocument', 'createDataTable'].includes(t.toolName)
                       );
 
                       // Check for activity in LATER messages
@@ -1022,7 +1074,7 @@ export function ChatPanel({
 
                       const hasProgressCalls = progressCalls.length > 0;
                       const hasCanvasTools = hasCanvasToolsInSameMsg || laterToolCalls.some(t =>
-                        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow'].includes(t.toolName)
+                        ['createSticky', 'createShape', 'createText', 'createFrame', 'createArrow', 'createDocument', 'createDataTable'].includes(t.toolName)
                       );
                       const hasCheckpoint = allToolCalls.some(t => t.toolName === 'checkpoint');
 
@@ -1173,14 +1225,14 @@ export function ChatPanel({
 
             // Skip when artifact tools present — the ArtifactCard serves as the activity indicator
             const hasArtifactTools = recentTools.some(t =>
-              ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText"].includes(t.toolName)
+              ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable"].includes(t.toolName)
             );
             if (hasArtifactTools) return null;
 
             // Check for various tool types
             const lastSearchTool = [...recentTools].reverse().find(t => t.toolName === "webSearch");
             const lastCanvasTool = [...recentTools].reverse().find(t =>
-              ["createSticky", "createShape", "createText", "createFrame", "createArrow", "createWorkingNote"].includes(t.toolName)
+              ["createSticky", "createShape", "createText", "createFrame", "createArrow", "createWorkingNote", "createDocument", "createDataTable"].includes(t.toolName)
             );
             const confirmPlanTool = [...recentTools].reverse().find(t => t.toolName === "confirmPlan");
 
@@ -1208,6 +1260,8 @@ export function ChatPanel({
                     return `Adding "${text.slice(0, 25)}${text.length > 25 ? '...' : ''}"`;
                   }
                   case "createArrow": return "Connecting...";
+                  case "createDocument": return `Creating document "${(lastCanvasTool.args as {title?: string}).title || "document"}"...`;
+                  case "createDataTable": return `Creating table "${(lastCanvasTool.args as {title?: string}).title || "table"}"...`;
                   default: return "Working...";
                 }
               }
@@ -1216,7 +1270,7 @@ export function ChatPanel({
 
             // Count canvas items being created
             const canvasItemCount = recentTools.filter(t =>
-              ["createSticky", "createShape", "createText", "createFrame", "createArrow"].includes(t.toolName)
+              ["createSticky", "createShape", "createText", "createFrame", "createArrow", "createDocument", "createDataTable"].includes(t.toolName)
             ).length;
 
             return (
@@ -1299,6 +1353,51 @@ export function ChatPanel({
           )}
         </div>
       </form>
+
+        </div>{/* end chat column */}
+
+        {/* Plan panel — animates width, content right-aligned so it clips from left */}
+        <div
+          className="flex-shrink-0 overflow-hidden relative"
+          style={{
+            width: planPanel ? (isPlanPanelVisible ? 320 : 46) : 0,
+            transition: "width 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)",
+          }}
+        >
+          {/* Plan content — pinned to the right so collapsing clips from the left */}
+          {planPanel && (
+            <div
+              className="absolute top-0 right-0 bottom-0 bg-gray-50"
+              style={{
+                width: 320,
+                borderLeft: "1px solid #e5e7eb",
+                opacity: isPlanPanelVisible ? 1 : 0,
+                transition: "opacity 0.15s ease",
+                pointerEvents: isPlanPanelVisible ? "auto" : "none",
+              }}
+            >
+              {planPanel}
+            </div>
+          )}
+
+          {/* Toggle button — always in same position: top-right of the wrapper */}
+          {planPanel && onTogglePlanPanel && (
+            <button
+              onClick={onTogglePlanPanel}
+              className="absolute top-3 right-3 z-10 p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+              title={isPlanPanelVisible ? "Hide plan" : "Show plan"}
+            >
+              <IconSidebarGlobalOpen css={{
+                width: 18,
+                height: 18,
+                transform: isPlanPanelVisible ? 'none' : 'rotate(180deg)',
+                transition: 'transform 0.25s ease',
+              }} />
+            </button>
+          )}
+        </div>
+
+      </div>{/* end content area */}
     </div>
   );
 }

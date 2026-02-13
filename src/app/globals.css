@@ -163,6 +163,11 @@
   animation: slideInFromLeft 0.3s ease-out both;
 }
 
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* Hide Liveblocks badge */
 #liveblocks-badge, .tl-watermark_SEE-LICENSE {
   display: none !important;

@@ -14,7 +14,6 @@ const suggestions = [
 export default function HomePage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"foryou" | "recent">("foryou");
-  const [originalPrompt, setOriginalPrompt] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   // Pre-warm the canvas route so it's already compiled when user clicks "Create new"
@@ -23,7 +22,7 @@ export default function HomePage() {
   }, [router]);
 
   // Use chat from provider
-  const { messages, append, isLoading, openFullscreen, closeFullscreen, registerHandlers } = useChat();
+  const { append, isLoading, openFullscreen, registerHandlers } = useChat();
 
   // Register no-op handlers on mount (safe defaults for home page)
   useEffect(() => {
@@ -34,68 +33,12 @@ export default function HomePage() {
     });
   }, [registerHandlers]);
 
-  // Watch for plan approval and create canvas
-  useEffect(() => {
-    const checkForApproval = async () => {
-      // Find the most recent confirmPlan
-      const planMessage = messages.findLast(
-        (m) => m.role === "assistant" && m.toolInvocations?.some((t) => t.toolName === "confirmPlan")
-      );
-      if (!planMessage) return;
-
-      const planIndex = messages.indexOf(planMessage);
-
-      // Check if user approved after the plan
-      const laterMessages = messages.slice(planIndex + 1);
-      const userApproval = laterMessages.find(
-        (m) => m.role === "user" && m.content.toLowerCase().includes("approve")
-      );
-
-      if (!userApproval) return;
-
-      // Check if we already navigated (to avoid duplicate creation)
-      if (sessionStorage.getItem("canvas-handoff")) return;
-
-      // Auto-generate a short canvas name from the prompt
-      const canvasName = originalPrompt.slice(0, 50) || "New Canvas";
-
-      // Create an unassigned canvas (no space)
-      const response = await fetch("/api/canvases", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: canvasName,
-        }),
-      });
-
-      if (!response.ok) {
-        console.error("Failed to create canvas");
-        return;
-      }
-
-      const newCanvas = await response.json();
-
-      // Store handoff data in sessionStorage
-      sessionStorage.setItem(
-        "canvas-handoff",
-        JSON.stringify({
-          messages,
-          isFullscreenChat: true,
-        })
-      );
-
-      // Navigate to new canvas (use spaceId if assigned, otherwise "unassigned")
-      const space = newCanvas.spaceId || "unassigned";
-      router.push(`/space/${space}/canvas/${newCanvas.id}`);
-    };
-
-    checkForApproval();
-  }, [messages, originalPrompt, router]);
+  // Navigation from home → canvas is handled by ChatProvider:
+  // - When AI calls createCanvas → ChatProvider intercepts and navigates
+  // - When AI uses canvas tools without createCanvas → ChatProvider's safety net auto-creates and navigates
+  // - Chat transitions from fullscreen → sidepanel via canvas-handoff in sessionStorage
 
   const handleSubmit = (text: string) => {
-    if (!originalPrompt) {
-      setOriginalPrompt(text); // Store first prompt for canvas naming
-    }
     openFullscreen(true); // Set fromHome FIRST before append
     append({ role: "user", content: text });
   };
