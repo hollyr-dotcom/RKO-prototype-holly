@@ -2,6 +2,7 @@
 
 import { useSidebar } from "@/hooks/useSidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { ChatShell } from "@/components/ChatShell";
 
 // Shared transition for content surface properties that sync with the sidebar collapse
 const contentTransition = "border-radius 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), background-color 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)";
@@ -17,9 +18,9 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
       {/* Navigation panels — stays mounted, animates width to 0 when collapsed */}
       <AppSidebar />
 
-      {/* Wrapper sets background to mask the underlying color behind rounded corners */}
+      {/* Wrapper: horizontal flex so ChatShell spacer can push main content left */}
       <div
-        className="flex-1 relative z-10"
+        className="flex-1 flex relative z-10"
         style={{
           backgroundColor: !isCollapsed
             ? showSecondary
@@ -30,7 +31,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
         }}
       >
         <main
-          className="h-full flex flex-col overflow-hidden bg-white"
+          className="h-full flex-1 flex flex-col overflow-hidden bg-white"
           style={{
             borderRadius: contentHasRounding ? "1.5rem 0 0 1.5rem" : "0",
             border: "1px solid #f4f4f4",
@@ -40,6 +41,9 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
         >
           {children}
         </main>
+
+        {/* Chat panel — spark button (fixed), spacer (flex), chat container (fixed) */}
+        <ChatShell />
       </div>
     </div>
   );

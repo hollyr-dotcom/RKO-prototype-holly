@@ -4,7 +4,6 @@ import "./globals.css";
 import { Providers } from "./Providers";
 import { ChatProvider } from "@/providers/ChatProvider";
 import { SidebarProvider } from "@/providers/SidebarProvider";
-import { AppSidebar } from "@/components/AppSidebar";
 import { AuthGate } from "@/components/AuthGate";
 import { NavigationShell } from "@/components/NavigationShell";
 

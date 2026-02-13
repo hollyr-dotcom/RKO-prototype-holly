@@ -139,26 +139,25 @@ export default function HomePage() {
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-white">
+      {/* Create new button — fixed top-right, positioned next to spark button */}
+      <button
+        onClick={handleCreateEmptyCanvas}
+        disabled={isCreating}
+        className="fixed top-4 right-16 z-[9900] px-4 py-2 bg-gray-100 text-gray-900 text-sm font-medium rounded-full hover:bg-gray-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
+      >
+        {isCreating ? (
+          <span className="flex items-center gap-2">
+            <span className="w-3.5 h-3.5 border-2 border-gray-400/30 border-t-gray-700 rounded-full animate-spin" />
+            Creating...
+          </span>
+        ) : (
+          "+ Create new"
+        )}
+      </button>
+
       {/* Welcome View */}
       <div className="h-full w-full bg-white overflow-y-auto">
             <div className="flex flex-col items-center px-6">
-              {/* Top bar */}
-              <div className="w-full flex justify-end items-center py-4">
-                <button
-                  onClick={handleCreateEmptyCanvas}
-                  disabled={isCreating}
-                  className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-700 active:scale-95 active:bg-gray-950 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
-                >
-                  {isCreating ? (
-                    <span className="flex items-center gap-2">
-                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Creating...
-                    </span>
-                  ) : (
-                    "+ Create new"
-                  )}
-                </button>
-              </div>
 
               {/* Heading */}
               <h1 className="text-4xl font-bold text-gray-900 mt-12 mb-8">
