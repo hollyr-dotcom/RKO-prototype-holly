@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "rko-project-2026",
     "source": ".",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "frameworksBackend": {
