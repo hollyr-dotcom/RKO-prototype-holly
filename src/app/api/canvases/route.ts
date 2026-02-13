@@ -21,6 +21,12 @@ function writeCanvases(canvases: Canvas[]) {
   fs.writeFileSync(CANVASES_PATH, JSON.stringify(canvases, null, 2) + "\n");
 }
 
+/** GET /api/canvases — list all canvases (reads from src/data, not public) */
+export async function GET() {
+  const canvases = readCanvases();
+  return NextResponse.json(canvases);
+}
+
 /** POST /api/canvases — create a new canvas, optionally in a space */
 export async function POST(req: Request) {
   try {

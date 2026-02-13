@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSidebar } from "@/hooks/useSidebar";
+import { useChat } from "@/hooks/useChat";
 import { MastheadAvatars } from "./Avatars";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
@@ -23,6 +24,7 @@ import {
 export function CanvasMasthead() {
   const params = useParams<{ spaceId: string; canvasId: string }>();
   const { isCollapsed, toggleSidebar } = useSidebar();
+  const { chatMode } = useChat();
 
   // Look up canvas and space names from static data
   const canvas = canvases.find((c) => c.id === params.canvasId);
@@ -73,9 +75,10 @@ export function CanvasMasthead() {
   };
 
   const barShadow = "0 4px 24px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)";
+  const isChatMinimized = chatMode === "minimized";
 
   return (
-    <div className="absolute top-3 left-3 right-3 z-[500] flex items-center justify-between pointer-events-none">
+    <div className={`absolute top-3 left-3 z-[500] flex items-center justify-between pointer-events-none ${isChatMinimized ? 'right-16' : 'right-3'}`}>
       {/* ── Left bar: Board identity ── */}
       <div
         className="h-12 bg-white rounded-full border border-gray-200 flex items-center pointer-events-auto p-1.5"

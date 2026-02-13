@@ -21,9 +21,9 @@ function TasksIcon({ active }: { active: boolean }) {
 }
 
 const navItems = [
-  { label: "Home", href: "/", icon: HomeIcon },
-  { label: "Chats", href: "#", icon: ChatIcon },
-  { label: "Tasks", href: "#", icon: TasksIcon },
+  { label: "Home", href: "/", icon: HomeIcon, action: null as string | null },
+  { label: "Chats", href: "#", icon: ChatIcon, action: "openChat" as string | null },
+  { label: "Tasks", href: "#", icon: TasksIcon, action: null as string | null },
 ];
 
 type Space = {
@@ -50,7 +50,7 @@ type Canvas = {
 export function AppSidebar() {
   const pathname = usePathname();
   const { isCollapsed, toggleSidebar, sidebarWidth } = useSidebar();
-  const { closeFullscreen } = useChat();
+  const { chatMode, setChatMode } = useChat();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
   const [expandedSpaceIds, setExpandedSpaceIds] = useState<Set<string>>(new Set());
@@ -105,14 +105,14 @@ export function AppSidebar() {
               </div>
             </button>
           ) : (
-            <Link href="/" onClick={closeFullscreen}>
+            <Link href="/">
               <div className="w-7 h-7 bg-gray-900 rounded-lg flex items-center justify-center">
                 <IconMiroMark css={{ width: 16, height: 16, color: 'white' }} />
               </div>
             </Link>
           )}
         </div>
-        <Link href="/" onClick={closeFullscreen} className="flex-1">
+        <Link href="/" className="flex-1">
           <span
             className="text-sm font-semibold text-gray-900 whitespace-nowrap ml-2 transition-opacity duration-200 cursor-pointer hover:text-gray-600"
             style={{ opacity: isCollapsed ? 0 : 1 }}
@@ -134,15 +134,25 @@ export function AppSidebar() {
       <nav className="flex-1 overflow-y-auto px-1.5">
         <ul className="space-y-0.5 mb-4">
           {navItems.map((item) => {
-            const isActive =
-              item.href === "/"
+            const isChatItem = item.action === "openChat";
+            const isActive = isChatItem
+              ? chatMode === "sidepanel"
+              : item.href === "/"
                 ? pathname === "/"
-                : pathname.startsWith(item.href);
+                : pathname.startsWith(item.href) && item.href !== "#";
+
+            const handleClick = (e: React.MouseEvent) => {
+              if (isChatItem) {
+                e.preventDefault();
+                setChatMode(chatMode === "sidepanel" ? "minimized" : "sidepanel");
+              }
+            };
+
             return (
               <li key={item.label}>
                 <Link
                   href={item.href}
-                  onClick={item.href === "/" ? closeFullscreen : undefined}
+                  onClick={handleClick}
                   title={isCollapsed ? item.label : undefined}
                   className={`flex items-center py-2 rounded-lg text-sm transition-colors overflow-hidden ${
                     isActive

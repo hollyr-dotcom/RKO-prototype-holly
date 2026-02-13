@@ -1,0 +1,150 @@
+{
+  "currentUser": "user-kyra",
+  "users": [
+    {
+      "id": "user-kyra",
+      "name": "Kyra Osei",
+      "firstName": "Kyra",
+      "role": "Chief Product & Technology Officer",
+      "department": "EPD Leadership",
+      "email": "kyra.osei@flexfund.com",
+      "avatar": "/avatars/kyra-osei.png",
+      "status": "online",
+      "timezone": "Europe/London",
+      "isCurrentUser": true
+    },
+    {
+      "id": "user-marcus",
+      "name": "Marcus Chen",
+      "firstName": "Marcus",
+      "role": "Senior Product Lead — FirstFlex",
+      "department": "Consumer Products",
+      "email": "marcus.chen@flexfund.com",
+      "avatar": "/avatars/marcus-chen.png",
+      "status": "online",
+      "timezone": "America/New_York"
+    },
+    {
+      "id": "user-priya",
+      "name": "Priya Sharma",
+      "firstName": "Priya",
+      "role": "Senior Product Lead — PayGrid",
+      "department": "Enterprise Products",
+      "email": "priya.sharma@flexfund.com",
+      "avatar": "/avatars/priya-sharma.png",
+      "status": "online",
+      "timezone": "Europe/London"
+    },
+    {
+      "id": "user-james",
+      "name": "James Holloway",
+      "firstName": "James",
+      "role": "VP of Engineering",
+      "department": "EPD Leadership",
+      "email": "james.holloway@flexfund.com",
+      "avatar": "/avatars/james-holloway.png",
+      "status": "away",
+      "timezone": "America/New_York"
+    },
+    {
+      "id": "user-amara",
+      "name": "Amara Okafor",
+      "firstName": "Amara",
+      "role": "Head of Design",
+      "department": "EPD Leadership",
+      "email": "amara.okafor@flexfund.com",
+      "avatar": "/avatars/amara-okafor.png",
+      "status": "online",
+      "timezone": "Europe/London"
+    },
+    {
+      "id": "user-daniel",
+      "name": "Daniel Park",
+      "firstName": "Daniel",
+      "role": "Engineering Lead — Platform Squad 3",
+      "department": "Platform Engineering",
+      "email": "daniel.park@flexfund.com",
+      "avatar": "/avatars/daniel-park.png",
+      "status": "online",
+      "timezone": "America/San_Francisco"
+    },
+    {
+      "id": "user-sofia",
+      "name": "Sofia Reyes",
+      "firstName": "Sofia",
+      "role": "Senior Process Improvement Manager",
+      "department": "Operations Excellence",
+      "email": "sofia.reyes@flexfund.com",
+      "avatar": "/avatars/sofia-reyes.png",
+      "status": "online",
+      "timezone": "Europe/Amsterdam"
+    },
+    {
+      "id": "user-raj",
+      "name": "Raj Patel",
+      "firstName": "Raj",
+      "role": "Product Manager — FirstFlex Onboarding",
+      "department": "Consumer Products",
+      "email": "raj.patel@flexfund.com",
+      "avatar": "/avatars/raj-patel.png",
+      "status": "away",
+      "timezone": "Asia/Singapore"
+    },
+    {
+      "id": "user-elena",
+      "name": "Elena Vasquez",
+      "firstName": "Elena",
+      "role": "Product Manager — PayGrid Integrations",
+      "department": "Enterprise Products",
+      "email": "elena.vasquez@flexfund.com",
+      "avatar": "/avatars/elena-vasquez.png",
+      "status": "online",
+      "timezone": "America/New_York"
+    },
+    {
+      "id": "user-tom",
+      "name": "Tom Andersen",
+      "firstName": "Tom",
+      "role": "Chief Financial Officer",
+      "department": "Finance",
+      "email": "tom.andersen@flexfund.com",
+      "avatar": "/avatars/tom-andersen.png",
+      "status": "offline",
+      "timezone": "Europe/London"
+    },
+    {
+      "id": "user-nina",
+      "name": "Nina Johansson",
+      "firstName": "Nina",
+      "role": "Chief Operating Officer",
+      "department": "Operations",
+      "email": "nina.johansson@flexfund.com",
+      "avatar": "/avatars/nina-johansson.png",
+      "status": "online",
+      "timezone": "Europe/Stockholm"
+    },
+    {
+      "id": "user-liam",
+      "name": "Liam O'Brien",
+      "firstName": "Liam",
+      "role": "Data Science Lead",
+      "department": "Analytics",
+      "email": "liam.obrien@flexfund.com",
+      "avatar": "/avatars/liam-obrien.png",
+      "status": "online",
+      "timezone": "Europe/Dublin"
+    },
+    {
+      "id": "agent-product-leader",
+      "name": "Product Leader Agent",
+      "firstName": "Product Leader",
+      "role": "AI Agent",
+      "department": "AI Agents",
+      "avatar": "/avatars/agent-product-leader.svg",
+      "status": "online",
+      "isAgent": true,
+      "agentType": "product-leader",
+      "description": "Helps product leaders make strategic decisions by analysing project data, surfacing insights, and coordinating across teams."
+    }
+  ]
+}

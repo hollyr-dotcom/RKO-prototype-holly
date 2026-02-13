@@ -2,6 +2,8 @@ import { Agent, run, tool } from "@openai/agents";
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth/serverAuth";
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 
 export const maxDuration = 120;
 
@@ -379,6 +381,55 @@ const organizeIntoFrameTool = tool({
   },
 });
 
+// --- Workspace Navigation Tools ---
+const createCanvasTool = tool({
+  name: "createCanvas",
+  description: "Create a new canvas (board). Use when the user wants to start fresh work on a new board, or when you need a dedicated space for a task. YOU decide whether to navigate the user there — navigate=true for 'create a board for X', navigate=false for background creation.",
+  parameters: z.object({
+    name: z.string().describe("Canvas name (short, descriptive)"),
+    spaceId: z.string().default("").describe("Space to create in (empty for unassigned). Check workspace context for available spaces."),
+    navigate: z.boolean().default(true).describe("Whether to take the user to the new canvas after creation"),
+  }),
+  execute: async ({ name, spaceId, navigate }) => {
+    const canvasesPath = path.join(process.cwd(), "src/data/canvases.json");
+    const canvases = JSON.parse(fs.readFileSync(canvasesPath, "utf-8"));
+    const now = new Date().toISOString();
+    const newCanvas = {
+      id: `canvas-${Date.now()}`,
+      spaceId: spaceId || "",
+      name,
+      createdAt: now,
+      updatedAt: now,
+    };
+    canvases.push(newCanvas);
+    fs.writeFileSync(canvasesPath, JSON.stringify(canvases, null, 2) + "\n");
+
+    return JSON.stringify({
+      created: "canvas",
+      canvasId: newCanvas.id,
+      spaceId: newCanvas.spaceId,
+      name: newCanvas.name,
+      navigate,
+    });
+  },
+});
+
+const navigateToCanvasTool = tool({
+  name: "navigateToCanvas",
+  description: "Navigate the user to an existing canvas. Use when user asks to go to a specific board, or when you need to work on content that lives on another board. Check workspace context for available canvases and their IDs.",
+  parameters: z.object({
+    canvasId: z.string().describe("The canvas ID to navigate to"),
+    reason: z.string().describe("Brief reason for navigating (shown to user)"),
+  }),
+  execute: async ({ canvasId, reason }) => {
+    return JSON.stringify({
+      action: "navigate",
+      canvasId,
+      reason,
+    });
+  },
+});
+
 // ============================================
 // AGENT CONFIGURATION
 // ============================================
@@ -387,7 +438,7 @@ const organizeIntoFrameTool = tool({
 const planningAgent = new Agent({
   name: "Canvas Assistant",
   model: "gpt-5.2",
-  instructions: `You're a friendly canvas assistant. You help people create visual artifacts on a whiteboard.
+  instructions: `You're a friendly workspace assistant. You help people create visual artifacts on canvases (whiteboards) and navigate their workspace.
 
 FIRST: DECIDE HOW TO RESPOND based on what the user asked:
 
@@ -414,6 +465,14 @@ FIRST: DECIDE HOW TO RESPOND based on what the user asked:
    STEP 2: After user answers your questions, THEN call confirmPlan() in your NEXT response.
 
    ⚠️ NEVER call askUser() AND confirmPlan() in the same turn!
+
+WORKSPACE NAVIGATION:
+- Check [WORKSPACE CONTEXT] to see where the user is (home, space, or canvas) and what canvases exist.
+- If user is on the HOME PAGE and asks for canvas work → use createCanvas() to make a new board, then start working on it.
+- If user is on a CANVAS and asks for a NEW board / fresh board → use createCanvas(navigate=true) to create and navigate to it, then start working.
+- If user mentions a specific board by name → use navigateToCanvas() to go there first.
+- NEVER ask "which board should I use?" — decide based on context. Create a new one if none fits.
+- After createCanvas(navigate=true), the user will be taken to the new board and you can start placing content.
 
 USE YOUR JUDGMENT. The key question: "Does this need visual artifacts on the canvas?"
 - Yes, and it's complex → ask questions (if needed), WAIT for answers, THEN create plan
@@ -451,6 +510,28 @@ FOR SIMPLE, DIRECT REQUESTS - USE TOOLS IMMEDIATELY:
 - "Draw an arrow from A to B" → Just use createArrow() directly
 - No need for confirmPlan() — just do it!
 
+🎨 YOUR TEXT MESSAGES — BE NATURAL, NEVER ROBOTIC:
+The chat UI auto-generates artifact cards (board name, item count, navigation arrows) for everything you create. Your text adds personality — NOT data the cards already show.
+
+🚨 CRITICAL OUTPUT ORDER — YOU MUST FOLLOW THIS:
+1. FIRST: Write a brief acknowledgment (1 sentence) — this shows ABOVE the artifact cards
+2. THEN: Call your tools (createCanvas, createLayout, etc.)
+3. LAST: Write a DIFFERENT follow-up (1 sentence) — this shows BELOW the artifact cards
+
+NEVER call tools before writing your acknowledgment text. The UI depends on this order.
+NEVER repeat your acknowledgment after the tools. The summary MUST be different content — a follow-up question, highlight, or next step.
+
+- Acknowledgment examples: "Ooh, funny cat names — on it!" / "Bird puns incoming." / "Fresh brainstorm board coming up."
+- Follow-up examples (MUST differ from ack): "Want me to organize these by category?" / "Some standouts: Chairman Meow, Purrlock Holmes."
+
+NEVER use "---" separators in your text.
+
+🚫 BANNED PATTERNS (the cards handle this info — NEVER repeat it in text):
+- "Created a new board called **X**"
+- "...and added a grid of Y stickies (e.g., **A, B, C**)."
+- Mentioning board names, item counts, or tool names in your prose
+- Using the same sentence structure twice across different requests
+
 🎯 STICKY NOTES vs SHAPES:
 - User says "stickies", "sticky notes", "post-its", "brainstorm", "ideas" → createLayout(type:"sticky")
 - User says "diagram", "org chart", "sitemap", "flow" → createLayout(type:"shape")
@@ -465,6 +546,9 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     askUserTool,
     confirmPlanTool,
     webSearchTool,
+    // Workspace navigation tools
+    createCanvasTool,
+    navigateToCanvasTool,
     // Canvas creation tools for simple direct requests
     createLayoutTool,
     createStickyTool,
@@ -515,6 +599,11 @@ NEVER respond with just text when user says "Continue" - START WORKING IMMEDIATE
 
 ⚠️ CRITICAL RULE #3: NEVER call createSticky or createShape multiple times!
 If you need 2+ items, you MUST use createLayout() instead.
+
+WORKSPACE NAVIGATION:
+- Check [WORKSPACE CONTEXT]. If you're on the HOME PAGE, call createCanvas(navigate=true) FIRST before any canvas tools.
+- If user asked for a NEW board, call createCanvas(navigate=true) FIRST, even if already on a canvas.
+- After createCanvas, the user is navigated automatically — then start placing content.
 
 EXECUTION FLOW:
 Work through steps in sequence. For each step:
@@ -655,6 +744,10 @@ BAD: 13 stickies each with random different colors`,
     checkpointTool,
     requestFeedbackTool,
     webSearchTool,
+    // Workspace navigation tools
+    createCanvasTool,
+    navigateToCanvasTool,
+    // Canvas creation tools
     createLayoutTool,  // PREFERRED for organized content
     createStickyTool,
     createTextTool,
@@ -680,7 +773,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { messages, canvasState, userEdits, generateTitle } = await req.json();
+  const { messages, canvasState, userEdits, generateTitle, workspaceContext } = await req.json();
   console.log('[Chat API] generateTitle:', generateTitle, 'messages.length:', messages?.length);
 
   // Build conversation context - include tool calls so agent knows what it proposed
@@ -889,6 +982,29 @@ ${canvasDescription}`;
 Canvas is empty. Start placing content at (0, 0).`;
   }
 
+  // Include workspace context
+  type WorkspaceContext = {
+    currentSurface: string;
+    canvasId?: string;
+    spaceId?: string;
+    availableSpaces: Array<{ id: string; name: string }>;
+    availableCanvases: Array<{ id: string; name: string; spaceId: string }>;
+  };
+
+  const workspace = workspaceContext as WorkspaceContext | undefined;
+  if (workspace) {
+    conversationContext += `
+
+[WORKSPACE CONTEXT]
+Current surface: ${workspace.currentSurface}${workspace.canvasId ? ` (canvas: ${workspace.canvasId})` : ''}${workspace.spaceId ? ` (space: ${workspace.spaceId})` : ''}
+
+Available spaces:
+${workspace.availableSpaces.map(s => `  - ${s.name} [ID: ${s.id}]`).join('\n') || '  (none)'}
+
+Available canvases:
+${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId ? ` in space ${c.spaceId}` : ' (unassigned)'}`).join('\n') || '  (none)'}`;
+  }
+
   // Include user edits and additions
   type UserEdit = { shapeId: string; field: string; oldValue: string; newValue: string };
   const edits = (userEdits as UserEdit[] | undefined) || [];
@@ -938,6 +1054,7 @@ Canvas is empty. Start placing content at (0, 0).`;
     ? conversationContext  // Execution mode: just the execution instructions
     : `Conversation so far:\n${conversationContext}\n\nRespond to the latest user message.`;
 
+
   try {
     // Use execution agent when plan is approved (no confirmPlan tool available)
     const agent = isExecutionMode ? executionAgent : planningAgent;
@@ -949,6 +1066,17 @@ Canvas is empty. Start placing content at (0, 0).`;
       async start(controller) {
         const toolCalls: ToolCall[] = [];
         let textContent = "";
+        let controllerClosed = false;
+
+        const safeEnqueue = (chunk: Uint8Array) => {
+          if (!controllerClosed) {
+            try {
+              controller.enqueue(chunk);
+            } catch {
+              controllerClosed = true;
+            }
+          }
+        };
 
         try {
           let sentTextLength = 0;
@@ -968,7 +1096,7 @@ Canvas is empty. Start placing content at (0, 0).`;
                 const delta = data.delta as string;
                 if (delta) {
                   textContent += delta;
-                  controller.enqueue(
+                  safeEnqueue(
                     encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
                   );
                   sentTextLength = textContent.length;
@@ -980,7 +1108,7 @@ Canvas is empty. Start placing content at (0, 0).`;
                 const delta = data.delta as string;
                 if (delta) {
                   textContent += delta;
-                  controller.enqueue(
+                  safeEnqueue(
                     encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
                   );
                   sentTextLength = textContent.length;
@@ -994,7 +1122,7 @@ Canvas is empty. Start placing content at (0, 0).`;
                   const delta = deltaData.text as string;
                   if (delta) {
                     textContent += delta;
-                    controller.enqueue(
+                    safeEnqueue(
                       encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
                     );
                     sentTextLength = textContent.length;
@@ -1008,7 +1136,7 @@ Canvas is empty. Start placing content at (0, 0).`;
               const delta = (event as { delta?: string }).delta || (event as { text?: string }).text;
               if (delta) {
                 textContent += delta;
-                controller.enqueue(
+                safeEnqueue(
                   encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
                 );
                 sentTextLength = textContent.length;
@@ -1029,7 +1157,7 @@ Canvas is empty. Start placing content at (0, 0).`;
                       if (block.text.length > sentTextLength) {
                         const newText = block.text.slice(sentTextLength);
                         textContent = block.text;
-                        controller.enqueue(
+                        safeEnqueue(
                           encoder.encode(`data: ${JSON.stringify({ type: "text", content: newText })}\n\n`)
                         );
                       } else {
@@ -1050,13 +1178,27 @@ Canvas is empty. Start placing content at (0, 0).`;
                   try {
                     const args = JSON.parse(rawArgs);
                     toolCalls.push({ toolName, args });
-
-                    controller.enqueue(
+                    safeEnqueue(
                       encoder.encode(`data: ${JSON.stringify({ type: "tool", toolName, args })}\n\n`)
                     );
                   } catch {
                     // Skip malformed
                   }
+                }
+              }
+
+              // Handle tool call outputs (separate event type from Agents SDK)
+              if (item.type === "tool_call_output_item") {
+                const rawItem = item.rawItem as Record<string, unknown>;
+                const toolName = rawItem?.name as string;
+                const rawOutput = rawItem?.output;
+
+                if (toolName === "createCanvas" && rawOutput) {
+                  // Output may be an object or a JSON string
+                  const result = typeof rawOutput === "string" ? JSON.parse(rawOutput) : rawOutput;
+                  safeEnqueue(
+                    encoder.encode(`data: ${JSON.stringify({ type: "tool_result", toolName, result })}\n\n`)
+                  );
                 }
               }
             }
@@ -1107,17 +1249,20 @@ Canvas is empty. Start placing content at (0, 0).`;
           }
 
           // Send done event
-          controller.enqueue(
+          safeEnqueue(
             encoder.encode(`data: ${JSON.stringify({ type: "done", text: textContent, toolCalls, chatTitle })}\n\n`)
           );
         } catch (err) {
           console.error("Stream error:", err);
-          controller.enqueue(
+          safeEnqueue(
             encoder.encode(`data: ${JSON.stringify({ type: "error", message: String(err) })}\n\n`)
           );
         }
 
-        controller.close();
+        if (!controllerClosed) {
+          controller.close();
+          controllerClosed = true;
+        }
       },
     });
 
