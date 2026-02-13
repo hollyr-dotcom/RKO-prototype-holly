@@ -8,7 +8,7 @@ import { useChat } from "@/hooks/useChat";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useRealtimeVoice } from "@/hooks/useRealtimeVoice";
 import { useStorageStore } from "@/hooks/useStorageStore";
-import { generateId, getSessionUser } from "@/lib/userIdentity";
+import { generateId, getSessionUser, getLocalDevUser } from "@/lib/userIdentity";
 import { useAuth } from "@/hooks/useAuth";
 import { DocumentShapeUtil } from "@/shapes/DocumentShapeUtil";
 import { DataTableShapeUtil } from "@/shapes/DataTableShapeUtil";
@@ -794,7 +794,7 @@ export function Canvas() {
   const { user: firebaseUser } = useAuth();
 
   // LiveBlocks multiplayer store -- syncs tldraw state across users
-  const [sessionUser] = useState(() => firebaseUser ? getSessionUser(firebaseUser) : undefined);
+  const [sessionUser] = useState(() => firebaseUser ? getSessionUser(firebaseUser) : getLocalDevUser());
   const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 

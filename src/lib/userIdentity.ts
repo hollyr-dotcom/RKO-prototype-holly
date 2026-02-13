@@ -42,6 +42,17 @@ export function getSessionUser(firebaseUser: User): SessionUser {
   };
 }
 
+// Fallback for local dev without Firebase auth
+export function getLocalDevUser(): SessionUser {
+  return {
+    id: 'local-dev',
+    name: 'Dev',
+    color: '#6366f1',
+    email: 'dev@local',
+    photoURL: null,
+  };
+}
+
 // Fallback for server-side contexts
 export function getServerSessionUser(): SessionUser {
   return {

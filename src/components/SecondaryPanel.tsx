@@ -93,16 +93,16 @@ export function SecondaryPanel() {
 
     fetch(`/api/spaces/${params.spaceId}`)
       .then((res) => {
-        if (!res.ok) throw new Error(`Spaces API returned ${res.status}`);
+        if (!res.ok) return null;
         return res.json();
       })
       .then((data) => {
-        if (!cancelled) {
+        if (!cancelled && data) {
           setSpace(data);
           setCanvases(data.canvases || []);
         }
       })
-      .catch((err) => console.error("Failed to load space:", err));
+      .catch(() => {});
 
     return () => {
       cancelled = true;
