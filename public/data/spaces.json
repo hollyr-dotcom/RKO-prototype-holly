@@ -1,0 +1,54 @@
+{
+  "spaces": [
+    {
+      "id": "space-epd-leadership",
+      "name": "EPD Leadership",
+      "description": "Strategic planning and decision-making for Product, Design, and Engineering",
+      "icon": "shield",
+      "createdAt": "2025-09-01T10:00:00Z",
+      "updatedAt": "2026-02-10T14:30:00Z",
+      "members": ["user-kyra", "user-james", "user-amara"],
+      "canvases": ["canvas-priority-decision", "canvas-q3-dependencies", "canvas-portfolio-review"]
+    },
+    {
+      "id": "space-firstflex",
+      "name": "FirstFlex",
+      "description": "Next-gen onboarding experience for first-time users",
+      "icon": "rocket",
+      "createdAt": "2026-01-06T09:00:00Z",
+      "updatedAt": "2026-02-10T08:45:00Z",
+      "members": ["user-marcus", "user-raj", "user-daniel", "user-kyra", "user-amara"],
+      "canvases": ["canvas-ff-sprint", "canvas-ff-solution-review", "canvas-ff-user-research"]
+    },
+    {
+      "id": "space-paygrid",
+      "name": "PayGrid",
+      "description": "Real-time supplier payment orchestration for enterprise",
+      "icon": "zap",
+      "createdAt": "2025-11-04T10:00:00Z",
+      "updatedAt": "2026-02-09T17:20:00Z",
+      "members": ["user-priya", "user-elena", "user-daniel", "user-kyra", "user-james"],
+      "canvases": ["canvas-pg-architecture", "canvas-pg-solution-review", "canvas-pg-pilot-plan"]
+    },
+    {
+      "id": "space-q3-planning",
+      "name": "Q3 Planning",
+      "description": "Cross-initiative planning and resource allocation for Q3 2026",
+      "icon": "calendar",
+      "createdAt": "2026-01-15T10:00:00Z",
+      "updatedAt": "2026-02-10T09:15:00Z",
+      "members": ["user-kyra", "user-marcus", "user-priya", "user-james", "user-amara", "user-daniel"],
+      "canvases": ["canvas-q3-roadmap", "canvas-q3-dependencies", "canvas-resource-plan"]
+    },
+    {
+      "id": "space-market-intel",
+      "name": "Market Intelligence",
+      "description": "Competitive analysis, market trends, and strategic insights",
+      "icon": "trending-up",
+      "createdAt": "2025-06-15T09:00:00Z",
+      "updatedAt": "2026-02-10T07:00:00Z",
+      "members": ["user-kyra", "user-marcus", "user-priya", "user-liam"],
+      "canvases": ["canvas-market-brief", "canvas-competitor-landscape"]
+    }
+  ]
+}

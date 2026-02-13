@@ -10,6 +10,9 @@ export type Message = {
     toolName: string;
     args: Record<string, unknown>;
   }>;
+  // Index in content where the first tool call happened — used to split
+  // acknowledgment text (before tools) from summary text (after tools)
+  toolTextSplit?: number;
 };
 
 type ToolHandler = (toolName: string, args: Record<string, unknown>) => void;
@@ -48,11 +51,22 @@ type UserEdit = {
 type CanvasStateGetter = () => CanvasState;
 type UserEditsGetter = () => UserEdit[];
 
+type WorkspaceContext = {
+  currentSurface: string;
+  canvasId?: string;
+  spaceId?: string;
+  availableSpaces: Array<{ id: string; name: string }>;
+  availableCanvases: Array<{ id: string; name: string; spaceId: string }>;
+};
+
+type WorkspaceContextGetter = () => WorkspaceContext;
+
 export function useAgent(
   onToolCall?: ToolHandler,
   getCanvasState?: CanvasStateGetter,
   getUserEdits?: UserEditsGetter,
-  onTitleGenerated?: (title: string) => void
+  onTitleGenerated?: (title: string) => void,
+  getWorkspaceContext?: WorkspaceContextGetter
 ) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -91,6 +105,7 @@ export function useAgent(
         // Get current canvas state if available
         const canvasState = getCanvasState ? getCanvasState() : { frames: [], orphans: [], arrows: [] };
         const userEdits = getUserEdits ? getUserEdits() : [];
+        const workspaceContext = getWorkspaceContext ? getWorkspaceContext() : undefined;
 
         const response = await fetch("/api/chat", {
           method: "POST",
@@ -104,6 +119,7 @@ export function useAgent(
             canvasState,
             userEdits,
             generateTitle,
+            workspaceContext,
           }),
           signal: abortControllerRef.current.signal,
         });
@@ -121,6 +137,7 @@ export function useAgent(
         // Buffer content until stream is complete to avoid visual glitches
         let bufferedText = "";
         let bufferedTools: Array<{ toolName: string; args: Record<string, unknown> }> = [];
+        let toolTextSplit: number | undefined; // text length when first tool arrived
 
         while (true) {
           const { done, value } = await reader.read();
@@ -147,6 +164,7 @@ export function useAgent(
                             ...m,
                             content: bufferedText,
                             toolInvocations: bufferedTools.length > 0 ? bufferedTools : undefined,
+                            toolTextSplit,
                           }
                         : m
                     )
@@ -154,6 +172,11 @@ export function useAgent(
                 }
 
                 if (data.type === "tool") {
+                  // Record where in the text the first tool call happened
+                  if (toolTextSplit === undefined) {
+                    toolTextSplit = bufferedText.length;
+                  }
+
                   // Buffer tool invocation
                   bufferedTools.push({ toolName: data.toolName, args: data.args });
 
@@ -163,7 +186,7 @@ export function useAgent(
                   // - showProgress: step tracking
                   // - checkpoint: feedback pause points
                   // - webSearch: show "Searching..." indicator
-                  const immediateTools = ["askUser", "confirmPlan", "showProgress", "checkpoint", "webSearch"];
+                  const immediateTools = ["askUser", "confirmPlan", "showProgress", "checkpoint", "webSearch", "createCanvas", "navigateToCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText"];
                   if (immediateTools.includes(data.toolName)) {
                     setMessages((prev) =>
                       prev.map((m) =>
@@ -172,6 +195,7 @@ export function useAgent(
                               ...m,
                               content: bufferedText,
                               toolInvocations: [...bufferedTools],
+                              toolTextSplit,
                             }
                           : m
                       )
@@ -184,6 +208,39 @@ export function useAgent(
                   }
                 }
 
+                if (data.type === "tool_result") {
+                  // Server-side tool result — unwrap nested JSON and forward for navigation
+                  let result = data.result;
+                  // The Agents SDK wraps output as { type: "text", text: "{...}" }
+                  if (result?.type === "text" && typeof result.text === "string") {
+                    try { result = JSON.parse(result.text); } catch {}
+                  }
+
+                  // Add tool_result to toolInvocations for UI (e.g., createCanvas_result with canvasId)
+                  const resultToolName = `${data.toolName}_result`;
+                  bufferedTools.push({ toolName: resultToolName, args: result || {} });
+
+                  // Update UI immediately for navigation-critical results
+                  if (data.toolName === "createCanvas") {
+                    setMessages((prev) =>
+                      prev.map((m) =>
+                        m.id === assistantId
+                          ? {
+                              ...m,
+                              content: bufferedText,
+                              toolInvocations: [...bufferedTools],
+                              toolTextSplit,
+                            }
+                          : m
+                      )
+                    );
+                  }
+
+                  if (onToolCall) {
+                    onToolCall(resultToolName, result);
+                  }
+                }
+
                 if (data.type === "done") {
                   // Stream complete - update message with all buffered content at once
                   setMessages((prev) =>
@@ -193,6 +250,7 @@ export function useAgent(
                             ...m,
                             content: bufferedText,
                             toolInvocations: bufferedTools.length > 0 ? bufferedTools : undefined,
+                            toolTextSplit,
                           }
                         : m
                     )
@@ -221,7 +279,7 @@ export function useAgent(
         setIsLoading(false);
       }
     },
-    [messages, onToolCall, getCanvasState, getUserEdits, onTitleGenerated]
+    [messages, onToolCall, getCanvasState, getUserEdits, onTitleGenerated, getWorkspaceContext]
   );
 
   return {

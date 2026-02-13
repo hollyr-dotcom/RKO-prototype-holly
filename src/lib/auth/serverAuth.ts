@@ -11,6 +11,8 @@ export type AuthenticatedUser = {
 };
 
 export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
+  if (!adminAuth) return null;
+
   const cookieStore = await cookies();
   const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
 
@@ -36,6 +38,9 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
 }
 
 export async function requireAuth(): Promise<AuthenticatedUser> {
+  // Skip auth when Firebase isn't configured (local dev)
+  if (!adminAuth) return { uid: 'local', email: 'dev@local', displayName: 'Local Dev', photoURL: null };
+
   const user = await getAuthenticatedUser();
   if (!user) {
     throw new Error('Unauthorized');

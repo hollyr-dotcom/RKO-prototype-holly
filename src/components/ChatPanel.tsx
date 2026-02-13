@@ -12,10 +12,11 @@ import {
   IconCheckMark,
   IconChevronDown,
   IconArrowRight,
-  IconArrowLeft,
   IconMinus,
   IconArrowsOutSimple,
+  IconArrowsInSimple,
   IconCross,
+  IconSquarePencil,
 } from "@mirohq/design-system-icons";
 
 // Voice wave icon
@@ -35,15 +36,17 @@ interface ChatPanelProps {
   onClose: () => void;
   onCollapse?: () => void;
   onExpand?: () => void;
+  onNewChat?: () => void;
   messages: Message[];
   input: string;
   setInput: (input: string) => void;
   onSubmit: (text: string) => void;
   isLoading: boolean;
-  hideHeader?: boolean;
   onNavigateToFrames?: (frameIds: string[]) => void;
+  onNavigateToCanvas?: (canvasId?: string) => void;
   isFullscreen?: boolean;
   onExitFullscreen?: () => void;
+  isVisible?: boolean;
 }
 
 // Question block with clickable suggestions
@@ -314,80 +317,166 @@ function ProgressBlock({ status }: { status: string }) {
 
 // Web search block removed - merged into activity indicator
 
-// Collapsible tool invocation block (for create tools) - the original nice component
-function ToolBlock({ toolInvocations }: { toolInvocations: Message["toolInvocations"] }) {
-  const [isOpen, setIsOpen] = useState(false);
-
+// Progressive artifact card — loading states while streaming, clickable when done
+function ArtifactCard({
+  toolInvocations,
+  isStreaming = false,
+  onNavigateToCanvas,
+  onNavigateToFrames,
+}: {
+  toolInvocations: Message["toolInvocations"];
+  isStreaming?: boolean;
+  onNavigateToCanvas?: (canvasId?: string) => void;
+  onNavigateToFrames?: (frameNames: string[]) => void;
+}) {
   if (!toolInvocations || toolInvocations.length === 0) return null;
 
-  // Filter to only canvas creation/modification tools
-  const canvasTools = toolInvocations.filter(
-    (t) => ["createSticky", "createShape", "createText", "createFrame", "createArrow", "createWorkingNote", "deleteItem", "updateSticky", "moveItem"].includes(t.toolName)
+  const createCanvasTool = toolInvocations.find(t => t.toolName === "createCanvas");
+  const createCanvasResult = toolInvocations.find(t => t.toolName === "createCanvas_result");
+  const layoutTools = toolInvocations.filter(t => t.toolName === "createLayout");
+  const frameTools = toolInvocations.filter(t => t.toolName === "createFrame");
+  const looseItems = toolInvocations.filter(t =>
+    ["createSticky", "createShape", "createText"].includes(t.toolName)
   );
-  if (canvasTools.length === 0) return null;
 
-  // Generate summary text
-  const getSummary = () => {
+  const hasBoard = !!createCanvasTool;
+  const boardReady = !!createCanvasResult;
+  const resultArgs = createCanvasResult?.args as { canvasId?: string; spaceId?: string } | undefined;
+  const canvasId = resultArgs?.canvasId;
+  const boardName = (createCanvasTool?.args as { name?: string })?.name || "New Board";
+
+  // Build content lines
+  type ContentLine = { label: string; loadingLabel: string; onClick?: () => void };
+  const contentLines: ContentLine[] = [];
+
+  layoutTools.forEach(lt => {
+    const args = lt.args as { frameName?: string; items?: Array<{ type?: string }>; type?: string };
+    const count = args.items?.length || 0;
+    if (count === 0) return;
+    const itemType = args.items?.[0]?.type || "item";
+    const plural = count !== 1;
+    const typeLabel = itemType === "sticky"
+      ? `sticky note${plural ? "s" : ""}`
+      : `${itemType}${plural ? "s" : ""}`;
+    contentLines.push({
+      label: args.frameName ? `Added ${count} ${typeLabel} to ${args.frameName}` : `Added ${count} ${typeLabel}`,
+      loadingLabel: `Adding ${count} ${typeLabel}${args.frameName ? ` to ${args.frameName}` : ""}...`,
+      onClick: args.frameName ? () => onNavigateToFrames?.([args.frameName!]) : undefined,
+    });
+  });
+
+  frameTools.forEach(ft => {
+    const args = ft.args as { name?: string };
+    contentLines.push({
+      label: `Created frame "${args.name || "Untitled"}"`,
+      loadingLabel: `Creating frame "${args.name || "Untitled"}"...`,
+      onClick: args.name ? () => onNavigateToFrames?.([args.name!]) : undefined,
+    });
+  });
+
+  if (looseItems.length > 0 && layoutTools.length === 0) {
     const counts: Record<string, number> = {};
-    canvasTools.forEach((t) => {
-      const name = t.toolName.replace("create", "").replace("Item", "").replace("Sticky", "sticky").toLowerCase();
+    looseItems.forEach(t => {
+      const name = t.toolName.replace("create", "").toLowerCase();
       counts[name] = (counts[name] || 0) + 1;
     });
-
-    const parts = Object.entries(counts).map(([name, count]) => {
-      const plural = count > 1 ? "s" : "";
-      return `${count} ${name}${plural}`;
+    Object.entries(counts).forEach(([name, count]) => {
+      const plural = count !== 1;
+      const typeLabel = name === "sticky"
+        ? `sticky note${plural ? "s" : ""}`
+        : `${name}${plural ? "s" : ""}`;
+      contentLines.push({
+        label: `Added ${count} ${typeLabel}`,
+        loadingLabel: `Adding ${count} ${typeLabel}...`,
+      });
     });
+  }
 
-    return `Created ${parts.join(", ")}`;
-  };
+  if (!hasBoard && contentLines.length === 0) return null;
+
+  const allDone = !isStreaming;
 
   return (
-    <div>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 text-left transition-colors"
-      >
-        <span className="text-sm text-gray-500">{getSummary()}</span>
-        <IconChevronDown css={{ width: 16, height: 16, color: '#9ca3af', transition: 'transform 150ms', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-      </button>
+    <div className="rounded-xl border border-gray-200 overflow-hidden">
+      {/* Board row */}
+      {hasBoard && (() => {
+        const showName = boardReady || allDone;
+        const isClickable = showName && allDone;
+        return (
+          <button
+            onClick={() => isClickable && onNavigateToCanvas?.(canvasId)}
+            disabled={!isClickable}
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors ${
+              isClickable ? "hover:bg-gray-50 cursor-pointer group" : "cursor-default"
+            }`}
+          >
+            {showName ? (
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0 text-gray-400">
+                <rect x="0.5" y="0.5" width="5.5" height="5.5" rx="1.25" fill="currentColor" />
+                <rect x="8" y="0.5" width="5.5" height="5.5" rx="1.25" fill="currentColor" opacity="0.5" />
+                <rect x="0.5" y="8" width="5.5" height="5.5" rx="1.25" fill="currentColor" opacity="0.5" />
+                <rect x="8" y="8" width="5.5" height="5.5" rx="1.25" fill="currentColor" opacity="0.3" />
+              </svg>
+            ) : (
+              <div className="w-3.5 h-3.5 flex-shrink-0 text-blue-500 animate-spin">
+                <IconSpinner css={{ width: 14, height: 14 }} />
+              </div>
+            )}
+            <span className={`text-sm flex-1 truncate ${showName ? "font-medium text-gray-900" : "text-gray-500"}`}>
+              {showName ? `Created ${boardName}` : `Creating ${boardName}...`}
+            </span>
+            {isClickable && (
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+                <IconArrowRight css={{ width: 12, height: 12, color: "#9ca3af" }} />
+              </span>
+            )}
+          </button>
+        );
+      })()}
 
-      {isOpen && (
-        <div className="mt-1 px-4 py-2 rounded-xl border border-gray-200 max-h-48 overflow-y-auto">
-          {canvasTools.map((tool, i) => (
-            <div key={i} className="text-xs text-gray-500 py-1">
-              <span className="text-green-600 mr-2">✓</span>
-              {tool.toolName === "createSticky" && (
-                <>Sticky: "{((tool.args as { text: string }).text || "").slice(0, 40)}..."</>
+      {/* Nested content lines with tree connectors */}
+      {contentLines.map((line, i) => {
+        const isLast = i === contentLines.length - 1;
+        const isClickable = allDone && !!(line.onClick || onNavigateToCanvas);
+        return (
+          <button
+            key={i}
+            onClick={() => {
+              if (!isClickable) return;
+              if (line.onClick) line.onClick();
+              else if (onNavigateToCanvas) onNavigateToCanvas(canvasId);
+            }}
+            disabled={!isClickable}
+            className={`w-full flex items-center text-left transition-colors border-t border-gray-100 ${
+              isClickable ? "hover:bg-gray-50 cursor-pointer group" : "cursor-default"
+            }`}
+          >
+            {/* Tree connector when nested under a board */}
+            {hasBoard && (
+              <span className="text-gray-300 pl-3 text-sm select-none w-7 flex-shrink-0 font-mono">
+                {isLast ? "\u2514" : "\u251C"}
+              </span>
+            )}
+            <div className={`flex items-center gap-2 py-2 flex-1 min-w-0 ${hasBoard ? "pr-3" : "px-3"}`}>
+              {allDone ? (
+                <div className="w-1.5 h-1.5 rounded-full bg-gray-300 flex-shrink-0" />
+              ) : (
+                <div className="w-3.5 h-3.5 flex-shrink-0 text-blue-500 animate-spin">
+                  <IconSpinner css={{ width: 14, height: 14 }} />
+                </div>
               )}
-              {tool.toolName === "createShape" && (
-                <>Shape: {(tool.args as { type: string }).type}</>
-              )}
-              {tool.toolName === "createText" && (
-                <>Text: "{((tool.args as { text: string }).text || "").slice(0, 40)}..."</>
-              )}
-              {tool.toolName === "createFrame" && (
-                <>Frame: "{(tool.args as { name: string }).name}"</>
-              )}
-              {tool.toolName === "createArrow" && (
-                <>Arrow</>
-              )}
-              {tool.toolName === "createWorkingNote" && (
-                <>Working note: "{(tool.args as { title: string }).title}"</>
-              )}
-              {tool.toolName === "deleteItem" && (
-                <>Deleted item</>
-              )}
-              {tool.toolName === "updateSticky" && (
-                <>Updated sticky</>
-              )}
-              {tool.toolName === "moveItem" && (
-                <>Moved item</>
+              <span className={`text-sm flex-1 truncate ${allDone ? "text-gray-600" : "text-gray-500"}`}>
+                {allDone ? line.label : line.loadingLabel}
+              </span>
+              {isClickable && (
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                  <IconArrowRight css={{ width: 12, height: 12, color: "#9ca3af" }} />
+                </span>
               )}
             </div>
-          ))}
-        </div>
-      )}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -527,15 +616,17 @@ export function ChatPanel({
   onClose,
   onCollapse,
   onExpand,
+  onNewChat,
   messages,
   input,
   setInput,
   onSubmit,
   isLoading,
-  hideHeader = false,
   onNavigateToFrames,
+  onNavigateToCanvas,
   isFullscreen = false,
   onExitFullscreen,
+  isVisible = true,
 }: ChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -558,14 +649,15 @@ export function ChatPanel({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  // Auto-focus input when panel opens
+  // Auto-focus input when panel becomes visible
   useEffect(() => {
+    if (!isVisible) return;
     // Small delay to ensure panel animation completes
     const timer = setTimeout(() => {
       inputRef.current?.focus();
-    }, 100);
+    }, 150);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isVisible]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -642,24 +734,32 @@ export function ChatPanel({
   })();
 
   return (
-    <div className={`w-full h-full bg-white flex flex-col ${hideHeader ? '' : 'border-l border-gray-200 shadow-xl'}`}>
+    <div className="w-full h-full bg-white flex flex-col">
       {/* Header */}
-      {!hideHeader && (
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
-          {isFullscreen && onExitFullscreen && (
-            <button
-              onClick={onExitFullscreen}
-              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-              title="Back to canvas"
-            >
-              <IconArrowLeft css={{ width: 18, height: 18 }} />
-            </button>
-          )}
           <span className="text-sm font-medium text-gray-900">Chat</span>
           <span className="text-xs text-gray-500">with AI</span>
         </div>
         <div className="flex items-center gap-1">
+          {onNewChat && (
+            <button
+              onClick={onNewChat}
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+              title="New chat"
+            >
+              <IconSquarePencil css={{ width: 18, height: 18 }} />
+            </button>
+          )}
+          {isFullscreen && onExitFullscreen && (
+            <button
+              onClick={onExitFullscreen}
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+              title="Collapse to side panel"
+            >
+              <IconArrowsInSimple css={{ width: 18, height: 18 }} />
+            </button>
+          )}
           {!isFullscreen && onCollapse && (
             <button
               onClick={onCollapse}
@@ -686,8 +786,7 @@ export function ChatPanel({
             <IconCross css={{ width: 18, height: 18 }} />
           </button>
         </div>
-        </div>
-      )}
+      </div>
 
       {/* Task progress header - shows when plan is executing (hidden in fullscreen) */}
       {activePlan && !isFullscreen && (
@@ -761,24 +860,66 @@ export function ChatPanel({
                 })() : (
                   /* AI message: full width, no bg */
                   <div className="w-full">
-                    {/* Hide text content if: askUser tool is present OR content looks like JSON (tool output) */}
-                    {message.content && !askUserTool && !message.content.trim().startsWith('{') && (
-                      <div className="text-sm text-gray-900">
-                        <Markdown
-                          components={{
-                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                            strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                            em: ({ children }) => <em className="italic">{children}</em>,
-                            ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
-                            ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
-                            li: ({ children }) => <li className="mb-0.5">{children}</li>,
-                            code: ({ children }) => <code className="bg-gray-100 px-1 rounded text-xs">{children}</code>,
-                          }}
-                        >
-                          {message.content}
-                        </Markdown>
-                      </div>
-                    )}
+                    {/* Text + artifact cards — split at tool boundary for correct ordering */}
+                    {(() => {
+                      const hasText = message.content && !askUserTool && !message.content.trim().startsWith('{');
+                      const hasArtifactTools = message.toolInvocations?.some(t =>
+                        ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText"].includes(t.toolName)
+                      );
+
+                      const mdComponents = {
+                        p: ({ children }: { children?: React.ReactNode }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        strong: ({ children }: { children?: React.ReactNode }) => <strong className="font-semibold">{children}</strong>,
+                        em: ({ children }: { children?: React.ReactNode }) => <em className="italic">{children}</em>,
+                        ul: ({ children }: { children?: React.ReactNode }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                        ol: ({ children }: { children?: React.ReactNode }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
+                        li: ({ children }: { children?: React.ReactNode }) => <li className="mb-0.5">{children}</li>,
+                        code: ({ children }: { children?: React.ReactNode }) => <code className="bg-gray-100 px-1 rounded text-xs">{children}</code>,
+                      };
+                      const clean = (s: string) => s.replace(/\n?---\n?/g, '\n').trim();
+
+                      // Split text at tool boundary: acknowledgment → cards → summary
+                      const split = message.toolTextSplit;
+                      // split=0 means tools came first, all text is "after tools" → goes below cards
+                      // split>0 means there's text before AND after tools
+                      // split undefined or >= content.length means no tools or all text before tools
+                      const allTextAfterTools = hasArtifactTools && split === 0;
+                      const hasRealSplit = hasArtifactTools && split !== undefined && split > 0 && split < message.content.length;
+                      const ackText = hasRealSplit ? clean(message.content.slice(0, split)) : (allTextAfterTools ? "" : (hasText ? clean(message.content) : ""));
+                      const rawSummary = hasRealSplit ? clean(message.content.slice(split)) : (allTextAfterTools && hasText ? clean(message.content) : "");
+                      // Suppress summary if AI repeated its ack text after tools
+                      const summaryText = (rawSummary && ackText && rawSummary.startsWith(ackText)) ? rawSummary.slice(ackText.length).trim() : rawSummary;
+
+                      return (
+                        <>
+                          {/* Acknowledgment text (before tools) */}
+                          {ackText && (
+                            <div className="text-sm text-gray-900">
+                              <Markdown components={mdComponents}>{ackText}</Markdown>
+                            </div>
+                          )}
+
+                          {/* Artifact card — progressive during streaming, clickable when done */}
+                          {hasArtifactTools && (
+                            <div className={ackText ? "mt-2" : ""}>
+                              <ArtifactCard
+                                toolInvocations={message.toolInvocations}
+                                isStreaming={isLatestMessage && isLoading}
+                                onNavigateToCanvas={onNavigateToCanvas}
+                                onNavigateToFrames={onNavigateToFrames}
+                              />
+                            </div>
+                          )}
+
+                          {/* Summary text (after tools) */}
+                          {summaryText && (
+                            <div className="mt-2 text-sm text-gray-900">
+                              <Markdown components={mdComponents}>{summaryText}</Markdown>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
 
                     {/* askUser tool - render as sequential Q&A conversation */}
                     {askUserTool && (() => {
@@ -969,14 +1110,26 @@ export function ChatPanel({
                       const isPlanComplete = activePlan && !activePlan.isExecuting &&
                         (activePlan.currentStep >= activePlan.steps.length - 1);
 
-                      // Extract frame names from createLayout calls in this message
+                      // Extract frame names from this batch — scan backwards from checkpoint
+                      // until we hit a previous checkpoint or plan approval
                       const frameNames: string[] = [];
-                      message.toolInvocations?.forEach(t => {
-                        if (t.toolName === "createLayout") {
-                          const args = t.args as { frameName?: string };
-                          if (args.frameName) frameNames.push(args.frameName);
-                        }
-                      });
+                      for (let mi = index; mi >= 0; mi--) {
+                        const m = messages[mi];
+                        // Stop at previous checkpoint (but not this one)
+                        if (mi < index && m.toolInvocations?.some(t => t.toolName === 'checkpoint')) break;
+                        // Stop at user approval message
+                        if (m.role === 'user' && (m.content?.toLowerCase().includes('approve') || m.content === 'Continue')) break;
+                        m.toolInvocations?.forEach(t => {
+                          if (t.toolName === "createLayout") {
+                            const args = t.args as { frameName?: string };
+                            if (args.frameName) frameNames.push(args.frameName);
+                          }
+                          if (t.toolName === "createFrame") {
+                            const args = t.args as { name?: string };
+                            if (args.name) frameNames.push(args.name);
+                          }
+                        });
+                      }
 
                       const handleNavigate = () => {
                         if (onNavigateToFrames && frameNames.length > 0) {
@@ -1005,12 +1158,6 @@ export function ChatPanel({
                       );
                     })()}
 
-                    {/* Tool invocations - collapsible list */}
-                    {message.toolInvocations && message.toolInvocations.length > 0 && (
-                      <div className={message.content || askUserTool || confirmPlanTool ? "mt-3" : ""}>
-                        <ToolBlock toolInvocations={message.toolInvocations} />
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -1023,6 +1170,12 @@ export function ChatPanel({
           (() => {
             const lastMsg = messages[messages.length - 1];
             const recentTools = lastMsg.role === "assistant" ? lastMsg.toolInvocations || [] : [];
+
+            // Skip when artifact tools present — the ArtifactCard serves as the activity indicator
+            const hasArtifactTools = recentTools.some(t =>
+              ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText"].includes(t.toolName)
+            );
+            if (hasArtifactTools) return null;
 
             // Check for various tool types
             const lastSearchTool = [...recentTools].reverse().find(t => t.toolName === "webSearch");

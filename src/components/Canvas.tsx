@@ -14,25 +14,21 @@ import { DocumentShapeUtil } from "@/shapes/DocumentShapeUtil";
 import { DataTableShapeUtil } from "@/shapes/DataTableShapeUtil";
 import { CommentShapeUtil } from "@/shapes/CommentShapeUtil";
 import { Toolbar } from "./Toolbar";
-import { ChatPanel } from "./ChatPanel";
 import { StartingPromptCards } from "./StartingPromptCards";
 import { CanvasComments } from "./CanvasComments";
 import { CanvasMasthead } from "./CanvasMasthead";
 import {
   IconSingleSparksFilled,
   IconViewSideRight,
-  IconSidebarGlobalOpen,
-  IconSidebarGlobalClosed,
   IconArrowLeft,
   IconCross,
   IconMicrophoneSlash,
   IconMicrophone,
   IconArrowRight,
   IconSquarePencil,
-  IconSpinner,
   IconCheckMark,
   IconNotepad,
-  IconArrowsInSimple,
+  IconSpinner,
 } from "@mirohq/design-system-icons";
 import { calculateLayout, findEmptyCanvasSpace } from "@/lib/layoutEngine";
 import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
@@ -338,79 +334,6 @@ function FloatingQuestionCard({
             </div>
           </>
         )}
-      </div>
-    </div>
-  );
-}
-
-// Plan progress panel for fullscreen chat (matches ChatPanel PlanBlock styling)
-function PlanProgressPanel({
-  plan,
-  isLoading,
-  onToggleVisibility,
-}: {
-  plan: { title: string; steps: string[]; currentStep: number; pending?: boolean } | null;
-  isLoading: boolean;
-  onToggleVisibility?: () => void;
-}) {
-  if (!plan) return null;
-
-  const isPending = plan.pending || plan.currentStep < 0;
-  const completedSteps = isPending ? 0 : plan.currentStep + 1;
-
-  const getStepStatus = (index: number): 'pending' | 'running' | 'done' => {
-    if (isPending) return 'pending';
-    if (index < plan.currentStep) return 'done';
-    if (index === plan.currentStep && isLoading) return 'running';
-    return 'pending';
-  };
-
-  return (
-    <div className="w-80 bg-gray-50 border-l border-gray-200 h-full flex-shrink-0 flex flex-col">
-      {/* Header */}
-      <div className="px-4 py-3 flex items-center gap-3 flex-shrink-0">
-        {/* Title */}
-        <div className="flex-1 text-left min-w-0">
-          <p className="text-xs font-medium text-gray-900">Plan</p>
-        </div>
-
-        {/* Hide button */}
-        {onToggleVisibility && (
-          <button
-            onClick={onToggleVisibility}
-            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 flex-shrink-0"
-            title="Hide plan"
-          >
-            <IconSidebarGlobalOpen css={{ transform: 'rotate(180deg)', width: 18, height: 18 }} />
-          </button>
-        )}
-      </div>
-
-      {/* Steps */}
-      <div className="pl-6 pr-4 pb-6 overflow-y-auto flex-1">
-        {plan.steps.map((step, index) => {
-          const status = getStepStatus(index);
-          return (
-            <div key={index} className="flex items-center gap-2 py-1.5 text-xs">
-              {status === 'pending' && (
-                <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0" />
-              )}
-              {status === 'running' && (
-                <div className="w-4 h-4 flex-shrink-0 text-blue-500 animate-spin">
-                  <IconSpinner css={{ width: 16, height: 16 }} />
-                </div>
-              )}
-              {status === 'done' && (
-                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 text-white">
-                  <IconCheckMark css={{ width: 10, height: 10 }} />
-                </div>
-              )}
-              <span className={status === 'done' ? 'text-gray-400 line-through' : status === 'running' ? 'text-blue-700' : 'text-gray-600'}>
-                {index + 1}. {step}
-              </span>
-            </div>
-          );
-        })}
       </div>
     </div>
   );
@@ -858,6 +781,14 @@ const colorMap: Record<string, TLColor> = {
   white: "white",
 };
 
+type CreationToastInfo = {
+  name: string;
+  type: "board" | "frame" | "items";
+  isCreating: boolean;
+  canvasId?: string;
+  frameName?: string;
+};
+
 export function Canvas() {
   // Get authenticated Firebase user
   const { user: firebaseUser } = useAuth();
@@ -868,9 +799,6 @@ export function Canvas() {
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 
   const [editor, setEditor] = useState<Editor | null>(null);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-
-  const [input, setInput] = useState("");
   const [responseToast, setResponseToast] = useState<string | null>(null);
   const [toastCentered, setToastCentered] = useState(false);
   const [isToolbarExpanded, setIsToolbarExpanded] = useState(false);
@@ -878,9 +806,6 @@ export function Canvas() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questionAnswers, setQuestionAnswers] = useState<string[]>([]);
   const [dismissedPlan, setDismissedPlan] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(384); // 384px = w-96
-  const [isResizing, setIsResizing] = useState(false);
-  const [isPlanPanelVisible, setIsPlanPanelVisible] = useState(true);
   const [isCompletionDismissed, setIsCompletionDismissed] = useState(false);
   const [shapeCount, setShapeCount] = useState(0);
   const [areSuggestionsVisible, setAreSuggestionsVisible] = useState(false);
@@ -892,6 +817,13 @@ export function Canvas() {
   const userEditsRef = useRef<Array<{ shapeId: string; field: string; oldValue: string; newValue: string }>>([]);
   const shouldHideToastRef = useRef(false); // Track if toast should be hidden during new request
   const voiceRef = useRef<{ isConnected: boolean; sendCanvasUpdate: () => void; sendScreenshot: (changeDescription?: string) => void } | null>(null);
+  const [creationToast, setCreationToast] = useState<CreationToastInfo | null>(null);
+  const lastCreationToastedRef = useRef<string | null>(null);
+
+  // Chat from provider — must be before any callbacks that use setChatMode, append, etc.
+  const { messages, append, isLoading, setMessages, registerHandlers, chatMode, setChatMode, input, setInput, setActiveCanvas, navigateToCanvas } = useChat();
+  const isChatOpen = chatMode === "sidepanel";
+  const isFullscreenChat = chatMode === "fullscreen";
   const screenshotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastScreenshotShapeIdsRef = useRef<Set<string>>(new Set());
   const waitingForGoodbyeRef = useRef(false);
@@ -911,16 +843,18 @@ export function Canvas() {
 
   // Handle sidebar close (instant, no animation)
   const handleCloseChat = useCallback((dismissPlan = true) => {
-    setIsChatOpen(false);
+    setChatMode("minimized");
     if (dismissPlan) {
       // X button = close completely, hide ALL floating UI
       setResponseToast(null);
       setToastCentered(false);
+      setCreationToast(null);
+      lastCreationToastedRef.current = null;
       setDismissedPlan(true); // Mark plan as dismissed so it doesn't float back
       setIsInQAFlow(false); // Exit Q&A flow to restore hybrid toolbar
     }
     // (Minus button handles restoration explicitly in onCollapse)
-  }, []);
+  }, [setChatMode]);
 
   // Navigate to frames by name - zooms to fit all matching frames
   const navigateToFrames = useCallback((frameNames: string[]) => {
@@ -2184,43 +2118,42 @@ export function Canvas() {
     return unsub;
   }, [editor]);
 
-  // Use chat from provider
-  const { messages, append, isLoading, setMessages, registerHandlers, isFullscreenChat, openFullscreen, closeFullscreen } = useChat();
-
-  // Register real canvas handlers on mount
+  // Register real canvas handlers on mount — only after editor is ready
   useEffect(() => {
+    if (!editor) return; // Wait for tldraw editor to initialize before draining pending tool calls
     registerHandlers({
       handleToolCall,
       getCanvasState,
       getUserEdits,
-    });
-  }, [registerHandlers, handleToolCall, getCanvasState, getUserEdits]);
+      navigateToFrames: (frameNames: string[]) => {
+        if (!editor) return;
+        const allShapes = editor.getCurrentPageShapes();
+        const frames = allShapes.filter((s) =>
+          s.type === 'frame' && frameNames.some(name =>
+            (s.props as { name?: string }).name?.includes(name)
+          )
+        );
+        if (frames.length > 0) {
+          editor.select(...frames.map((f) => f.id));
+          editor.zoomToSelection({ animation: { duration: 300 } });
+        }
+      },
+    }, true); // isCanvasReady — signals it's safe to drain pending tool calls
+  }, [registerHandlers, handleToolCall, getCanvasState, getUserEdits, editor]);
 
-  // Restore handoff from home page (if coming from plan approval)
+  // Set active canvas on mount, clear on unmount
   useEffect(() => {
-    const handoffData = sessionStorage.getItem("canvas-handoff");
-    if (!handoffData) return;
-
-    try {
-      const { messages: restoredMessages, isFullscreenChat: shouldOpenFullscreen } = JSON.parse(handoffData);
-
-      // Restore messages
-      if (restoredMessages && Array.isArray(restoredMessages)) {
-        setMessages(restoredMessages);
-      }
-
-      // Open fullscreen chat (not from home anymore - we're on a canvas now)
-      if (shouldOpenFullscreen) {
-        openFullscreen(false);
-      }
-
-      // Clear handoff data (one-time use)
-      sessionStorage.removeItem("canvas-handoff");
-    } catch (err) {
-      console.error("Failed to restore handoff:", err);
-      sessionStorage.removeItem("canvas-handoff");
+    // Extract canvasId and spaceId from URL
+    const parts = window.location.pathname.split("/");
+    const spaceId = parts[2] || "";
+    const canvasId = parts[4] || "";
+    if (canvasId) {
+      setActiveCanvas({ canvasId, spaceId });
     }
-  }, [setMessages, openFullscreen]);
+    return () => {
+      setActiveCanvas(null);
+    };
+  }, [setActiveCanvas]);
 
   const handleMount = useCallback((editor: Editor) => {
     setEditor(editor);
@@ -2273,6 +2206,8 @@ export function Canvas() {
       // Hide any existing toast immediately when new request starts
       setResponseToast(null);
       setToastCentered(false);
+      setCreationToast(null);
+      lastCreationToastedRef.current = null;
       shouldHideToastRef.current = true; // Synchronously hide toast to prevent flicker
 
       // If voice is connected, send to voice session instead of chat API
@@ -2292,7 +2227,7 @@ export function Canvas() {
       setInput("");
       // Only open panel if explicitly requested (clicking sparkle button)
       if (options?.openPanel === true) {
-        setIsChatOpen(true);
+        setChatMode("sidepanel");
         setIsCompletionDismissed(true);
       }
     },
@@ -2549,13 +2484,6 @@ export function Canvas() {
   // Check if canvas is empty (no shapes)
   const isCanvasEmpty = shapeCount === 0;
 
-  // Auto-open plan panel when a plan appears in fullscreen mode
-  useEffect(() => {
-    if (activePlanDetails && isFullscreenChat) {
-      setIsPlanPanelVisible(true);
-    }
-  }, [activePlanDetails, isFullscreenChat]);
-
   // Update toast in real-time during streaming (when sidebar is closed)
   useEffect(() => {
     if (isLoading && !isChatOpen && !voice.isConnected) {
@@ -2613,6 +2541,75 @@ export function Canvas() {
     }
   }, [isToolbarExpanded, responseToast, toastCentered]);
 
+  // Creation toast — detect creation tools when chat is minimized
+  useEffect(() => {
+    if (chatMode !== "minimized") return;
+
+    const latestMsg = messages[messages.length - 1];
+    if (!latestMsg || latestMsg.role !== "assistant") return;
+
+    const tools = latestMsg.toolInvocations || [];
+    if (tools.length === 0) return;
+
+    const creationTools = tools.filter((t: { toolName: string }) =>
+      ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText"].includes(t.toolName)
+    );
+    if (creationTools.length === 0) return;
+
+    const toastKey = `${latestMsg.id}:${creationTools.length}:${isLoading}`;
+    if (toastKey === lastCreationToastedRef.current) return;
+    lastCreationToastedRef.current = toastKey;
+
+    const createCanvasTool = tools.find((t: { toolName: string }) => t.toolName === "createCanvas");
+    const createCanvasResult = tools.find((t: { toolName: string }) => t.toolName === "createCanvas_result");
+    const layout = tools.find((t: { toolName: string }) => t.toolName === "createLayout");
+    const frame = tools.find((t: { toolName: string }) => t.toolName === "createFrame");
+    const hasLooseItems = tools.some((t: { toolName: string }) =>
+      ["createSticky", "createShape", "createText"].includes(t.toolName)
+    );
+
+    if (createCanvasTool) {
+      const args = createCanvasTool.args as { name?: string };
+      const resultArgs = createCanvasResult?.args as { canvasId?: string } | undefined;
+      setCreationToast({
+        name: args.name || "New Board",
+        type: "board",
+        isCreating: isLoading,
+        canvasId: resultArgs?.canvasId,
+      });
+    } else if (layout) {
+      const args = layout.args as { frameName?: string };
+      setCreationToast({
+        name: args.frameName || "Frame",
+        type: "frame",
+        isCreating: isLoading,
+        frameName: args.frameName || "",
+      });
+    } else if (frame) {
+      const args = frame.args as { name?: string };
+      setCreationToast({
+        name: args.name || "Frame",
+        type: "frame",
+        isCreating: isLoading,
+        frameName: args.name || "",
+      });
+    } else if (hasLooseItems) {
+      setCreationToast({
+        name: "New items",
+        type: "items",
+        isCreating: isLoading,
+      });
+    }
+  }, [messages, chatMode, isLoading]);
+
+  // Clear creation toast when chat opens
+  useEffect(() => {
+    if (chatMode !== "minimized") {
+      setCreationToast(null);
+      lastCreationToastedRef.current = null;
+    }
+  }, [chatMode]);
+
   // Simple flags for what floating UI to show (only one at a time, in priority order)
   // Priority: question > plan approval > thinking > progress indicator
   // Voice and text both use the same messages-based pendingQuestion
@@ -2621,7 +2618,7 @@ export function Canvas() {
   const showFloatingPlan = !isChatOpen && !!pendingPlan && !pendingQuestion && !isLoading && !dismissedPlan;
   // Thinking shows when loading BUT NOT during plan execution (progress indicator handles that)
   const showFloatingThinking = !isChatOpen && isLoading && !hasActivePlan;
-  const showFloatingProgress = !isChatOpen && !isFullscreenChat && hasActivePlan && !showFloatingQuestion && !showFloatingPlan && !showFloatingThinking && !isCompletionDismissed;
+  const showFloatingProgress = chatMode === "minimized" && hasActivePlan && !showFloatingQuestion && !showFloatingPlan && !showFloatingThinking && !isCompletionDismissed;
 
   // Thinking status text (extracted from IIFE so AnimatePresence gets a clean value)
   const thinkingStatus = useMemo(() => {
@@ -2667,34 +2664,6 @@ export function Canvas() {
     }
   }, [isChatOpen]);
 
-  // Handle sidebar resize
-  const handleResizeStart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isResizing) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const newWidth = window.innerWidth - e.clientX;
-      // Min width: 300px, Max width: 800px
-      setSidebarWidth(Math.max(300, Math.min(800, newWidth)));
-    };
-
-    const handleMouseUp = () => {
-      setIsResizing(false);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isResizing]);
-
   // Toolbar always visible - prompt input hides itself when sidebar is open
   const showToolbar = true;
 
@@ -2704,8 +2673,6 @@ export function Canvas() {
       <div
         className="relative flex-1"
         style={{
-          width: isChatOpen ? `calc(100% - ${sidebarWidth}px)` : '100%',
-          transition: 'width 250ms cubic-bezier(0.25, 0.1, 0.25, 1.0)',
           visibility: isFullscreenChat ? 'hidden' : 'visible',
           pointerEvents: isFullscreenChat ? 'none' : 'auto'
         }}
@@ -2760,7 +2727,7 @@ export function Canvas() {
                 messages={messages}
                 isLoading={isLoading}
                 onOpenPanel={() => {
-                  setIsChatOpen(true);
+                  setChatMode("sidepanel");
                   setIsCompletionDismissed(true);
                 }}
                 onSubmit={handleSubmit}
@@ -2835,7 +2802,7 @@ export function Canvas() {
                   title={pendingPlan.title}
                   onApprove={() => handleSubmit("Approved! Go ahead.", { openPanel: false })}
                   onViewDetails={() => {
-                    setIsChatOpen(true);
+                    setChatMode("sidepanel");
                     setIsCompletionDismissed(true);
                   }}
                 />
@@ -2882,11 +2849,13 @@ export function Canvas() {
             )}
           </AnimatePresence>
 
-          {/* Centered toast */}
+          {/* Stacked toasts — response text + creation status */}
           <AnimatePresence>
-            {toastCentered && responseToast && !showFloatingQuestion && !isChatOpen && !shouldHideToastRef.current && !areSuggestionsVisible && (
+            {!showFloatingQuestion && !isChatOpen && !shouldHideToastRef.current && !areSuggestionsVisible && (
+              (toastCentered && responseToast) || creationToast
+            ) && (
               <motion.div
-                key="centered-toast"
+                key="toast-stack"
                 className={`absolute z-[65] w-[420px] ${showFloatingPlan || showFloatingProgress ? 'bottom-[188px]' : 'bottom-24'}`}
                 style={{ left: '50%' }}
                 initial={{ ...toastVariants.hidden, x: "-50%" }}
@@ -2894,52 +2863,89 @@ export function Canvas() {
                 exit={{ ...toastVariants.exit, x: "-50%" }}
                 transition={floatingTransition}
               >
-                <div className="pointer-events-auto w-full bg-white shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: '32px' }}>
-                  {/* Sticky icon */}
-                  <div className="absolute top-4 left-4 z-10 bg-white">
-                    <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center">
-                      <IconSingleSparksFilled size="small" />
-                    </div>
-                  </div>
-                  {/* Sticky close button */}
-                  <div className="absolute top-4 right-4 z-10">
-                    <div
-                      onClick={() => { setResponseToast(null); setToastCentered(false); }}
-                      className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors rounded-full cursor-pointer"
-                      title="Dismiss"
-                    >
-                      <IconCross css={{ width: 14, height: 14 }} />
-                    </div>
-                  </div>
-                  {/* Scrollable content */}
-                  <div
-                    onClick={() => {
-                      setResponseToast(null);
-                      setToastCentered(false);
-                      setIsChatOpen(true);
-                      setIsCompletionDismissed(true);
-                    }}
-                    className="overflow-y-auto p-4 pl-14 pr-10 hover:bg-gray-50 transition-colors cursor-pointer"
-                  >
-                    <div className="text-sm text-gray-700">
-                      <Markdown
-                        components={{
-                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                          strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                          em: ({ children }) => <em className="italic">{children}</em>,
-                          ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
-                          ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
-                          li: ({ children }) => <li className="mb-0.5">{children}</li>,
-                          h1: ({ children }) => <h1 className="text-base font-semibold mt-3 mb-2">{children}</h1>,
-                          h2: ({ children }) => <h2 className="text-base font-semibold mt-3 mb-2">{children}</h2>,
-                          h3: ({ children }) => <h3 className="text-sm font-semibold mt-3 mb-2">{children}</h3>,
-                          code: ({ children }) => <code className="bg-gray-100 px-1 rounded text-xs">{children}</code>,
+                <div className="flex flex-col gap-2">
+                  {/* Response toast card */}
+                  {toastCentered && responseToast && (
+                    <div className="pointer-events-auto w-full bg-white shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: '32px' }}>
+                      <div className="absolute top-4 left-4 z-10 bg-white">
+                        <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center">
+                          <IconSingleSparksFilled size="small" />
+                        </div>
+                      </div>
+                      <div className="absolute top-4 right-4 z-10">
+                        <div
+                          onClick={() => { setResponseToast(null); setToastCentered(false); }}
+                          className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors rounded-full cursor-pointer"
+                          title="Dismiss"
+                        >
+                          <IconCross css={{ width: 14, height: 14 }} />
+                        </div>
+                      </div>
+                      <div
+                        onClick={() => {
+                          setResponseToast(null);
+                          setToastCentered(false);
+                          setChatMode("sidepanel");
+                          setIsCompletionDismissed(true);
                         }}
+                        className="overflow-y-auto p-4 pl-14 pr-10 hover:bg-gray-50 transition-colors cursor-pointer"
                       >
-                        {responseToast}
-                      </Markdown>
+                        <div className="text-sm text-gray-700">
+                          <Markdown
+                            components={{
+                              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                              strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                              em: ({ children }) => <em className="italic">{children}</em>,
+                              ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
+                              li: ({ children }) => <li className="mb-0.5">{children}</li>,
+                              h1: ({ children }) => <h1 className="text-base font-semibold mt-3 mb-2">{children}</h1>,
+                              h2: ({ children }) => <h2 className="text-base font-semibold mt-3 mb-2">{children}</h2>,
+                              h3: ({ children }) => <h3 className="text-sm font-semibold mt-3 mb-2">{children}</h3>,
+                              code: ({ children }) => <code className="bg-gray-100 px-1 rounded text-xs">{children}</code>,
+                            }}
+                          >
+                            {responseToast}
+                          </Markdown>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Creation toast card */}
+                  {creationToast && (
+                    <button
+                      onClick={() => {
+                        setChatMode("sidepanel");
+                        setIsCompletionDismissed(true);
+                        if (creationToast.type === "board" && creationToast.canvasId) {
+                          navigateToCanvas(creationToast.canvasId);
+                        } else if (creationToast.type === "frame" && creationToast.frameName) {
+                          navigateToFrames([creationToast.frameName]);
+                        }
+                        setCreationToast(null);
+                        lastCreationToastedRef.current = null;
+                      }}
+                      className="pointer-events-auto w-full bg-white shadow-lg border border-gray-200 flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                      style={{ borderRadius: '32px' }}
+                    >
+                      {creationToast.isCreating ? (
+                        <div className="w-5 h-5 flex-shrink-0 text-blue-500 animate-spin">
+                          <IconSpinner css={{ width: 20, height: 20 }} />
+                        </div>
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center flex-shrink-0">
+                          <IconCheckMark css={{ width: 12, height: 12 }} />
+                        </div>
+                      )}
+                      <span className="text-sm font-medium text-gray-900 truncate flex-1 text-left">
+                        {creationToast.isCreating ? `Creating ${creationToast.name}...` : `Created ${creationToast.name}`}
+                      </span>
+                      {!creationToast.isCreating && (
+                        <IconArrowRight css={{ width: 16, height: 16, color: "#9ca3af", flexShrink: 0 }} />
+                      )}
+                    </button>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -2952,12 +2958,7 @@ export function Canvas() {
         {!isFullscreenChat && showToolbar && (
           <motion.div
             key="toolbar"
-            className="fixed top-0 h-full z-50 pointer-events-none [&>*]:pointer-events-auto"
-            style={{
-              left: `${appSidebarWidth}px`,
-              width: isChatOpen ? `calc(100vw - ${appSidebarWidth}px - ${sidebarWidth}px)` : `calc(100vw - ${appSidebarWidth}px)`,
-              transition: 'left 0.25s cubic-bezier(0.25, 0.1, 0.25, 1), width 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)'
-            }}
+            className="absolute top-0 left-0 right-0 h-full z-50 pointer-events-none [&>*]:pointer-events-auto"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 40 }}
@@ -2965,7 +2966,7 @@ export function Canvas() {
           >
             <Toolbar
               editor={editor}
-              onToggleChat={() => setIsChatOpen(!isChatOpen)}
+              onToggleChat={() => setChatMode(isChatOpen ? "minimized" : "sidepanel")}
               isChatOpen={isChatOpen}
               hideInput={
                 // Hide input when in voice mode
@@ -2981,7 +2982,7 @@ export function Canvas() {
               onOpenChat={() => {
                 setResponseToast(null);
                 setToastCentered(false);
-                setIsChatOpen(true);
+                setChatMode("sidepanel");
                 setIsCompletionDismissed(true);
               }}
               hasMessages={messages.length > 0}
@@ -3036,142 +3037,7 @@ export function Canvas() {
         )}
       </AnimatePresence>
 
-      {/* Side chat panel - sidebar mode only (fullscreen now in provider) */}
-      <AnimatePresence>
-        {isChatOpen && (
-          <motion.div
-            key="chat-panel"
-            className="fixed top-0 right-0 h-full z-[999] flex flex-col"
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={smoothTransition}
-            style={{
-              width: sidebarWidth,
-            }}
-          >
-            {/* Resize handle */}
-            <div
-              onMouseDown={handleResizeStart}
-              className={`absolute left-0 top-0 bottom-0 w-1 hover:w-1.5 transition-all cursor-col-resize z-[1000] ${
-                isResizing ? 'bg-blue-500 w-1.5' : 'bg-transparent hover:bg-gray-300'
-              }`}
-            />
-
-            {isFullscreenChat ? (
-              <div className="flex flex-col h-full flex-1">
-                {/* Full-width header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white flex-shrink-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900">Chat</span>
-                    <span className="text-xs text-gray-500">with AI</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => {
-                        closeFullscreen();
-                        setIsChatOpen(true);
-                        setIsCompletionDismissed(true);
-                      }}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-                      title="Exit focus mode"
-                    >
-                      <IconArrowsInSimple css={{ width: 18, height: 18 }} />
-                    </button>
-                    <button
-                      onClick={() => {
-                        closeFullscreen();
-                        handleCloseChat(true);
-                      }}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-                      title="Close"
-                    >
-                      <IconCross css={{ width: 18, height: 18 }} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Content area: chat + plan side by side */}
-                <div className="flex flex-1 overflow-hidden relative">
-                  <motion.div
-                    className="flex-1 overflow-hidden"
-                    animate={{ paddingRight: (activePlanDetails && isPlanPanelVisible) ? 320 : 0 }}
-                    transition={smoothTransition}
-                  >
-                    <ChatPanel
-                      onClose={() => {
-                        closeFullscreen();
-                        handleCloseChat(true);
-                      }}
-                      hideHeader={true}
-                      isFullscreen={isFullscreenChat}
-                      messages={messages}
-                      input={input}
-                      setInput={setInput}
-                      onSubmit={handleSubmit}
-                      isLoading={isLoading}
-                      onNavigateToFrames={navigateToFrames}
-                    />
-                  </motion.div>
-
-                  {/* Show plan button - positioned to match hide button in panel header */}
-                  {activePlanDetails && !isPlanPanelVisible && (
-                    <button
-                      onClick={() => setIsPlanPanelVisible(true)}
-                      className="absolute top-3 right-4 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 z-10"
-                      title="Show plan"
-                    >
-                      <IconSidebarGlobalOpen css={{ transform: 'rotate(180deg)', width: 18, height: 18 }} />
-                    </button>
-                  )}
-
-                  {/* Plan progress panel */}
-                  {activePlanDetails && (
-                    <motion.div
-                      className="absolute top-0 right-0 h-full"
-                      animate={{ x: isPlanPanelVisible ? 0 : "100%" }}
-                      transition={smoothTransition}
-                      style={{ width: 320 }}
-                    >
-                      <PlanProgressPanel
-                        plan={activePlanDetails}
-                        isLoading={isLoading}
-                        onToggleVisibility={() => setIsPlanPanelVisible(false)}
-                      />
-                    </motion.div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="w-full h-full flex flex-col flex-1">
-                <ChatPanel
-                  onClose={() => {
-                    handleCloseChat(true);
-                  }}
-                  onCollapse={() => {
-                    handleCloseChat(false);
-                    setIsCompletionDismissed(false); // Reset so completion toast can reappear
-                    const lastAssistantMsg = messages.findLast(m => m.role === 'assistant' && m.content?.trim());
-                    if (lastAssistantMsg?.content) {
-                      setResponseToast(lastAssistantMsg.content);
-                      setToastCentered(true);
-                      setIsToolbarExpanded(true);
-                    }
-                  }}
-                  onExpand={() => openFullscreen(false)}
-                  isFullscreen={false}
-                  messages={messages}
-                  input={input}
-                  setInput={setInput}
-                  onSubmit={handleSubmit}
-                  isLoading={isLoading}
-                  onNavigateToFrames={navigateToFrames}
-                />
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Side chat panel is now rendered by ChatShell in root layout */}
     </div>
   );
 }
