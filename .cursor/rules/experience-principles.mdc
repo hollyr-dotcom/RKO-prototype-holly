@@ -1,0 +1,9 @@
+---
+description: Core experience principles that govern all design and engineering decisions
+globs: 
+alwaysApply: true
+---
+
+# Experience Principles
+
+Every change must respect the five non-negotiable principles defined in `docs/guidelines/experience-principles.md`. Read that file for full context.

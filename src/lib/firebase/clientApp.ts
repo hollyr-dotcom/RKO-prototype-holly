@@ -13,12 +13,36 @@ const firebaseConfig = {
 // Skip Firebase init when keys aren't configured (local dev without Firebase)
 const isConfigured = !!firebaseConfig.apiKey;
 
-let app: FirebaseApp | null = null;
-let auth: Auth | null = null;
+let _app: FirebaseApp | null = null;
+let _auth: Auth | null = null;
 
-if (isConfigured) {
-  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-  auth = getAuth(app);
+function getFirebaseApp(): FirebaseApp | null {
+  if (_app) return _app;
+
+  if (!isConfigured) {
+    return null;
+  }
+
+  const apps = getApps();
+  _app = apps.length > 0 ? apps[0] : initializeApp(firebaseConfig);
+  return _app;
 }
 
-export { auth };
+export function getFirebaseAuth(): Auth | null {
+  if (_auth) return _auth;
+  const app = getFirebaseApp();
+  if (!app) return null;
+  _auth = getAuth(app);
+  return _auth;
+}
+
+/** Lazy-initialized auth — returns null when Firebase isn't configured */
+export const auth: Auth | null = isConfigured
+  ? new Proxy({} as Auth, {
+      get(_target, prop, receiver) {
+        const realAuth = getFirebaseAuth();
+        if (!realAuth) return undefined;
+        return Reflect.get(realAuth, prop, receiver);
+      },
+    })
+  : null;

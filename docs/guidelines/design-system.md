@@ -59,12 +59,39 @@ Colours specific to AI presence and artifacts (to be refined as AI features deve
 | AI subtle | AI suggestion backgrounds |
 | AI working | Progress indicators, "working" state |
 
+### Navigation Palette (Customisable)
+
+The primary navigation (PrimaryRail, ExpandedPrimaryPanel, NavigationShell) uses a **tonal palette** generated from a single base hex color. The utility lives in `src/lib/nav-palette.ts` and is exposed via `SidebarProvider` as `navPalette`.
+
+**Current base color:** `#18f9e3` (vivid cyan/teal), passed as the `navColor` prop on `SidebarProvider`.
+
+The palette auto-detects whether the base is light or dark (via WCAG relative luminance) and derives foreground colors accordingly:
+
+| Token | Purpose |
+|-------|---------|
+| `base` | Navigation background |
+| `logoContainer` | Lighter tint for the logo `rounded-lg` container |
+| `iconActive` | Active/hovered icon color |
+| `iconDefault` | Inactive icon color |
+| `indicator` | Hover/active pill background (translucent) |
+| `divider` | Separator line color (translucent) |
+| `textPrimary` | High-contrast text (headings, active labels) |
+| `textSecondary` | Medium-contrast text (secondary labels) |
+| `hoverBg` | Subtle hover background for list items (translucent) |
+| `iconMuted` | Section headers, "+" buttons |
+
+**Rules:**
+- Never hardcode navigation colors in components — always use `navPalette.*` from `useSidebar()`
+- To change the navigation color, update the `navColor` prop on `SidebarProvider`
+- The logo icon sits inside a `rounded-lg` container with `navPalette.logoContainer` background
+
 ### Surface Colours
 
 | Surface | Background | Border |
 |---------|-----------|--------|
 | Chrome bars (masthead, toolbar) | `white` | `gray-200` |
-| Sidebar | `white` | `gray-200` (right border) |
+| Primary navigation | `navPalette.base` (customisable) | `navPalette.divider` |
+| Secondary panel (Sidebar) | `white` | `gray-200` (right border) |
 | Chat panel | `white` | `gray-200` (left border) |
 | Canvas | tldraw default with dot grid |
 | Cards | `white` | `gray-200` |

@@ -1,0 +1,17 @@
+---
+description: Guidelines for implementing designs from Figma or descriptions. Use when building new UI surfaces or components from design specifications.
+globs: 
+alwaysApply: false
+---
+
+# Design Implementation
+
+When implementing a new design (from Figma, a description, or a design document), read the relevant docs in `docs/guidelines/` first:
+
+- `experience-principles.md` — does this design align with the five principles?
+- `surface-architecture.md` — where does this surface sit in the hierarchy?
+- `design-system.md` — what tokens, colours, and patterns apply?
+- `motion-system.md` — what motion patterns does this need?
+- `glossary.md` — what are the correct terms for naming?
+
+Check existing components in `src/components/` before building new ones.

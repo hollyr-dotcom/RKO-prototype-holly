@@ -1,38 +1,56 @@
 "use client";
 
-import { createContext, useState, useCallback, useEffect, ReactNode } from "react";
+import { createContext, useState, useCallback, useMemo, ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { generateNavPalette, type NavPalette } from "@/lib/nav-palette";
 
-export const EXPANDED_WIDTH = 240;
-export const COLLAPSED_WIDTH = 52;
+// Navigation dimension constants (from Figma)
+export const RAIL_WIDTH = 64;
+export const SECONDARY_WIDTH = 240;
+export const EXPANDED_PRIMARY_WIDTH = 228;
+
+// Default navigation base color — customisable per-prototype
+const DEFAULT_NAV_COLOR = "#f7f7f7";
 
 interface SidebarContextType {
   isCollapsed: boolean;
   toggleSidebar: () => void;
-  sidebarWidth: number;
+  showSecondary: boolean;
+  navWidth: number;
+  navPalette: NavPalette;
 }
 
 export const SidebarContext = createContext<SidebarContextType | null>(null);
 
-export function SidebarProvider({ children }: { children: ReactNode }) {
+interface SidebarProviderProps {
+  children: ReactNode;
+  /** Base hex color for the primary navigation. Defaults to #18f9e3 */
+  navColor?: string;
+}
+
+export function SidebarProvider({ children, navColor = DEFAULT_NAV_COLOR }: SidebarProviderProps) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // Collapse sidebar when on home page
-  useEffect(() => {
-    if (pathname === "/") {
-      setIsCollapsed(true);
-    }
-  }, [pathname]);
+  // Secondary panel is visible when inside a space route
+  const showSecondary = !isCollapsed && pathname.startsWith("/space/");
 
   const toggleSidebar = useCallback(() => {
     setIsCollapsed((prev) => !prev);
   }, []);
 
-  const sidebarWidth = isCollapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH;
+  // Total navigation width: collapsed = 0, space = rail + secondary, home = expanded primary
+  const navWidth = isCollapsed
+    ? 0
+    : showSecondary
+      ? RAIL_WIDTH + SECONDARY_WIDTH
+      : EXPANDED_PRIMARY_WIDTH;
+
+  // Generate tonal palette from the base nav color
+  const navPalette = useMemo(() => generateNavPalette(navColor), [navColor]);
 
   return (
-    <SidebarContext.Provider value={{ isCollapsed, toggleSidebar, sidebarWidth }}>
+    <SidebarContext.Provider value={{ isCollapsed, toggleSidebar, showSecondary, navWidth, navPalette }}>
       {children}
     </SidebarContext.Provider>
   );

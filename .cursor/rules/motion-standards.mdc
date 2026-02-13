@@ -1,0 +1,9 @@
+---
+description: Motion and animation standards for all UI work
+globs: src/**/*.tsx
+alwaysApply: false
+---
+
+# Motion Standards
+
+Read `docs/guidelines/motion-system.md` for the full philosophy, token reference, variant factories, and rules. All motion values live in `src/lib/motion/` — always import from `@/lib/motion`.

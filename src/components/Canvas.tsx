@@ -831,7 +831,7 @@ export function Canvas() {
   const hasPlayedStartChimeRef = useRef(false); // Track if start chime played for this session
 
   // App sidebar width (for positioning toolbar/elements)
-  const { sidebarWidth: appSidebarWidth } = useSidebar();
+  const { navWidth: appSidebarWidth } = useSidebar();
 
   // Voice mode with OpenAI Realtime API
   const voice = useRealtimeVoice();
