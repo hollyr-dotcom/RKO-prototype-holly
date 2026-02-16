@@ -9,7 +9,8 @@
     "start": "next start -H 0.0.0.0 -p 5000",
     "lint": "next lint",
     "deploy": "firebase deploy --only hosting",
-    "deploy:preview": "firebase hosting:channel:deploy preview"
+    "deploy:preview": "firebase hosting:channel:deploy preview",
+    "ship": "bash scripts/ship.sh"
   },
   "dependencies": {
     "@ai-sdk/openai": "0.0.40",
