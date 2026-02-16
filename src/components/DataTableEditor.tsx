@@ -753,7 +753,14 @@ export function DataTableEditor({
   const initialRecords = useMemo(() => {
     if (!initialData) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return [["meta", DEFAULT_META]] as [string, any][];
+      const entries: [string, any][] = [["meta", DEFAULT_META]];
+      // Pre-populate empty cell keys so edits persist in Liveblocks
+      for (let r = 0; r < DEFAULT_META.rowCount; r++) {
+        for (let c = 0; c < DEFAULT_META.columns.length; c++) {
+          entries.push([`cell:${r}:${c}`, ""]);
+        }
+      }
+      return entries;
     }
     const cols: ColumnConfig[] = initialData.columns.map((name) => ({ name, type: "text" as ColumnType }));
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

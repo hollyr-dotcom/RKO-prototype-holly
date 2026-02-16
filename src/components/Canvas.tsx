@@ -831,6 +831,7 @@ export function Canvas() {
   const [responseToast, setResponseToast] = useState<string | null>(null);
   const [toastCentered, setToastCentered] = useState(false);
   const [isToolbarExpanded, setIsToolbarExpanded] = useState(false);
+  const [isToolbarMultiLine, setIsToolbarMultiLine] = useState(false);
   const [isInQAFlow, setIsInQAFlow] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questionAnswers, setQuestionAnswers] = useState<string[]>([]);
@@ -1028,6 +1029,33 @@ export function Canvas() {
             const assetProps = asset.props as Record<string, unknown>;
             text = (assetProps.title as string) || url || 'bookmark';
           }
+        }
+      }
+
+      // Documents: extract title + plain-text content from meta.contentText
+      // (contentText is kept in sync by DocumentEditor on every save)
+      if (shape.type === 'document') {
+        const title = props.title as string | undefined;
+        const contentText = meta?.contentText as string | undefined;
+        if (contentText) {
+          text = title ? `${title}: ${contentText.slice(0, 300)}` : contentText.slice(0, 300);
+        } else if (title) {
+          text = title;
+        }
+      }
+
+      // Data tables: extract column names + row preview from meta
+      if (shape.type === 'datatable') {
+        const title = props.title as string | undefined;
+        const tableData = meta?.initialData as { columns: string[]; rows: string[][] } | undefined;
+        if (tableData) {
+          const cols = tableData.columns.join(', ');
+          const rowPreview = tableData.rows.slice(0, 3).map(r => r.join(' | ')).join('; ');
+          text = title
+            ? `${title} [${cols}] — ${rowPreview}`
+            : `[${cols}] — ${rowPreview}`;
+        } else if (title) {
+          text = title;
         }
       }
 
@@ -2656,22 +2684,6 @@ export function Canvas() {
     return lastMsg.content.trim() || null;
   }, [isLoading, messages, hasActivePlan]);
 
-  // DEBUG — remove after fixing
-  useEffect(() => {
-    const lastMsg = messages[messages.length - 1];
-    if (lastMsg?.role === "assistant") {
-      console.log("[toast-debug]", {
-        isLoading,
-        contentLen: lastMsg.content?.length,
-        toolTextSplit: lastMsg.toolTextSplit,
-        toolInvocations: lastMsg.toolInvocations?.map((t: { toolName: string }) => t.toolName),
-        derivedToastText: derivedToastText?.slice(0, 50),
-        responseToast: responseToast?.slice(0, 50),
-        wasLoading: wasLoadingRef.current,
-      });
-    }
-  }, [isLoading, messages, derivedToastText, responseToast]);
-
   // Sync derivedToastText → responseToast state (state allows user-dismissal)
   useEffect(() => {
     if (isChatOpen || voice.isConnected) return;
@@ -3107,7 +3119,7 @@ export function Canvas() {
             ) && (
               <motion.div
                 key="toast-stack"
-                className={`absolute z-[65] w-[420px] ${showFloatingPlan || showFloatingProgress ? 'bottom-[188px]' : 'bottom-24'}`}
+                className={`absolute z-[65] w-[420px] transition-[bottom] duration-200 ${showFloatingPlan || showFloatingProgress ? 'bottom-[188px]' : isToolbarMultiLine ? 'bottom-40' : 'bottom-24'}`}
                 style={{ left: '50%' }}
                 initial={{ ...toastVariants.hidden, x: "-50%" }}
                 animate={{ ...toastVariants.visible, x: "-50%" }}
@@ -3227,6 +3239,7 @@ export function Canvas() {
               voiceState={voice.state}
               onVoiceToggle={handleVoiceToggle}
               onExpandedChange={setIsToolbarExpanded}
+              onMultiLineChange={setIsToolbarMultiLine}
               responseToast={isChatOpen || toastCentered || showFloatingQuestion || shouldHideToastRef.current || areSuggestionsVisible ? null : responseToast}
               onDismissToast={() => { setResponseToast(null); setToastCentered(false); }}
               onOpenChat={() => {

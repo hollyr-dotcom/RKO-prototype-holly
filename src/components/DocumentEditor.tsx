@@ -127,7 +127,9 @@ function TiptapEditor({
         if (shape) {
           const meta = { ...(shape.meta as Record<string, unknown>) };
           delete meta.initialContent;
-          tldrawEditor.updateShape({ id: shape.id, type: "document", meta });
+          // Save plain-text summary so AI (chat + voice) can read document content
+          meta.contentText = editor.getText().trim().slice(0, 500);
+          tldrawEditor.updateShape({ id: shape.id, type: "document", meta: meta as any });
         }
       }
     }, 500);
@@ -149,16 +151,17 @@ function TiptapEditor({
       if (shape) {
         const meta = { ...(shape.meta as Record<string, unknown>) };
         delete meta.pendingContent;
-        tldrawEditor.updateShape({ id: shape.id, type: "document", meta });
+        meta.contentText = editor.getText().trim().slice(0, 500);
+        tldrawEditor.updateShape({ id: shape.id, type: "document", meta: meta as any });
       }
     }
   }, [editor, pendingContent, tldrawEditor, shapeId, resizeShapeToFit]);
 
   // --- Persist content to Liveblocks Storage (survives page reloads) ---
   // Yjs docs may not persist in all Liveblocks plans, but Storage (LiveMap) does.
-  const savedHtml = useStorage((root) => root.records?.get("html") as string | undefined);
+  const savedHtml = useStorage((root) => (root.records as any)?.get("html") as string | undefined);
   const saveToStorage = useMutation(({ storage }, html: string) => {
-    storage.get("records").set("html", html);
+    (storage.get("records") as any).set("html", html);
   }, []);
 
   // Debounced save on every edit
@@ -171,6 +174,17 @@ function TiptapEditor({
       saveTimerRef.current = setTimeout(() => {
         try {
           saveToStorage(editor.getHTML());
+          // Keep shape meta.contentText in sync so AI can read doc content
+          if (tldrawEditor && shapeId) {
+            const shape = tldrawEditor.getShape(shapeId as TLShapeId);
+            if (shape) {
+              tldrawEditor.updateShape({
+                id: shape.id,
+                type: "document",
+                meta: { ...shape.meta, contentText: editor.getText().trim().slice(0, 500) } as any,
+              });
+            }
+          }
         } catch {
           // Storage not loaded yet — next debounce will retry
         }
