@@ -15,6 +15,7 @@ export default function HomePage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"foryou" | "recent">("foryou");
   const [isCreating, setIsCreating] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
   // Pre-warm the canvas route so it's already compiled when user clicks "Create new"
   useEffect(() => {
@@ -111,9 +112,9 @@ export default function HomePage() {
             Welcome back, Andy
           </h1>
 
-          <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} />
+          <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} onInputChange={(v) => setIsTyping(v.length > 0)} />
 
-          <div className="flex flex-wrap justify-center gap-2 mt-5">
+          <div className={`flex flex-wrap justify-center gap-2 mt-5 transition-opacity duration-200 ${isTyping ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
             {suggestions.map((suggestion) => (
               <button
                 key={suggestion}

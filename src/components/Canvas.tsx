@@ -33,6 +33,8 @@ import { calculateLayout } from "@/lib/layoutEngine";
 import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
 import Markdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
+import { FocusModeOverlay, FocusedShape } from "./FocusModeOverlay";
+import { setFocusedDocId } from "@/lib/focusModeStore";
 
 // Animation variants
 const sidebarVariants = {
@@ -781,8 +783,9 @@ const colorMap: Record<string, TLColor> = {
 };
 
 type CreationToastInfo = {
+  id: string; // unique key per tool call
   name: string;
-  type: "board" | "frame" | "items";
+  type: "board" | "frame" | "items" | "document" | "table";
   isCreating: boolean;
   canvasId?: string;
   frameName?: string;
@@ -837,13 +840,14 @@ export function Canvas() {
   const [areSuggestionsVisible, setAreSuggestionsVisible] = useState(false);
   const [hasToolbarText, setHasToolbarText] = useState(false);
   const [isCommentMode, setIsCommentMode] = useState(false);
+  const [focusedShape, setFocusedShape] = useState<FocusedShape | null>(null);
   const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
   const isProcessingToolCallRef = useRef(false);
   const userEditsRef = useRef<Array<{ shapeId: string; field: string; oldValue: string; newValue: string }>>([]);
   const shouldHideToastRef = useRef(false); // Track if toast should be hidden during new request
   const voiceRef = useRef<{ isConnected: boolean; sendCanvasUpdate: () => void; sendScreenshot: (changeDescription?: string) => void } | null>(null);
-  const [creationToast, setCreationToast] = useState<CreationToastInfo | null>(null);
+  const [creationToasts, setCreationToasts] = useState<CreationToastInfo[]>([]);
   const lastCreationToastedRef = useRef<string | null>(null);
 
   // Chat from provider — must be before any callbacks that use setChatMode, append, etc.
@@ -874,7 +878,7 @@ export function Canvas() {
       // X button = close completely, hide ALL floating UI
       setResponseToast(null);
       setToastCentered(false);
-      setCreationToast(null);
+      setCreationToasts([]);
       lastCreationToastedRef.current = null;
       setDismissedPlan(true); // Mark plan as dismissed so it doesn't float back
       setIsInQAFlow(false); // Exit Q&A flow to restore hybrid toolbar
@@ -1074,9 +1078,10 @@ export function Canvas() {
       .filter(s => s.parentId === pageId)
       .map(shapeInfo);
 
-    return { frames: frameData, orphans, arrows: topArrows };
-    } catch { return { frames: [], orphans: [], arrows: [] }; }
-  }, [editor, extractText]);
+    const fsId = focusedShape?.docId || focusedShape?.tableId || null;
+    return { frames: frameData, orphans, arrows: topArrows, focusedShapeId: fsId };
+    } catch { return { frames: [], orphans: [], arrows: [], focusedShapeId: null }; }
+  }, [editor, extractText, focusedShape]);
 
   // Handle tool calls from the agent
   const handleToolCall = useCallback(
@@ -1278,8 +1283,42 @@ export function Canvas() {
           height?: number;
         };
 
-        const validWidth = Math.max(width || 700, 200);
-        const validHeight = Math.max(height || 460, 150);
+        // Calculate size from content if not explicitly provided
+        let calcWidth = width;
+        let calcHeight = height;
+
+        if (!calcWidth && columns && rows) {
+          // Estimate each column width from header + longest cell content
+          const COL_MIN = 90;
+          const COL_MAX = 220;
+          const CHAR_WIDTH = 7.5; // approx px per char at 12px font
+          const COL_PADDING = 24; // cell padding
+          const ROW_NUM_COL = 36;
+          const ADD_COL_BTN = 32;
+
+          let totalColWidth = ROW_NUM_COL + ADD_COL_BTN;
+          columns.forEach((header, colIdx) => {
+            // Find the longest text in this column (header + all cells)
+            let maxLen = header.length;
+            rows.forEach((row) => {
+              if (row[colIdx]) maxLen = Math.max(maxLen, row[colIdx].length);
+            });
+            const colWidth = Math.min(Math.max(maxLen * CHAR_WIDTH + COL_PADDING, COL_MIN), COL_MAX);
+            totalColWidth += colWidth;
+          });
+          calcWidth = totalColWidth;
+        }
+
+        if (!calcHeight && rows) {
+          const TITLE_BAR = 42;
+          const HEADER_ROW = 34;
+          const ROW_HEIGHT = 32;
+          const ADD_ROW_BTN = 32;
+          calcHeight = TITLE_BAR + HEADER_ROW + rows.length * ROW_HEIGHT + ADD_ROW_BTN;
+        }
+
+        const validWidth = Math.max(calcWidth || 700, 200);
+        const validHeight = Math.max(calcHeight || 460, 150);
 
         const pos = findNonOverlappingPosition(x || 0, y || 0, validWidth, validHeight, "frame");
 
@@ -2254,7 +2293,7 @@ export function Canvas() {
       // Hide any existing toast immediately when new request starts
       setResponseToast(null);
       setToastCentered(false);
-      setCreationToast(null);
+      setCreationToasts([]);
       lastCreationToastedRef.current = null;
       shouldHideToastRef.current = true; // Synchronously hide toast to prevent flicker
 
@@ -2451,7 +2490,7 @@ export function Canvas() {
     return null;
   }, [messages]);
 
-  // Check if there's an active plan (approved and executing)
+  // Check if there's an active plan (approved, executing, NOT yet fully completed)
   const hasActivePlan = useMemo(() => {
     for (let i = 0; i < messages.length; i++) {
       const msg = messages[i];
@@ -2460,12 +2499,40 @@ export function Canvas() {
         // Check if next user message is approval
         const nextMsg = messages[i + 1];
         if (nextMsg?.role === 'user' && nextMsg.content?.toLowerCase().includes('approve')) {
+          const args = planTool.args as { steps?: string[] };
+          const totalSteps = args.steps?.length ?? 0;
+
+          // Gather all showProgress calls after the plan
+          const laterMessages = messages.slice(i + 1).filter(m => m.role === 'assistant');
+          const laterToolCalls = laterMessages.flatMap(m => m.toolInvocations || []);
+          const progressCalls = laterToolCalls.filter(t => t.toolName === 'showProgress');
+
+          // Count how many steps are completed
+          let completedSteps = 0;
+          progressCalls.forEach(call => {
+            const pargs = call.args as { stepNumber?: number; status?: string };
+            if (pargs.status === 'completed' && pargs.stepNumber !== undefined) {
+              completedSteps = Math.max(completedSteps, pargs.stepNumber);
+            }
+          });
+
+          // Plan is done when all steps are completed AND we're not still loading
+          if (totalSteps > 0 && completedSteps >= totalSteps && !isLoading) {
+            // Check if there's a NEW user message AFTER the plan finished
+            // (i.e., the user has moved on to something else)
+            const lastUserMsgIndex = messages.findLastIndex(m => m.role === 'user');
+            const approvalIndex = i + 1; // the approval message index
+            if (lastUserMsgIndex > approvalIndex) {
+              return false; // User sent a new prompt after plan — plan is over
+            }
+          }
+
           return true;
         }
       }
     }
     return false;
-  }, [messages]);
+  }, [messages, isLoading]);
 
   // Extract active plan details for progress panel
   const activePlanDetails = useMemo(() => {
@@ -2532,26 +2599,102 @@ export function Canvas() {
   // Check if canvas is empty (no shapes)
   const isCanvasEmpty = shapeCount === 0;
 
-  // Show toast when AI finishes responding (sidebar closed, not in voice mode)
-  useEffect(() => {
+  // Compute what the response toast should say, derived from current state.
+  // useMemo ensures the text is always correct — no timing / ref issues.
+  const derivedToastText = useMemo(() => {
+    const lastMsg = messages[messages.length - 1];
+    if (!lastMsg || lastMsg.role !== "assistant" || !lastMsg.content?.trim()) return null;
+
+    const split = lastMsg.toolTextSplit;
+    const hasToolInvocations = (lastMsg.toolInvocations?.length ?? 0) > 0;
+    const hasTools = split !== undefined || hasToolInvocations;
+
+    // During plan execution, skip ack/post-tool splitting — progress bar handles tool feedback.
+    // Just show the full text content.
+    if (hasActivePlan) {
+      return isLoading ? null : lastMsg.content.trim() || null;
+    }
+
     if (isLoading) {
-      wasLoadingRef.current = true;
-    } else if (wasLoadingRef.current) {
-      wasLoadingRef.current = false;
-      if (!isChatOpen && !voice.isConnected) {
-        // Find last assistant message with text content
-        for (let i = messages.length - 1; i >= 0; i--) {
-          const msg = messages[i];
-          if (msg.role === "assistant" && msg.content && msg.content.trim()) {
-            shouldHideToastRef.current = false;
-            setResponseToast(msg.content.trim());
-            setToastCentered(true);
-            break;
-          }
+      // Streaming: show only the ack portion (text before first tool), or all text if no tools yet
+      return (split !== undefined && split > 0)
+        ? lastMsg.content.slice(0, split).trim() || null
+        : lastMsg.content.trim() || null;
+    }
+
+    // Done
+    if (hasTools) {
+      const ackText = (split !== undefined && split > 0)
+        ? lastMsg.content.slice(0, split).trim()
+        : "";
+
+      // Get the raw post-tool text
+      let rawPostTool = (split !== undefined && split > 0 && split < lastMsg.content.length)
+        ? lastMsg.content.slice(split).trim()
+        : "";
+
+      // AI often repeats the ack after tools — strip the duplicate prefix
+      if (rawPostTool && ackText && rawPostTool.startsWith(ackText)) {
+        rawPostTool = rawPostTool.slice(ackText.length).trim();
+      }
+
+      // If the post-tool text still starts similarly (fuzzy), strip the first
+      // paragraph since it's likely the repeated ack
+      if (rawPostTool && ackText) {
+        const ackStart = ackText.slice(0, 25);
+        if (rawPostTool.startsWith(ackStart)) {
+          // Strip the first paragraph (everything up to the first double-newline)
+          const paraBreak = rawPostTool.indexOf("\n\n");
+          rawPostTool = paraBreak > 0 ? rawPostTool.slice(paraBreak).trim() : "";
         }
       }
+
+      return rawPostTool || null;
     }
-  }, [isLoading, isChatOpen, voice.isConnected, messages]);
+
+    // No tools — simple text reply
+    return lastMsg.content.trim() || null;
+  }, [isLoading, messages, hasActivePlan]);
+
+  // DEBUG — remove after fixing
+  useEffect(() => {
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg?.role === "assistant") {
+      console.log("[toast-debug]", {
+        isLoading,
+        contentLen: lastMsg.content?.length,
+        toolTextSplit: lastMsg.toolTextSplit,
+        toolInvocations: lastMsg.toolInvocations?.map((t: { toolName: string }) => t.toolName),
+        derivedToastText: derivedToastText?.slice(0, 50),
+        responseToast: responseToast?.slice(0, 50),
+        wasLoading: wasLoadingRef.current,
+      });
+    }
+  }, [isLoading, messages, derivedToastText, responseToast]);
+
+  // Sync derivedToastText → responseToast state (state allows user-dismissal)
+  useEffect(() => {
+    if (isChatOpen || voice.isConnected) return;
+
+    if (isLoading) {
+      wasLoadingRef.current = true;
+      if (derivedToastText) {
+        shouldHideToastRef.current = false;
+        setResponseToast(derivedToastText);
+        setToastCentered(true);
+      }
+    } else if (wasLoadingRef.current) {
+      wasLoadingRef.current = false;
+      if (derivedToastText) {
+        shouldHideToastRef.current = false;
+        setResponseToast(derivedToastText);
+        setToastCentered(true);
+      } else {
+        setResponseToast(null);
+        setToastCentered(false);
+      }
+    }
+  }, [isLoading, isChatOpen, voice.isConnected, derivedToastText]);
 
   // Toast stays hidden when sidebar closes via X button (user dismissed the conversation)
 
@@ -2575,9 +2718,10 @@ export function Canvas() {
     }
   }, [isToolbarExpanded, responseToast, toastCentered]);
 
-  // Creation toast — detect creation tools when chat is minimized
+  // Creation toasts — detect creation tools when chat is minimized, one entry per tool call
+  // Skip during plan execution — the progress indicator already covers it
   useEffect(() => {
-    if (chatMode !== "minimized") return;
+    if (chatMode !== "minimized" || hasActivePlan) return;
 
     const latestMsg = messages[messages.length - 1];
     if (!latestMsg || latestMsg.role !== "assistant") return;
@@ -2585,8 +2729,13 @@ export function Canvas() {
     const tools = latestMsg.toolInvocations || [];
     if (tools.length === 0) return;
 
+    const CREATION_TOOL_NAMES = [
+      "createCanvas", "createLayout", "createFrame",
+      "createSticky", "createShape", "createText",
+      "createDocument", "createDataTable",
+    ];
     const creationTools = tools.filter((t: { toolName: string }) =>
-      ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText"].includes(t.toolName)
+      CREATION_TOOL_NAMES.includes(t.toolName)
     );
     if (creationTools.length === 0) return;
 
@@ -2594,52 +2743,90 @@ export function Canvas() {
     if (toastKey === lastCreationToastedRef.current) return;
     lastCreationToastedRef.current = toastKey;
 
-    const createCanvasTool = tools.find((t: { toolName: string }) => t.toolName === "createCanvas");
-    const createCanvasResult = tools.find((t: { toolName: string }) => t.toolName === "createCanvas_result");
-    const layout = tools.find((t: { toolName: string }) => t.toolName === "createLayout");
-    const frame = tools.find((t: { toolName: string }) => t.toolName === "createFrame");
-    const hasLooseItems = tools.some((t: { toolName: string }) =>
-      ["createSticky", "createShape", "createText"].includes(t.toolName)
-    );
+    // Build one toast entry per creation tool call
+    const entries: CreationToastInfo[] = [];
+    // Track loose items to combine them into one line
+    const looseItems: string[] = [];
 
-    if (createCanvasTool) {
-      const args = createCanvasTool.args as { name?: string };
-      const resultArgs = createCanvasResult?.args as { canvasId?: string } | undefined;
-      setCreationToast({
-        name: args.name || "New Board",
-        type: "board",
-        isCreating: isLoading,
-        canvasId: resultArgs?.canvasId,
-      });
-    } else if (layout) {
-      const args = layout.args as { frameName?: string };
-      setCreationToast({
-        name: args.frameName || "Frame",
-        type: "frame",
-        isCreating: isLoading,
-        frameName: args.frameName || "",
-      });
-    } else if (frame) {
-      const args = frame.args as { name?: string };
-      setCreationToast({
-        name: args.name || "Frame",
-        type: "frame",
-        isCreating: isLoading,
-        frameName: args.name || "",
-      });
-    } else if (hasLooseItems) {
-      setCreationToast({
-        name: "New items",
+    for (const tool of creationTools) {
+      const args = tool.args as Record<string, unknown>;
+      switch (tool.toolName) {
+        case "createCanvas": {
+          const resultTool = tools.find((t: { toolName: string }) => t.toolName === "createCanvas_result");
+          const resultArgs = resultTool?.args as { canvasId?: string } | undefined;
+          entries.push({
+            id: `${latestMsg.id}:${tool.toolName}:${entries.length}`,
+            name: (args.name as string) || "board",
+            type: "board",
+            isCreating: isLoading,
+            canvasId: resultArgs?.canvasId,
+          });
+          break;
+        }
+        case "createLayout":
+          entries.push({
+            id: `${latestMsg.id}:${tool.toolName}:${entries.length}`,
+            name: (args.frameName as string) || "frame",
+            type: "frame",
+            isCreating: isLoading,
+            frameName: (args.frameName as string) || "",
+          });
+          break;
+        case "createFrame":
+          entries.push({
+            id: `${latestMsg.id}:${tool.toolName}:${entries.length}`,
+            name: (args.name as string) || "frame",
+            type: "frame",
+            isCreating: isLoading,
+            frameName: (args.name as string) || "",
+          });
+          break;
+        case "createDocument":
+          entries.push({
+            id: `${latestMsg.id}:${tool.toolName}:${entries.length}`,
+            name: (args.title as string) || "document",
+            type: "document",
+            isCreating: isLoading,
+          });
+          break;
+        case "createDataTable":
+          entries.push({
+            id: `${latestMsg.id}:${tool.toolName}:${entries.length}`,
+            name: (args.title as string) || "table",
+            type: "table",
+            isCreating: isLoading,
+          });
+          break;
+        case "createSticky":
+          looseItems.push("sticky notes");
+          break;
+        case "createShape":
+          looseItems.push("shapes");
+          break;
+        case "createText":
+          looseItems.push("text");
+          break;
+      }
+    }
+
+    // Combine loose items into a single line
+    if (looseItems.length > 0) {
+      const uniqueItems = [...new Set(looseItems)];
+      entries.push({
+        id: `${latestMsg.id}:loose:${uniqueItems.join(",")}`,
+        name: uniqueItems.join(", "),
         type: "items",
         isCreating: isLoading,
       });
     }
-  }, [messages, chatMode, isLoading]);
 
-  // Clear creation toast when chat opens
+    setCreationToasts(entries);
+  }, [messages, chatMode, isLoading, hasActivePlan]);
+
+  // Clear creation toasts when chat opens
   useEffect(() => {
     if (chatMode !== "minimized") {
-      setCreationToast(null);
+      setCreationToasts([]);
       lastCreationToastedRef.current = null;
     }
   }, [chatMode]);
@@ -2697,6 +2884,22 @@ export function Canvas() {
       setDismissedPlan(false);
     }
   }, [isChatOpen]);
+
+  // Listen for shape:focus custom events from expand buttons
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as FocusedShape | undefined;
+      if (detail) {
+        // For documents, unmount the on-canvas editor to avoid dual Yjs connections
+        if (detail.shapeType === "document" && detail.docId) {
+          setFocusedDocId(detail.docId);
+        }
+        setFocusedShape(detail);
+      }
+    };
+    window.addEventListener("shape:focus", handler);
+    return () => window.removeEventListener("shape:focus", handler);
+  }, []);
 
   // Toolbar always visible - prompt input hides itself when sidebar is open
   const showToolbar = true;
@@ -2774,8 +2977,22 @@ export function Canvas() {
           )}
         </AnimatePresence>
 
+        {/* Focus mode overlay */}
+        <AnimatePresence>
+          {focusedShape && (
+            <FocusModeOverlay
+              key="focus-mode"
+              shape={focusedShape}
+              onClose={() => {
+                setFocusedDocId(null);
+                setFocusedShape(null);
+              }}
+            />
+          )}
+        </AnimatePresence>
+
         {/* Floating UI wrapper */}
-        <div className="absolute inset-0 z-[60] pointer-events-none">
+        <div className="absolute inset-0 z-[60] pointer-events-none" style={{ visibility: focusedShape ? "hidden" : "visible" }}>
           {/* Floating question card */}
           <AnimatePresence>
             {!isChatOpen && pendingQuestion && !isLoading && (
@@ -2883,10 +3100,10 @@ export function Canvas() {
             )}
           </AnimatePresence>
 
-          {/* Stacked toasts — response text + creation status */}
+          {/* Stacked toasts — response text + creation status lines */}
           <AnimatePresence>
             {!showFloatingQuestion && !isChatOpen && !shouldHideToastRef.current && !areSuggestionsVisible && (
-              (toastCentered && responseToast) || creationToast
+              (toastCentered && responseToast) || creationToasts.length > 0
             ) && (
               <motion.div
                 key="toast-stack"
@@ -2898,7 +3115,7 @@ export function Canvas() {
                 transition={floatingTransition}
               >
                 <div className="flex flex-col gap-2">
-                  {/* Response toast card */}
+                  {/* Response toast card (ack during streaming, final reply when done) */}
                   {toastCentered && responseToast && (
                     <div className="pointer-events-auto w-full bg-white shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: '32px' }}>
                       <div className="absolute top-4 left-4 z-10 bg-white">
@@ -2946,24 +3163,25 @@ export function Canvas() {
                     </div>
                   )}
 
-                  {/* Creation toast card */}
-                  {creationToast && (
+                  {/* Creation toast lines — one per tool call */}
+                  {creationToasts.map((ct) => (
                     <button
+                      key={ct.id}
                       onClick={() => {
                         setChatMode("sidepanel");
                         setIsCompletionDismissed(true);
-                        if (creationToast.type === "board" && creationToast.canvasId) {
-                          navigateToCanvas(creationToast.canvasId);
-                        } else if (creationToast.type === "frame" && creationToast.frameName) {
-                          navigateToFrames([creationToast.frameName]);
+                        if (ct.type === "board" && ct.canvasId) {
+                          navigateToCanvas(ct.canvasId);
+                        } else if (ct.type === "frame" && ct.frameName) {
+                          navigateToFrames([ct.frameName]);
                         }
-                        setCreationToast(null);
+                        setCreationToasts([]);
                         lastCreationToastedRef.current = null;
                       }}
                       className="pointer-events-auto w-full bg-white shadow-lg border border-gray-200 flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
                       style={{ borderRadius: '32px' }}
                     >
-                      {creationToast.isCreating ? (
+                      {ct.isCreating ? (
                         <div className="w-5 h-5 flex-shrink-0 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
                       ) : (
                         <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center flex-shrink-0">
@@ -2971,13 +3189,13 @@ export function Canvas() {
                         </div>
                       )}
                       <span className="text-sm font-medium text-gray-900 truncate flex-1 text-left">
-                        {creationToast.isCreating ? `Creating ${creationToast.name}...` : `Created ${creationToast.name}`}
+                        {ct.isCreating ? `Creating ${ct.name}...` : `Created ${ct.name}`}
                       </span>
-                      {!creationToast.isCreating && (
+                      {!ct.isCreating && (
                         <IconArrowRight css={{ width: 16, height: 16, color: "#9ca3af", flexShrink: 0 }} />
                       )}
                     </button>
-                  )}
+                  ))}
                 </div>
               </motion.div>
             )}
@@ -2987,7 +3205,7 @@ export function Canvas() {
 
       {/* Toolbar - animates down/up when entering/exiting fullscreen */}
       <AnimatePresence>
-        {!isFullscreenChat && showToolbar && (
+        {!isFullscreenChat && !focusedShape && showToolbar && (
           <motion.div
             key="toolbar"
             className="absolute top-0 left-0 right-0 h-full z-50 pointer-events-none [&>*]:pointer-events-auto"

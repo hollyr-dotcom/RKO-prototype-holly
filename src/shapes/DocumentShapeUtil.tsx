@@ -12,6 +12,8 @@ import {
   resizeBox,
 } from "tldraw";
 import { DocumentEditor } from "@/components/DocumentEditor";
+import { IconArrowsOutSimple } from "@mirohq/design-system-icons";
+import { AutoSizeWrapper } from "./AutoSizeWrapper";
 
 const DOCUMENT_SHAPE_TYPE = "document" as const;
 
@@ -80,7 +82,6 @@ export class DocumentShapeUtil extends ShapeUtil<IDocumentShape> {
     const meta = shape.meta as Record<string, unknown>;
     const initialContent = meta?.initialContent as string | undefined;
     const pendingContent = meta?.pendingContent as string | undefined;
-
     return (
       <HTMLContainer
         style={{
@@ -102,7 +103,42 @@ export class DocumentShapeUtil extends ShapeUtil<IDocumentShape> {
             }}
           />
         )}
-        <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        {isSelected && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              window.dispatchEvent(
+                new CustomEvent("shape:focus", {
+                  detail: {
+                    shapeType: "document",
+                    docId: shape.props.docId,
+                    title: shape.props.title,
+                  },
+                })
+              );
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              zIndex: 20,
+              width: 28,
+              height: 28,
+              borderRadius: 8,
+              border: "1px solid #e5e7eb",
+              background: "white",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+            }}
+          >
+            <IconArrowsOutSimple css={{ width: 14, height: 14, color: "#6b7280" }} />
+          </button>
+        )}
+        <AutoSizeWrapper shapeId={shape.id} shapeType={DOCUMENT_SHAPE_TYPE} shapeH={shape.props.h} editor={this.editor}>
           <DocumentEditor
             docId={shape.props.docId}
             title={shape.props.title}
@@ -116,7 +152,7 @@ export class DocumentShapeUtil extends ShapeUtil<IDocumentShape> {
             h={shape.props.h}
             onEscape={() => this.editor.setEditingShape(null)}
           />
-        </div>
+        </AutoSizeWrapper>
       </HTMLContainer>
     );
   }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { RoomProvider } from "@/liveblocks.config";
+import { createPortal } from "react-dom";
+import { RoomProvider, useStorage, useMutation } from "@/liveblocks.config";
 import { LiveMap } from "@liveblocks/client";
 import {
   useLiveblocksExtension,
@@ -10,6 +11,7 @@ import {
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import type { Editor as TldrawEditor, TLShapeId } from "tldraw";
+import { useFocusedDocId, usePortalTarget } from "@/lib/focusModeStore";
 
 interface DocumentEditorProps {
   docId: string;
@@ -26,6 +28,7 @@ interface DocumentEditorProps {
 }
 
 function TiptapEditor({
+  docId,
   title,
   isEditing,
   isSelected,
@@ -36,6 +39,7 @@ function TiptapEditor({
   h,
   onEscape,
 }: {
+  docId: string;
   title: string;
   isEditing: boolean;
   isSelected?: boolean;
@@ -47,6 +51,14 @@ function TiptapEditor({
   onEscape?: () => void;
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // Portal: check if this doc is in focus mode and a portal target exists
+  const focusedDocId = useFocusedDocId();
+  const portalTarget = usePortalTarget();
+  const isInFocusMode = focusedDocId === docId && portalTarget != null;
+
+  // In focus mode the editor is always editable
+  const effectivelyEditing = isEditing || isInFocusMode;
 
   // Auto-resize shape to fit content after AI injects text
   const resizeShapeToFit = useCallback(() => {
@@ -81,19 +93,19 @@ function TiptapEditor({
         undoRedo: false,
       }),
     ],
-    editable: isEditing,
+    editable: effectivelyEditing,
     immediatelyRender: false,
   });
 
-  // Keep editable state in sync with tldraw editing state
+  // Keep editable state in sync
   useEffect(() => {
     if (editor) {
-      editor.setEditable(isEditing);
-      if (isEditing) {
+      editor.setEditable(effectivelyEditing);
+      if (effectivelyEditing && !isInFocusMode) {
         editor.commands.focus();
       }
     }
-  }, [editor, isEditing]);
+  }, [editor, effectivelyEditing, isInFocusMode]);
 
   // Apply initial content when document is first created
   const appliedInitialRef = useRef(false);
@@ -101,8 +113,6 @@ function TiptapEditor({
   useEffect(() => {
     if (!editor || !initialContent || appliedInitialRef.current) return;
 
-    // Small delay to let Liveblocks finish connecting — if the Yjs doc is still
-    // empty at that point, we inject our HTML content directly.
     const timer = setTimeout(() => {
       if (appliedInitialRef.current) return;
       const isEmpty = !editor.getText().trim();
@@ -112,7 +122,6 @@ function TiptapEditor({
       }
       appliedInitialRef.current = true;
 
-      // Clear initialContent from shape meta so it doesn't re-apply on reload
       if (tldrawEditor && shapeId) {
         const shape = tldrawEditor.getShape(shapeId as TLShapeId);
         if (shape) {
@@ -135,7 +144,6 @@ function TiptapEditor({
     appliedPendingRef.current = pendingContent;
     resizeShapeToFit();
 
-    // Clear pendingContent from shape meta so it doesn't re-apply on reload
     if (tldrawEditor && shapeId) {
       const shape = tldrawEditor.getShape(shapeId as TLShapeId);
       if (shape) {
@@ -145,6 +153,98 @@ function TiptapEditor({
       }
     }
   }, [editor, pendingContent, tldrawEditor, shapeId, resizeShapeToFit]);
+
+  // --- Persist content to Liveblocks Storage (survives page reloads) ---
+  // Yjs docs may not persist in all Liveblocks plans, but Storage (LiveMap) does.
+  const savedHtml = useStorage((root) => root.records?.get("html") as string | undefined);
+  const saveToStorage = useMutation(({ storage }, html: string) => {
+    storage.get("records").set("html", html);
+  }, []);
+
+  // Debounced save on every edit
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!editor) return;
+    const handler = () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        try {
+          saveToStorage(editor.getHTML());
+        } catch {
+          // Storage not loaded yet — next debounce will retry
+        }
+      }, 400);
+    };
+    editor.on("update", handler);
+    return () => {
+      editor.off("update", handler);
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [editor, saveToStorage]);
+
+  // If Yjs doc is empty but Storage has content, restore immediately
+  const restoredRef = useRef(false);
+
+  useEffect(() => {
+    if (!editor || !savedHtml || restoredRef.current) return;
+    const isEmpty = !editor.getText().trim();
+    if (isEmpty) {
+      editor.commands.setContent(savedHtml);
+      restoredRef.current = true;
+    }
+  }, [editor, savedHtml]);
+
+  // The actual editor content block
+  const editorContent = (
+    <div
+      ref={contentRef}
+      style={{
+        flex: 1,
+        overflow: "auto",
+        padding: 74,
+        fontSize: 13,
+        lineHeight: 1.6,
+        color: "#1f2937",
+        height: "100%",
+      }}
+      className="document-editor-content"
+      onPointerDown={(e) => {
+        if (effectivelyEditing) e.stopPropagation();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          e.stopPropagation();
+          onEscape?.();
+        }
+      }}
+    >
+      <EditorContent editor={editor} />
+      {effectivelyEditing && <FloatingToolbar editor={editor} />}
+    </div>
+  );
+
+  // When in focus mode: show placeholder in the shape, portal editor to overlay.
+  // When not in focus mode: render editor in the shape normally.
+  if (isInFocusMode) {
+    return (
+      <>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#9ca3af",
+            fontSize: 13,
+          }}
+        >
+          Editing in focus mode…
+        </div>
+        {createPortal(editorContent, portalTarget)}
+      </>
+    );
+  }
 
   return (
     <div
@@ -158,28 +258,13 @@ function TiptapEditor({
         if (isEditing) e.stopPropagation();
       }}
       onKeyDown={(e) => {
-        if (e.key === 'Escape') {
+        if (e.key === "Escape") {
           e.stopPropagation();
           onEscape?.();
         }
       }}
     >
-      {/* Editor content */}
-      <div
-        ref={contentRef}
-        style={{
-          flex: 1,
-          overflow: "auto",
-          padding: 74,
-          fontSize: 13,
-          lineHeight: 1.6,
-          color: "#1f2937",
-        }}
-        className="document-editor-content"
-      >
-        <EditorContent editor={editor} />
-        {isEditing && <FloatingToolbar editor={editor} />}
-      </div>
+      {editorContent}
     </div>
   );
 }
@@ -223,6 +308,7 @@ export function DocumentEditor({
       initialStorage={{ records: new LiveMap() }}
     >
       <TiptapEditor
+        docId={docId}
         title={title}
         isEditing={isEditing}
         isSelected={isSelected}

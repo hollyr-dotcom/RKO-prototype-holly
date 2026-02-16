@@ -517,7 +517,7 @@ function DataTableGrid({
       {/* Title bar */}
       <div
         style={{
-          padding: "10px 14px 6px",
+          padding: "12px 14px",
           borderBottom: "1px solid #f3f4f6",
           flexShrink: 0,
           display: "flex",
@@ -541,25 +541,6 @@ function DataTableGrid({
             {title}
           </span>
         </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowFilters((prev) => !prev);
-          }}
-          style={{
-            padding: "2px 8px",
-            border: "1px solid #e5e7eb",
-            borderRadius: 4,
-            background: showFilters ? "#f3f4f6" : "#ffffff",
-            color: "#6b7280",
-            fontSize: 11,
-            cursor: "pointer",
-            flexShrink: 0,
-          }}
-          title="Toggle filters"
-        >
-          Filter
-        </button>
       </div>
 
       {/* Table content */}
@@ -573,6 +554,8 @@ function DataTableGrid({
         <table
           style={{
             borderCollapse: "collapse",
+            width: "100%",
+            tableLayout: "auto",
           }}
         >
           <thead>

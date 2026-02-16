@@ -708,7 +708,7 @@ Check [CANVAS STATE] carefully. Use the IDs you see there!
 If the last user message is "Continue" or similar, you MUST immediately:
 1. Call showProgress() for the next step
 2. Execute that step
-3. Keep going until done or next checkpoint
+3. Keep going until done
 
 NEVER respond with just text when user says "Continue" - START WORKING IMMEDIATELY!
 
@@ -729,10 +729,11 @@ Work through steps in sequence. For each step:
    - Quick ideas, brainstorm items? → createLayout(type:"sticky")
    - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy"/"flow")
 3. Call showProgress(stepNumber, "step title", "completed")
-4. Either: continue to next step OR call checkpoint() at a milestone
+4. Continue to next step
 
 ⚠️ DO NOT use createLayout for everything! Read the step title and think about what format serves the content best.
 
+/* CHECKPOINTS DISABLED — keeping instructions for later re-enable:
 CHECKPOINTS - PAUSE AT MILESTONES:
 - Call checkpoint() after completing 3-4 related steps
 - After a checkpoint, STOP and wait for user to click "Continue"
@@ -743,6 +744,7 @@ YOUR MESSAGE BEFORE CHECKPOINT:
 
 CHECKPOINT LABEL:
 - Format: "Review [what you created]"
+*/
 
 =====================================================
 🎯 CHOOSING THE RIGHT TOOL — READ THIS FIRST!
@@ -889,7 +891,7 @@ BAD: 13 stickies each with random different colors`,
   tools: [
     showProgressTool,
     reviewCanvasTool,
-    checkpointTool,
+    // checkpointTool, // disabled — re-enable when checkpoints are needed
     requestFeedbackTool,
     webSearchTool,
     // Workspace navigation tools
@@ -1015,7 +1017,7 @@ ${approvedPlan.steps.map((s, i) => {
 ${isComplete ? `
 ALL STEPS COMPLETE!
 1. Write a brief message like "All set!" or "Done!" (1-2 words max)
-2. Call checkpoint() with review CTA like "Review all wireframes"
+2. You're done — no need to pause
 
 Keep your message VERY brief - the card shows details.
 ` : `
@@ -1032,7 +1034,7 @@ DO THIS IMMEDIATELY:
    - Brainstorm ideas, quick notes? → createLayout(type:"sticky")
    - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy")
 3. showProgress(${nextStep}, "${approvedPlan.steps[nextStep - 1]}", "completed")
-4. Continue to step ${nextStep + 1} or checkpoint() if milestone reached
+4. Continue to step ${nextStep + 1}
 
 RESEARCH STEPS — always extract the "so what":
 If this step involves research, do ALL THREE in this step:
@@ -1102,7 +1104,7 @@ DO NOT write explanatory text first - CALL showProgress() IMMEDIATELY!`}`;
     createdBy: string;
   };
   type FrameInfo = ShapeInfo & { children: ShapeInfo[]; arrows: ShapeInfo[] };
-  type StructuredCanvas = { frames: FrameInfo[]; orphans: ShapeInfo[]; arrows: ShapeInfo[] };
+  type StructuredCanvas = { frames: FrameInfo[]; orphans: ShapeInfo[]; arrows: ShapeInfo[]; focusedShapeId?: string | null };
 
   const canvas = canvasState as StructuredCanvas | undefined;
   const hasContent = canvas && (canvas.frames.length > 0 || canvas.orphans.length > 0);
@@ -1158,7 +1160,11 @@ OCCUPIED AREA: x=${Math.round(minX)} to ${Math.round(maxX)}, y=${Math.round(minY
   → BELOW: x=${Math.round(minX)}, y=${Math.round(maxY + 100)} (creates rows)
 
 EXISTING ITEMS (use these IDs with moveItem):
-${canvasDescription}`;
+${canvasDescription}${canvas.focusedShapeId ? `
+
+🔍 FOCUS MODE ACTIVE — The user is viewing item [ID: ${canvas.focusedShapeId}] in full-screen focus mode.
+When the user says "add a column", "change X", "update this", etc., they mean THIS focused item.
+Only target a different item if the user EXPLICITLY names another one.` : ""}`;
   } else {
     conversationContext += `
 
@@ -1290,7 +1296,7 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
               }
 
               // Handle response.output_text.delta (Anthropic format - fallback)
-              if (data.type === "response.output_text.delta") {
+              else if (data.type === "response.output_text.delta") {
                 const delta = data.delta as string;
                 if (delta) {
                   textContent += delta;
@@ -1302,7 +1308,7 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
               }
 
               // Handle content_block_delta (Anthropic format)
-              if (data.type === "content_block_delta") {
+              else if (data.type === "content_block_delta") {
                 const deltaData = data.delta as Record<string, unknown>;
                 if (deltaData?.type === "text_delta") {
                   const delta = deltaData.text as string;
@@ -1318,7 +1324,7 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
             }
 
             // Handle text_delta events directly (OpenAI Realtime format)
-            if ((event.type as string) === "text_delta" || (event.type as string) === "response.text.delta") {
+            else if ((event.type as string) === "text_delta" || (event.type as string) === "response.text.delta") {
               const delta = (event as { delta?: string }).delta || (event as { text?: string }).text;
               if (delta) {
                 textContent += delta;
@@ -1333,22 +1339,16 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
             if (event.type === "run_item_stream_event") {
               const item = event.item as unknown as Record<string, unknown>;
 
-              // Handle final message output
+              // Final message output — text was already sent via deltas above,
+              // so we only update textContent for bookkeeping (no re-send).
               if (item.type === "message_output_item") {
                 const rawItem = item.rawItem as Record<string, unknown>;
                 const content = rawItem?.content as Array<{ type: string; text?: string }>;
                 if (content) {
                   for (const block of content) {
                     if (block.type === "output_text" && block.text) {
-                      if (block.text.length > sentTextLength) {
-                        const newText = block.text.slice(sentTextLength);
-                        textContent = block.text;
-                        safeEnqueue(
-                          encoder.encode(`data: ${JSON.stringify({ type: "text", content: newText })}\n\n`)
-                        );
-                      } else {
-                        textContent = block.text;
-                      }
+                      textContent = block.text;
+                      sentTextLength = textContent.length;
                     }
                   }
                 }
