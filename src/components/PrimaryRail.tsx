@@ -47,7 +47,7 @@ export function PrimaryRail() {
           className="w-10 h-10 flex items-center justify-center shadow-sm rounded-lg"
           style={{ backgroundColor: navPalette.logoContainer }}
         >
-          <IconMiroMark css={{ width: 24, height: 24, color: navPalette.iconActive }} />
+          <IconMiroMark css={{ width: 24, height: 24, color: "#000000" }} />
         </div>
       </Link>
 

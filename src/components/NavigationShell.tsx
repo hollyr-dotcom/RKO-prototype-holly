@@ -34,7 +34,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
           className="h-full flex-1 flex flex-col overflow-hidden bg-white"
           style={{
             borderRadius: contentHasRounding ? "1.5rem 0 0 1.5rem" : "0",
-            border: "1px solid #f4f4f4",
+            border: "1px solid #e5e7eb",
             boxShadow: "0 0 24px rgba(0, 0, 0, 0.02)",
             transition: contentTransition,
           }}

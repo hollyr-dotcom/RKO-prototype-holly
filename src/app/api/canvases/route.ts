@@ -11,6 +11,7 @@ type Canvas = {
   name: string;
   createdAt: string;
   updatedAt: string;
+  order?: number;
 };
 
 function readCanvases(): Canvas[] {
@@ -44,12 +45,19 @@ export async function POST(req: Request) {
     const canvases = readCanvases();
     const now = new Date().toISOString();
 
+    // Assign order to the end of the list within the same space
+    const targetSpaceId = spaceId || "";
+    const maxOrder = canvases
+      .filter((c) => c.spaceId === targetSpaceId)
+      .reduce((max, c) => Math.max(max, c.order ?? 0), -1);
+
     const newCanvas: Canvas = {
       id: `canvas-${Date.now()}`,
-      spaceId: spaceId || "",
+      spaceId: targetSpaceId,
       name,
       createdAt: now,
       updatedAt: now,
+      order: maxOrder + 1,
     };
 
     canvases.push(newCanvas);

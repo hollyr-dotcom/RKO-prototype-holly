@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   IconHouse,
@@ -16,6 +16,7 @@ import {
 } from "@mirohq/design-system-icons";
 import { useSidebar } from "@/hooks/useSidebar";
 import { EXPANDED_PRIMARY_WIDTH } from "@/providers/SidebarProvider";
+import { NavList, NavListItem } from "@/components/NavList";
 
 // Same nav items as PrimaryRail — identical icons, IDs, hrefs
 const navItems = [
@@ -31,23 +32,6 @@ const indicatorTransition = {
   ease: [0.65, 0, 0.31, 1] as [number, number, number, number],
 };
 
-// Same stagger variants as SecondaryPanel
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.04 },
-  },
-};
-
-const staggerItem = {
-  hidden: { opacity: 0, x: -8 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { type: "spring" as const, stiffness: 400, damping: 30 },
-  },
-};
 
 type Space = {
   id: string;
@@ -83,6 +67,7 @@ const popoverVariants = {
 
 export function ExpandedPrimaryPanel() {
   const pathname = usePathname();
+  const router = useRouter();
   const { toggleSidebar, navPalette } = useSidebar();
   const [hoveredNavId, setHoveredNavId] = useState<string | null>(null);
   const [spaces, setSpaces] = useState<Space[]>([]);
@@ -131,6 +116,119 @@ export function ExpandedPrimaryPanel() {
     };
   }, []);
 
+  // Create a new space with a default board and navigate into it
+  const handleCreateSpace = useCallback(async () => {
+    try {
+      // 1. Create the space
+      const spaceRes = await fetch("/api/spaces", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Untitled Space" }),
+      });
+      if (!spaceRes.ok) throw new Error("Failed to create space");
+      const newSpace = await spaceRes.json();
+
+      // 2. Create a default board inside the new space
+      const canvasRes = await fetch("/api/canvases", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Untitled Board", spaceId: newSpace.id }),
+      });
+      if (!canvasRes.ok) throw new Error("Failed to create board");
+      const newCanvas = await canvasRes.json();
+
+      // 3. Update local state so the sidebar reflects the new space immediately
+      setSpaces((prev) => [...prev, newSpace]);
+
+      // 4. Navigate into the new board
+      router.push(`/space/${newSpace.id}/canvas/${newCanvas.id}`);
+    } catch (err) {
+      console.error("Failed to create space:", err);
+    }
+  }, [router]);
+
+  // Map spaces to NavListItems with initial-letter icons
+  const spaceNavItems: NavListItem[] = spaces.map((space) => ({
+    id: space.id,
+    label: space.name,
+    href: `/space/${space.id}`,
+    icon: (
+      <span
+        className="w-5 h-5 text-xs leading-5 text-center flex-shrink-0 rounded flex items-center justify-center"
+        style={{
+          backgroundColor: navPalette.logoContainer,
+          color: navPalette.textPrimary,
+        }}
+      >
+        {getSpaceInitial(space.name)}
+      </span>
+    ),
+  }));
+
+  // Rename a space (double-click in NavList)
+  const handleRenameSpace = useCallback(
+    async (spaceId: string, newName: string) => {
+      // Optimistic update
+      setSpaces((prev) =>
+        prev.map((s) => (s.id === spaceId ? { ...s, name: newName } : s))
+      );
+
+      try {
+        await fetch(`/api/spaces/${spaceId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: newName }),
+        });
+
+        // Notify other components (e.g. SecondaryPanel header)
+        window.dispatchEvent(
+          new CustomEvent("space-updated", { detail: { spaceId } })
+        );
+      } catch (err) {
+        console.error("Failed to rename space:", err);
+      }
+    },
+    []
+  );
+
+  // Listen for space-updated events from SecondaryPanel
+  useEffect(() => {
+    const handler = () => {
+      fetch("/api/spaces")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setSpaces(data);
+          }
+        })
+        .catch(() => {});
+    };
+    window.addEventListener("space-updated", handler);
+    return () => window.removeEventListener("space-updated", handler);
+  }, []);
+
+  // Persist reordered spaces
+  const handleReorderSpaces = useCallback(
+    async (orderedIds: string[]) => {
+      // Optimistic: reorder local state
+      const reordered = orderedIds
+        .map((id) => spaces.find((s) => s.id === id))
+        .filter(Boolean) as Space[];
+      setSpaces(reordered);
+
+      try {
+        await fetch("/api/spaces/reorder", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderedIds }),
+        });
+      } catch (err) {
+        console.error("Failed to persist space order:", err);
+      }
+    },
+    [spaces]
+  );
+
   // Active nav item based on current route
   const activeNavId =
     navItems.find((item) =>
@@ -155,7 +253,7 @@ export function ExpandedPrimaryPanel() {
               className="w-10 h-10 flex items-center justify-center rounded-lg shadow-sm"
               style={{ backgroundColor: navPalette.logoContainer }}
             >
-              <IconMiroMark css={{ width: 24, height: 24, color: navPalette.iconActive }} />
+              <IconMiroMark css={{ width: 24, height: 24, color: "#000000" }} />
             </div>
           </Link>
 
@@ -300,6 +398,7 @@ export function ExpandedPrimaryPanel() {
             Spaces
           </span>
           <button
+            onClick={handleCreateSpace}
             className="flex items-center justify-center w-6 h-6 rounded transition-colors duration-200"
             style={{ color: navPalette.iconMuted }}
             title="Add space"
@@ -308,52 +407,14 @@ export function ExpandedPrimaryPanel() {
           </button>
         </div>
 
-        {/* Spaces list */}
-        {spaces.length > 0 ? (
-          <motion.div
-            className="flex flex-col gap-0.5"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-          >
-            {spaces.map((space) => {
-              const isSpaceActive = pathname.startsWith(`/space/${space.id}`);
-              return (
-                <motion.div key={space.id} variants={staggerItem}>
-                  <Link
-                    href={`/space/${space.id}`}
-                    className="flex items-center gap-3 h-9 px-3 rounded-lg text-sm transition-colors duration-200"
-                    style={{
-                      color: isSpaceActive
-                        ? navPalette.textPrimary
-                        : navPalette.textSecondary,
-                      fontWeight: isSpaceActive ? 500 : 400,
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = navPalette.hoverBg;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = "transparent";
-                    }}
-                  >
-                    <span
-                      className="w-5 h-5 text-xs leading-5 text-center flex-shrink-0 rounded flex items-center justify-center"
-                      style={{
-                        backgroundColor: navPalette.logoContainer,
-                        color: navPalette.textPrimary,
-                      }}
-                    >
-                      {getSpaceInitial(space.name)}
-                    </span>
-                    <span className="truncate">{space.name}</span>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        ) : (
-          <p className="px-3 text-sm" style={{ color: navPalette.iconMuted }}>No spaces yet</p>
-        )}
+        {/* Spaces list — double-click to rename */}
+        <NavList
+          items={spaceNavItems}
+          isActive={(item) => pathname.startsWith(item.href)}
+          onReorder={handleReorderSpaces}
+          onRename={handleRenameSpace}
+          emptyMessage="No spaces yet"
+        />
       </div>
     </aside>
   );

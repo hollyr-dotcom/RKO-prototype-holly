@@ -126,16 +126,18 @@ export function generateNavPalette(baseHex: string): NavPalette {
 
   if (light) {
     // Light base → dark foreground elements
+    // Icon contrast targets: iconDefault ≈ 4.5:1 against base
+    // Hover background: gray-200 (#E5E7EB) for list item hover states
     return {
       base: baseHex,
-      logoContainer: "#ffffff",
+      logoContainer: "#F2CA02",
       iconActive: hslString(h, Math.min(s * 0.5, 0.4), 0.28),
-      iconDefault: hslString(h, Math.min(s * 0.25, 0.2), 0.42),
+      iconDefault: hslString(h, Math.min(s * 0.25, 0.2), 0.44),
       indicator: hsla(h, s * 0.3, 0.1, 0.1),
       divider: hsla(h, s * 0.2, 0.1, 0.12),
       textPrimary: hslString(h, Math.min(s * 0.5, 0.4), 0.22),
       textSecondary: hslString(h, Math.min(s * 0.25, 0.22), 0.42),
-      hoverBg: hsla(h, s * 0.3, 0.1, 0.08),
+      hoverBg: "#E5E7EB",
       iconMuted: hslString(h, Math.min(s * 0.2, 0.18), 0.48),
     };
   } else {

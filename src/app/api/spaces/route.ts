@@ -12,6 +12,7 @@ type Space = {
   description: string;
   createdAt: string;
   updatedAt: string;
+  order?: number;
 };
 
 type Canvas = {
@@ -42,10 +43,12 @@ export async function GET() {
     const spaces = readSpaces();
     const canvases = readCanvases();
 
-    const spacesWithCounts = spaces.map((space) => ({
-      ...space,
-      canvasCount: canvases.filter((c) => c.spaceId === space.id).length,
-    }));
+    const spacesWithCounts = spaces
+      .map((space) => ({
+        ...space,
+        canvasCount: canvases.filter((c) => c.spaceId === space.id).length,
+      }))
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
     return NextResponse.json(spacesWithCounts);
   } catch (error) {
@@ -67,12 +70,16 @@ export async function POST(req: Request) {
     const spaces = readSpaces();
     const now = new Date().toISOString();
 
+    // Assign order to the end of the list
+    const maxOrder = spaces.reduce((max, s) => Math.max(max, s.order ?? 0), -1);
+
     const newSpace: Space = {
       id: `space-${Date.now()}`,
       name,
       description: description || "",
       createdAt: now,
       updatedAt: now,
+      order: maxOrder + 1,
     };
 
     spaces.push(newSpace);

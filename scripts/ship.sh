@@ -37,11 +37,5 @@ echo ""
 echo "Pushing $BRANCH_NAME to origin..."
 git push -u origin HEAD
 
-# 7. Create draft PR
-echo "Creating draft PR..."
-gh pr create --draft --title "$DESCRIPTION" --base main --body "## Purpose
-
-$DESCRIPTION"
-
 echo ""
-echo "Done! Draft PR created."
+echo "Done! Branch pushed."

@@ -20,10 +20,15 @@ type Canvas = {
   name: string;
   createdAt: string;
   updatedAt: string;
+  order?: number;
 };
 
 function readSpaces(): Space[] {
   return JSON.parse(fs.readFileSync(SPACES_PATH, "utf-8"));
+}
+
+function writeSpaces(spaces: Space[]) {
+  fs.writeFileSync(SPACES_PATH, JSON.stringify(spaces, null, 2) + "\n");
 }
 
 function readCanvases(): Canvas[] {
@@ -47,9 +52,42 @@ export async function GET(
     }
 
     const canvases = readCanvases();
-    const spaceCanvases = canvases.filter((c) => c.spaceId === spaceId);
+    const spaceCanvases = canvases
+      .filter((c) => c.spaceId === spaceId)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
     return NextResponse.json({ ...space, canvases: spaceCanvases });
+  } catch (error) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+}
+
+/** PATCH /api/spaces/[spaceId] — update space fields (e.g. name) */
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ spaceId: string }> }
+) {
+  try {
+    await requireAuth();
+
+    const { spaceId } = await params;
+    const body = await req.json();
+    const spaces = readSpaces();
+    const index = spaces.findIndex((s) => s.id === spaceId);
+
+    if (index === -1) {
+      return NextResponse.json({ error: "Space not found" }, { status: 404 });
+    }
+
+    // Only allow updating specific fields
+    if (body.name !== undefined && typeof body.name === "string" && body.name.trim()) {
+      spaces[index].name = body.name.trim();
+    }
+
+    spaces[index].updatedAt = new Date().toISOString();
+    writeSpaces(spaces);
+
+    return NextResponse.json(spaces[index]);
   } catch (error) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

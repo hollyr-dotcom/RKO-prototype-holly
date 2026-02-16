@@ -63,21 +63,21 @@ Colours specific to AI presence and artifacts (to be refined as AI features deve
 
 The primary navigation (PrimaryRail, ExpandedPrimaryPanel, NavigationShell) uses a **tonal palette** generated from a single base hex color. The utility lives in `src/lib/nav-palette.ts` and is exposed via `SidebarProvider` as `navPalette`.
 
-**Current base color:** `#18f9e3` (vivid cyan/teal), passed as the `navColor` prop on `SidebarProvider`.
+**Current base color:** `#F3F4F6` (gray-100), set as `DEFAULT_NAV_COLOR` in `SidebarProvider`.
 
 The palette auto-detects whether the base is light or dark (via WCAG relative luminance) and derives foreground colors accordingly:
 
 | Token | Purpose |
 |-------|---------|
 | `base` | Navigation background |
-| `logoContainer` | Lighter tint for the logo `rounded-lg` container |
+| `logoContainer` | Logo container background (`#F2CA02` on light bases) |
 | `iconActive` | Active/hovered icon color |
-| `iconDefault` | Inactive icon color |
+| `iconDefault` | Inactive icon color (targets 4.5:1 contrast vs base) |
 | `indicator` | Hover/active pill background (translucent) |
 | `divider` | Separator line color (translucent) |
 | `textPrimary` | High-contrast text (headings, active labels) |
 | `textSecondary` | Medium-contrast text (secondary labels) |
-| `hoverBg` | Subtle hover background for list items (translucent) |
+| `hoverBg` | Hover background for list items (gray-200 `#E5E7EB` on light bases) |
 | `iconMuted` | Section headers, "+" buttons |
 
 **Rules:**

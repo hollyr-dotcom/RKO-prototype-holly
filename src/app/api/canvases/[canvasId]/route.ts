@@ -62,6 +62,9 @@ export async function PATCH(
     }
 
     // Only allow updating specific fields
+    if (body.name !== undefined && typeof body.name === "string" && body.name.trim()) {
+      canvases[index].name = body.name.trim();
+    }
     if (body.emoji !== undefined) {
       canvases[index].emoji = body.emoji;
     }

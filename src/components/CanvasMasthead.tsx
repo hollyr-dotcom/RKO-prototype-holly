@@ -6,10 +6,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useChat } from "@/hooks/useChat";
 import { MastheadAvatars } from "./Avatars";
+import { BoardEmoji } from "@/components/BoardEmoji";
+import { generateAndSetEmoji } from "@/lib/canvasUtils";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
-import canvases from "@/data/canvases.json";
-import spaces from "@/data/spaces.json";
 import { Button, IconButton } from "@mirohq/design-system";
 import {
   IconDotsThreeVertical,
@@ -21,19 +21,118 @@ import {
 
 // ─── CanvasMasthead ────────────────────────────────────────────
 
+type CanvasData = {
+  id: string;
+  spaceId: string;
+  name: string;
+  emoji?: string;
+};
+
 export function CanvasMasthead() {
   const params = useParams<{ spaceId: string; canvasId: string }>();
   const { isCollapsed, toggleSidebar } = useSidebar();
   const { chatMode } = useChat();
 
-  // Look up canvas and space names from static data
-  const canvas = canvases.find((c) => c.id === params.canvasId);
-  const space = spaces.find((s) => s.id === params.spaceId);
-  const canvasName = canvas?.name || "Untitled";
-  const spaceName = space?.name || "";
+  // ── Canvas data from API (replaces static JSON import) ──
+  const [canvasData, setCanvasData] = useState<CanvasData | null>(null);
+  const [canvasName, setCanvasName] = useState("Untitled");
+  const [emoji, setEmoji] = useState("📋");
+  const [isGeneratingEmoji, setIsGeneratingEmoji] = useState(false);
 
-  // Emoji state
-  const [emoji, setEmoji] = useState(canvas?.emoji || "📋");
+  // Fetch canvas data on mount and when canvasId changes
+  const fetchCanvasData = useCallback(async () => {
+    if (!params.canvasId) return;
+    try {
+      const res = await fetch(`/api/canvases/${params.canvasId}`);
+      if (!res.ok) return;
+      const data: CanvasData = await res.json();
+      setCanvasData(data);
+      setCanvasName(data.name || "Untitled");
+      setEmoji(data.emoji || "📋");
+    } catch {
+      // Silently fail — keep existing state
+    }
+  }, [params.canvasId]);
+
+  useEffect(() => {
+    fetchCanvasData();
+  }, [fetchCanvasData]);
+
+  // Listen for canvas-updated events from SecondaryPanel / NavList
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.canvasId === params.canvasId) {
+        fetchCanvasData();
+      }
+    };
+    window.addEventListener("canvas-updated", handler);
+    return () => window.removeEventListener("canvas-updated", handler);
+  }, [params.canvasId, fetchCanvasData]);
+
+  // ── Inline title editing (single click) ──
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameEditValue, setNameEditValue] = useState(canvasName);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync edit value when canvasName changes externally
+  useEffect(() => {
+    if (!isEditingName) {
+      setNameEditValue(canvasName);
+    }
+  }, [canvasName, isEditingName]);
+
+  // Focus input when entering edit mode
+  useEffect(() => {
+    if (isEditingName && nameInputRef.current) {
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    }
+  }, [isEditingName]);
+
+  const handleSaveName = useCallback(async () => {
+    const trimmed = nameEditValue.trim();
+    if (!trimmed || trimmed === canvasName) {
+      setNameEditValue(canvasName);
+      setIsEditingName(false);
+      return;
+    }
+
+    // Optimistic update
+    setCanvasName(trimmed);
+    setIsEditingName(false);
+
+    try {
+      await fetch(`/api/canvases/${params.canvasId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmed }),
+      });
+
+      // Auto-generate emoji from new title
+      setIsGeneratingEmoji(true);
+      const imageUrl = await generateAndSetEmoji(params.canvasId, trimmed);
+      if (imageUrl) {
+        setEmoji(imageUrl);
+      }
+      setIsGeneratingEmoji(false);
+
+      // Notify other components
+      window.dispatchEvent(
+        new CustomEvent("canvas-updated", { detail: { canvasId: params.canvasId } })
+      );
+    } catch (err) {
+      console.error("Failed to rename canvas:", err);
+      setIsGeneratingEmoji(false);
+    }
+  }, [nameEditValue, canvasName, params.canvasId]);
+
+  const handleCancelName = useCallback(() => {
+    setNameEditValue(canvasName);
+    setIsEditingName(false);
+  }, [canvasName]);
+
+  // ── Emoji picker ──
   const [pickerOpen, setPickerOpen] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
@@ -69,6 +168,11 @@ export function CanvasMasthead() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ emoji: emojiData.native }),
       });
+
+      // Notify other components
+      window.dispatchEvent(
+        new CustomEvent("canvas-updated", { detail: { canvasId: params.canvasId } })
+      );
     } catch (err) {
       console.error("Failed to persist emoji:", err);
     }
@@ -98,14 +202,40 @@ export function CanvasMasthead() {
             <button
               ref={emojiButtonRef}
               onClick={() => setPickerOpen(!pickerOpen)}
-              className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors cursor-pointer text-[20px] leading-none shrink-0"
+              className="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 transition-colors cursor-pointer shrink-0"
               title="Change icon"
             >
-              {emoji}
+              <BoardEmoji emoji={emoji} size={20} loading={isGeneratingEmoji} />
             </button>
-            <span className="text-[14px] font-medium text-gray-900 truncate max-w-[260px]">
-              {canvasName}
-            </span>
+
+            {/* Board title — single click to edit */}
+            {isEditingName ? (
+              <input
+                ref={nameInputRef}
+                value={nameEditValue}
+                onChange={(e) => setNameEditValue(e.target.value)}
+                onBlur={handleSaveName}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSaveName();
+                  }
+                  if (e.key === "Escape") {
+                    e.preventDefault();
+                    handleCancelName();
+                  }
+                }}
+                className="text-[14px] font-medium text-gray-900 max-w-[260px] bg-transparent outline-none border-none p-0 m-0"
+                style={{ width: `${Math.max(nameEditValue.length, 1)}ch` }}
+              />
+            ) : (
+              <span
+                className="text-[14px] font-medium text-gray-900 truncate max-w-[260px] cursor-text"
+                onClick={() => setIsEditingName(true)}
+              >
+                {canvasName}
+              </span>
+            )}
 
             {/* Emoji picker popover */}
             <AnimatePresence>
@@ -129,12 +259,6 @@ export function CanvasMasthead() {
               )}
             </AnimatePresence>
           </div>
-
-          {/* {spaceName && (
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-500 whitespace-nowrap border border-gray-200/60">
-              {spaceName}
-            </span>
-          )} */}
 
           <IconButton variant="ghost" size="medium" aria-label="More options">
             <IconDotsThreeVertical />
