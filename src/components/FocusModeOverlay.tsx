@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { IconArrowsInSimple } from "@mirohq/design-system-icons";
 import { DataTableEditor } from "./DataTableEditor";
 import { setPortalTarget } from "@/lib/focusModeStore";
@@ -18,7 +18,7 @@ interface FocusModeOverlayProps {
   onClose: () => void;
 }
 
-const contentVariants = {
+const contentVariants: Variants = {
   hidden: { opacity: 0, scale: 0.98 },
   visible: {
     opacity: 1,

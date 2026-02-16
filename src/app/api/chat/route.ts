@@ -956,7 +956,7 @@ export async function POST(req: Request) {
   }
 
   // If there's an approved plan, use a completely different execution-only prompt
-  let conversationContext: string;
+  let conversationContext = "";
   let isExecutionMode = false;
 
   if (approvedPlan) {

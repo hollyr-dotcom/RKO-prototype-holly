@@ -3239,7 +3239,6 @@ export function Canvas() {
               voiceState={voice.state}
               onVoiceToggle={handleVoiceToggle}
               onExpandedChange={setIsToolbarExpanded}
-              onMultiLineChange={setIsToolbarMultiLine}
               responseToast={isChatOpen || toastCentered || showFloatingQuestion || shouldHideToastRef.current || areSuggestionsVisible ? null : responseToast}
               onDismissToast={() => { setResponseToast(null); setToastCentered(false); }}
               onOpenChat={() => {
