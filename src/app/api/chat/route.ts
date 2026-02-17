@@ -1146,10 +1146,11 @@ createLayout({
   frameName: "Checkout Flow",
   items: [
     { type: "shape", text: "Cart", color: "blue" },
-    { type: "shape", text: "Payment", color: "yellow" },
+    { type: "shape", text: "Payment", color: "blue" },
     { type: "shape", text: "Done", color: "green" }
   ]
 })
+↑ Same process = same color (blue). Only the final state changes color (green = success).
 
 ⭐ TIMELINE example — items are SPECIFIC deliverables, not vague labels:
 createLayout({
@@ -1160,15 +1161,16 @@ createLayout({
     { type: "shape", text: "Migrate checkout flow to PayGrid API", color: "blue", column: 0 },
     { type: "shape", text: "Set up PayGrid webhook handlers + error monitoring", color: "blue", column: 0 },
     { type: "shape", text: "Run parallel processing: old + PayGrid for 2 weeks", color: "blue", column: 0 },
-    { type: "shape", text: "PayGrid live for 100% of transactions", color: "green", column: 1 },
-    { type: "shape", text: "Begin FirstFlex SDK integration (auth + data sync)", color: "yellow", column: 1 },
-    { type: "shape", text: "FirstFlex onboarding flow + feature flag rollout", color: "yellow", column: 2 },
-    { type: "shape", text: "Load testing FirstFlex at scale (10k+ users)", color: "yellow", column: 2 },
+    { type: "shape", text: "PayGrid live for 100% of transactions", color: "blue", column: 1 },
+    { type: "shape", text: "Begin FirstFlex SDK integration (auth + data sync)", color: "orange", column: 1 },
+    { type: "shape", text: "FirstFlex onboarding flow + feature flag rollout", color: "orange", column: 2 },
+    { type: "shape", text: "Load testing FirstFlex at scale (10k+ users)", color: "orange", column: 2 },
     { type: "shape", text: "Full launch: PayGrid + FirstFlex live", color: "green", column: 3 },
     { type: "shape", text: "Monitor adoption metrics, iterate on friction points", color: "green", column: 3 }
   ]
 })
 ⚠️ Notice: each item says WHAT specifically happens — not just "setup" or "launch".
+⚠️ Color = workstream: ALL PayGrid items = blue, ALL FirstFlex items = orange, milestones = green.
 ⚠️ If asked for 3 scenario timelines → call createLayout 3 TIMES, one per scenario frame.
 
 GRID + STICKIES example (brainstorms, ideas):
@@ -1191,36 +1193,47 @@ createLayout({
   frameName: "Key Principles",
   items: [
     { type: "sticky", text: "Feedback loops", color: "blue", parentIndex: -1 },
-    { type: "sticky", text: "Ship prototypes fast", color: "yellow", parentIndex: 0 },
-    { type: "sticky", text: "A/B test everything", color: "yellow", parentIndex: 0 },
+    { type: "sticky", text: "Ship prototypes fast", color: "light-blue", parentIndex: 0 },
+    { type: "sticky", text: "A/B test everything", color: "light-blue", parentIndex: 0 },
     { type: "sticky", text: "Reliability", color: "blue", parentIndex: -1 },
-    { type: "sticky", text: "Automate CI/CD", color: "yellow", parentIndex: 3 },
-    { type: "sticky", text: "Monitor in prod", color: "yellow", parentIndex: 3 },
+    { type: "sticky", text: "Automate CI/CD", color: "light-blue", parentIndex: 3 },
+    { type: "sticky", text: "Monitor in prod", color: "light-blue", parentIndex: 3 },
   ]
 })
+↑ ALL parents = blue. ALL children = light-blue. Not random per group.
 
-COLOR GUIDELINES - USE WITH RESTRAINT:
-⚠️ IMPORTANT: Use color intentionally, not randomly!
+🎨 MASTER COLOR RULE: Color encodes MEANING — things that belong together get the SAME color.
+Never assign colors randomly. Every color choice must answer: "What does this color MEAN here?"
 
-WITHIN EACH FRAME/SECTION:
-- Stick to 2-3 colors maximum per frame
-- Use ONE main color for most items
-- Use accent colors only for hierarchy or emphasis
-- Example: Homepage wireframe → all blue shapes (not rainbow)
-- Example: Feature ideas → all yellow stickies (not mixed colors)
+CONFLICT / RESOURCE DIAGRAMS:
+- Root (shared resource) = blue
+- ALL competing children = SAME color (orange). They're the SAME kind of thing (competing projects).
+- GOOD: [Squad 3 blue] → [FirstFlex orange] + [PayGrid orange]
+- BAD: [Squad 3 blue] → [FirstFlex orange] + [PayGrid green] ← implies they're different categories, they're NOT
 
-ACROSS DIFFERENT FRAMES:
-- Different frames CAN use different color palettes
-- Example: Frame 1 uses blue/green, Frame 2 uses yellow/orange
-- This helps visually separate different sections
+SCENARIO COMPARISONS:
+- One scenario = one color. Parent AND all children = same color.
+- Scenario A: all blue. Scenario B: all green. Scenario C: all violet.
+- NEVER mix colors within a single scenario's tree.
 
-FOR HIERARCHY:
-- Parent nodes: one color (e.g., blue for all leadership)
-- Child nodes: another color (e.g., green for all team members)
-- Don't use a different color for every single item
+TIMELINES:
+- Color by WORKSTREAM/INITIATIVE — all items for one project = same color.
+- PayGrid items = blue (all of them, every column). FirstFlex items = orange (all of them, every column).
+- Shared milestones (launch, go-live) = green.
+- GOOD: 4 blue PayGrid items + 3 orange FirstFlex items + 2 green milestones
+- BAD: random colors per column or per item
 
-GOOD: 10 yellow stickies for features, 3 blue stickies for constraints
-BAD: 13 stickies each with random different colors`,
+HIERARCHY (org charts, principles):
+- ALL parents = one color (e.g., blue)
+- ALL children = another color (e.g., light-blue or yellow)
+- NOT a different color per parent or per child
+
+GRIDS / BRAINSTORMS:
+- One category = one color. If all items are the same type, use ONE color for all.
+- GOOD: 10 yellow stickies for risks
+- BAD: 10 stickies each a different random color
+
+MAX 2-3 COLORS PER FRAME. If you're reaching for a 4th color, stop and ask: "Does this color distinction actually help the reader?"`,
   tools: [
     showProgressTool,
     reviewCanvasTool,
