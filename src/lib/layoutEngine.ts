@@ -190,21 +190,24 @@ export function calculateHierarchyLayout(
     }
   }
 
-  // Calculate subtree widths (bottom-up)
-  function calculateSubtreeWidth(node: TreeNode): number {
+  // Calculate subtree span (bottom-up)
+  // In vertical mode: span = horizontal width needed for subtree
+  // In horizontal mode: span = vertical height needed for subtree
+  function calculateSubtreeSpan(node: TreeNode): number {
+    // The node's own span in the cross-axis direction
+    const nodeSpan = isVertical ? node.width : node.height;
+
     if (node.children.length === 0) {
-      node.subtreeWidth = node.width;
+      node.subtreeWidth = nodeSpan;
       return node.subtreeWidth;
     }
 
-    const childrenTotalWidth = node.children.reduce((sum, child, i) => {
-      const childWidth = calculateSubtreeWidth(child);
-      // Add gap between siblings
-      return sum + childWidth + (i > 0 ? spacing.itemGap : 0);
+    const childrenTotalSpan = node.children.reduce((sum, child, i) => {
+      const childSpan = calculateSubtreeSpan(child);
+      return sum + childSpan + (i > 0 ? spacing.itemGap : 0);
     }, 0);
 
-    // Subtree width is max of node width and children's total width
-    node.subtreeWidth = Math.max(node.width, childrenTotalWidth);
+    node.subtreeWidth = Math.max(nodeSpan, childrenTotalSpan);
     return node.subtreeWidth;
   }
 
@@ -242,7 +245,7 @@ export function calculateHierarchyLayout(
   const rootGap = spacing.itemGap * 2; // 2x sibling gap between root subtrees
   let totalWidth = 0;
   roots.forEach((root) => {
-    calculateSubtreeWidth(root);
+    calculateSubtreeSpan(root);
     totalWidth += root.subtreeWidth;
   });
   totalWidth += (roots.length - 1) * rootGap;
