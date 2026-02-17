@@ -62,6 +62,17 @@ export function useStorageStore({
       }
 
       // Initialize tldraw store with records from LiveBlocks Storage
+      // Filter out shape records whose type isn't registered (e.g. removed custom shapes)
+      const knownTypes = new Set(
+        [...defaultShapeUtils, ...shapeUtils].map((u) => u.type)
+      );
+      const records = [...liveRecords.values()].filter((r: TLRecord) => {
+        if (r.typeName === "shape" && "type" in r) {
+          return knownTypes.has((r as { type: string }).type);
+        }
+        return true;
+      });
+
       store.clear();
       store.put(
         [
@@ -73,7 +84,7 @@ export function useStorageStore({
             name: "Page 1",
             index: "a1" as IndexKey,
           }),
-          ...[...liveRecords.values()],
+          ...records,
         ],
         "initialize"
       );
