@@ -35,6 +35,7 @@ import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
 import Markdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { FocusModeOverlay, FocusedShape } from "./FocusModeOverlay";
+import { TaskCardSidebar } from "@/shapes/TaskCardPanel";
 import { setFocusedDocId } from "@/lib/focusModeStore";
 
 // Animation variants
@@ -843,6 +844,7 @@ export function Canvas() {
   const [hasToolbarText, setHasToolbarText] = useState(false);
   const [isCommentMode, setIsCommentMode] = useState(false);
   const [focusedShape, setFocusedShape] = useState<FocusedShape | null>(null);
+  const [taskSidebarShapeId, setTaskSidebarShapeId] = useState<string | null>(null);
   const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
   const isProcessingToolCallRef = useRef(false);
@@ -1420,7 +1422,7 @@ export function Canvas() {
           y?: number;
         };
 
-        const validWidth = 280;
+        const validWidth = 288;
         const validHeight = 160;
         const pos = findNonOverlappingPosition(x || 0, y || 0, validWidth, validHeight, "shape");
 
@@ -2986,17 +2988,35 @@ export function Canvas() {
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail as FocusedShape | undefined;
-      if (detail) {
-        // For documents, unmount the on-canvas editor to avoid dual Yjs connections
-        if (detail.shapeType === "document" && detail.docId) {
-          setFocusedDocId(detail.docId);
-        }
-        setFocusedShape(detail);
+      if (!detail) return;
+
+      // Task cards open a sidebar instead of the full-screen overlay
+      if (detail.shapeType === "taskcard" && detail.taskId) {
+        setTaskSidebarShapeId(detail.taskId);
+        return;
       }
+
+      // All other types (document, datatable) use FocusModeOverlay
+      if (detail.shapeType === "document" && detail.docId) {
+        setFocusedDocId(detail.docId);
+      }
+      setFocusedShape(detail);
     };
     window.addEventListener("shape:focus", handler);
     return () => window.removeEventListener("shape:focus", handler);
   }, []);
+
+  // Close task sidebar when the task card is deselected
+  useEffect(() => {
+    if (!editor || !taskSidebarShapeId) return;
+    const unsub = editor.store.listen(() => {
+      const selectedIds = editor.getSelectedShapeIds();
+      if (!selectedIds.includes(taskSidebarShapeId as TLShapeId)) {
+        setTaskSidebarShapeId(null);
+      }
+    }, { source: 'user', scope: 'session' });
+    return unsub;
+  }, [editor, taskSidebarShapeId]);
 
   // Toolbar always visible - prompt input hides itself when sidebar is open
   const showToolbar = true;
@@ -3074,13 +3094,12 @@ export function Canvas() {
           )}
         </AnimatePresence>
 
-        {/* Focus mode overlay */}
+        {/* Focus mode overlay (documents + data tables) */}
         <AnimatePresence>
           {focusedShape && (
             <FocusModeOverlay
               key="focus-mode"
               shape={focusedShape}
-              editor={editor}
               onClose={() => {
                 setFocusedDocId(null);
                 setFocusedShape(null);
@@ -3088,6 +3107,14 @@ export function Canvas() {
             />
           )}
         </AnimatePresence>
+
+        {/* Task card detail sidebar */}
+        <TaskCardSidebar
+          isOpen={taskSidebarShapeId !== null}
+          shapeId={taskSidebarShapeId}
+          editor={editor}
+          onClose={() => setTaskSidebarShapeId(null)}
+        />
 
         {/* Floating UI wrapper */}
         <div className="absolute inset-0 z-[60] pointer-events-none" style={{ visibility: focusedShape ? "hidden" : "visible" }}>
@@ -3375,6 +3402,32 @@ export function Canvas() {
                     w: 480,
                     h: 280,
                   },
+                });
+                editor.select(shapeId);
+              }}
+              onCreateTaskCard={() => {
+                if (!editor) return;
+                const viewportCenter = editor.getViewportScreenCenter();
+                const canvasPoint = editor.screenToPage(viewportCenter);
+                const shapeId = createShapeId();
+                editor.createShape({
+                  id: shapeId,
+                  type: "taskcard" as any,
+                  x: canvasPoint.x - 144,
+                  y: canvasPoint.y - 80,
+                  props: {
+                    w: 288,
+                    h: 160,
+                    title: "Untitled task",
+                    description: "",
+                    status: "not_started",
+                    priority: "medium",
+                    assignee: "",
+                    dueDate: "",
+                    tags: [],
+                    subtasks: [],
+                  },
+                  meta: { createdBy: "user" },
                 });
                 editor.select(shapeId);
               }}

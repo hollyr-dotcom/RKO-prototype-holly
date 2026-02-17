@@ -17,6 +17,7 @@ import {
   IconChatLinesDot,
   IconArticle,
   IconTable,
+  IconCard,
   IconCross,
 } from "@mirohq/design-system-icons";
 import { PromptSuggestions } from "./PromptSuggestions";
@@ -55,6 +56,7 @@ interface ToolbarProps {
   onInputChange?: (hasText: boolean) => void;
   onCreateDocument?: () => void;
   onCreateDataTable?: () => void;
+  onCreateTaskCard?: () => void;
   isCommentMode?: boolean;
   onToggleCommentMode?: () => void;
 }
@@ -79,6 +81,7 @@ export function Toolbar({
   onInputChange,
   onCreateDocument,
   onCreateDataTable,
+  onCreateTaskCard,
   isCommentMode = false,
   onToggleCommentMode,
 }: ToolbarProps) {
@@ -293,6 +296,11 @@ export function Toolbar({
           {/* DataTable */}
           <ToolButton active={false} onClick={() => onCreateDataTable?.()} title="Table">
             <IconTable size="medium" />
+          </ToolButton>
+
+          {/* Task Card */}
+          <ToolButton active={false} onClick={() => onCreateTaskCard?.()} title="Task card">
+            <IconCard size="medium" />
           </ToolButton>
         </div>
 
