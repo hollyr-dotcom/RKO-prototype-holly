@@ -512,20 +512,20 @@ const createStickerTool = tool({
 
 const createTaskCardTool = tool({
   name: "createTaskCard",
-  description: "Create a task card on the canvas. Use for actionable work items, todos, or tasks. Shows as a compact card with status, priority, and assignee. Space items left-to-right with 50px gaps.",
+  description: "Create a task card on the canvas. Use for ALL actionable work items, todos, tasks, and action items — call this tool once per task. For multiple tasks, call createTaskCard multiple times (NOT createLayout with stickies). Shows as a compact card with status, priority, and assignee. Space items left-to-right with 50px gaps.",
   parameters: z.object({
     title: z.string().describe("Task title"),
-    description: z.string().optional().describe("Task description as HTML"),
-    status: z.enum(["not_started", "in_progress", "complete"]).optional().describe("Task status (default: not_started)"),
-    priority: z.enum(["low", "medium", "high"]).optional().describe("Task priority (default: medium)"),
-    assignee: z.string().optional().describe("Person assigned to the task"),
-    dueDate: z.string().optional().describe("Due date in ISO format (YYYY-MM-DD)"),
-    tags: z.array(z.string()).optional().describe("Tags/labels for the task"),
+    description: z.string().default("").describe("Task description as HTML"),
+    status: z.enum(["not_started", "in_progress", "complete"]).default("not_started").describe("Task status"),
+    priority: z.enum(["low", "medium", "high"]).default("medium").describe("Task priority"),
+    assignee: z.string().default("").describe("Person assigned to the task"),
+    dueDate: z.string().default("").describe("Due date in ISO format (YYYY-MM-DD)"),
+    tags: z.array(z.string()).default([]).describe("Tags/labels for the task"),
     subtasks: z.array(z.object({
       id: z.string(),
       title: z.string(),
       completed: z.boolean(),
-    })).optional().describe("Subtask checklist items"),
+    })).default([]).describe("Subtask checklist items"),
     x: z.number().describe("X position"),
     y: z.number().describe("Y position"),
   }),
@@ -537,23 +537,35 @@ const createTaskCardTool = tool({
 
 const updateTaskCardTool = tool({
   name: "updateTaskCard",
-  description: "Update an existing task card on the canvas. Get the task card's ID from [CANVAS STATE]. Only provide fields you want to change.",
+  description: "Update an existing task card on the canvas. Get the task card's ID from [CANVAS STATE]. Only provide fields you want to change — pass empty string to clear a field.",
   parameters: z.object({
     itemId: z.string().describe("The shape ID of the task card to update (from canvas state)"),
-    title: z.string().optional().describe("New task title"),
-    description: z.string().optional().describe("New task description as HTML"),
-    status: z.enum(["not_started", "in_progress", "complete"]).optional().describe("New status"),
-    priority: z.enum(["low", "medium", "high"]).optional().describe("New priority"),
-    assignee: z.string().optional().describe("New assignee"),
-    dueDate: z.string().optional().describe("New due date (ISO format)"),
-    tags: z.array(z.string()).optional().describe("New tags (replaces all)"),
+    title: z.string().default("").describe("New task title (empty = no change)"),
+    description: z.string().default("").describe("New task description as HTML (empty = no change)"),
+    status: z.string().default("").describe("New status: not_started, in_progress, or complete (empty = no change)"),
+    priority: z.string().default("").describe("New priority: low, medium, or high (empty = no change)"),
+    assignee: z.string().default("").describe("New assignee (empty = no change)"),
+    dueDate: z.string().default("").describe("New due date ISO format (empty = no change)"),
+    tags: z.array(z.string()).default([]).describe("New tags - replaces all (empty array = no change)"),
     subtasks: z.array(z.object({
       id: z.string(),
       title: z.string(),
       completed: z.boolean(),
-    })).optional().describe("New subtasks (replaces all)"),
+    })).default([]).describe("New subtasks - replaces all (empty array = no change)"),
   }),
-  execute: async (args) => JSON.stringify({ updated: "taskcard", ...args }),
+  execute: async (args) => {
+    // Filter out empty/default values so we only update what was explicitly set
+    const updates: Record<string, unknown> = { itemId: args.itemId };
+    if (args.title) updates.title = args.title;
+    if (args.description) updates.description = args.description;
+    if (args.status) updates.status = args.status;
+    if (args.priority) updates.priority = args.priority;
+    if (args.assignee) updates.assignee = args.assignee;
+    if (args.dueDate) updates.dueDate = args.dueDate;
+    if (args.tags.length > 0) updates.tags = args.tags;
+    if (args.subtasks.length > 0) updates.subtasks = args.subtasks;
+    return JSON.stringify({ updated: "taskcard", ...updates });
+  },
 });
 
 
@@ -564,6 +576,7 @@ const createLayoutTool = tool({
 
 ⚠️ DON'T use createLayout for written content (briefs, specs, summaries) → use createDocument instead.
 ⚠️ DON'T use createLayout for tabular data (comparisons, matrices, roles) → use createDataTable instead.
+⚠️ DON'T use createLayout for tasks, todos, or action items → use createTaskCard instead (one card per task).
 
 WHEN TO USE THIS TOOL:
 - Brainstorms, idea lists, quick notes → type:"sticky" with "grid" layout
@@ -919,12 +932,13 @@ A great canvas uses MULTIPLE formats. Don't just spam stickies — pick the best
   - Shows as a compact card with status, priority, and assignee
   - "Create tasks for the sprint" → task cards, not stickies
 
-📌 createLayout(type:"sticky") — for QUICK IDEAS:
+📌 createLayout(type:"sticky") — for QUICK IDEAS ONLY:
   - Brainstorms, idea lists, feedback, tags, categories
   - Short items that benefit from visual clustering
   - User explicitly says "stickies", "post-its", "brainstorm"
   - For brainstorms: 8-15 words per sticky. For insights/synthesis: 1-2 punchy sentences.
   - Need detail? Use hierarchy (parent title → child details) or more stickies.
+  - ⚠️ NEVER use stickies for tasks, todos, or action items — use createTaskCard instead!
 
 🔲 createLayout(type:"shape") — for DIAGRAMS:
   - Org charts, sitemaps, flows, hierarchies, process maps
@@ -958,6 +972,9 @@ PLAN EXAMPLES:
   Step 1: Research competitor landscape ← webSearch + createSources + synthesize findings
   Step 2: Compare competitors ← createDataTable (populate with REAL data from research)
   Step 3: Map strategic implications ← createLayout(type:"sticky")
+
+"Create tasks for the sprint" / "Break this into action items":
+  Step 1: Create task cards ← createTaskCard (one call per task, NOT stickies!)
 
 "Help me prioritize / resolve a strategic tension" (PRIORITISATION):
   Step 1: Map the resource conflict ← queryConnectors (jira, workday, slack) → conflict diagram + evidence doc
@@ -1064,6 +1081,7 @@ Only write a brief message AFTER the very last step is completed.
 ⚠️ DO NOT use createLayout for everything! Read the step title and think about what format serves the content best.
 ⚠️ PREFER DIAGRAMS for conflicts, dependencies, and flows — they communicate faster than text or tables.
 ⚠️ NEVER create empty or placeholder content. No "(fill in)", no "TBD", no generic frameworks. Pull real data from connectors first, then create artifacts populated with that data.
+⚠️ TASKS/TODOS/ACTION ITEMS: ALWAYS use createTaskCard (call it once per task). NEVER use createLayout with stickies for tasks — even for multiple tasks, call createTaskCard multiple times.
 
 /* CHECKPOINTS DISABLED — keeping instructions for later re-enable:
 CHECKPOINTS - PAUSE AT MILESTONES:
@@ -1531,6 +1549,7 @@ DO THIS IMMEDIATELY:
 5. IMMEDIATELY start the next step — do NOT write text, just call showProgress for the next step
 
 🚫 NEVER CREATE EMPTY CONTENT: No "(fill in)", no "TBD", no placeholder tables. Every artifact must be populated with real data from connectors/search.
+⚠️ TASKS/TODOS/ACTION ITEMS: ALWAYS use createTaskCard (call it once per task). NEVER use createLayout with stickies for tasks — even for multiple tasks, call createTaskCard multiple times.
 
 RESEARCH STEPS — THREE MANDATORY PARTS (never skip step c):
 If this step involves research, do ALL THREE — not just a and b:

@@ -636,6 +636,207 @@ export interface TaskCardSidebarProps {
   onClose: () => void;
 }
 
+// ── Focus Panel (lightbox) ──
+
+export interface TaskCardFocusPanelProps {
+  shapeId: string;
+  editor: Editor;
+}
+
+export function TaskCardFocusPanel({ shapeId, editor }: TaskCardFocusPanelProps) {
+  const [localProps, setLocalProps] = useState<TaskCardData | null>(null);
+  const [titleDraft, setTitleDraft] = useState("");
+
+  // Initialize from editor
+  useEffect(() => {
+    if (!shapeId || !editor) {
+      setLocalProps(null);
+      return;
+    }
+    const shape = editor.getShape(shapeId as TLShapeId);
+    if (shape && (shape.type as string) === "taskcard") {
+      const p = extractProps(shape.props as Record<string, unknown>);
+      setLocalProps(p);
+      setTitleDraft(p.title);
+    }
+  }, [shapeId, editor]);
+
+  // Update handler: sync local state + push to editor
+  const handleUpdate = useCallback(
+    (updates: Partial<TaskCardData>) => {
+      if (!editor || !shapeId) return;
+      setLocalProps((prev) => (prev ? { ...prev, ...updates } : prev));
+      const shape = editor.getShape(shapeId as TLShapeId);
+      if (shape) {
+        editor.updateShape({
+          id: shape.id,
+          type: "taskcard" as string,
+          props: { ...(shape.props as Record<string, unknown>), ...updates },
+        } as any);
+      }
+    },
+    [editor, shapeId]
+  );
+
+  const commitTitle = useCallback(() => {
+    const trimmed = titleDraft.trim();
+    if (trimmed && localProps && trimmed !== localProps.title) {
+      handleUpdate({ title: trimmed });
+    }
+  }, [titleDraft, localProps, handleUpdate]);
+
+  const iconSize = { width: 16, height: 16 };
+
+  if (!localProps) return null;
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <style>{`
+        .task-sidebar-hover-bg:hover { background-color: rgba(0,0,0,0.03); }
+        .task-sidebar-hover-opacity:hover { opacity: 1 !important; }
+      `}</style>
+      <div
+        style={{
+          width: "100%",
+          padding: "20px 20px 8px",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {/* Title */}
+        <input
+          value={titleDraft}
+          onChange={(e) => setTitleDraft(e.target.value)}
+          onBlur={commitTitle}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.currentTarget.blur();
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          style={{
+            background: "transparent",
+            fontSize: 17,
+            fontWeight: 600,
+            color: "#111827",
+            border: "none",
+            outline: "none",
+            padding: 0,
+            marginBottom: 16,
+            width: "100%",
+            paddingRight: 32,
+          }}
+        />
+
+        <Separator />
+
+        {/* Property rows */}
+        <div style={{ paddingTop: 4, paddingBottom: 4 }}>
+          <PropertyRow icon={<IconSelect css={iconSize} />} label="Status">
+            <SelectValue
+              value={localProps.status}
+              options={STATUS_OPTIONS}
+              onChange={(v) => handleUpdate({ status: v })}
+            />
+          </PropertyRow>
+
+          <PropertyRow icon={<IconSelect css={iconSize} />} label="Priority">
+            <SelectValue
+              value={localProps.priority}
+              options={PRIORITY_OPTIONS}
+              onChange={(v) => handleUpdate({ priority: v })}
+            />
+          </PropertyRow>
+
+          <PropertyRow icon={<IconUser css={iconSize} />} label="Assignee">
+            <PersonValue
+              value={localProps.assignee}
+              onChange={(v) => handleUpdate({ assignee: v })}
+            />
+          </PropertyRow>
+
+          <PropertyRow icon={<IconCalendarBlank css={iconSize} />} label="Due Date">
+            <input
+              type="date"
+              defaultValue={localProps.dueDate}
+              onChange={(e) => handleUpdate({ dueDate: e.target.value })}
+              onPointerDown={(e) => e.stopPropagation()}
+              style={{
+                width: "100%",
+                background: "transparent",
+                border: "none",
+                outline: "none",
+                fontSize: 14,
+                color: localProps.dueDate ? "#111827" : "#9CA3AF",
+                padding: "4px 8px",
+                borderRadius: 4,
+                cursor: "pointer",
+              }}
+              className="task-sidebar-hover-bg"
+            />
+          </PropertyRow>
+
+          <PropertyRow icon={<IconTag css={iconSize} />} label="Labels">
+            <MultiSelectValue
+              values={localProps.tags}
+              onChange={(v) => handleUpdate({ tags: v })}
+            />
+          </PropertyRow>
+        </div>
+
+        <Separator />
+
+        {/* Description */}
+        <div style={{ padding: "12px 16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <span style={{ color: "#9CA3AF", display: "flex" }}>
+              <IconBoxLinesTextarea css={iconSize} />
+            </span>
+            <span style={{ fontSize: 14, color: "#9CA3AF" }}>Description</span>
+          </div>
+          <textarea
+            defaultValue={localProps.description}
+            onBlur={(e) => handleUpdate({ description: e.target.value })}
+            onPointerDown={(e) => e.stopPropagation()}
+            placeholder="Add a description..."
+            rows={4}
+            style={{
+              width: "100%",
+              resize: "vertical",
+              border: "none",
+              outline: "none",
+              fontSize: 14,
+              color: "#111827",
+              background: "transparent",
+              padding: "4px 8px",
+              borderRadius: 4,
+              minHeight: 80,
+              fontFamily: "inherit",
+              lineHeight: "20px",
+              marginLeft: 16,
+              boxSizing: "border-box",
+            }}
+          />
+        </div>
+
+        <Separator />
+
+        {/* Subtasks */}
+        <SubtaskSection
+          subtasks={localProps.subtasks}
+          onUpdate={(subtasks) => handleUpdate({ subtasks })}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ── Sidebar (unused, kept for export compatibility) ──
+
 export function TaskCardSidebar({ isOpen, shapeId, editor, onClose }: TaskCardSidebarProps) {
   const [localProps, setLocalProps] = useState<TaskCardData | null>(null);
   const [titleDraft, setTitleDraft] = useState("");

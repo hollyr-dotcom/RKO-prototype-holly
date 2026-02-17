@@ -4,7 +4,9 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, type Variants } from "framer-motion";
 import { IconArrowsInSimple } from "@mirohq/design-system-icons";
 import { DataTableEditor } from "./DataTableEditor";
+import { TaskCardFocusPanel } from "@/shapes/TaskCardPanel";
 import { setPortalTarget } from "@/lib/focusModeStore";
+import type { Editor } from "tldraw";
 
 export interface FocusedShape {
   shapeType: "document" | "datatable" | "taskcard";
@@ -17,6 +19,7 @@ export interface FocusedShape {
 interface FocusModeOverlayProps {
   shape: FocusedShape;
   onClose: () => void;
+  editor: Editor | null;
 }
 
 const contentVariants: Variants = {
@@ -33,9 +36,32 @@ const contentVariants: Variants = {
   },
 };
 
-export function FocusModeOverlay({ shape, onClose }: FocusModeOverlayProps) {
+const backdropVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
+};
+
+const floatingCardVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.95, y: 20 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 400, damping: 30 },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.95,
+    y: 10,
+    transition: { type: "tween", ease: [0.3, 0, 1, 1], duration: 0.2 },
+  },
+};
+
+export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 600 });
+  const isTaskCard = shape.shapeType === "taskcard";
 
   // Measure container (used by DataTableEditor)
   useEffect(() => {
@@ -52,7 +78,6 @@ export function FocusModeOverlay({ shape, onClose }: FocusModeOverlayProps) {
   }, []);
 
   // For documents: register this container as the portal target.
-  // The on-canvas DocumentEditor will portal its content here.
   useEffect(() => {
     if (shape.shapeType === "document" && containerRef.current) {
       setPortalTarget(containerRef.current);
@@ -81,6 +106,83 @@ export function FocusModeOverlay({ shape, onClose }: FocusModeOverlayProps) {
     return () => window.removeEventListener("keydown", handleKeyDown, true);
   }, [handleKeyDown]);
 
+  // Task cards: floating card with backdrop
+  if (isTaskCard) {
+    return (
+      <>
+        {/* Dim backdrop — click to close */}
+        <motion.div
+          className="absolute inset-0 z-[500]"
+          style={{ backgroundColor: "rgba(0,0,0,0.25)" }}
+          variants={backdropVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          onClick={onClose}
+        />
+        {/* Floating card — centered via flexbox */}
+        <motion.div
+          className="absolute inset-0 z-[501] flex items-center justify-center pointer-events-none"
+          variants={floatingCardVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="pointer-events-auto"
+            style={{
+              width: 480,
+              maxHeight: "80vh",
+              background: "#ffffff",
+              borderRadius: 16,
+              boxShadow: "0 16px 48px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08)",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              position: "relative",
+            }}
+          >
+            {/* Close button */}
+            <button
+              onClick={onClose}
+              onPointerDown={(e) => e.stopPropagation()}
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                zIndex: 510,
+                width: 28,
+                height: 28,
+                borderRadius: 8,
+                border: "1px solid #e5e7eb",
+                background: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                padding: 0,
+              }}
+            >
+              <IconArrowsInSimple css={{ width: 14, height: 14, color: "#6b7280" }} />
+            </button>
+            <div style={{ flex: 1, overflowY: "auto" }}>
+              {shape.taskId && editor && (
+                <TaskCardFocusPanel
+                  shapeId={shape.taskId}
+                  editor={editor}
+                />
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </>
+    );
+  }
+
+  // Documents + tables: full-screen overlay
   return (
     <motion.div
       className="absolute inset-0 z-[500] bg-white flex flex-col overflow-hidden"
@@ -114,9 +216,7 @@ export function FocusModeOverlay({ shape, onClose }: FocusModeOverlayProps) {
         <IconArrowsInSimple css={{ width: 14, height: 14, color: "#6b7280" }} />
       </button>
 
-      {/* Editor container — fills entire space */}
-      {/* Documents: content arrives via React portal from the on-canvas editor */}
-      {/* Tables: rendered directly here (LiveMap handles dual connections fine) */}
+      {/* Editor container */}
       <div ref={containerRef} className="flex-1 overflow-hidden">
         {shape.shapeType === "datatable" && shape.tableId && (
           <DataTableEditor

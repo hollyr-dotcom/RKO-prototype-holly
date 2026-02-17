@@ -35,7 +35,6 @@ import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
 import Markdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { FocusModeOverlay, FocusedShape } from "./FocusModeOverlay";
-import { TaskCardSidebar } from "@/shapes/TaskCardPanel";
 import { setFocusedDocId } from "@/lib/focusModeStore";
 
 // Animation variants
@@ -867,7 +866,6 @@ export function Canvas() {
   const [hasToolbarText, setHasToolbarText] = useState(false);
   const [isCommentMode, setIsCommentMode] = useState(false);
   const [focusedShape, setFocusedShape] = useState<FocusedShape | null>(null);
-  const [taskSidebarShapeId, setTaskSidebarShapeId] = useState<string | null>(null);
   const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
   const lastSourcesFrameRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
@@ -3314,13 +3312,7 @@ export function Canvas() {
       const detail = (e as CustomEvent).detail as FocusedShape | undefined;
       if (!detail) return;
 
-      // Task cards open a sidebar instead of the full-screen overlay
-      if (detail.shapeType === "taskcard" && detail.taskId) {
-        setTaskSidebarShapeId(detail.taskId);
-        return;
-      }
-
-      // All other types (document, datatable) use FocusModeOverlay
+      // All types (document, datatable, taskcard) use FocusModeOverlay
       if (detail.shapeType === "document" && detail.docId) {
         setFocusedDocId(detail.docId);
       }
@@ -3330,17 +3322,6 @@ export function Canvas() {
     return () => window.removeEventListener("shape:focus", handler);
   }, []);
 
-  // Close task sidebar when the task card is deselected
-  useEffect(() => {
-    if (!editor || !taskSidebarShapeId) return;
-    const unsub = editor.store.listen(() => {
-      const selectedIds = editor.getSelectedShapeIds();
-      if (!selectedIds.includes(taskSidebarShapeId as TLShapeId)) {
-        setTaskSidebarShapeId(null);
-      }
-    }, { source: 'user', scope: 'session' });
-    return unsub;
-  }, [editor, taskSidebarShapeId]);
 
   // Toolbar always visible - prompt input hides itself when sidebar is open
   const showToolbar = true;
@@ -3418,12 +3399,13 @@ export function Canvas() {
           )}
         </AnimatePresence>
 
-        {/* Focus mode overlay (documents + data tables) */}
+        {/* Focus mode overlay (documents, data tables, task cards) */}
         <AnimatePresence>
           {focusedShape && (
             <FocusModeOverlay
               key="focus-mode"
               shape={focusedShape}
+              editor={editor}
               onClose={() => {
                 setFocusedDocId(null);
                 setFocusedShape(null);
@@ -3432,13 +3414,6 @@ export function Canvas() {
           )}
         </AnimatePresence>
 
-        {/* Task card detail sidebar */}
-        <TaskCardSidebar
-          isOpen={taskSidebarShapeId !== null}
-          shapeId={taskSidebarShapeId}
-          editor={editor}
-          onClose={() => setTaskSidebarShapeId(null)}
-        />
 
         {/* Floating UI wrapper */}
         <div className="absolute inset-0 z-[60] pointer-events-none" onWheel={(e) => e.stopPropagation()} style={{ visibility: focusedShape ? "hidden" : "visible" }}>

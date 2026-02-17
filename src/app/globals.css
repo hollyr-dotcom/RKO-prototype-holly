@@ -197,6 +197,20 @@ html, body {
   100% { background-position: -200% 0; }
 }
 
+/* Make tldraw frames match document/table border style (light gray, rounded, scales with zoom) */
+.tl-frame__body {
+  rx: 8px;
+  ry: 8px;
+  stroke: #d0d5dd !important;
+  stroke-width: 1px !important;
+  fill: #ffffff !important;
+}
+
+.tl-frame-indicator {
+  rx: 8px;
+  ry: 8px;
+}
+
 /* Hide Liveblocks badge */
 #liveblocks-badge, .tl-watermark_SEE-LICENSE {
   display: none !important;
