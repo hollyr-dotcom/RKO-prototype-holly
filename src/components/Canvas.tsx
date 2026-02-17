@@ -16,6 +16,7 @@ import { CommentShapeUtil } from "@/shapes/CommentShapeUtil";
 import { TaskCardShapeUtil } from "@/shapes/TaskCardShapeUtil";
 import { GanttChartShapeUtil } from "@/shapes/GanttChartShapeUtil";
 import { KanbanBoardShapeUtil } from "@/shapes/KanbanBoardShapeUtil";
+import { ApproveButtonShapeUtil } from "@/shapes/ApproveButtonShapeUtil";
 import { Toolbar } from "./Toolbar";
 import { StartingPromptCards } from "./StartingPromptCards";
 import { CanvasComments } from "./CanvasComments";
@@ -818,7 +819,7 @@ export function Canvas() {
 
   // LiveBlocks multiplayer store -- syncs tldraw state across users
   const [sessionUser] = useState(() => authUser ? getSessionUser(authUser) : getLocalDevUser());
-  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil], []);
+  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil, ApproveButtonShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 
   // Prevent browser back/forward navigation from trackpad gestures (Safari + fallback)
@@ -4801,6 +4802,17 @@ export function Canvas() {
     return () => window.removeEventListener("shape:focus", handler);
   }, []);
 
+  // Listen for approve-trigger events from ApproveButton shapes
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { shapeId: string; prompt: string } | undefined;
+      if (!detail?.prompt) return;
+      append({ role: "user", content: detail.prompt });
+    };
+    window.addEventListener("shape:approve-trigger", handler);
+    return () => window.removeEventListener("shape:approve-trigger", handler);
+  }, [append]);
+
 
   // Toolbar always visible - prompt input hides itself when sidebar is open
   const showToolbar = true;
@@ -5327,6 +5339,23 @@ export function Canvas() {
                     ],
                   },
                   meta: { createdBy: "user" },
+                });
+                editor.select(shapeId);
+              }}
+              onCreateApproveButton={() => {
+                if (!editor) return;
+                const viewportCenter = editor.getViewportScreenCenter();
+                const canvasPoint = editor.screenToPage(viewportCenter);
+                const shapeId = createShapeId();
+                editor.createShape({
+                  id: shapeId,
+                  type: "approvebutton" as any,
+                  x: canvasPoint.x - 225,
+                  y: canvasPoint.y - 139,
+                  props: {
+                    w: 450,
+                    h: 278,
+                  },
                 });
                 editor.select(shapeId);
               }}

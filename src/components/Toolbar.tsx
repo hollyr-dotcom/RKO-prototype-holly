@@ -28,6 +28,15 @@ import { PromptSuggestions } from "./PromptSuggestions";
 import { StickerPicker } from "./StickerPicker";
 
 
+// Custom approve button icon - checkmark circle
+function ApproveButtonIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+    </svg>
+  );
+}
+
 // Custom voice wave icon (5 bars) - not available in Miro design system
 function VoiceWaveIcon() {
   return (
@@ -66,6 +75,7 @@ interface ToolbarProps {
   onCreateTaskCard?: () => void;
   onCreateGanttChart?: () => void;
   onCreateKanbanBoard?: () => void;
+  onCreateApproveButton?: () => void;
   onMultiLineChange?: (multiLine: boolean) => void;
   isCommentMode?: boolean;
   onToggleCommentMode?: () => void;
@@ -95,6 +105,7 @@ export function Toolbar({
   onCreateTaskCard,
   onCreateGanttChart,
   onCreateKanbanBoard,
+  onCreateApproveButton,
   onMultiLineChange,
   isCommentMode = false,
   onToggleCommentMode,
@@ -345,6 +356,11 @@ export function Toolbar({
           {/* Gantt Chart */}
           <ToolButton active={false} onClick={() => onCreateGanttChart?.()} title="Gantt chart">
             <IconTimelineFormat size="medium" />
+          </ToolButton>
+
+          {/* Approve Button */}
+          <ToolButton active={false} onClick={() => onCreateApproveButton?.()} title="Approve button">
+            <ApproveButtonIcon />
           </ToolButton>
         </div>
 

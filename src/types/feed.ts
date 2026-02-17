@@ -34,6 +34,7 @@ export interface FeedItemBase {
   id: string;
   type: FeedItemType;
   spaceId: string;
+  spaceName?: string;
   canvasId?: string;
   source: FeedSource;
   title: string;

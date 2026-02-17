@@ -1,21 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { HomePromptInput } from "@/components/HomePromptInput";
+import { HomeFeed } from "@/components/feed/HomeFeed";
+import { PromptStickyNotes } from "@/components/PromptStickyNotes";
 import { useChat } from "@/hooks/useChat";
-
-const suggestions = [
-  "Prep me for quarterly review",
-  "Compare roadmap to insights",
-  "Surprise me",
-];
 
 export default function HomePage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"foryou" | "recent">("foryou");
   const [isCreating, setIsCreating] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [notesVisible, setNotesVisible] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setNotesVisible(el.scrollTop === 0);
+  }, []);
 
   // Pre-warm the canvas route so it's already compiled when user clicks "Create new"
   useEffect(() => {
@@ -84,7 +88,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-white">
+    <div ref={scrollRef} onScroll={handleScroll} className="relative h-full w-full overflow-y-auto bg-white">
       {/* Create new button — fixed top-right, positioned next to spark button */}
       <button
         onClick={handleCreateEmptyCanvas}
@@ -101,36 +105,36 @@ export default function HomePage() {
         )}
       </button>
 
-      {/* Two-section layout: hero centered, cards bleeding off bottom */}
-      <div className="h-full w-full bg-white flex flex-col overflow-hidden">
-        {/* Top spacer — positions hero at ~1/3 from top */}
+      {/* Two-section layout: hero sticky, cards scroll underneath */}
+      <div className="w-full flex flex-col">
+        {/* Top spacer — positions hero at ~1/3 from top initially */}
         <div className="h-[18vh] shrink-0" />
 
-        {/* Hero: welcome + prompt + suggestions */}
-        <div className="flex flex-col items-center px-6 shrink-0">
+        {/* Welcome heading — scrolls with page */}
+        <div className="flex flex-col items-center px-6">
           <h1 className="text-4xl font-bold text-gray-900 mb-8">
             Welcome back, Andy
           </h1>
-
-          <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} onInputChange={(v) => setIsTyping(v.length > 0)} />
-
-          <div className={`flex flex-wrap justify-center gap-2 mt-5 transition-opacity duration-200 ${isTyping ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-            {suggestions.map((suggestion) => (
-              <button
-                key={suggestion}
-                onClick={() => handleSubmit(suggestion)}
-                className="px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-white/60 transition-colors"
-              >
-                {suggestion}
-              </button>
-            ))}
-          </div>
         </div>
 
-        {/* Bottom section — cards bleed off the bottom edge */}
-        <div className="flex-1 flex flex-col items-center pt-40 min-h-[280px]">
+        {/* Sticky search: prompt + suggestions */}
+        <div className="sticky top-0 z-20">
+          <div className="bg-white pt-4 pb-2 flex flex-col items-center px-6">
+            <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} onInputChange={(v) => setIsTyping(v.length > 0)} />
+
+            <div className={`mt-5 transition-opacity duration-200 ${isTyping ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+              <PromptStickyNotes onSelect={handleSubmit} visible={notesVisible} />
+            </div>
+          </div>
+
+          {/* Fade overlay — white fading to transparent so content disappears under search */}
+          <div className="h-24 -mb-24 pointer-events-none bg-gradient-to-b from-white to-transparent" />
+        </div>
+
+        {/* Bottom section */}
+        <div className="flex flex-col items-center pt-20 pb-16">
           {/* Tab toggle */}
-          <div className="bg-gray-100 rounded-full p-1 flex shrink-0">
+          <div className="z-10 bg-gray-100 rounded-full p-1 flex shrink-0">
             <button
               onClick={() => setActiveTab("foryou")}
               className={`px-5 py-1.5 rounded-full text-sm transition-all ${
@@ -153,17 +157,14 @@ export default function HomePage() {
             </button>
           </div>
 
-          {/* Content cards — no bottom padding, they clip at viewport edge */}
-          <div className="grid grid-cols-2 gap-4 mt-6 w-full max-w-2xl px-6">
-            <div className="bg-white rounded-2xl shadow-sm p-5 h-48" />
-            <div className="bg-white rounded-2xl shadow-sm p-5 h-64">
-              <p className="text-sm font-medium text-gray-900">
-                Competing priorities!!!!
-              </p>
+          {/* Feed content — clips at viewport edge */}
+          {activeTab === "foryou" ? (
+            <HomeFeed />
+          ) : (
+            <div className="text-center py-16 w-full max-w-[1200px] px-6">
+              <p className="text-sm text-gray-400">Recent items coming soon</p>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm p-5 h-56" />
-            <div className="bg-white rounded-2xl shadow-sm p-5 h-44" />
-          </div>
+          )}
         </div>
       </div>
     </div>

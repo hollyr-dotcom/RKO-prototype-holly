@@ -1096,5 +1096,13 @@
     "createdAt": "2026-02-18T09:24:53.675Z",
     "updatedAt": "2026-02-18T09:24:53.675Z",
     "order": 115
+  },
+  {
+    "id": "canvas-1771342666188",
+    "spaceId": "space-1770991294920",
+    "name": "Untitled Board",
+    "createdAt": "2026-02-17T15:37:46.188Z",
+    "updatedAt": "2026-02-17T15:37:46.188Z",
+    "order": 3
   }
 ]

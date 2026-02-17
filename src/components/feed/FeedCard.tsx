@@ -15,6 +15,7 @@ import { AlertFYIContent } from "./content/AlertFYI";
 
 interface FeedCardProps {
   item: FeedItem;
+  spaceName?: string;
 }
 
 const staggerItem = {
@@ -45,7 +46,7 @@ function FeedContentRenderer({ item }: { item: FeedItem }) {
 
 const REACTABLE_TYPES = new Set(["workflow-change", "agent-completed"]);
 
-export function FeedCard({ item }: FeedCardProps) {
+export function FeedCard({ item, spaceName }: FeedCardProps) {
   const user = getUser(item.source.userId);
   const isAgent = item.source.isAgent;
   const showReactions =
@@ -62,6 +63,14 @@ export function FeedCard({ item }: FeedCardProps) {
         <div className="flex items-center justify-between px-6 pt-6 pb-3">
           <FeedSourceIndicator source={item.source} />
           <div className="flex items-center gap-2">
+            {spaceName && (
+              <>
+                <span className="text-xs text-gray-400 flex-shrink-0">
+                  {spaceName}
+                </span>
+                <span className="text-gray-300">&middot;</span>
+              </>
+            )}
             <span className="text-xs text-gray-400 flex-shrink-0">
               {formatTimeAgo(item.timestamp)}
             </span>
