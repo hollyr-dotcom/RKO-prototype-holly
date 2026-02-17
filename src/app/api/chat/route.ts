@@ -535,6 +535,39 @@ const createTaskCardTool = tool({
   },
 });
 
+const createGanttChartTool = tool({
+  name: "createGanttChart",
+  description: "Create a Gantt chart / project timeline on the canvas. Use for project plans, roadmaps, sprint timelines, or any work that needs a visual timeline with task dependencies.",
+  parameters: z.object({
+    title: z.string().describe("Chart title"),
+    tasks: z.array(z.object({
+      id: z.number().describe("Unique task ID"),
+      text: z.string().describe("Task name"),
+      start: z.string().describe("Start date as ISO string (e.g. '2026-02-20T00:00:00.000Z')"),
+      end: z.string().describe("End date as ISO string"),
+      progress: z.number().default(0).describe("Completion percentage 0-100"),
+      parent: z.number().default(0).describe("Parent task ID for hierarchy (0 = root)"),
+      type: z.enum(["task", "summary", "milestone"]).default("task").describe("Task type: 'summary' for parent groups, 'milestone' for zero-duration markers, 'task' for normal"),
+      open: z.boolean().default(true).describe("Whether subtasks are expanded"),
+    })).describe("Array of tasks for the timeline"),
+    links: z.array(z.object({
+      id: z.number().describe("Unique link ID"),
+      source: z.number().describe("Source task ID"),
+      target: z.number().describe("Target task ID"),
+      type: z.enum(["e2s", "s2s", "e2e", "s2e"]).default("e2s").describe("Dependency type: e2s=end-to-start, s2s=start-to-start, e2e=end-to-end, s2e=start-to-end"),
+    })).default([]).describe("Task dependency links"),
+  }),
+  execute: async (args) => {
+    return JSON.stringify({
+      created: "ganttchart",
+      id: `gantt_${Date.now()}`,
+      title: args.title,
+      tasks: args.tasks,
+      links: args.links,
+    });
+  },
+});
+
 const updateTaskCardTool = tool({
   name: "updateTaskCard",
   description: "Update an existing task card on the canvas. Get the task card's ID from [CANVAS STATE]. Only provide fields you want to change — pass empty string to clear a field.",
@@ -932,6 +965,12 @@ A great canvas uses MULTIPLE formats. Don't just spam stickies — pick the best
   - Shows as a compact card with status, priority, and assignee
   - "Create tasks for the sprint" → task cards, not stickies
 
+📊 createGanttChart — for PROJECT TIMELINES and ROADMAPS:
+  - Project plans, sprint timelines, launch schedules
+  - Use summary tasks as phase groupings, regular tasks for work items
+  - Add e2s (end-to-start) links for dependencies between tasks
+  - Use milestones for key dates
+
 📌 createLayout(type:"sticky") — for QUICK IDEAS ONLY:
   - Brainstorms, idea lists, feedback, tags, categories
   - Short items that benefit from visual clustering
@@ -1013,6 +1052,7 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     createStickerTool,
     createTaskCardTool,
     updateTaskCardTool,
+    createGanttChartTool,
     createSourcesTool,
   ],
 });
@@ -1067,6 +1107,7 @@ Work through steps in sequence. For each step:
    - Written content (brief, spec, summary)? → createDocument
    - Tabular data (comparison, matrix, timeline)? → createDataTable
    - Actionable work item (task, todo, action)? → createTaskCard
+   - Project timeline with dependencies? → createGanttChart
    - Quick ideas, brainstorm items? → createLayout(type:"sticky")
    - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy"/"flow")
    - Roadmap, timeline, phases? → createLayout(type:"timeline") with timeLabels
@@ -1141,6 +1182,20 @@ createTaskCard({
   assignee: "Mark",
   tags: ["auth", "backend"],
   x: 0, y: 0
+})
+
+📊 createGanttChart — PROJECT TIMELINES with dependencies:
+Step says "project plan", "gantt", "sprint timeline", "launch schedule", "dependencies"?
+→ Use createGanttChart for visual timelines with task bars and dependency links.
+Example:
+createGanttChart({
+  title: "Launch Plan",
+  tasks: [
+    { id: 1, text: "Phase 1", start: "2026-02-20T00:00:00.000Z", end: "2026-03-06T00:00:00.000Z", progress: 0, parent: 0, type: "summary", open: true },
+    { id: 2, text: "Design", start: "2026-02-20T00:00:00.000Z", end: "2026-02-27T00:00:00.000Z", progress: 0, parent: 1, type: "task", open: false },
+    { id: 3, text: "Build", start: "2026-02-28T00:00:00.000Z", end: "2026-03-06T00:00:00.000Z", progress: 0, parent: 1, type: "task", open: false },
+  ],
+  links: [{ id: 1, source: 2, target: 3, type: "e2s" }]
 })
 
 📌 createLayout(type:"sticky") — QUICK IDEAS (brainstorms, risks, feedback, categories):
@@ -1417,6 +1472,7 @@ MAX 2-3 COLORS PER FRAME. If you're reaching for a 4th color, stop and ask: "Doe
     createStickerTool,
     createTaskCardTool,
     updateTaskCardTool,
+    createGanttChartTool,
     createSourcesTool,
   ],
 });
@@ -1541,6 +1597,7 @@ DO THIS IMMEDIATELY:
    - Written content (brief, overview, spec, summary)? → createDocument
    - Tabular data (roles, comparison, timeline, matrix)? → createDataTable
    - Actionable work item (task, todo, action)? → createTaskCard
+   - Project timeline with dependencies? → createGanttChart
    - Research? → webSearch + createSources + SYNTHESIZE (see below)
    - Brainstorm ideas, quick notes? → createLayout(type:"sticky")
    - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy")

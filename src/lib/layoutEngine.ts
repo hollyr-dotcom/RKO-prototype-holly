@@ -30,7 +30,7 @@ export function findEmptyCanvasSpace(
   }
 
   // Find all large standalone items (frames, documents, tables)
-  const largeTypes = ["frame", "document", "datatable"];
+  const largeTypes = ["frame", "document", "datatable", "ganttchart"];
   const largeItems = shapes.filter(s => largeTypes.includes(s.type));
 
   if (largeItems.length === 0) {

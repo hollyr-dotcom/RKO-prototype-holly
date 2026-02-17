@@ -14,6 +14,7 @@ import { DocumentShapeUtil } from "@/shapes/DocumentShapeUtil";
 import { DataTableShapeUtil } from "@/shapes/DataTableShapeUtil";
 import { CommentShapeUtil } from "@/shapes/CommentShapeUtil";
 import { TaskCardShapeUtil } from "@/shapes/TaskCardShapeUtil";
+import { GanttChartShapeUtil } from "@/shapes/GanttChartShapeUtil";
 import { Toolbar } from "./Toolbar";
 import { StartingPromptCards } from "./StartingPromptCards";
 import { CanvasComments } from "./CanvasComments";
@@ -815,7 +816,7 @@ export function Canvas() {
 
   // LiveBlocks multiplayer store -- syncs tldraw state across users
   const [sessionUser] = useState(() => firebaseUser ? getSessionUser(firebaseUser) : getLocalDevUser());
-  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil], []);
+  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 
   // Prevent browser back/forward navigation from trackpad gestures (Safari + fallback)
@@ -1517,6 +1518,43 @@ export function Canvas() {
             dueDate: dueDate || "",
             tags: tags || [],
             subtasks: subtasks || [],
+          },
+          meta: { createdBy: "ai" },
+        });
+      }
+
+      if (toolName === "createGanttChart") {
+        const { title, tasks, links } = args as {
+          title?: string;
+          tasks?: Array<{ id: number; text: string; start: string; end: string; progress: number; parent: number; type: string; open: boolean }>;
+          links?: Array<{ id: number; source: number; target: number; type: string }>;
+        };
+
+        const validWidth = 700;
+        const validHeight = 400;
+        const pos = findNonOverlappingPosition(0, 0, validWidth, validHeight, "frame");
+
+        shapeId = createShapeId();
+        editor.createShape({
+          id: shapeId,
+          type: "ganttchart" as any,
+          x: pos.x,
+          y: pos.y,
+          props: {
+            w: validWidth,
+            h: validHeight,
+            title: title || "Project Timeline",
+            tasks: tasks || [],
+            links: links || [],
+            scales: [
+              { unit: "month", step: 1, format: "MMMM yyy" },
+              { unit: "week", step: 1, format: "w" },
+            ],
+            columns: [
+              { id: "text", header: "Task name", width: 210 },
+              { id: "start", header: "Start date", width: 106, align: "center" },
+              { id: "add-task", header: "", width: 40, align: "center" },
+            ],
           },
           meta: { createdBy: "ai" },
         });
@@ -3764,6 +3802,54 @@ export function Canvas() {
                     dueDate: "",
                     tags: [],
                     subtasks: [],
+                  },
+                  meta: { createdBy: "user" },
+                });
+                editor.select(shapeId);
+              }}
+              onCreateGanttChart={() => {
+                if (!editor) return;
+                const viewportCenter = editor.getViewportScreenCenter();
+                const canvasPoint = editor.screenToPage(viewportCenter);
+                const shapeId = createShapeId();
+
+                // Generate default dates starting from today
+                const today = new Date();
+                const d = (offset: number) => {
+                  const date = new Date(today);
+                  date.setDate(date.getDate() + offset);
+                  return date.toISOString();
+                };
+
+                editor.createShape({
+                  id: shapeId,
+                  type: "ganttchart" as any,
+                  x: canvasPoint.x - 350,
+                  y: canvasPoint.y - 200,
+                  props: {
+                    w: 700,
+                    h: 400,
+                    title: "Project Timeline",
+                    tasks: [
+                      { id: 1, text: "Planning", start: d(0), end: d(6), progress: 0, parent: 0, type: "summary", open: true },
+                      { id: 2, text: "Requirements", start: d(0), end: d(2), progress: 0, parent: 1, type: "task", open: false },
+                      { id: 3, text: "Design", start: d(3), end: d(5), progress: 0, parent: 1, type: "task", open: false },
+                      { id: 4, text: "Implementation", start: d(7), end: d(27), progress: 0, parent: 0, type: "summary", open: true },
+                      { id: 5, text: "Development", start: d(7), end: d(20), progress: 0, parent: 4, type: "task", open: false },
+                    ],
+                    links: [
+                      { id: 1, source: 2, target: 3, type: "e2s" },
+                      { id: 2, source: 3, target: 5, type: "e2s" },
+                    ],
+                    scales: [
+                      { unit: "month", step: 1, format: "MMMM yyy" },
+                      { unit: "week", step: 1, format: "w" },
+                    ],
+                    columns: [
+                      { id: "text", header: "Task name", width: 210 },
+                      { id: "start", header: "Start date", width: 106, align: "center" },
+                      { id: "add-task", header: "", width: 40, align: "center" },
+                    ],
                   },
                   meta: { createdBy: "user" },
                 });

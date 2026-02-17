@@ -1,0 +1,11 @@
+.gantt-canvas-shape,
+.gantt-focus-panel {
+  --wx-background: #ffffff;
+  --wx-color-primary: #4262FF;
+  --wx-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  --wx-font-size: 13px;
+  --wx-border-color: #e5e7eb;
+  --wx-color-secondary: #f3f4f6;
+  --wx-border: 1px solid #e5e7eb;
+}

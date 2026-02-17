@@ -5,14 +5,16 @@ import { motion, type Variants } from "framer-motion";
 import { IconArrowsInSimple } from "@mirohq/design-system-icons";
 import { DataTableEditor } from "./DataTableEditor";
 import { TaskCardFocusPanel } from "@/shapes/TaskCardPanel";
+import { GanttChartFocusPanel } from "@/shapes/GanttChartFocusPanel";
 import { setPortalTarget } from "@/lib/focusModeStore";
 import type { Editor } from "tldraw";
 
 export interface FocusedShape {
-  shapeType: "document" | "datatable" | "taskcard";
+  shapeType: "document" | "datatable" | "taskcard" | "ganttchart";
   docId?: string;
   tableId?: string;
   taskId?: string;
+  ganttId?: string;
   title: string;
 }
 
@@ -61,6 +63,7 @@ const floatingCardVariants: Variants = {
 export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 600 });
+  const isGanttChart = shape.shapeType === "ganttchart";
   const isTaskCard = shape.shapeType === "taskcard";
 
   // Measure container (used by DataTableEditor)
@@ -105,6 +108,54 @@ export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayPro
     window.addEventListener("keydown", handleKeyDown, true);
     return () => window.removeEventListener("keydown", handleKeyDown, true);
   }, [handleKeyDown]);
+
+  // Gantt charts: full-screen overlay (like documents/tables)
+  if (isGanttChart) {
+    return (
+      <motion.div
+        className="absolute inset-0 z-[500] bg-white flex flex-col overflow-hidden"
+        variants={contentVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          onPointerDown={(e) => e.stopPropagation()}
+          style={{
+            position: "absolute",
+            top: 7,
+            right: 8,
+            zIndex: 510,
+            width: 28,
+            height: 28,
+            borderRadius: 8,
+            border: "1px solid #e5e7eb",
+            background: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+            padding: 0,
+          }}
+        >
+          <IconArrowsInSimple css={{ width: 14, height: 14, color: "#6b7280" }} />
+        </button>
+
+        {/* Gantt chart container */}
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          {shape.ganttId && editor && (
+            <GanttChartFocusPanel
+              shapeId={shape.ganttId}
+              editor={editor}
+            />
+          )}
+        </div>
+      </motion.div>
+    );
+  }
 
   // Task cards: floating card with backdrop
   if (isTaskCard) {

@@ -25,6 +25,17 @@ import {
 import { PromptSuggestions } from "./PromptSuggestions";
 import { StickerPicker } from "./StickerPicker";
 
+// Custom Gantt chart icon - not available in Miro design system
+function GanttChartIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <rect x="3" y="4" width="10" height="3" rx="1.5" />
+      <rect x="7" y="10" width="12" height="3" rx="1.5" />
+      <rect x="5" y="16" width="8" height="3" rx="1.5" />
+    </svg>
+  );
+}
+
 // Custom voice wave icon (5 bars) - not available in Miro design system
 function VoiceWaveIcon() {
   return (
@@ -61,6 +72,8 @@ interface ToolbarProps {
   onCreateDataTable?: () => void;
   onPlaceSticker?: (sticker: { url: string; width: number; height: number; id: string }, screenPos?: { x: number; y: number }) => void;
   onCreateTaskCard?: () => void;
+  onCreateGanttChart?: () => void;
+  onMultiLineChange?: (multiLine: boolean) => void;
   isCommentMode?: boolean;
   onToggleCommentMode?: () => void;
 }
@@ -87,6 +100,8 @@ export function Toolbar({
   onCreateDataTable,
   onPlaceSticker,
   onCreateTaskCard,
+  onCreateGanttChart,
+  onMultiLineChange,
   isCommentMode = false,
   onToggleCommentMode,
 }: ToolbarProps) {
@@ -326,6 +341,11 @@ export function Toolbar({
           {/* Task Card */}
           <ToolButton active={false} onClick={() => onCreateTaskCard?.()} title="Task card">
             <IconCard size="medium" />
+          </ToolButton>
+
+          {/* Gantt Chart */}
+          <ToolButton active={false} onClick={() => onCreateGanttChart?.()} title="Gantt chart">
+            <GanttChartIcon />
           </ToolButton>
         </div>
 
