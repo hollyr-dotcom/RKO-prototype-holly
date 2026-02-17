@@ -310,8 +310,6 @@ const createStickyTool = tool({
   description: "Create a single post-it note (tldraw sticky note shape). ⚠️ ONLY for adding ONE sticky to existing content. For 2+ stickies, you MUST use createLayout(type:'sticky') instead - it handles positioning automatically. Never call this multiple times in sequence.",
   parameters: z.object({
     text: z.string().describe("Sticky note text. 1-2 punchy sentences for insights, or short labels for brainstorms."),
-    x: z.number().describe("X position"),
-    y: z.number().describe("Y position"),
     color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
   }),
   execute: async (args) => {
@@ -325,8 +323,6 @@ const createTextTool = tool({
   description: "Create a text label for headers or annotations. Returns an ID you can reference.",
   parameters: z.object({
     text: z.string().describe("The text content"),
-    x: z.number().describe("X position"),
-    y: z.number().describe("Y position"),
   }),
   execute: async (args) => {
     const id = generateItemId();
@@ -340,8 +336,6 @@ const createShapeTool = tool({
   parameters: z.object({
     type: z.enum(["rectangle", "ellipse", "triangle", "diamond"]),
     text: z.string().default("").describe("Label text inside the shape"),
-    x: z.number().describe("X position"),
-    y: z.number().describe("Y position"),
     width: z.number().describe("Width (typically 150-200 for diagram nodes)"),
     height: z.number().describe("Height (typically 80-100 for diagram nodes)"),
     color: z.enum(["black", "blue", "green", "red", "orange", "yellow", "violet"]),
@@ -357,8 +351,6 @@ const createFrameTool = tool({
   description: "Create a frame to group related content. Use frames to create sections for each plan step. Place content INSIDE the frame bounds. Returns an ID.",
   parameters: z.object({
     name: z.string().describe("Frame label (shown above frame)"),
-    x: z.number().describe("X position"),
-    y: z.number().describe("Y position"),
     width: z.number().describe("Frame width (typically 400-600)"),
     height: z.number().describe("Frame height (typically 500-800)"),
   }),
@@ -389,8 +381,6 @@ const createWorkingNoteTool = tool({
   parameters: z.object({
     title: z.string().describe("What you're working on"),
     content: z.string().describe("Your current thinking or notes"),
-    x: z.number().describe("X position"),
-    y: z.number().describe("Y position"),
   }),
   execute: async (args) => {
     const id = generateItemId();
@@ -404,8 +394,6 @@ const createDocumentTool = tool({
   parameters: z.object({
     title: z.string().describe("Document title"),
     content: z.string().describe("Document body as HTML. Use <h2>, <p>, <ul>/<li>, <strong>, <em>. Example: '<h2>Overview</h2><p>This project...</p>'"),
-    x: z.number().describe("X position"),
-    y: z.number().describe("Y position"),
   }),
   execute: async (args) => {
     const id = generateItemId();
@@ -430,8 +418,6 @@ const createDataTableTool = tool({
     title: z.string().describe("Table title"),
     columns: z.array(z.string()).min(1).max(8).describe("Column header names"),
     rows: z.array(z.array(z.string())).describe("Row data — each inner array must match the number of columns"),
-    x: z.number().describe("X position"),
-    y: z.number().describe("Y position"),
   }),
   execute: async (args) => {
     const id = generateItemId();
@@ -493,10 +479,8 @@ const createStickerTool = tool({
   description: "Place a Miro sticker on the canvas. Use for reactions, emotions, celebrations, or visual decoration. Describe what you want (e.g. 'thumbs up', 'heart', 'celebrate', 'thinking') and the best matching sticker will be found.",
   parameters: z.object({
     intent: z.string().describe("What the sticker should express (e.g. 'thumbs up', 'celebrate', 'heart', 'star', 'thinking', 'done')"),
-    x: z.number().default(0).describe("X position"),
-    y: z.number().default(0).describe("Y position"),
   }),
-  execute: async ({ intent, x, y }) => {
+  execute: async ({ intent }) => {
     const match = findBestSticker(intent);
     if (!match) {
       return JSON.stringify({ error: "No matching sticker found", intent });
@@ -504,8 +488,6 @@ const createStickerTool = tool({
     return JSON.stringify({
       created: "sticker",
       ...match,
-      x,
-      y,
     });
   },
 });
@@ -526,8 +508,6 @@ const createTaskCardTool = tool({
       title: z.string(),
       completed: z.boolean(),
     })).default([]).describe("Subtask checklist items"),
-    x: z.number().describe("X position"),
-    y: z.number().describe("Y position"),
   }),
   execute: async (args) => {
     const id = generateItemId();
@@ -545,6 +525,7 @@ const createGanttChartTool = tool({
       text: z.string().describe("Task name"),
       start: z.string().describe("Start date as ISO string (e.g. '2026-02-20T00:00:00.000Z')"),
       end: z.string().describe("End date as ISO string"),
+      duration: z.number().default(1).describe("Duration in days"),
       progress: z.number().default(0).describe("Completion percentage 0-100"),
       parent: z.number().default(0).describe("Parent task ID for hierarchy (0 = root)"),
       type: z.enum(["task", "summary", "milestone"]).default("task").describe("Task type: 'summary' for parent groups, 'milestone' for zero-duration markers, 'task' for normal"),
@@ -558,11 +539,16 @@ const createGanttChartTool = tool({
     })).default([]).describe("Task dependency links"),
   }),
   execute: async (args) => {
+    // Ensure every task has duration (library requires it)
+    const tasks = args.tasks.map((t) => ({
+      ...t,
+      duration: t.duration ?? Math.max(1, Math.round((new Date(t.end).getTime() - new Date(t.start).getTime()) / (1000 * 60 * 60 * 24))),
+    }));
     return JSON.stringify({
       created: "ganttchart",
       id: `gantt_${Date.now()}`,
       title: args.title,
-      tasks: args.tasks,
+      tasks,
       links: args.links,
     });
   },
@@ -575,18 +561,16 @@ const createKanbanBoardTool = tool({
     title: z.string().describe("Board title (e.g. 'Sprint 24 Board', 'Feature Tracker')"),
     lanes: z.array(z.object({
       title: z.string().describe("Lane name (e.g. 'To Do', 'In Progress', 'Done')"),
-      color: z.string().optional().describe("Hex color for lane header dot"),
-    })).optional().describe("Custom lane definitions. Default: To Do, Doing, Done"),
+      color: z.string().default("").describe("Hex color for lane header dot (empty = auto)"),
+    })).default([]).describe("Custom lane definitions. Default: To Do, Doing, Done"),
     cards: z.array(z.object({
       title: z.string().describe("Card title"),
       lane: z.string().describe("Lane title to place this card in"),
-      status: z.enum(["not_started", "in_progress", "complete"]).optional().describe("Card status"),
-      priority: z.enum(["low", "medium", "high"]).optional().describe("Card priority"),
-      assignee: z.string().optional().describe("Person assigned"),
-      tags: z.array(z.string()).optional().describe("Tags/labels"),
-    })).optional().describe("Initial cards to populate the board"),
-    x: z.number().default(0).describe("X position"),
-    y: z.number().default(0).describe("Y position"),
+      status: z.enum(["not_started", "in_progress", "complete"]).default("not_started").describe("Card status"),
+      priority: z.enum(["low", "medium", "high"]).default("medium").describe("Card priority"),
+      assignee: z.string().default("").describe("Person assigned"),
+      tags: z.array(z.string()).default([]).describe("Tags/labels"),
+    })).default([]).describe("Initial cards to populate the board"),
   }),
   execute: async (args) => {
     return JSON.stringify({
@@ -1189,7 +1173,6 @@ Example — step "Draft kickoff brief":
 createDocument({
   title: "Product Kickoff Brief",
   content: "<h2>Problem</h2><p>Users struggle to find relevant content, leading to 40% drop-off after onboarding.</p><h2>Proposed Solution</h2><p>A personalized feed that surfaces content based on role, team, and past activity.</p><h2>Success Metrics</h2><ul><li>Increase activation by 15%</li><li>Reduce churn by 10%</li></ul><h2>Timeline</h2><p>Design: 2 weeks · Build: 4 weeks · QA: 1 week</p>",
-  x: 0, y: 0
 })
 
 📊 createDataTable — TABULAR/STRUCTURED DATA (feature matrices, tracking, RACI):
@@ -1206,7 +1189,6 @@ createDataTable({
     ["Implementation", "Eng lead", "PM", "Design", "QA"],
     ["QA & testing", "QA lead", "Eng lead", "Design", "PM"]
   ],
-  x: 0, y: 0
 })
 
 ✅ createTaskCard — ACTIONABLE WORK ITEMS (tasks, todos, action items):
@@ -1219,7 +1201,6 @@ createTaskCard({
   priority: "high",
   assignee: "Mark",
   tags: ["auth", "backend"],
-  x: 0, y: 0
 })
 
 📊 createGanttChart — PROJECT TIMELINES with dependencies:
@@ -1229,9 +1210,9 @@ Example:
 createGanttChart({
   title: "Launch Plan",
   tasks: [
-    { id: 1, text: "Phase 1", start: "2026-02-20T00:00:00.000Z", end: "2026-03-06T00:00:00.000Z", progress: 0, parent: 0, type: "summary", open: true },
-    { id: 2, text: "Design", start: "2026-02-20T00:00:00.000Z", end: "2026-02-27T00:00:00.000Z", progress: 0, parent: 1, type: "task", open: false },
-    { id: 3, text: "Build", start: "2026-02-28T00:00:00.000Z", end: "2026-03-06T00:00:00.000Z", progress: 0, parent: 1, type: "task", open: false },
+    { id: 1, text: "Phase 1", start: "2026-02-20T00:00:00.000Z", end: "2026-03-06T00:00:00.000Z", duration: 14, progress: 0, parent: 0, type: "summary", open: true },
+    { id: 2, text: "Design", start: "2026-02-20T00:00:00.000Z", end: "2026-02-27T00:00:00.000Z", duration: 7, progress: 0, parent: 1, type: "task", open: false },
+    { id: 3, text: "Build", start: "2026-02-28T00:00:00.000Z", end: "2026-03-06T00:00:00.000Z", duration: 6, progress: 0, parent: 1, type: "task", open: false },
   ],
   links: [{ id: 1, source: 2, target: 3, type: "e2s" }]
 })
@@ -1331,9 +1312,8 @@ Every sticky must be a COMPLETE THOUGHT with enough context for someone who wasn
 - No placeholder recommendations — synthesize a real recommendation from the evidence
 - If a step needs data you don't have, call queryConnectors to GET it before creating the artifact
 
-POSITIONING — USE x:0, y:0 FOR EVERYTHING:
-The canvas has automatic collision detection that places items left-to-right.
-Just use x:0, y:0 for every tool call — items will never overlap.
+POSITIONING — HANDLED AUTOMATICALLY
+Positioning is handled by the canvas layout engine. Do not include x or y coordinates.
 
 =====================================================
 createLayout() REFERENCE — for stickies and diagrams only
@@ -1903,76 +1883,84 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
           let sentTextLength = 0;
           let suppressText = false; // Flag to suppress malformed tool call text
 
+          // Deduplication: OpenAI Agents SDK runs the model multiple times
+          // (text → tool call → text). Each response repeats the previous text
+          // as a prefix, then adds new content. We skip the repeated prefix.
+          let alreadySentLength = 0;   // text length we already sent to client
+          let responseAccum = "";       // text accumulated in current response
+
+          /** Send a text delta to the client, with dedup + malformed-tool checks */
+          const sendTextDelta = (delta: string) => {
+            responseAccum += delta;
+
+            // Still catching up to what we already sent? Skip this delta.
+            if (responseAccum.length <= alreadySentLength) {
+              return;
+            }
+
+            // This delta crosses the boundary — send only the new portion
+            let toSend = delta;
+            const overlap = alreadySentLength - (responseAccum.length - delta.length);
+            if (overlap > 0) {
+              toSend = delta.slice(overlap);
+            }
+
+            if (!toSend) return;
+
+            textContent += toSend;
+
+            // Detect malformed tool calls output as text (model bug)
+            if (textContent.includes('<functions.') || textContent.includes('functions.askUser') || textContent.includes('functions.confirmPlan')) {
+              suppressText = true;
+              console.warn('[STREAM] Detected malformed tool call in text output — suppressing');
+            }
+
+            if (!suppressText) {
+              safeEnqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "text", content: toSend })}\n\n`)
+              );
+            }
+            sentTextLength = textContent.length;
+          };
+
           for await (const event of result) {
-            // Handle streaming text deltas - try multiple event types
+            // Handle streaming text deltas
             if (event.type === "raw_model_stream_event") {
               const data = event.data as Record<string, unknown>;
 
-              // Debug: log the data type to see what's inside
-              if (process.env.NODE_ENV === 'development' && data.type) {
-                console.log('[RAW EVENT DATA]', data.type);
+              // Track response boundaries for deduplication
+              if (data.type === "response_started" && textContent.length > 0) {
+                // New model turn — the model will repeat previous text as prefix
+                alreadySentLength = textContent.length;
+                responseAccum = "";
               }
 
               // Handle output_text_delta (OpenAI Agents format)
               if (data.type === "output_text_delta") {
                 const delta = data.delta as string;
-                if (delta) {
-                  textContent += delta;
-
-                  // Detect malformed tool calls output as text (model bug)
-                  // e.g. "<functions.askUser" or "<functions.confirmPlan"
-                  if (textContent.includes('<functions.') || textContent.includes('functions.askUser') || textContent.includes('functions.confirmPlan')) {
-                    suppressText = true;
-                    console.warn('[STREAM] Detected malformed tool call in text output — suppressing');
-                  }
-
-                  if (!suppressText) {
-                    safeEnqueue(
-                      encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
-                    );
-                  }
-                  sentTextLength = textContent.length;
-                }
+                if (delta) sendTextDelta(delta);
               }
 
-              // Handle response.output_text.delta (Anthropic format - fallback)
+              // Handle response.output_text.delta (fallback)
               else if (data.type === "response.output_text.delta") {
                 const delta = data.delta as string;
-                if (delta) {
-                  textContent += delta;
-                  safeEnqueue(
-                    encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
-                  );
-                  sentTextLength = textContent.length;
-                }
+                if (delta) sendTextDelta(delta);
               }
 
-              // Handle content_block_delta (Anthropic format)
+              // Handle content_block_delta (fallback)
               else if (data.type === "content_block_delta") {
                 const deltaData = data.delta as Record<string, unknown>;
                 if (deltaData?.type === "text_delta") {
                   const delta = deltaData.text as string;
-                  if (delta) {
-                    textContent += delta;
-                    safeEnqueue(
-                      encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
-                    );
-                    sentTextLength = textContent.length;
-                  }
+                  if (delta) sendTextDelta(delta);
                 }
               }
             }
 
-            // Handle text_delta events directly (OpenAI Realtime format)
+            // Handle text_delta events directly (fallback)
             else if ((event.type as string) === "text_delta" || (event.type as string) === "response.text.delta") {
               const delta = (event as { delta?: string }).delta || (event as { text?: string }).text;
-              if (delta) {
-                textContent += delta;
-                safeEnqueue(
-                  encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
-                );
-                sentTextLength = textContent.length;
-              }
+              if (delta) sendTextDelta(delta);
             }
 
             // Handle run item events (tool calls)

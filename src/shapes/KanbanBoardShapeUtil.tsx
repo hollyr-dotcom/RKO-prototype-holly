@@ -14,6 +14,7 @@ import {
 import { IconArrowsOutSimple } from "@mirohq/design-system-icons";
 import { TASKCARD_SHAPE_TYPE } from "./TaskCardShapeUtil";
 import { KanbanInteractive } from "./KanbanInteractive";
+import { AutoSizeWrapper } from "./AutoSizeWrapper";
 
 // ── Data Types ──
 
@@ -375,40 +376,49 @@ export class KanbanBoardShapeUtil extends ShapeUtil<IKanbanBoardShape> {
           </button>
         )}
 
-        {/* Title bar */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "8px 12px",
-            borderBottom: "1px solid rgba(0,0,0,0.06)",
-            flexShrink: 0,
-          }}
+        <AutoSizeWrapper
+          shapeId={shape.id}
+          shapeType={KANBANBOARD_SHAPE_TYPE}
+          shapeH={shape.props.h}
+          shapeW={shape.props.w}
+          editor={this.editor}
+          syncWidth
         >
-          <span
+          {/* Title bar */}
+          <div
             style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#111827",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "8px 12px",
+              borderBottom: "1px solid rgba(0,0,0,0.06)",
+              flexShrink: 0,
             }}
           >
-            {shape.props.title}
-          </span>
-        </div>
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#111827",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {shape.props.title}
+            </span>
+          </div>
 
-        {/* Interactive Kanban */}
-        <div style={{ flex: 1, overflow: "hidden" }}>
-          <KanbanInteractive
-            shapeId={shape.id}
-            editor={this.editor}
-            isEditing={isEditing}
-            onEscape={() => this.editor.setEditingShape(null)}
-          />
-        </div>
+          {/* Interactive Kanban */}
+          <div style={{ flex: 1 }}>
+            <KanbanInteractive
+              shapeId={shape.id}
+              editor={this.editor}
+              isEditing={isEditing}
+              onEscape={() => this.editor.setEditingShape(null)}
+            />
+          </div>
+        </AutoSizeWrapper>
       </HTMLContainer>
     );
   }

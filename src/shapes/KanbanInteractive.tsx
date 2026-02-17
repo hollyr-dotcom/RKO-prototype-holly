@@ -952,7 +952,7 @@ export function KanbanInteractive({
 
   return (
     <div
-      style={{ width: "100%", height: "100%", overflow: "hidden" }}
+      style={{ width: "100%", height: "100%" }}
       onPointerDown={(e) => {
         if (isEditing) e.stopPropagation();
       }}
@@ -984,8 +984,6 @@ export function KanbanInteractive({
               padding: 16,
               height: "100%",
               alignItems: "flex-start",
-              overflowX: "auto",
-              overflowY: "hidden",
             }}
           >
             {localLanes.map((lane) => {
@@ -1049,8 +1047,6 @@ export function KanbanInteractive({
             padding: 16,
             height: "100%",
             alignItems: "flex-start",
-            overflowX: "auto",
-            overflowY: "hidden",
           }}
         >
           {displayLanes.map((lane) => {

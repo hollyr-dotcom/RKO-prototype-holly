@@ -21,37 +21,12 @@ import {
   IconCard,
   IconCross,
   IconSmileySticker,
+  IconKanban,
+  IconTimelineFormat,
 } from "@mirohq/design-system-icons";
 import { PromptSuggestions } from "./PromptSuggestions";
 import { StickerPicker } from "./StickerPicker";
 
-// Custom Gantt chart icon - not available in Miro design system
-function GanttChartIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-      <rect x="3" y="4" width="10" height="3" rx="1.5" />
-      <rect x="7" y="10" width="12" height="3" rx="1.5" />
-      <rect x="5" y="16" width="8" height="3" rx="1.5" />
-    </svg>
-  );
-}
-
-// Custom Kanban board icon - not available in Miro design system
-function KanbanBoardIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-      <rect x="2" y="3" width="5.5" height="18" rx="1.5" opacity="0.3" />
-      <rect x="9.25" y="3" width="5.5" height="12" rx="1.5" opacity="0.3" />
-      <rect x="16.5" y="3" width="5.5" height="15" rx="1.5" opacity="0.3" />
-      <rect x="3" y="4.5" width="3.5" height="2" rx="0.75" />
-      <rect x="3" y="8" width="3.5" height="2" rx="0.75" />
-      <rect x="3" y="11.5" width="3.5" height="2" rx="0.75" />
-      <rect x="10.25" y="4.5" width="3.5" height="2" rx="0.75" />
-      <rect x="10.25" y="8" width="3.5" height="2" rx="0.75" />
-      <rect x="17.5" y="4.5" width="3.5" height="2" rx="0.75" />
-    </svg>
-  );
-}
 
 // Custom voice wave icon (5 bars) - not available in Miro design system
 function VoiceWaveIcon() {
@@ -364,12 +339,12 @@ export function Toolbar({
 
           {/* Kanban Board */}
           <ToolButton active={false} onClick={() => onCreateKanbanBoard?.()} title="Kanban board">
-            <KanbanBoardIcon />
+            <IconKanban size="medium" />
           </ToolButton>
 
           {/* Gantt Chart */}
           <ToolButton active={false} onClick={() => onCreateGanttChart?.()} title="Gantt chart">
-            <GanttChartIcon />
+            <IconTimelineFormat size="medium" />
           </ToolButton>
         </div>
 

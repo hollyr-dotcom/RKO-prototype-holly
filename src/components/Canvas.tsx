@@ -38,6 +38,7 @@ import Markdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { FocusModeOverlay, FocusedShape } from "./FocusModeOverlay";
 import { setFocusedDocId } from "@/lib/focusModeStore";
+import { PlacementEngine, getCategoryForTool } from "@/lib/placementEngine";
 
 // Animation variants
 const sidebarVariants = {
@@ -870,7 +871,7 @@ export function Canvas() {
   const [focusedShape, setFocusedShape] = useState<FocusedShape | null>(null);
   const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
-  const lastSourcesFrameRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
+  const placementEngineRef = useRef<PlacementEngine | null>(null);
   const isProcessingToolCallRef = useRef(false);
   const userEditsRef = useRef<Array<{ shapeId: string; field: string; oldValue: string; newValue: string }>>([]);
   const shouldHideToastRef = useRef(false); // Track if toast should be hidden during new request
@@ -946,40 +947,23 @@ export function Canvas() {
     );
   }, [editor]);
 
-  // Unified positioning: place every new item to the right of all existing
-  // root-level shapes, top-aligned. No grid search, no wrapping down.
-  const findNonOverlappingPosition = useCallback(
-    (_proposedX: number, _proposedY: number, _width: number, _height: number, _itemType?: string): { x: number; y: number } => {
-      if (!editor) return { x: 100, y: 100 };
+  // Smart placement engine — arranges content like a human whiteboard
+  const getPlacementEngine = useCallback(() => {
+    if (!editor) return new PlacementEngine(null as any);
+    if (!placementEngineRef.current) {
+      placementEngineRef.current = new PlacementEngine(editor);
+      placementEngineRef.current.initialize();
+    }
+    return placementEngineRef.current;
+  }, [editor]);
 
-      const shapes = editor.getCurrentPageShapes();
-      const pageId = editor.getCurrentPageId();
-
-      // Only root-level shapes — children inside frames are positioned relative to their parent
-      const rootShapes = shapes.filter(s => s.parentId === pageId);
-
-      if (rootShapes.length === 0) {
-        return { x: 100, y: 100 };
-      }
-
-      const gap = 80;
-      let maxRight = -Infinity;
-      let minY = Infinity;
-
-      rootShapes.forEach(shape => {
-        const bounds = editor.getShapeGeometry(shape.id).bounds;
-        const right = shape.x + bounds.width;
-        if (right > maxRight) maxRight = right;
-        if (shape.y < minY) minY = shape.y;
-      });
-
-      return {
-        x: maxRight + gap,
-        y: minY,
-      };
-    },
-    [editor]
-  );
+  // Re-initialize placement engine when a new AI response starts
+  useEffect(() => {
+    if (isLoading && editor) {
+      placementEngineRef.current = new PlacementEngine(editor);
+      placementEngineRef.current.initialize();
+    }
+  }, [isLoading, editor]);
 
   // Capture canvas screenshot for initial voice connect context
   // Uses tldraw's export API (WebGL canvas is blank when read directly)
@@ -1170,16 +1154,13 @@ export function Canvas() {
       try {
 
       if (toolName === "createSticky") {
-        const { text, x, y, color } = args as {
+        const { text, color } = args as {
           text: string;
-          x: number;
-          y: number;
           color: string;
         };
 
-        // Find non-overlapping position (stickies are ~200x200)
-        // Pass "sticky" type so it doesn't collide with frames (stickies go inside frames)
-        const pos = findNonOverlappingPosition(x || 0, y || 0, 200, 200, "sticky");
+        const engine = getPlacementEngine();
+        const pos = engine.place({ category: "widget", width: 200, height: 200 });
 
         shapeId = createShapeId();
         editor.createShape({
@@ -1195,14 +1176,13 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
+        engine.recordPlacement(shapeId, { category: "widget", width: 200, height: 200 }, pos);
       }
 
       if (toolName === "createShape") {
-        const { type, text, x, y, width, height, color } = args as {
+        const { type, text, width, height, color } = args as {
           type: string;
           text?: string;
-          x: number;
-          y: number;
           width: number;
           height: number;
           color: string;
@@ -1222,8 +1202,8 @@ export function Canvas() {
         const validWidth = Math.max(width || 150, 50);
         const validHeight = Math.max(height || 80, 50);
 
-        // Find non-overlapping position (shapes can be inside frames)
-        const pos = findNonOverlappingPosition(x || 0, y || 0, validWidth, validHeight, "shape");
+        const engine = getPlacementEngine();
+        const pos = engine.place({ category: "widget", width: validWidth, height: validHeight });
 
         shapeId = createShapeId();
         editor.createShape({
@@ -1243,21 +1223,20 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
+        engine.recordPlacement(shapeId, { category: "widget", width: validWidth, height: validHeight }, pos);
       }
 
       if (toolName === "createText") {
-        const { text, x, y } = args as {
+        const { text } = args as {
           text: string;
-          x: number;
-          y: number;
         };
 
         // Estimate text size (roughly 10px per char width, 30px height)
         const estimatedWidth = Math.max(text.length * 10, 100);
         const estimatedHeight = 40;
 
-        // Find non-overlapping position (text can be inside frames)
-        const pos = findNonOverlappingPosition(x || 0, y || 0, estimatedWidth, estimatedHeight, "text");
+        const engine = getPlacementEngine();
+        const pos = engine.place({ category: "widget", width: estimatedWidth, height: estimatedHeight });
 
         shapeId = createShapeId();
         editor.createShape({
@@ -1271,13 +1250,12 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
+        engine.recordPlacement(shapeId, { category: "widget", width: estimatedWidth, height: estimatedHeight }, pos);
       }
 
       if (toolName === "createFrame") {
-        const { name, x, y, width, height } = args as {
+        const { name, width, height } = args as {
           name: string;
-          x: number;
-          y: number;
           width: number;
           height: number;
         };
@@ -1286,8 +1264,8 @@ export function Canvas() {
         const validWidth = Math.max(width || 400, 100);
         const validHeight = Math.max(height || 300, 100);
 
-        // Find non-overlapping position (frames only check against other frames)
-        const pos = findNonOverlappingPosition(x || 0, y || 0, validWidth, validHeight, "frame");
+        const engine = getPlacementEngine();
+        const pos = engine.place({ category: "format", width: validWidth, height: validHeight });
 
         shapeId = createShapeId();
         editor.createShape({
@@ -1302,14 +1280,13 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
+        engine.recordPlacement(shapeId, { category: "format", width: validWidth, height: validHeight }, pos);
       }
 
       if (toolName === "createDocument") {
-        const { title, content, x, y, width, height } = args as {
+        const { title, content, width, height } = args as {
           title?: string;
           content?: string;
-          x?: number;
-          y?: number;
           width?: number;
           height?: number;
         };
@@ -1319,7 +1296,8 @@ export function Canvas() {
         const estimatedH = content ? estimateDocumentHeight(content, validWidth) : 660;
         const validHeight = Math.max(height || estimatedH, 200);
 
-        const pos = findNonOverlappingPosition(x || 0, y || 0, validWidth, validHeight, "frame");
+        const engine = getPlacementEngine();
+        const pos = engine.place({ category: "format", width: validWidth, height: validHeight });
 
         shapeId = createShapeId();
         editor.createShape({
@@ -1338,6 +1316,7 @@ export function Canvas() {
             initialContent: content || undefined,
           },
         });
+        engine.recordPlacement(shapeId, { category: "format", width: validWidth, height: validHeight }, pos);
       }
 
       if (toolName === "updateDocument") {
@@ -1376,12 +1355,10 @@ export function Canvas() {
       }
 
       if (toolName === "createDataTable") {
-        const { title, columns, rows, x, y, width, height } = args as {
+        const { title, columns, rows, width, height } = args as {
           title?: string;
           columns?: string[];
           rows?: string[][];
-          x?: number;
-          y?: number;
           width?: number;
           height?: number;
         };
@@ -1423,7 +1400,8 @@ export function Canvas() {
         const validWidth = Math.max(calcWidth || 700, 200);
         const validHeight = Math.max(calcHeight || 460, 150);
 
-        const pos = findNonOverlappingPosition(x || 0, y || 0, validWidth, validHeight, "frame");
+        const engine = getPlacementEngine();
+        const pos = engine.place({ category: "format", width: validWidth, height: validHeight });
 
         shapeId = createShapeId();
         editor.createShape({
@@ -1442,16 +1420,15 @@ export function Canvas() {
             initialData: (columns && rows) ? { columns, rows } : undefined,
           },
         });
+        engine.recordPlacement(shapeId, { category: "format", width: validWidth, height: validHeight }, pos);
       }
 
       if (toolName === "createSticker_result") {
-        const { url, width, height, stickerId, x, y, error } = args as {
+        const { url, width, height, stickerId, error } = args as {
           url: string;
           width: number;
           height: number;
           stickerId: string;
-          x?: number;
-          y?: number;
           error?: string;
         };
 
@@ -1461,7 +1438,8 @@ export function Canvas() {
 
         const displayW = 120;
         const displayH = (height / width) * displayW;
-        const pos = findNonOverlappingPosition(x || 0, y || 0, displayW, displayH, "sticky");
+        const engine = getPlacementEngine();
+        const pos = engine.place({ category: "decorative", width: displayW, height: displayH });
         const assetId = `asset:sticker-${stickerId}-${Date.now()}` as any;
         editor.createAssets([{
           id: assetId,
@@ -1489,11 +1467,12 @@ export function Canvas() {
             h: displayH,
           },
         });
+        engine.recordPlacement(shapeId, { category: "decorative", width: displayW, height: displayH }, pos);
         }
       }
 
       if (toolName === "createTaskCard") {
-        const { title, description, status, priority, assignee, dueDate, tags, subtasks, x, y } = args as {
+        const { title, description, status, priority, assignee, dueDate, tags, subtasks } = args as {
           title?: string;
           description?: string;
           status?: string;
@@ -1502,13 +1481,12 @@ export function Canvas() {
           dueDate?: string;
           tags?: string[];
           subtasks?: Array<{ id: string; title: string; completed: boolean }>;
-          x?: number;
-          y?: number;
         };
 
         const validWidth = 288;
         const validHeight = 160;
-        const pos = findNonOverlappingPosition(x || 0, y || 0, validWidth, validHeight, "shape");
+        const engine = getPlacementEngine();
+        const pos = engine.place({ category: "widget", width: validWidth, height: validHeight });
 
         shapeId = createShapeId();
         editor.createShape({
@@ -1530,6 +1508,7 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
+        engine.recordPlacement(shapeId, { category: "widget", width: validWidth, height: validHeight }, pos);
       }
 
       if (toolName === "createGanttChart") {
@@ -1539,9 +1518,11 @@ export function Canvas() {
           links?: Array<{ id: number; source: number; target: number; type: string }>;
         };
 
-        const validWidth = 700;
-        const validHeight = 400;
-        const pos = findNonOverlappingPosition(0, 0, validWidth, validHeight, "frame");
+        // Generous initial size — AutoSizeWrapper will adjust to fit content
+        const validWidth = 1200;
+        const validHeight = 500;
+        const engine = getPlacementEngine();
+        const pos = engine.place({ category: "format", width: validWidth, height: validHeight });
 
         shapeId = createShapeId();
         editor.createShape({
@@ -1556,8 +1537,8 @@ export function Canvas() {
             tasks: tasks || [],
             links: links || [],
             scales: [
-              { unit: "month", step: 1, format: "MMMM yyy" },
-              { unit: "week", step: 1, format: "w" },
+              { unit: "month", step: 1, format: "%F %Y" },
+              { unit: "week", step: 1, format: "%j" },
             ],
             columns: [
               { id: "text", header: "Task name", width: 210 },
@@ -1567,6 +1548,7 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
+        engine.recordPlacement(shapeId, { category: "format", width: validWidth, height: validHeight }, pos);
       }
 
       if (toolName === "createKanbanBoard") {
@@ -1576,9 +1558,12 @@ export function Canvas() {
           cards?: Array<{ title: string; lane: string; status?: string; priority?: string; assignee?: string; tags?: string[] }>;
         };
 
-        const validWidth = 800;
+        // Generous initial size — AutoSizeWrapper will adjust to fit content
+        const laneCount = lanesArg?.length || 3;
+        const validWidth = Math.max(laneCount * 296 + 328, 900);
         const validHeight = 500;
-        const pos = findNonOverlappingPosition(0, 0, validWidth, validHeight, "frame");
+        const engine = getPlacementEngine();
+        const pos = engine.place({ category: "format", width: validWidth, height: validHeight });
 
         // Build lanes
         const defaultLanes = [
@@ -1633,6 +1618,7 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
+        engine.recordPlacement(shapeId, { category: "format", width: validWidth, height: validHeight }, pos);
       }
 
       if (toolName === "createArrow") {
@@ -1659,15 +1645,14 @@ export function Canvas() {
 
       // Working notes - larger sticky with distinct color
       if (toolName === "createWorkingNote") {
-        const { title, content, x, y } = args as {
+        const { title, content } = args as {
           title: string;
           content: string;
-          x: number;
-          y: number;
         };
 
         // Working notes are larger - approximately 300x300
-        const pos = findNonOverlappingPosition(x || 0, y || 0, 300, 300, "note");
+        const engine = getPlacementEngine();
+        const pos = engine.place({ category: "widget", width: 300, height: 300 });
 
         shapeId = createShapeId();
         editor.createShape({
@@ -1683,6 +1668,7 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
+        engine.recordPlacement(shapeId, { category: "widget", width: 300, height: 300 }, pos);
       }
 
       // CREATE LAYOUT - use tldraw native layout for grids, custom for hierarchy
@@ -1704,7 +1690,8 @@ export function Canvas() {
           spacing?: "compact" | "normal" | "spacious";
         };
 
-        // Delete old frame if replacing
+        // Delete old frame if replacing — capture position first
+        let replacePosition: { x: number; y: number } | undefined;
         if (layout.replaceFrame) {
           const allShapes = editor.getCurrentPageShapes();
           const frameToDelete = allShapes.find(
@@ -1713,6 +1700,7 @@ export function Canvas() {
              (s.props as { name?: string }).name?.includes(layout.replaceFrame!))
           );
           if (frameToDelete) {
+            replacePosition = { x: frameToDelete.x, y: frameToDelete.y };
             const shapesInFrame = allShapes.filter((s) => s.parentId === frameToDelete.id);
             shapesInFrame.forEach((shape) => editor.deleteShape(shape.id));
             editor.deleteShape(frameToDelete.id);
@@ -1792,7 +1780,8 @@ export function Canvas() {
           };
 
           const result = calculateLayout("hierarchy", layoutItems, options);
-          const canvasPos = findNonOverlappingPosition(0, 0, result.frame.width, result.frame.height);
+          const engine = getPlacementEngine();
+          const canvasPos = engine.place({ category: "format", width: result.frame.width, height: result.frame.height, replacePosition });
 
           // Create frame
           const frameId = createShapeId();
@@ -1808,6 +1797,7 @@ export function Canvas() {
             },
             meta: { createdBy: "ai" },
           });
+          engine.recordPlacement(frameId, { category: "format", width: result.frame.width, height: result.frame.height }, canvasPos);
           createdShapesRef.current.push(frameId);
 
           // Create items INSIDE frame with RELATIVE coordinates
@@ -1904,7 +1894,8 @@ export function Canvas() {
           };
 
           const result = calculateLayout("timeline", layoutItems, options);
-          const canvasPos = findNonOverlappingPosition(0, 0, result.frame.width, result.frame.height);
+          const engine = getPlacementEngine();
+          const canvasPos = engine.place({ category: "format", width: result.frame.width, height: result.frame.height, replacePosition });
 
           // Create frame
           const frameId = createShapeId();
@@ -1920,6 +1911,7 @@ export function Canvas() {
             },
             meta: { createdBy: "ai" },
           });
+          engine.recordPlacement(frameId, { category: "format", width: result.frame.width, height: result.frame.height }, canvasPos);
           createdShapesRef.current.push(frameId);
 
           // Render decorations (time labels, dots, connecting bar)
@@ -2064,16 +2056,8 @@ export function Canvas() {
         const frameWidth = padding * 2 + actualCols * itemWidth + (actualCols - 1) * gapX;
         const frameHeight = padding + titleSpace + rowYOffsets[rows] + padding;
 
-        // Position: below last sources frame if available, otherwise find open space
-        let canvasPos: { x: number; y: number };
-        if (lastSourcesFrameRef.current && isGrid) {
-          const ref = lastSourcesFrameRef.current;
-          canvasPos = { x: ref.x, y: ref.y + ref.height + 40 };
-          lastSourcesFrameRef.current = null; // Only use once
-          console.log('[LAYOUT] Placing BELOW sources frame at', canvasPos);
-        } else {
-          canvasPos = findNonOverlappingPosition(0, 0, frameWidth, frameHeight);
-        }
+        const engine = getPlacementEngine();
+        const canvasPos = engine.place({ category: "format", width: frameWidth, height: frameHeight, replacePosition });
         console.log('[LAYOUT] Frame at', canvasPos, 'size', frameWidth, 'x', frameHeight);
 
         // Create frame
@@ -2090,6 +2074,7 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
+        engine.recordPlacement(frameId, { category: "format", width: frameWidth, height: frameHeight }, canvasPos);
         createdShapesRef.current.push(frameId);
 
         // Create items
@@ -2226,7 +2211,8 @@ export function Canvas() {
         const frameHeight = rowHeights.reduce((sum, h) => sum + h, 0) + (rows + 1) * gapY + padding + bottomPadding;
 
         // Find empty space on canvas
-        const canvasPos = findNonOverlappingPosition(0, 0, frameWidth, frameHeight);
+        const engine = getPlacementEngine();
+        const canvasPos = engine.place({ category: "format", width: frameWidth, height: frameHeight });
 
         // Create frame
         const frameId = createShapeId();
@@ -2242,10 +2228,8 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
+        engine.recordPlacement(frameId, { category: "format", width: frameWidth, height: frameHeight }, canvasPos);
         createdShapesRef.current.push(frameId);
-
-        // Store position so next createLayout (synthesis) can go below this frame
-        lastSourcesFrameRef.current = { x: canvasPos.x, y: canvasPos.y, width: frameWidth, height: frameHeight };
 
         // Create bookmark assets and shapes for each source
         // Track cumulative Y offsets per row for variable-height cards
@@ -2420,7 +2404,8 @@ export function Canvas() {
         }
 
         // Find empty space for the frame
-        const canvasPos = findNonOverlappingPosition(0, 0, frameWidth, frameHeight);
+        const engine = getPlacementEngine();
+        const canvasPos = engine.place({ category: "format", width: frameWidth, height: frameHeight });
 
         // Create the frame
         const frameId = createShapeId();
@@ -2436,6 +2421,7 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
+        engine.recordPlacement(frameId, { category: "format", width: frameWidth, height: frameHeight }, canvasPos);
         createdShapesRef.current.push(frameId);
 
         // Move each shape into the frame with new positions
@@ -2462,7 +2448,7 @@ export function Canvas() {
         isProcessingToolCallRef.current = false;
       }
     },
-    [editor, findNonOverlappingPosition]
+    [editor, getPlacementEngine]
   );
 
   // Get and clear pending user edits (consumed on each chat request)

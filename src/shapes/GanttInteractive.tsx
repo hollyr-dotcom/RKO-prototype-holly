@@ -1,6 +1,30 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+
+// Error boundary — the Gantt library has an internal bug that crashes on some data
+class GanttErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#999", fontSize: 13, padding: 20, textAlign: "center" }}>
+          Timeline preview unavailable — click to expand and edit
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import {
   Gantt,
   Willow,
@@ -22,10 +46,19 @@ import type {
 // ── Helpers ──
 
 function deserializeTasks(raw: GanttTask[]) {
+  // Build set of IDs that are parents (have children referencing them)
+  const parentIds = new Set<number>();
+  for (const t of raw) {
+    if (t.parent && t.parent !== 0) parentIds.add(t.parent);
+  }
+
   return raw.map((t) => ({
     ...t,
     start: new Date(t.start),
     end: new Date(t.end),
+    // CRITICAL: only summary/parent tasks can have open=true.
+    // Leaf tasks with open=true crash the library (null.forEach).
+    open: parentIds.has(t.id) ? (t.open ?? true) : false,
   }));
 }
 
@@ -47,10 +80,11 @@ function serializeTasks(
     text: (t.text as string) ?? "",
     start: t.start instanceof Date ? t.start.toISOString() : String(t.start),
     end: t.end instanceof Date ? t.end.toISOString() : String(t.end),
+    duration: (t.duration as number) ?? 1,
     progress: (t.progress as number) ?? 0,
     parent: (t.parent as number) ?? 0,
     type: (t.type as string) ?? "task",
-    open: (t.open as boolean) ?? true,
+    open: t.type === "summary" ? ((t.open as boolean) ?? true) : false,
   }));
 }
 
@@ -155,7 +189,7 @@ export function GanttInteractive({
 
   return (
     <div
-      style={{ width: "100%", height: "100%", overflow: "hidden" }}
+      style={{ width: "100%", height: "100%" }}
       onPointerDown={(e) => {
         if (isEditing) e.stopPropagation();
       }}
@@ -168,32 +202,34 @@ export function GanttInteractive({
         }
       }}
     >
-      <Willow>
-        {isEditing ? (
-          <>
-            <ContextMenu api={api ?? undefined}>
-              <Tooltip api={api ?? undefined}>
-                <Gantt
-                  tasks={tasks}
-                  links={links}
-                  scales={scales}
-                  columns={columns}
-                  init={(a: IApi) => setApi(a)}
-                />
-              </Tooltip>
-            </ContextMenu>
-            {api && <Editor api={api} />}
-          </>
-        ) : (
-          <Gantt
-            tasks={tasks}
-            links={links}
-            scales={scales}
-            columns={columns}
-            readonly={true}
-          />
-        )}
-      </Willow>
+      <GanttErrorBoundary>
+        <Willow>
+          {isEditing ? (
+            <>
+              <ContextMenu api={api ?? undefined}>
+                <Tooltip api={api ?? undefined}>
+                  <Gantt
+                    tasks={tasks}
+                    links={links}
+                    scales={scales}
+                    columns={columns}
+                    init={(a: IApi) => setApi(a)}
+                  />
+                </Tooltip>
+              </ContextMenu>
+              {api && <Editor api={api} />}
+            </>
+          ) : (
+            <Gantt
+              tasks={tasks}
+              links={links}
+              scales={scales}
+              columns={columns}
+              readonly={true}
+            />
+          )}
+        </Willow>
+      </GanttErrorBoundary>
     </div>
   );
 }

@@ -149,7 +149,7 @@ export class TaskCardShapeUtil extends ShapeUtil<ITaskCardShape> {
           width: shape.props.w,
           height: shape.props.h,
           overflow: "hidden",
-          borderRadius: 16,
+          borderRadius: 24,
           border: "1px solid #e5e7eb",
           background: "#ffffff",
           boxShadow: isSelected
@@ -344,8 +344,8 @@ export class TaskCardShapeUtil extends ShapeUtil<ITaskCardShape> {
       <rect
         width={shape.props.w}
         height={shape.props.h}
-        rx={16}
-        ry={16}
+        rx={24}
+        ry={24}
       />
     );
   }

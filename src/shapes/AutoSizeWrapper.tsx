@@ -4,53 +4,69 @@ import { useRef, useEffect, useCallback } from "react";
 import type { Editor, TLShapeId } from "tldraw";
 
 /**
- * Wrapper that observes the actual rendered height of its children
- * and syncs it back to the tldraw shape's `h` prop.
- * This eliminates the "chin" (extra whitespace at the bottom)
- * by making the shape fit its content exactly.
+ * Wrapper that observes the actual rendered size of its children
+ * and syncs it back to the tldraw shape's `h` (and optionally `w`) prop.
+ * This eliminates clipping by making the shape fit its content exactly.
  */
 export function AutoSizeWrapper({
   shapeId,
   shapeType,
   shapeH,
+  shapeW,
   editor,
+  syncWidth = false,
   children,
 }: {
   shapeId: TLShapeId;
   shapeType: string;
   shapeH: number;
+  shapeW?: number;
   editor: Editor;
+  syncWidth?: boolean;
   children: React.ReactNode;
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
   const lastHeightRef = useRef(shapeH);
+  const lastWidthRef = useRef(shapeW ?? 0);
 
-  const syncHeight = useCallback(() => {
+  const syncSize = useCallback(() => {
     const el = contentRef.current;
     if (!el) return;
     const contentHeight = el.scrollHeight;
-    // Only update if difference is meaningful (> 4px) to avoid loops
-    if (Math.abs(contentHeight - lastHeightRef.current) > 4) {
-      lastHeightRef.current = contentHeight;
+    const contentWidth = el.scrollWidth;
+
+    const hChanged = Math.abs(contentHeight - lastHeightRef.current) > 4;
+    const wChanged = syncWidth && Math.abs(contentWidth - lastWidthRef.current) > 8;
+
+    if (hChanged || wChanged) {
+      const props: Record<string, number> = {};
+      if (hChanged) {
+        lastHeightRef.current = contentHeight;
+        props.h = contentHeight;
+      }
+      if (wChanged) {
+        lastWidthRef.current = contentWidth;
+        props.w = contentWidth;
+      }
       editor.updateShape({
         id: shapeId,
         type: shapeType as any,
-        props: { h: contentHeight },
+        props,
       });
     }
-  }, [shapeId, shapeType, editor]);
+  }, [shapeId, shapeType, editor, syncWidth]);
 
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
 
-    const observer = new ResizeObserver(() => syncHeight());
+    const observer = new ResizeObserver(() => syncSize());
     observer.observe(el);
 
     // Sync after delays for async data loading (Liveblocks, Tiptap, Suspense)
-    const t1 = setTimeout(syncHeight, 300);
-    const t2 = setTimeout(syncHeight, 800);
-    const t3 = setTimeout(syncHeight, 1500);
+    const t1 = setTimeout(syncSize, 300);
+    const t2 = setTimeout(syncSize, 800);
+    const t3 = setTimeout(syncSize, 1500);
 
     return () => {
       observer.disconnect();
@@ -58,10 +74,22 @@ export function AutoSizeWrapper({
       clearTimeout(t2);
       clearTimeout(t3);
     };
-  }, [syncHeight]);
+  }, [syncSize]);
 
   return (
-    <div ref={contentRef} style={{ display: "flex", flexDirection: "column" }}>
+    <div
+      ref={contentRef}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        // When syncing width, become a scroll container (overflow: hidden)
+        // so scrollWidth captures the true content width from overflowing children.
+        // Also flex: 1 so we fill the parent HTMLContainer height.
+        ...(syncWidth
+          ? { flex: 1, minHeight: 0, overflow: "hidden" }
+          : {}),
+      }}
+    >
       {children}
     </div>
   );
