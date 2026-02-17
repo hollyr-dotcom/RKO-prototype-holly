@@ -1,0 +1,1298 @@
+[
+  {
+    "id": "feed-1",
+    "type": "agent-opportunity",
+    "spaceId": "space-1",
+    "canvasId": "canvas-1",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Timeline conflict",
+    "body": "Engineering expects to ship the API integration 3 weeks after Design's target launch date. This creates a critical dependency that will delay the Q3 FirstFlex rollout unless resolved this week.",
+    "timestamp": "2026-02-16T09:30:00Z",
+    "isRead": false,
+    "priority": "high",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "unpack",
+        "label": "Unpack together",
+        "variant": "primary"
+      },
+      {
+        "id": "delegate",
+        "label": "Assign",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "capacity": {
+        "venue": 350,
+        "expected": 520,
+        "overflow": 170
+      }
+    }
+  },
+  {
+    "id": "feed-2",
+    "type": "collaboration-request",
+    "spaceId": "space-1",
+    "canvasId": "canvas-2",
+    "source": {
+      "userId": "user-marcus",
+      "isAgent": false
+    },
+    "title": "Marcus Chen needs review: GTM strategy before stakeholder sync",
+    "body": "Need sign-off before Thursday’s leadership sync.",
+    "timestamp": "2026-02-16T08:15:00Z",
+    "isRead": false,
+    "priority": "high",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review",
+        "label": "Open board",
+        "variant": "primary"
+      },
+      {
+        "id": "comment",
+        "label": "Add comment",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "review",
+      "dueDate": "2026-02-18T17:00:00Z",
+      "mentionedUsers": [
+        "user-kyra",
+        "user-priya"
+      ],
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-2",
+        "name": "GTM Strategy — FirstFlex Q3"
+      },
+      "reviewChecklist": {
+        "sections": [
+          {
+            "label": "Strategy",
+            "status": "reviewed"
+          },
+          {
+            "label": "Positioning",
+            "status": "reviewed"
+          },
+          {
+            "label": "Timeline",
+            "status": "pending"
+          },
+          {
+            "label": "Budget",
+            "status": "flagged"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "feed-3",
+    "type": "agent-completed",
+    "spaceId": "space-1",
+    "canvasId": "canvas-3",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Competitive analysis framework ready",
+    "body": "",
+    "timestamp": "2026-02-15T22:00:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [
+      {
+        "emoji": "🙌",
+        "count": 2,
+        "users": [
+          "user-marcus",
+          "user-raj"
+        ]
+      },
+      {
+        "emoji": "💯",
+        "count": 1,
+        "users": [
+          "user-kyra"
+        ]
+      }
+    ],
+    "viewCount": 12,
+    "actions": [
+      {
+        "id": "approve",
+        "label": "Approve",
+        "variant": "primary"
+      },
+      {
+        "id": "feedback",
+        "label": "Request changes",
+        "variant": "secondary"
+      },
+      {
+        "id": "dismiss",
+        "label": "Dismiss",
+        "variant": "ghost"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-3",
+        "name": "Competitive Analysis — Q3"
+      },
+      "completionSummary": "6 competitors analysed, 24 feature dimensions mapped, 3 pricing tiers compared",
+      "timeSpent": "18 min",
+      "changesCount": 32,
+      "matrixGrid": {
+        "rows": 6,
+        "cols": 4,
+        "label": "Feature Matrix"
+      }
+    }
+  },
+  {
+    "id": "feed-4",
+    "type": "workflow-change",
+    "spaceId": "space-1",
+    "canvasId": "canvas-4",
+    "source": {
+      "userId": "user-priya",
+      "isAgent": false
+    },
+    "title": "Priya Sharma moved feature prioritisation to In Review",
+    "body": "",
+    "timestamp": "2026-02-15T17:45:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 4,
+        "users": [
+          "user-marcus",
+          "user-elena",
+          "user-raj",
+          "user-amara"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review",
+        "label": "Review board",
+        "variant": "primary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "Draft",
+      "toStatus": "In Review",
+      "implication": "Downstream teams are waiting on this to finalise sprint planning.",
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-4",
+        "name": "Feature Prioritisation — Q3"
+      },
+      "reviewPipeline": {
+        "stages": [
+          {
+            "label": "Draft",
+            "active": false
+          },
+          {
+            "label": "In Review",
+            "active": true
+          },
+          {
+            "label": "Approved",
+            "active": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "feed-5",
+    "type": "agent-opportunity",
+    "spaceId": "space-1",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Research convergence",
+    "body": "User research, support tickets, and analytics all point to the same onboarding friction: users don't understand the KYC verification timeline. Synthesizing these insights could unlock a 40% improvement in activation rates.",
+    "timestamp": "2026-02-15T14:20:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "unpack",
+        "label": "Unpack together",
+        "variant": "primary"
+      },
+      {
+        "id": "delegate",
+        "label": "Assign",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "convergence": {
+        "sources": [
+          {
+            "label": "User Research",
+            "color": "#3b82f6"
+          },
+          {
+            "label": "Support Tickets",
+            "color": "#6366f1"
+          },
+          {
+            "label": "Analytics",
+            "color": "#8b5cf6"
+          }
+        ],
+        "target": {
+          "label": "Onboarding Insight",
+          "color": "#10b981"
+        }
+      }
+    }
+  },
+  {
+    "id": "feed-6",
+    "type": "collaboration-request",
+    "spaceId": "space-1",
+    "source": {
+      "userId": "user-amara",
+      "isAgent": false
+    },
+    "title": "Amara Okafor needs input on launch visual direction",
+    "body": "Three visual directions for Q3 — need product perspective.",
+    "timestamp": "2026-02-15T11:00:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review",
+        "label": "View options",
+        "variant": "primary"
+      },
+      {
+        "id": "comment",
+        "label": "Add comment",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "input",
+      "mentionedUsers": [
+        "user-kyra",
+        "user-marcus"
+      ],
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-6",
+        "name": "Launch Visual Directions"
+      },
+      "optionCards": {
+        "options": [
+          {
+            "label": "Bold & Vibrant",
+            "color": "#6366f1"
+          },
+          {
+            "label": "Warm & Approachable",
+            "color": "#f43f5e"
+          },
+          {
+            "label": "Clean & Minimal",
+            "color": "#10b981"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "feed-7",
+    "type": "workflow-change",
+    "spaceId": "space-1",
+    "canvasId": "canvas-7",
+    "source": {
+      "userId": "user-nina",
+      "isAgent": false
+    },
+    "title": "Nina Johansson approved budget — Q3 launch spend unlocked",
+    "body": "",
+    "timestamp": "2026-02-14T16:30:00Z",
+    "isRead": true,
+    "priority": "high",
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 6,
+        "users": [
+          "user-marcus",
+          "user-amara",
+          "user-daniel",
+          "user-priya",
+          "user-raj",
+          "user-elena"
+        ]
+      },
+      {
+        "emoji": "🚀",
+        "count": 3,
+        "users": [
+          "user-kyra",
+          "user-james",
+          "user-sofia"
+        ]
+      }
+    ],
+    "viewCount": 14,
+    "actions": [
+      {
+        "id": "view",
+        "label": "View budget",
+        "variant": "primary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "Pending Approval",
+      "toStatus": "Approved",
+      "implication": "Marketing can commit to vendor contracts. Engineering can begin contractor onboarding.",
+      "approvalStamp": {
+        "icon": "budget"
+      }
+    }
+  },
+  {
+    "id": "feed-8",
+    "type": "collaboration-request",
+    "spaceId": "space-1",
+    "source": {
+      "userId": "user-elena",
+      "isAgent": false
+    },
+    "title": "Elena Vasquez needs a decision on PayGrid integration scope",
+    "body": "Real-time webhooks: include in Q3 or defer to Q4?",
+    "timestamp": "2026-02-14T10:45:00Z",
+    "isRead": false,
+    "priority": "high",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "decide",
+        "label": "Make decision",
+        "variant": "primary"
+      },
+      {
+        "id": "discuss",
+        "label": "Open discussion",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "decision",
+      "dueDate": "2026-02-17T12:00:00Z",
+      "mentionedUsers": [
+        "user-kyra",
+        "user-daniel",
+        "user-priya"
+      ],
+      "artifact": {
+        "type": "document",
+        "id": "canvas-8",
+        "name": "PayGrid Integration Scope Proposal"
+      },
+      "decisionFork": {
+        "optionA": "Include in Q3",
+        "optionB": "Defer to Q4"
+      }
+    }
+  },
+  {
+    "id": "feed-9",
+    "type": "agent-completed",
+    "spaceId": "space-1",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Weekly stakeholder update synthesised",
+    "body": "",
+    "timestamp": "2026-02-14T07:00:00Z",
+    "isRead": true,
+    "priority": "low",
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 3,
+        "users": [
+          "user-kyra",
+          "user-nina",
+          "user-james"
+        ]
+      }
+    ],
+    "viewCount": 9,
+    "actions": [
+      {
+        "id": "approve",
+        "label": "Approve & send",
+        "variant": "primary"
+      },
+      {
+        "id": "edit",
+        "label": "Edit first",
+        "variant": "secondary"
+      },
+      {
+        "id": "dismiss",
+        "label": "Dismiss",
+        "variant": "ghost"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "document",
+        "id": "canvas-9",
+        "name": "Weekly Update — Feb 14"
+      },
+      "completionSummary": "4 workstreams summarised, 3 blockers flagged, 5 talking points drafted",
+      "timeSpent": "8 min",
+      "changesCount": 18,
+      "workstreamBars": {
+        "streams": [
+          {
+            "label": "Product",
+            "progress": 0.85
+          },
+          {
+            "label": "Design",
+            "progress": 0.72
+          },
+          {
+            "label": "Engineering",
+            "progress": 0.6
+          },
+          {
+            "label": "Marketing",
+            "progress": 0.45
+          }
+        ],
+        "blockers": 3
+      }
+    }
+  },
+  {
+    "id": "feed-10",
+    "type": "agent-opportunity",
+    "spaceId": "space-1",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Prioritisation stalled",
+    "body": "The feature prioritisation board hasn't been updated since Feb 8. Platform Squad 3 and the PayGrid integration team are both blocked waiting on decisions about API versioning strategy.",
+    "timestamp": "2026-02-13T19:00:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "unpack",
+        "label": "Unpack together",
+        "variant": "primary"
+      },
+      {
+        "id": "delegate",
+        "label": "Assign",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "stalled": {
+        "days": 8
+      }
+    }
+  },
+  {
+    "id": "feed-11",
+    "type": "workflow-change",
+    "spaceId": "space-1",
+    "source": {
+      "userId": "user-marcus",
+      "isAgent": false
+    },
+    "title": "Marcus Chen moved GTM strategy to Approved",
+    "body": "",
+    "timestamp": "2026-02-13T15:30:00Z",
+    "isRead": true,
+    "priority": "low",
+    "reactions": [
+      {
+        "emoji": "✅",
+        "count": 5,
+        "users": [
+          "user-kyra",
+          "user-nina",
+          "user-amara",
+          "user-raj",
+          "user-elena"
+        ]
+      }
+    ],
+    "viewCount": 11,
+    "actions": [
+      {
+        "id": "view",
+        "label": "View board",
+        "variant": "primary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "In Review",
+      "toStatus": "Approved",
+      "implication": "Marketing can begin campaign production. Sales enablement materials can be finalised.",
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-2",
+        "name": "GTM Strategy — FirstFlex Q3"
+      },
+      "approvalStamp": {
+        "icon": "strategy"
+      }
+    }
+  },
+  {
+    "id": "feed-12",
+    "type": "collaboration-request",
+    "spaceId": "space-1",
+    "source": {
+      "userId": "user-raj",
+      "isAgent": false
+    },
+    "title": "Raj Patel wants feedback on onboarding flow redesign",
+    "body": "Progressive disclosure approach ready for your review.",
+    "timestamp": "2026-02-13T11:20:00Z",
+    "isRead": true,
+    "priority": "low",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review",
+        "label": "View flow",
+        "variant": "primary"
+      },
+      {
+        "id": "comment",
+        "label": "Add comment",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "feedback",
+      "mentionedUsers": [
+        "user-kyra",
+        "user-amara"
+      ],
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-10",
+        "name": "FirstFlex Onboarding Redesign"
+      },
+      "feedbackSteps": {
+        "steps": [
+          {
+            "label": "Welcome",
+            "complete": true
+          },
+          {
+            "label": "KYC Entry",
+            "complete": true
+          },
+          {
+            "label": "Verification",
+            "complete": false
+          },
+          {
+            "label": "Dashboard",
+            "complete": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "feed-ff-0",
+    "type": "agent-opportunity",
+    "spaceId": "space-4",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Weather risk to speaker arrivals",
+    "body": "San Francisco storm forecast (Mon-Wed) may delay 3 keynote speakers arriving Tuesday evening. Recommend contingency planning.",
+    "timestamp": "2026-02-16T11:00:00Z",
+    "isRead": false,
+    "priority": "high",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review",
+        "label": "Review options",
+        "variant": "primary"
+      },
+      {
+        "id": "delegate",
+        "label": "Assign",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "forecast": {
+        "days": [
+          {
+            "day": "Mon",
+            "condition": "rain"
+          },
+          {
+            "day": "Tues",
+            "condition": "storm"
+          },
+          {
+            "day": "Wed",
+            "condition": "rain"
+          },
+          {
+            "day": "Thur",
+            "condition": "cloudy"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "feed-ff-1",
+    "type": "agent-opportunity",
+    "spaceId": "space-4",
+    "canvasId": "canvas-ff-1",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Venue capacity conflict",
+    "body": "Registration projections show 850 attendees, but the contracted venue's main hall only seats 720. Breakout rooms can accommodate overflow, but the opening keynote would need two simultaneous sessions or venue renegotiation by Feb 20.",
+    "timestamp": "2026-02-16T10:15:00Z",
+    "isRead": false,
+    "priority": "high",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "unpack",
+        "label": "Unpack together",
+        "variant": "primary"
+      },
+      {
+        "id": "delegate",
+        "label": "Assign",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "capacityConflict": {
+        "venue": 720,
+        "expected": 850,
+        "overflow": 130
+      }
+    }
+  },
+  {
+    "id": "feed-ff-2",
+    "type": "collaboration-request",
+    "spaceId": "space-4",
+    "canvasId": "canvas-ff-2",
+    "source": {
+      "userId": "user-sofia",
+      "isAgent": false
+    },
+    "title": "Sofia Reyes needs decision on keynote speaker lineup",
+    "body": "Three confirmed, two tentative — need final order and backup plan.",
+    "timestamp": "2026-02-16T09:00:00Z",
+    "isRead": false,
+    "priority": "high",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "decide",
+        "label": "Review speakers",
+        "variant": "primary"
+      },
+      {
+        "id": "discuss",
+        "label": "Open discussion",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "decision",
+      "dueDate": "2026-02-19T17:00:00Z",
+      "mentionedUsers": [
+        "user-kyra",
+        "user-nina",
+        "user-amara"
+      ],
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-ff-2",
+        "name": "Keynote Speaker Lineup"
+      },
+      "speakerSlots": {
+        "confirmed": 3,
+        "tentative": 2,
+        "total": 5
+      }
+    }
+  },
+  {
+    "id": "feed-ff-3",
+    "type": "agent-completed",
+    "spaceId": "space-4",
+    "canvasId": "canvas-ff-3",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Session schedule draft ready",
+    "body": "",
+    "timestamp": "2026-02-15T23:30:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [
+      {
+        "emoji": "🙌",
+        "count": 3,
+        "users": [
+          "user-sofia",
+          "user-amara",
+          "user-nina"
+        ]
+      },
+      {
+        "emoji": "👏",
+        "count": 2,
+        "users": [
+          "user-kyra",
+          "user-liam"
+        ]
+      }
+    ],
+    "viewCount": 15,
+    "actions": [
+      {
+        "id": "approve",
+        "label": "Approve",
+        "variant": "primary"
+      },
+      {
+        "id": "feedback",
+        "label": "Request changes",
+        "variant": "secondary"
+      },
+      {
+        "id": "dismiss",
+        "label": "Dismiss",
+        "variant": "ghost"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-ff-3",
+        "name": "FlexForward 26 — Session Schedule"
+      },
+      "completionSummary": "24 sessions scheduled, 8 breakout tracks mapped, 6 networking breaks allocated",
+      "timeSpent": "22 min",
+      "changesCount": 47,
+      "scheduleGrid": {
+        "sessions": 24,
+        "tracks": 8
+      }
+    }
+  },
+  {
+    "id": "feed-ff-4",
+    "type": "workflow-change",
+    "spaceId": "space-4",
+    "canvasId": "canvas-ff-4",
+    "source": {
+      "userId": "user-amara",
+      "isAgent": false
+    },
+    "title": "Amara Okafor moved visual identity to Approved",
+    "body": "",
+    "timestamp": "2026-02-15T18:20:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [
+      {
+        "emoji": "🎨",
+        "count": 5,
+        "users": [
+          "user-sofia",
+          "user-kyra",
+          "user-nina",
+          "user-marcus",
+          "user-raj"
+        ]
+      },
+      {
+        "emoji": "✨",
+        "count": 2,
+        "users": [
+          "user-priya",
+          "user-liam"
+        ]
+      }
+    ],
+    "viewCount": 18,
+    "actions": [
+      {
+        "id": "view",
+        "label": "View board",
+        "variant": "primary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "In Review",
+      "toStatus": "Approved",
+      "implication": "Marketing can begin badge printing and signage production. Website updates can proceed.",
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-ff-4",
+        "name": "FlexForward 26 Visual Identity"
+      },
+      "approvalStamp": {
+        "icon": "identity"
+      }
+    }
+  },
+  {
+    "id": "feed-ff-5",
+    "type": "agent-opportunity",
+    "spaceId": "space-4",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Hybrid format preference detected",
+    "body": "Three separate data sources converge on the same insight: 68% of surveyed employees prefer hybrid attendance (in-person + virtual). Travel budget analysis shows 40% cost savings on accommodation. Past event data indicates 2.3x higher engagement for hybrid sessions.",
+    "timestamp": "2026-02-15T15:45:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "unpack",
+        "label": "Unpack together",
+        "variant": "primary"
+      },
+      {
+        "id": "delegate",
+        "label": "Assign",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "convergence": {
+        "sources": [
+          {
+            "label": "Employee Survey",
+            "color": "#3b82f6"
+          },
+          {
+            "label": "Budget Analysis",
+            "color": "#6366f1"
+          },
+          {
+            "label": "Event Data",
+            "color": "#8b5cf6"
+          }
+        ],
+        "target": {
+          "label": "Hybrid Format",
+          "color": "#10b981"
+        }
+      }
+    }
+  },
+  {
+    "id": "feed-ff-6",
+    "type": "collaboration-request",
+    "spaceId": "space-4",
+    "canvasId": "canvas-ff-6",
+    "source": {
+      "userId": "user-nina",
+      "isAgent": false
+    },
+    "title": "Nina Johansson needs review on catering vendor proposals",
+    "body": "Four vendors quoted — need to finalize by EOW for dietary accommodations.",
+    "timestamp": "2026-02-15T13:30:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review",
+        "label": "Compare vendors",
+        "variant": "primary"
+      },
+      {
+        "id": "comment",
+        "label": "Add comment",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "review",
+      "dueDate": "2026-02-21T17:00:00Z",
+      "mentionedUsers": [
+        "user-sofia",
+        "user-kyra"
+      ],
+      "artifact": {
+        "type": "document",
+        "id": "canvas-ff-6",
+        "name": "Catering Vendor Proposals"
+      },
+      "vendorCompare": {
+        "vendors": [
+          {
+            "name": "Harvest & Co",
+            "score": 88
+          },
+          {
+            "name": "Green Table",
+            "score": 82
+          },
+          {
+            "name": "City Catering",
+            "score": 75
+          },
+          {
+            "name": "Fresh Events",
+            "score": 71
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "feed-ff-7",
+    "type": "agent-opportunity",
+    "spaceId": "space-4",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Speaker confirmations stalled",
+    "body": "Six keynote speaker invitations sent 8 days ago with no response. The event is 31 days away, and program printing deadline is Feb 28. Without confirmed speakers, marketing cannot finalize promotional materials.",
+    "timestamp": "2026-02-14T20:00:00Z",
+    "isRead": true,
+    "priority": "high",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "unpack",
+        "label": "Unpack together",
+        "variant": "primary"
+      },
+      {
+        "id": "delegate",
+        "label": "Assign",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "invitationStall": {
+        "invitations": 6,
+        "days": 8
+      }
+    }
+  },
+  {
+    "id": "feed-ff-8",
+    "type": "workflow-change",
+    "spaceId": "space-4",
+    "canvasId": "canvas-ff-7",
+    "source": {
+      "userId": "user-sofia",
+      "isAgent": false
+    },
+    "title": "Sofia Reyes moved venue contract to Signed",
+    "body": "",
+    "timestamp": "2026-02-14T16:45:00Z",
+    "isRead": true,
+    "priority": "high",
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 8,
+        "users": [
+          "user-kyra",
+          "user-nina",
+          "user-amara",
+          "user-tom",
+          "user-james",
+          "user-marcus",
+          "user-priya",
+          "user-liam"
+        ]
+      },
+      {
+        "emoji": "🏢",
+        "count": 3,
+        "users": [
+          "user-daniel",
+          "user-raj",
+          "user-elena"
+        ]
+      }
+    ],
+    "viewCount": 22,
+    "actions": [
+      {
+        "id": "view",
+        "label": "View contract",
+        "variant": "primary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "Pending Legal Review",
+      "toStatus": "Signed",
+      "implication": "Venue setup can be planned. AV equipment bookings can proceed. Room blocking for accommodation can begin.",
+      "signedSeal": {
+        "documentType": "contract"
+      }
+    }
+  },
+  {
+    "id": "feed-ff-9",
+    "type": "agent-completed",
+    "spaceId": "space-4",
+    "canvasId": "canvas-ff-8",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Travel coordination summary compiled",
+    "body": "",
+    "timestamp": "2026-02-14T08:00:00Z",
+    "isRead": true,
+    "priority": "low",
+    "reactions": [
+      {
+        "emoji": "✈️",
+        "count": 4,
+        "users": [
+          "user-nina",
+          "user-sofia",
+          "user-marcus",
+          "user-daniel"
+        ]
+      }
+    ],
+    "viewCount": 11,
+    "actions": [
+      {
+        "id": "approve",
+        "label": "Approve & send",
+        "variant": "primary"
+      },
+      {
+        "id": "edit",
+        "label": "Edit first",
+        "variant": "secondary"
+      },
+      {
+        "id": "dismiss",
+        "label": "Dismiss",
+        "variant": "ghost"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "document",
+        "id": "canvas-ff-8",
+        "name": "Travel Coordination — FlexForward 26"
+      },
+      "completionSummary": "142 attendees mapped, 3 hotel blocks secured, 8 group transfers scheduled",
+      "timeSpent": "15 min",
+      "changesCount": 28,
+      "travelMap": {
+        "attendees": 142,
+        "hotels": 3,
+        "transfers": 8
+      }
+    }
+  },
+  {
+    "id": "feed-ff-10",
+    "type": "agent-opportunity",
+    "spaceId": "space-4",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Breakout moderator gap",
+    "body": "8 breakout sessions are scheduled but only 3 moderators have been assigned. With 24 days until the event, securing experienced moderators becomes increasingly difficult.",
+    "timestamp": "2026-02-13T17:30:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "unpack",
+        "label": "Unpack together",
+        "variant": "primary"
+      },
+      {
+        "id": "delegate",
+        "label": "Assign",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "confidence": 0.76
+    }
+  },
+  {
+    "id": "feed-ff-11",
+    "type": "collaboration-request",
+    "spaceId": "space-4",
+    "canvasId": "canvas-ff-9",
+    "source": {
+      "userId": "user-liam",
+      "isAgent": false
+    },
+    "title": "Liam O'Brien wants feedback on post-event survey design",
+    "body": "Designed to measure engagement, learning outcomes, and logistics satisfaction.",
+    "timestamp": "2026-02-13T14:00:00Z",
+    "isRead": true,
+    "priority": "low",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review",
+        "label": "Review survey",
+        "variant": "primary"
+      },
+      {
+        "id": "comment",
+        "label": "Add comment",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "feedback",
+      "mentionedUsers": [
+        "user-sofia",
+        "user-kyra",
+        "user-nina"
+      ],
+      "artifact": {
+        "type": "document",
+        "id": "canvas-ff-9",
+        "name": "Post-Event Survey Design"
+      },
+      "surveyDimensions": {
+        "dimensions": [
+          {
+            "label": "Engagement",
+            "color": "#14b8a6"
+          },
+          {
+            "label": "Learning",
+            "color": "#8b5cf6"
+          },
+          {
+            "label": "Logistics",
+            "color": "#f59e0b"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "feed-ff-12",
+    "type": "workflow-change",
+    "spaceId": "space-4",
+    "canvasId": "canvas-ff-10",
+    "source": {
+      "userId": "user-tom",
+      "isAgent": false
+    },
+    "title": "Tom Andersen approved event budget",
+    "body": "",
+    "timestamp": "2026-02-12T11:00:00Z",
+    "isRead": true,
+    "priority": "high",
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 7,
+        "users": [
+          "user-kyra",
+          "user-nina",
+          "user-sofia",
+          "user-amara",
+          "user-james",
+          "user-marcus",
+          "user-priya"
+        ]
+      },
+      {
+        "emoji": "💰",
+        "count": 2,
+        "users": [
+          "user-liam",
+          "user-daniel"
+        ]
+      }
+    ],
+    "viewCount": 19,
+    "actions": [
+      {
+        "id": "view",
+        "label": "View budget",
+        "variant": "primary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "Pending CFO Approval",
+      "toStatus": "Approved",
+      "implication": "All vendor contracts can proceed. Catering deposits can be paid. Speaker honorariums secured.",
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-ff-10",
+        "name": "FlexForward 26 Budget"
+      },
+      "approvalStamp": {
+        "icon": "cfo"
+      }
+    }
+  }
+]
