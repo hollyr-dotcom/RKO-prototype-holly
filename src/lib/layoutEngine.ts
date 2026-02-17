@@ -4,6 +4,7 @@ import {
   LayoutItem,
   LayoutOptions,
   LayoutResult,
+  LayoutDecoration,
   Position,
   Arrow,
   SPACING,
@@ -153,10 +154,10 @@ export function calculateHierarchyLayout(
 
   const isVertical = direction === "down";
 
-  // Create nodes with dynamic widths and heights
+  // Create nodes with dimensions — use pre-measured if available, otherwise estimate
   const nodes: TreeNode[] = items.map((item, index) => {
-    const width = calculateTextWidth(item.text, "shape");
-    const height = calculateTextHeight(item.text, width, "shape");
+    const width = item.measuredWidth ?? calculateTextWidth(item.text, "shape");
+    const height = item.measuredHeight ?? calculateTextHeight(item.text, width, "shape");
     return {
       item,
       index,
@@ -237,13 +238,14 @@ export function calculateHierarchyLayout(
     }
   }
 
-  // Process all roots
+  // Process all roots — use larger gap between root groups for visual separation
+  const rootGap = spacing.itemGap * 2; // 2x sibling gap between root subtrees
   let totalWidth = 0;
   roots.forEach((root) => {
     calculateSubtreeWidth(root);
     totalWidth += root.subtreeWidth;
   });
-  totalWidth += (roots.length - 1) * spacing.itemGap;
+  totalWidth += (roots.length - 1) * rootGap;
 
   // Position roots
   let currentX = spacing.padding;
@@ -252,10 +254,10 @@ export function calculateHierarchyLayout(
   roots.forEach((root) => {
     if (isVertical) {
       positionNode(root, currentX, startY, 0);
-      currentX += root.subtreeWidth + spacing.itemGap;
+      currentX += root.subtreeWidth + rootGap;
     } else {
       positionNode(root, startY, currentX, 0);
-      currentX += root.subtreeWidth + spacing.itemGap;
+      currentX += root.subtreeWidth + rootGap;
     }
   });
 
@@ -348,10 +350,10 @@ export function calculateFlowLayout(
 
   const arrowSpace = 60; // Space for arrows between items
 
-  // Calculate dimensions for each item (width first, then height based on text wrapping)
+  // Calculate dimensions — use pre-measured if available, otherwise estimate
   const itemDimensions = items.map((item) => {
-    const width = calculateTextWidth(item.text, "shape");
-    const height = calculateTextHeight(item.text, width, "shape");
+    const width = item.measuredWidth ?? calculateTextWidth(item.text, "shape");
+    const height = item.measuredHeight ?? calculateTextHeight(item.text, width, "shape");
     return { width, height };
   });
 
@@ -407,6 +409,168 @@ export function calculateFlowLayout(
 }
 
 /**
+ * Calculate timeline layout — VERTICAL. Time periods stack top-to-bottom,
+ * with a vertical bar + dots on the left and items flowing to the right of each period.
+ *
+ *   ● Period 1
+ *   │  ┌────┐ ┌────┐
+ *   │  │    │ │    │
+ *   │  └────┘ └────┘
+ *   │
+ *   ● Period 2
+ *   │  ┌────┐
+ *   │  │    │
+ *   │  └────┘
+ */
+export function calculateTimelineLayout(
+  items: LayoutItem[],
+  options?: LayoutOptions
+): LayoutResult {
+  const spacingKey = options?.spacing ?? "normal";
+  const spacing = SPACING[spacingKey];
+  const timeLabels = options?.timeLabels ?? [];
+
+  // Determine number of periods
+  const numPeriods = Math.max(
+    timeLabels.length,
+    ...items.map((item) => (item.column ?? 0) + 1),
+    1
+  );
+
+  // Fill in default labels
+  const labels: string[] = [];
+  for (let i = 0; i < numPeriods; i++) {
+    labels.push(timeLabels[i] ?? `Phase ${i + 1}`);
+  }
+
+  // Group items by period
+  const periods: LayoutItem[][] = Array.from({ length: numPeriods }, () => []);
+  const hasColumnAssignment = items.some((item) => item.column !== undefined && item.column >= 0);
+
+  if (hasColumnAssignment) {
+    items.forEach((item) => {
+      const col = Math.min(Math.max(item.column ?? 0, 0), numPeriods - 1);
+      periods[col].push(item);
+    });
+  } else {
+    items.forEach((item, i) => {
+      periods[i % numPeriods].push(item);
+    });
+  }
+
+  // Layout constants
+  const titleArea = 60;
+  const dotRadius = 8;
+  const dotX = spacing.padding + 15;           // X center of vertical bar / dots
+  const labelX = dotX + dotRadius + 20;         // Where label text starts
+  const labelHeight = 35;
+  const itemIndentX = labelX;                   // Items align with label
+  const itemWidth = 200;
+  const itemGapX = spacing.itemGap;             // Horizontal gap between items in same row
+  const itemGapY = spacing.itemGap;             // Vertical gap between item rows
+  const periodGap = spacing.levelGap;           // Vertical gap between periods
+  const maxItemsPerRow = 3;
+  const labelToItemGap = 12;                    // Gap between label and first item row
+
+  const decorations: LayoutDecoration[] = [];
+  const itemPositions: Array<{ item: LayoutItem; position: Position }> = [];
+  const dotPositions: { x: number; y: number }[] = [];
+
+  let currentY = spacing.padding + titleArea;
+
+  labels.forEach((label, periodIndex) => {
+    const periodItems = periods[periodIndex];
+
+    // Dot center Y aligns with the middle of the label
+    const dotCenterY = currentY + labelHeight / 2;
+    dotPositions.push({ x: dotX, y: dotCenterY });
+
+    // Dot decoration
+    decorations.push({
+      type: "dot",
+      x: dotX,
+      y: dotCenterY,
+      radius: dotRadius,
+    });
+
+    // Label text
+    decorations.push({
+      type: "text",
+      text: label,
+      x: labelX,
+      y: currentY,
+      width: 350,
+      height: labelHeight,
+    });
+
+    currentY += labelHeight + labelToItemGap;
+
+    // Position items in rows (max maxItemsPerRow per row)
+    if (periodItems.length > 0) {
+      let itemIndex = 0;
+      while (itemIndex < periodItems.length) {
+        const rowItems = periodItems.slice(itemIndex, itemIndex + maxItemsPerRow);
+        let maxRowHeight = 0;
+
+        rowItems.forEach((item, i) => {
+          const height = item.measuredHeight ?? calculateTextHeight(item.text, itemWidth, item.type);
+          maxRowHeight = Math.max(maxRowHeight, height);
+
+          itemPositions.push({
+            item,
+            position: {
+              x: itemIndentX + i * (itemWidth + itemGapX),
+              y: currentY,
+              width: item.measuredWidth ?? itemWidth,
+              height,
+            },
+          });
+        });
+
+        currentY += maxRowHeight + itemGapY;
+        itemIndex += maxItemsPerRow;
+      }
+    }
+
+    currentY += periodGap;
+  });
+
+  // Vertical connecting bar from first dot to last dot
+  if (dotPositions.length > 1) {
+    const firstDot = dotPositions[0];
+    const lastDot = dotPositions[dotPositions.length - 1];
+    decorations.push({
+      type: "bar",
+      x: dotX - 2,
+      y: firstDot.y,
+      width: 4,
+      height: lastDot.y - firstDot.y,
+    });
+  }
+
+  // Frame dimensions
+  const maxItemRight = itemPositions.length > 0
+    ? Math.max(...itemPositions.map(({ position }) => position.x + position.width))
+    : labelX + 350;
+
+  const frameWidth = maxItemRight + spacing.padding;
+  const frameHeight = currentY + spacing.padding;
+
+  return {
+    frame: {
+      x: 0,
+      y: 0,
+      width: Math.max(frameWidth, 500),
+      height: Math.max(frameHeight, 300),
+      name: "",
+    },
+    items: itemPositions,
+    arrows: [],
+    decorations,
+  };
+}
+
+/**
  * Main entry point - calculate layout based on type.
  */
 export function calculateLayout(
@@ -421,6 +585,8 @@ export function calculateLayout(
       return calculateHierarchyLayout(items, options);
     case "flow":
       return calculateFlowLayout(items, options);
+    case "timeline":
+      return calculateTimelineLayout(items, options);
     default:
       return calculateGridLayout(items, options);
   }

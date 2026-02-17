@@ -1,6 +1,6 @@
 "use client";
 
-import { Tldraw, Editor, createShapeId, toRichText, TLShapeId } from "tldraw";
+import { Tldraw, Editor, createShapeId, toRichText, renderHtmlFromRichTextForMeasurement, TLShapeId, DefaultFontStyle, DefaultSizeStyle, DefaultDashStyle, DefaultFillStyle } from "tldraw";
 import "tldraw/tldraw.css";
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { Message } from "@/hooks/useAgent";
@@ -798,12 +798,14 @@ function estimateDocumentHeight(html: string, shapeWidth: number = 780): number 
   const contentWidth = shapeWidth - 148; // 74px padding each side
   const charsPerLine = Math.floor(contentWidth / 7.5); // ~7.5px per char at 13px
   const textLines = Math.ceil(text.length / Math.max(charsPerLine, 1));
-  const textHeight = textLines * 21; // 13px * 1.6 line-height
+  const textHeight = textLines * 24; // line-height 1.55 at ~15px ≈ 24px per line
 
-  const blocks = (html.match(/<(h[1-6]|p|li|ul|ol|blockquote)[^>]*>/gi) || []).length;
-  const marginHeight = blocks * 16;
+  // Headings have large top margins (1.4em ≈ 28px) + bottom (0.5em ≈ 10px)
+  const headings = (html.match(/<h[1-6][^>]*>/gi) || []).length;
+  const paragraphs = (html.match(/<(p|li|ul|ol|blockquote)[^>]*>/gi) || []).length;
+  const marginHeight = headings * 38 + paragraphs * 12;
 
-  return Math.max(660, textHeight + marginHeight + 148 + 40);
+  return Math.max(660, textHeight + marginHeight + 148 + 60);
 }
 
 export function Canvas() {
@@ -844,6 +846,7 @@ export function Canvas() {
   const [focusedShape, setFocusedShape] = useState<FocusedShape | null>(null);
   const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
+  const lastSourcesFrameRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
   const isProcessingToolCallRef = useRef(false);
   const userEditsRef = useRef<Array<{ shapeId: string; field: string; oldValue: string; newValue: string }>>([]);
   const shouldHideToastRef = useRef(false); // Track if toast should be hidden during new request
@@ -1142,7 +1145,8 @@ export function Canvas() {
           props: {
             richText: toRichText(text),
             color: colorMap[color] || "yellow",
-            size: "m",
+            font: "sans",
+            size: "s",
           },
           meta: { createdBy: "ai" },
         });
@@ -1187,6 +1191,9 @@ export function Canvas() {
             w: validWidth,
             h: validHeight,
             color: colorMap[color] || "black",
+            font: "sans",
+            dash: "solid",
+            fill: "solid",
             richText: text ? toRichText(text) : toRichText(""),
           },
           meta: { createdBy: "ai" },
@@ -1412,6 +1419,7 @@ export function Canvas() {
           props: {
             richText: toRichText(`${title}\n\n${content}`),
             color: "light-violet",
+            font: "sans",
             size: "l",
           },
           meta: { createdBy: "ai" },
@@ -1429,8 +1437,10 @@ export function Canvas() {
             text: string;
             color?: string;
             parentIndex?: number;
+            column?: number;
           }>;
           columns?: number;
+          timeLabels?: string[];
           direction?: "down" | "right";
           spacing?: "compact" | "normal" | "spacious";
         };
@@ -1470,14 +1480,51 @@ export function Canvas() {
         if (useHierarchyLayout) {
           console.log('[LAYOUT] Using hierarchy layout engine');
 
-          // Convert items for layout engine (parentIndex -1 = root = undefined)
-          // All items are shapes now (no stickies)
-          const layoutItems: LayoutItem[] = layout.items.map((item) => ({
-            type: "shape" as const,
-            text: item.text,
-            color: item.color,
-            parentIndex: item.parentIndex === -1 ? undefined : item.parentIndex,
-          }));
+          // Measure each item using tldraw's actual text rendering engine
+          // This replaces estimation with pixel-perfect dimensions
+          const LABEL_PADDING = 16;
+          const measureOpts = {
+            fontStyle: "normal",
+            fontWeight: "normal",
+            fontFamily: "var(--tl-font-sans)",
+            fontSize: 22, // LABEL_FONT_SIZES.m (geo shapes use size "m")
+            lineHeight: 1.35, // TEXT_PROPS.lineHeight
+            padding: "0px",
+            minWidth: 14, // MIN_WIDTHS.m
+          };
+
+          const layoutItems: LayoutItem[] = layout.items.map((item) => {
+            const richText = toRichText(item.text || "");
+            const html = renderHtmlFromRichTextForMeasurement(editor, richText);
+
+            // Measure at generous maxWidth to get natural text width
+            const naturalSize = editor.textMeasure.measureHtml(html, {
+              ...measureOpts,
+              maxWidth: 9999,
+            });
+
+            // Cap the text area width: min 120px, max 220px
+            const textWidth = Math.max(120, Math.min(naturalSize.w, 220));
+            const shapeWidth = textWidth + LABEL_PADDING * 2;
+
+            // Measure again at actual width to get wrapped height
+            const wrappedSize = editor.textMeasure.measureHtml(html, {
+              ...measureOpts,
+              maxWidth: textWidth,
+            });
+            const shapeHeight = Math.max(wrappedSize.h + LABEL_PADDING * 2, 50);
+
+            console.log(`[MEASURE] "${item.text?.slice(0,25)}..." → ${shapeWidth}x${shapeHeight} (text: ${naturalSize.w}w, wrapped: ${wrappedSize.h}h)`);
+
+            return {
+              type: "shape" as const,
+              text: item.text,
+              color: item.color,
+              parentIndex: item.parentIndex === -1 ? undefined : item.parentIndex,
+              measuredWidth: shapeWidth,
+              measuredHeight: shapeHeight,
+            };
+          });
 
           const options: LayoutOptions = {
             columns: layout.columns,
@@ -1524,6 +1571,9 @@ export function Canvas() {
                 w: position.width,
                 h: position.height,
                 color: colorMap[originalItem.color || item.color || "blue"] || "blue",
+                font: "sans",
+                dash: "solid",
+                fill: "solid",
                 richText: toRichText(item.text || ""),
               },
               meta: { createdBy: "ai" },
@@ -1555,27 +1605,216 @@ export function Canvas() {
           return;
         }
 
+        // TIMELINE layout: vertical — periods top-to-bottom, items beside each period
+        if (layout.type === "timeline") {
+          console.log('[LAYOUT] Using timeline layout engine');
+
+          // Reuse same measurement constants as hierarchy
+          const TL_LABEL_PADDING = 16;
+          const tlMeasureOpts = {
+            fontStyle: "normal",
+            fontWeight: "normal",
+            fontFamily: "var(--tl-font-sans)",
+            fontSize: 22,
+            lineHeight: 1.35,
+            padding: "0px",
+            minWidth: 14,
+          };
+
+          const layoutItems: LayoutItem[] = layout.items.map((item) => {
+            const richText = toRichText(item.text || "");
+            const html = renderHtmlFromRichTextForMeasurement(editor, richText);
+            // Timeline items use a fixed-ish width, measure height for wrapping
+            const itemTextWidth = 200 - TL_LABEL_PADDING * 2;
+            const wrappedSize = editor.textMeasure.measureHtml(html, {
+              ...tlMeasureOpts,
+              maxWidth: itemTextWidth,
+            });
+            return {
+              type: "shape" as const,
+              text: item.text,
+              color: item.color,
+              column: item.column === -1 ? undefined : item.column,
+              measuredHeight: Math.max(wrappedSize.h + TL_LABEL_PADDING * 2, 50),
+            };
+          });
+
+          const options: LayoutOptions = {
+            timeLabels: layout.timeLabels,
+            spacing: layout.spacing,
+          };
+
+          const result = calculateLayout("timeline", layoutItems, options);
+          const canvasPos = findNonOverlappingPosition(0, 0, result.frame.width, result.frame.height);
+
+          // Create frame
+          const frameId = createShapeId();
+          editor.createShape({
+            id: frameId,
+            type: "frame",
+            x: canvasPos.x,
+            y: canvasPos.y,
+            props: {
+              name: layout.frameName,
+              w: result.frame.width,
+              h: result.frame.height,
+            },
+            meta: { createdBy: "ai" },
+          });
+          createdShapesRef.current.push(frameId);
+
+          // Render decorations (time labels, dots, connecting bar)
+          if (result.decorations) {
+            for (const dec of result.decorations) {
+              const decId = createShapeId();
+
+              if (dec.type === "text") {
+                // Time period label
+                editor.createShape({
+                  id: decId,
+                  type: "text",
+                  x: dec.x,
+                  y: dec.y,
+                  parentId: frameId,
+                  props: {
+                    richText: toRichText(dec.text),
+                    color: "grey" as TLColor,
+                    size: "m",
+                    textAlign: "start",
+                    w: dec.width,
+                  },
+                  meta: { createdBy: "ai" },
+                });
+              } else if (dec.type === "bar") {
+                // Vertical connecting bar
+                editor.createShape({
+                  id: decId,
+                  type: "geo",
+                  x: dec.x,
+                  y: dec.y,
+                  parentId: frameId,
+                  props: {
+                    geo: "rectangle",
+                    w: dec.width,
+                    h: dec.height,
+                    color: "grey" as TLColor,
+                    fill: "solid",
+                    richText: toRichText(""),
+                  },
+                  meta: { createdBy: "ai" },
+                });
+              } else if (dec.type === "dot") {
+                // Dot marker at each column
+                editor.createShape({
+                  id: decId,
+                  type: "geo",
+                  x: dec.x - dec.radius,
+                  y: dec.y - dec.radius,
+                  parentId: frameId,
+                  props: {
+                    geo: "ellipse",
+                    w: dec.radius * 2,
+                    h: dec.radius * 2,
+                    color: "grey" as TLColor,
+                    fill: "solid",
+                    richText: toRichText(""),
+                  },
+                  meta: { createdBy: "ai" },
+                });
+              }
+              createdShapesRef.current.push(decId);
+            }
+          }
+
+          // Create items (shapes grouped by period — order may differ from input)
+          result.items.forEach(({ item, position }) => {
+            const itemId = createShapeId();
+
+            editor.createShape({
+              id: itemId,
+              type: "geo",
+              x: position.x,
+              y: position.y,
+              parentId: frameId,
+              props: {
+                geo: "rectangle",
+                w: position.width,
+                h: position.height,
+                color: colorMap[item.color || "blue"] || "blue",
+                font: "sans",
+                dash: "solid",
+                fill: "solid",
+                richText: toRichText(item.text || ""),
+              },
+              meta: { createdBy: "ai" },
+            });
+            createdShapesRef.current.push(itemId);
+          });
+
+          return;
+        }
+
         // GRID: Real sticky notes for brainstorming
         // FLOW: Shapes for processes
         const isGrid = layout.type === "grid" || layout.type === undefined;
         console.log('[LAYOUT] Using', isGrid ? 'GRID (stickies)' : 'FLOW (shapes)', 'with', layout.items.length, 'items');
 
-        // Settings - stickies need MORE space because they auto-size
+        // Settings
         const columns = layout.columns || 3;
-        const itemWidth = isGrid ? 200 : 220;  // Stickies are ~200 wide
-        const itemHeight = isGrid ? 200 : 120; // Stickies expand vertically - give lots of room
+        const itemWidth = 220;
+        const shapeHeight = 120; // Fixed height for non-sticky shapes
         const gapX = layout.spacing === "compact" ? 40 : layout.spacing === "spacious" ? 80 : 60;
         const gapY = layout.spacing === "compact" ? 40 : layout.spacing === "spacious" ? 80 : 60;
         const padding = 80;
         const titleSpace = 70;
 
-        // Calculate frame size
+        // For grids: calculate actual height per item based on text, then per-row max
         const rows = Math.ceil(layout.items.length / columns);
         const actualCols = Math.min(columns, layout.items.length);
-        const frameWidth = padding * 2 + actualCols * itemWidth + (actualCols - 1) * gapX;
-        const frameHeight = padding + titleSpace + rows * itemHeight + (rows - 1) * gapY + padding;
 
-        const canvasPos = findNonOverlappingPosition(0, 0, frameWidth, frameHeight);
+        // Calculate individual item heights for stickies
+        const itemHeights = layout.items.map((item: { text?: string }) => {
+          if (!isGrid) return shapeHeight;
+          const text = item.text || '';
+          // Sticky note text height estimation:
+          // tldraw note width is ~200px usable, font is ~14px bold → ~12 chars/line
+          const charsPerLine = 14;
+          const lineHeight = 28; // tldraw note line height with bold font
+          const verticalPadding = 80; // top + bottom padding inside note
+          const lines = Math.ceil(text.length / charsPerLine);
+          return Math.max(200, lines * lineHeight + verticalPadding);
+        });
+
+        // Calculate per-row max heights
+        const rowHeights: number[] = [];
+        for (let r = 0; r < rows; r++) {
+          let maxH = 0;
+          for (let c = 0; c < columns; c++) {
+            const idx = r * columns + c;
+            if (idx < itemHeights.length) maxH = Math.max(maxH, itemHeights[idx]);
+          }
+          rowHeights.push(maxH);
+        }
+
+        // Cumulative Y offsets per row
+        const rowYOffsets = [0];
+        for (let r = 0; r < rowHeights.length; r++) {
+          rowYOffsets.push(rowYOffsets[r] + rowHeights[r] + gapY);
+        }
+
+        const frameWidth = padding * 2 + actualCols * itemWidth + (actualCols - 1) * gapX;
+        const frameHeight = padding + titleSpace + rowYOffsets[rows] + padding;
+
+        // Position: below last sources frame if available, otherwise find open space
+        let canvasPos: { x: number; y: number };
+        if (lastSourcesFrameRef.current && isGrid) {
+          const ref = lastSourcesFrameRef.current;
+          canvasPos = { x: ref.x, y: ref.y + ref.height + 40 };
+          lastSourcesFrameRef.current = null; // Only use once
+          console.log('[LAYOUT] Placing BELOW sources frame at', canvasPos);
+        } else {
+          canvasPos = findNonOverlappingPosition(0, 0, frameWidth, frameHeight);
+        }
         console.log('[LAYOUT] Frame at', canvasPos, 'size', frameWidth, 'x', frameHeight);
 
         // Create frame
@@ -1600,9 +1839,9 @@ export function Canvas() {
           const row = Math.floor(index / columns);
           const itemId = createShapeId();
 
-          // Position in grid (relative to frame)
+          // Position in grid — use per-row cumulative offsets for variable heights
           const x = padding + col * (itemWidth + gapX);
-          const y = titleSpace + padding + row * (itemHeight + gapY);
+          const y = titleSpace + padding + rowYOffsets[row];
 
           if (isGrid) {
             // GRID: Real sticky notes (post-its)
@@ -1615,7 +1854,8 @@ export function Canvas() {
               props: {
                 richText: toRichText(item.text || ""),
                 color: colorMap[item.color || "yellow"] || "yellow",
-                size: "m",
+                font: "sans",
+                size: "s",
               },
               meta: { createdBy: "ai" },
             });
@@ -1630,8 +1870,11 @@ export function Canvas() {
               props: {
                 geo: "rectangle",
                 w: itemWidth,
-                h: itemHeight,
+                h: shapeHeight,
                 color: colorMap[item.color || "blue"] || "blue",
+                font: "sans",
+                dash: "solid",
+                fill: "solid",
                 richText: toRichText(item.text || ""),
               },
               meta: { createdBy: "ai" },
@@ -1741,6 +1984,9 @@ export function Canvas() {
           meta: { createdBy: "ai" },
         });
         createdShapesRef.current.push(frameId);
+
+        // Store position so next createLayout (synthesis) can go below this frame
+        lastSourcesFrameRef.current = { x: canvasPos.x, y: canvasPos.y, width: frameWidth, height: frameHeight };
 
         // Create bookmark assets and shapes for each source
         // Track cumulative Y offsets per row for variable-height cards
@@ -2272,6 +2518,12 @@ export function Canvas() {
 
   const handleMount = useCallback((editor: Editor) => {
     setEditor(editor);
+
+    // Set default styles for all new shapes
+    editor.setStyleForNextShapes(DefaultFontStyle, 'sans');
+    editor.setStyleForNextShapes(DefaultSizeStyle, 's');
+    editor.setStyleForNextShapes(DefaultDashStyle, 'solid');
+    editor.setStyleForNextShapes(DefaultFillStyle, 'solid');
 
     // Auto-enter editing mode when a single document/table shape is clicked in its interior
     editor.sideEffects.registerAfterChangeHandler('instance_page_state', (prev, next) => {
@@ -3239,6 +3491,7 @@ export function Canvas() {
               voiceState={voice.state}
               onVoiceToggle={handleVoiceToggle}
               onExpandedChange={setIsToolbarExpanded}
+              onMultiLineChange={setIsToolbarMultiLine}
               responseToast={isChatOpen || toastCentered || showFloatingQuestion || shouldHideToastRef.current || areSuggestionsVisible ? null : responseToast}
               onDismissToast={() => { setResponseToast(null); setToastCentered(false); }}
               onOpenChat={() => {

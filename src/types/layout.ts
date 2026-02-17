@@ -1,6 +1,6 @@
 // Layout Engine Types
 
-export type LayoutType = "grid" | "hierarchy" | "flow";
+export type LayoutType = "grid" | "hierarchy" | "flow" | "timeline";
 
 export type ItemType = "sticky" | "shape" | "text";
 
@@ -10,6 +10,11 @@ export interface LayoutItem {
   color?: string;
   // For hierarchy: specify parent index to create tree structure
   parentIndex?: number;
+  // For timeline: which time period column this item belongs to (0-based index into timeLabels)
+  column?: number;
+  // Pre-measured dimensions from tldraw's actual text measurement (pixel-perfect)
+  measuredWidth?: number;
+  measuredHeight?: number;
 }
 
 export interface LayoutOptions {
@@ -18,6 +23,9 @@ export interface LayoutOptions {
 
   // Hierarchy options
   direction?: "down" | "right"; // default: "down"
+
+  // Timeline options
+  timeLabels?: string[]; // e.g. ["Q1 2024", "Q2 2024", "Q3 2024"]
 
   // General options
   spacing?: "compact" | "normal" | "spacious"; // default: "normal"
@@ -44,6 +52,12 @@ export interface Arrow {
   endY: number;
 }
 
+// Visual decorations (labels, bars) — not interactive items
+export type LayoutDecoration =
+  | { type: "text"; text: string; x: number; y: number; width: number; height: number }
+  | { type: "bar"; x: number; y: number; width: number; height: number }
+  | { type: "dot"; x: number; y: number; radius: number };
+
 export interface LayoutResult {
   frame: {
     x: number;
@@ -57,6 +71,7 @@ export interface LayoutResult {
     position: Position;
   }>;
   arrows: Arrow[];
+  decorations?: LayoutDecoration[];
 }
 
 // Spacing constants - generous to prevent overlaps
@@ -106,17 +121,18 @@ export function calculateTextWidth(text: string, type: ItemType): number {
 // Helper to calculate dynamic height based on text and width
 export function calculateTextHeight(text: string, width: number, type: ItemType): number {
   const sizes = ITEM_SIZES[type];
-  const lineHeight = type === "sticky" ? 24 : 20; // Increased for better spacing
-  const padding = type === "sticky" ? 60 : 50; // More generous padding
-  const charWidth = type === "sticky" ? 9 : 8;
+  const lineHeight = type === "sticky" ? 24 : 22;
+  const padding = type === "sticky" ? 60 : 50;
+  // tldraw handwriting font is wider than monospace — ~11px per char for shapes
+  const charWidth = type === "sticky" ? 9 : 11;
 
   // Estimate characters per line (conservative)
   const effectiveWidth = width - padding;
   const charsPerLine = Math.floor(effectiveWidth / charWidth);
-  const lines = Math.ceil(text.length / Math.max(charsPerLine, 10));
+  const lines = Math.ceil(text.length / Math.max(charsPerLine, 8));
 
-  // Calculate height based on lines, add 20% buffer
-  const calculatedHeight = (lines * lineHeight + padding) * 1.2;
+  // Calculate height with 50% buffer to ensure arrows reach actual bottom
+  const calculatedHeight = (lines * lineHeight + padding) * 1.5;
 
   return Math.max(sizes.minHeight, calculatedHeight);
 }

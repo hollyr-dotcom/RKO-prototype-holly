@@ -34,7 +34,7 @@ export function AutoSizeWrapper({
       lastHeightRef.current = contentHeight;
       editor.updateShape({
         id: shapeId,
-        type: shapeType as any,
+        type: shapeType,
         props: { h: contentHeight },
       });
     }
@@ -47,12 +47,16 @@ export function AutoSizeWrapper({
     const observer = new ResizeObserver(() => syncHeight());
     observer.observe(el);
 
-    // Also sync after a brief delay for async data loading (Liveblocks, Suspense)
-    const timer = setTimeout(syncHeight, 300);
+    // Sync after delays for async data loading (Liveblocks, Tiptap, Suspense)
+    const t1 = setTimeout(syncHeight, 300);
+    const t2 = setTimeout(syncHeight, 800);
+    const t3 = setTimeout(syncHeight, 1500);
 
     return () => {
       observer.disconnect();
-      clearTimeout(timer);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
     };
   }, [syncHeight]);
 

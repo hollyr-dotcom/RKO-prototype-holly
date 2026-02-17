@@ -32,37 +32,50 @@ html, body {
 }
 
 .document-editor-content .tiptap p {
-  margin: 0 0 0.4em;
+  margin: 0 0 0.6em;
+  line-height: 1.55;
 }
 
 .document-editor-content .tiptap h1 {
   font-size: 1.4em;
   font-weight: 700;
-  margin: 0 0 0.3em;
+  margin: 1.2em 0 0.5em;
+}
+
+.document-editor-content .tiptap h1:first-child {
+  margin-top: 0;
 }
 
 .document-editor-content .tiptap h2 {
   font-size: 1.2em;
   font-weight: 600;
-  margin: 0 0 0.3em;
+  margin: 1.4em 0 0.5em;
+}
+
+.document-editor-content .tiptap h2:first-child {
+  margin-top: 0;
 }
 
 .document-editor-content .tiptap h3 {
   font-size: 1.05em;
   font-weight: 600;
-  margin: 0 0 0.3em;
+  margin: 1em 0 0.4em;
+}
+
+.document-editor-content .tiptap h3:first-child {
+  margin-top: 0;
 }
 
 .document-editor-content .tiptap ul,
 .document-editor-content .tiptap ol {
   padding-left: 1.2em;
-  margin: 0 0 0.4em;
+  margin: 0 0 0.6em;
 }
 
 .document-editor-content .tiptap blockquote {
   border-left: 3px solid #e5e7eb;
   padding-left: 0.8em;
-  margin: 0 0 0.4em;
+  margin: 0.8em 0;
   color: #6b7280;
 }
 
