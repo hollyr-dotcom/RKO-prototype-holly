@@ -313,7 +313,7 @@ const createStickyTool = tool({
   parameters: z.object({
     text: z.string().describe("Sticky note text. 1-2 punchy sentences for insights, or short labels for brainstorms."),
     color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
-    parentFrameId: z.string().optional().describe("If provided, place this item inside the specified frame"),
+    parentFrameId: z.string().nullable().describe("If provided, place this item inside the specified frame. Pass null if not nesting."),
   }),
   execute: async (args) => {
     const id = generateItemId();
@@ -326,7 +326,7 @@ const createTextTool = tool({
   description: "Create a text label for headers or annotations. Returns an ID you can reference.",
   parameters: z.object({
     text: z.string().describe("The text content"),
-    parentFrameId: z.string().optional().describe("If provided, place this item inside the specified frame"),
+    parentFrameId: z.string().nullable().describe("If provided, place this item inside the specified frame. Pass null if not nesting."),
   }),
   execute: async (args) => {
     const id = generateItemId();
@@ -343,7 +343,7 @@ const createShapeTool = tool({
     width: z.number().describe("Width (typically 150-200 for diagram nodes)"),
     height: z.number().describe("Height (typically 80-100 for diagram nodes)"),
     color: z.enum(["black", "blue", "green", "red", "orange", "yellow", "violet"]),
-    parentFrameId: z.string().optional().describe("If provided, place this item inside the specified frame"),
+    parentFrameId: z.string().nullable().describe("If provided, place this item inside the specified frame. Pass null if not nesting."),
   }),
   execute: async (args) => {
     const id = generateItemId();
@@ -399,7 +399,7 @@ const createDocumentTool = tool({
   parameters: z.object({
     title: z.string().describe("Document title"),
     content: z.string().describe("Document body as HTML. Use <h2>, <p>, <ul>/<li>, <strong>, <em>. Example: '<h2>Overview</h2><p>This project...</p>'"),
-    parentFrameId: z.string().optional().describe("If provided, place this item inside the specified frame"),
+    parentFrameId: z.string().nullable().describe("If provided, place this item inside the specified frame. Pass null if not nesting."),
   }),
   execute: async (args) => {
     const id = generateItemId();
@@ -424,7 +424,7 @@ const createDataTableTool = tool({
     title: z.string().describe("Table title"),
     columns: z.array(z.string()).min(1).max(8).describe("Column header names"),
     rows: z.array(z.array(z.string())).describe("Row data — each inner array must match the number of columns"),
-    parentFrameId: z.string().optional().describe("If provided, place this item inside the specified frame"),
+    parentFrameId: z.string().nullable().describe("If provided, place this item inside the specified frame. Pass null if not nesting."),
   }),
   execute: async (args) => {
     const id = generateItemId();
@@ -486,7 +486,7 @@ const createStickerTool = tool({
   description: "Place a Miro sticker on the canvas. Use for reactions, emotions, celebrations, or visual decoration. Describe what you want (e.g. 'thumbs up', 'heart', 'celebrate', 'thinking') and the best matching sticker will be found.",
   parameters: z.object({
     intent: z.string().describe("What the sticker should express (e.g. 'thumbs up', 'celebrate', 'heart', 'star', 'thinking', 'done')"),
-    parentFrameId: z.string().optional().describe("If provided, place this item inside the specified frame"),
+    parentFrameId: z.string().nullable().describe("If provided, place this item inside the specified frame. Pass null if not nesting."),
   }),
   execute: async ({ intent, parentFrameId }) => {
     const match = findBestSticker(intent);
@@ -517,7 +517,7 @@ const createTaskCardTool = tool({
       title: z.string(),
       completed: z.boolean(),
     })).default([]).describe("Subtask checklist items"),
-    parentFrameId: z.string().optional().describe("If provided, place this item inside the specified frame"),
+    parentFrameId: z.string().nullable().describe("If provided, place this item inside the specified frame. Pass null if not nesting."),
   }),
   execute: async (args) => {
     const id = generateItemId();
@@ -665,7 +665,7 @@ NEVER use createSticky/createShape multiple times — use this instead for 2+ it
     timeLabels: z.array(z.string()).default([]).describe("For timeline: time period labels e.g. ['Q1 2024', 'Q2 2024', 'Q3 2024']"),
     direction: z.enum(["down", "right"]).default("down").describe("For hierarchy: tree direction"),
     spacing: z.enum(["compact", "normal", "spacious"]).default("normal").describe("Spacing between items"),
-    parentFrameId: z.string().optional().describe("If provided, place this item inside the specified frame"),
+    parentFrameId: z.string().nullable().describe("If provided, place this item inside the specified frame. Pass null if not nesting."),
   }),
   execute: async (args) => {
     return JSON.stringify({
