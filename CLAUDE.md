@@ -26,6 +26,8 @@ Read every file in that directory before starting any work. The key files are:
 4. **Keep guidelines up to date.** If your work introduces new conventions or changes existing ones, update the relevant guideline file as part of your work.
 5. **npm only.** This project uses npm exclusively. Never suggest, reference, or use `bun`, `yarn`, or `pnpm` commands. Always use `npm install`, `npm run dev`, etc. If you see `bun.lock` or `yarn.lock` files, flag them as errors.
 6. **Verify git hooks installed.** At the start of any session where you'll be making commits, check if the pre-commit hook exists at `.git/hooks/pre-commit`. If it doesn't exist or isn't executable, remind the user to run `./scripts/setup-hooks.sh` to install git hooks that prevent accidental non-npm lockfile commits.
+7. **Ticket workflow via Miro MCP.** The todo list of work is provided by the Miro MCP board: `https://miro.com/app/board/uXjVG_KZlFg=/`. Look at the **todo column** for tickets assigned to **Mark Boyes-Smith**. When a ticket's work is complete, update its status in Miro.
+8. **Branch-per-ticket.** Work from each ticket must be done on a branch of the same name as the ticket. Before starting work, create or checkout the branch, rebase it on the latest `main`, and push to GitHub when the work is complete.
 
 ---
 

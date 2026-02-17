@@ -34,7 +34,7 @@ export function AutoSizeWrapper({
       lastHeightRef.current = contentHeight;
       editor.updateShape({
         id: shapeId,
-        type: shapeType,
+        type: shapeType as any,
         props: { h: contentHeight },
       });
     }

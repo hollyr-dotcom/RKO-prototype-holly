@@ -510,6 +510,53 @@ const createStickerTool = tool({
   },
 });
 
+const createTaskCardTool = tool({
+  name: "createTaskCard",
+  description: "Create a task card on the canvas. Use for actionable work items, todos, or tasks. Shows as a compact card with status, priority, and assignee. Space items left-to-right with 50px gaps.",
+  parameters: z.object({
+    title: z.string().describe("Task title"),
+    description: z.string().optional().describe("Task description as HTML"),
+    status: z.enum(["not_started", "in_progress", "complete"]).optional().describe("Task status (default: not_started)"),
+    priority: z.enum(["low", "medium", "high"]).optional().describe("Task priority (default: medium)"),
+    assignee: z.string().optional().describe("Person assigned to the task"),
+    dueDate: z.string().optional().describe("Due date in ISO format (YYYY-MM-DD)"),
+    tags: z.array(z.string()).optional().describe("Tags/labels for the task"),
+    subtasks: z.array(z.object({
+      id: z.string(),
+      title: z.string(),
+      completed: z.boolean(),
+    })).optional().describe("Subtask checklist items"),
+    x: z.number().describe("X position"),
+    y: z.number().describe("Y position"),
+  }),
+  execute: async (args) => {
+    const id = generateItemId();
+    return JSON.stringify({ created: "taskcard", id, ...args });
+  },
+});
+
+const updateTaskCardTool = tool({
+  name: "updateTaskCard",
+  description: "Update an existing task card on the canvas. Get the task card's ID from [CANVAS STATE]. Only provide fields you want to change.",
+  parameters: z.object({
+    itemId: z.string().describe("The shape ID of the task card to update (from canvas state)"),
+    title: z.string().optional().describe("New task title"),
+    description: z.string().optional().describe("New task description as HTML"),
+    status: z.enum(["not_started", "in_progress", "complete"]).optional().describe("New status"),
+    priority: z.enum(["low", "medium", "high"]).optional().describe("New priority"),
+    assignee: z.string().optional().describe("New assignee"),
+    dueDate: z.string().optional().describe("New due date (ISO format)"),
+    tags: z.array(z.string()).optional().describe("New tags (replaces all)"),
+    subtasks: z.array(z.object({
+      id: z.string(),
+      title: z.string(),
+      completed: z.boolean(),
+    })).optional().describe("New subtasks (replaces all)"),
+  }),
+  execute: async (args) => JSON.stringify({ updated: "taskcard", ...args }),
+});
+
+
 // --- Layout Tool (REQUIRED for multiple items) ---
 const createLayoutTool = tool({
   name: "createLayout",
@@ -866,6 +913,12 @@ A great canvas uses MULTIPLE formats. Don't just spam stickies — pick the best
   - Anything with rows and columns of detailed data
   - "Compare these features side by side" → table
 
+✅ createTaskCard — for ACTIONABLE WORK ITEMS (tasks, todos, action items):
+  - Use createTaskCard, NOT stickies!
+  - Tasks, todos, action items with status tracking
+  - Shows as a compact card with status, priority, and assignee
+  - "Create tasks for the sprint" → task cards, not stickies
+
 📌 createLayout(type:"sticky") — for QUICK IDEAS:
   - Brainstorms, idea lists, feedback, tags, categories
   - Short items that benefit from visual clustering
@@ -941,6 +994,8 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     updateDocumentTool,
     createDataTableTool,
     createStickerTool,
+    createTaskCardTool,
+    updateTaskCardTool,
     createSourcesTool,
   ],
 });
@@ -991,13 +1046,10 @@ EXECUTION FLOW:
 🚨 EXECUTE ALL STEPS IN ONE GO. DO NOT STOP BETWEEN STEPS TO SUMMARISE OR EXPLAIN.
 Work through steps in sequence. For each step:
 1. Call showProgress(stepNumber, "step title", "starting")
-2. GATHER DATA FIRST if the step involves internal projects, metrics, priorities, or trade-offs:
-   → Call queryConnectors with relevant services BEFORE creating any canvas content
-   → For prioritisation/trade-off analysis: query MANY services (jira, salesforce, productboard, workday, looker, amplitude, slack, gong, notion, google-docs, stripe-benchmarks, github)
-   → For market/competitive context: also call webSearch
-3. Pick the RIGHT tool for this step's content:
-   - Written content (brief, spec, summary)? → createDocument — populated with REAL data
-   - Tabular data (comparison, matrix, scoring)? → createDataTable — every cell filled with real numbers
+2. Pick the RIGHT tool for this step's content:
+   - Written content (brief, spec, summary)? → createDocument
+   - Tabular data (comparison, matrix, timeline)? → createDataTable
+   - Actionable work item (task, todo, action)? → createTaskCard
    - Quick ideas, brainstorm items? → createLayout(type:"sticky")
    - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy"/"flow")
    - Roadmap, timeline, phases? → createLayout(type:"timeline") with timeLabels
@@ -1057,6 +1109,19 @@ createDataTable({
     ["Implementation", "Eng lead", "PM", "Design", "QA"],
     ["QA & testing", "QA lead", "Eng lead", "Design", "PM"]
   ],
+  x: 0, y: 0
+})
+
+✅ createTaskCard — ACTIONABLE WORK ITEMS (tasks, todos, action items):
+Step says "task", "todo", "action item", "assign", "sprint backlog"?
+→ Use createTaskCard, NOT stickies!
+Example:
+createTaskCard({
+  title: "Implement user authentication",
+  status: "not_started",
+  priority: "high",
+  assignee: "Mark",
+  tags: ["auth", "backend"],
   x: 0, y: 0
 })
 
@@ -1332,6 +1397,8 @@ MAX 2-3 COLORS PER FRAME. If you're reaching for a 4th color, stop and ask: "Doe
     updateDocumentTool,
     createDataTableTool,
     createStickerTool,
+    createTaskCardTool,
+    updateTaskCardTool,
     createSourcesTool,
   ],
 });
@@ -1450,17 +1517,13 @@ THEN KEEP GOING through steps ${nextStep + 1 <= totalSteps ? `${nextStep + 1}...
 🚫 DO NOT write "Proceeding to step X" — just DO step X.
 🚫 DO NOT output text until ALL steps are finished.
 
-FOR EACH STEP:
+DO THIS IMMEDIATELY:
 1. showProgress(stepNumber, "step title", "starting")
-2. GATHER DATA FIRST — if the step involves company projects, metrics, priorities, or trade-offs:
-   → Call queryConnectors with ALL relevant services BEFORE creating any content
-   → For prioritisation/trade-off: query jira, salesforce, productboard, workday, looker, amplitude, slack, gong, notion, google-docs, stripe-benchmarks, github
-   → For market/competitive context: ALSO call webSearch
-3. Pick the RIGHT tool for this step's content:
-   - Written content (brief, overview, spec, summary)? → createDocument — FILLED with real connector data
-   - Tabular data (roles, comparison, scoring, matrix)? → createDataTable — every cell has real numbers
-   - Research (external)? → webSearch + createSources + SYNTHESIZE
-   - Internal data (status, metrics, tickets)? → queryConnectors + SYNTHESIZE
+2. Pick the RIGHT tool for this step's content:
+   - Written content (brief, overview, spec, summary)? → createDocument
+   - Tabular data (roles, comparison, timeline, matrix)? → createDataTable
+   - Actionable work item (task, todo, action)? → createTaskCard
+   - Research? → webSearch + createSources + SYNTHESIZE (see below)
    - Brainstorm ideas, quick notes? → createLayout(type:"sticky")
    - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy")
    - Roadmap, timeline, phases? → createLayout(type:"timeline") with timeLabels

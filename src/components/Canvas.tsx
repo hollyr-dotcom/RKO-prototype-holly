@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { DocumentShapeUtil } from "@/shapes/DocumentShapeUtil";
 import { DataTableShapeUtil } from "@/shapes/DataTableShapeUtil";
 import { CommentShapeUtil } from "@/shapes/CommentShapeUtil";
+import { TaskCardShapeUtil } from "@/shapes/TaskCardShapeUtil";
 import { Toolbar } from "./Toolbar";
 import { StartingPromptCards } from "./StartingPromptCards";
 import { CanvasComments } from "./CanvasComments";
@@ -34,6 +35,7 @@ import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
 import Markdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { FocusModeOverlay, FocusedShape } from "./FocusModeOverlay";
+import { TaskCardSidebar } from "@/shapes/TaskCardPanel";
 import { setFocusedDocId } from "@/lib/focusModeStore";
 
 // Animation variants
@@ -785,7 +787,7 @@ const colorMap: Record<string, TLColor> = {
 type CreationToastInfo = {
   id: string; // unique key per tool call
   name: string;
-  type: "board" | "frame" | "items" | "document" | "table";
+  type: "board" | "frame" | "items" | "document" | "table" | "task";
   isCreating: boolean;
   canvasId?: string;
   frameName?: string;
@@ -814,7 +816,7 @@ export function Canvas() {
 
   // LiveBlocks multiplayer store -- syncs tldraw state across users
   const [sessionUser] = useState(() => firebaseUser ? getSessionUser(firebaseUser) : getLocalDevUser());
-  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil], []);
+  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 
   // Prevent browser back/forward navigation from trackpad gestures (Safari + fallback)
@@ -865,6 +867,7 @@ export function Canvas() {
   const [hasToolbarText, setHasToolbarText] = useState(false);
   const [isCommentMode, setIsCommentMode] = useState(false);
   const [focusedShape, setFocusedShape] = useState<FocusedShape | null>(null);
+  const [taskSidebarShapeId, setTaskSidebarShapeId] = useState<string | null>(null);
   const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
   const lastSourcesFrameRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
@@ -1081,6 +1084,19 @@ export function Canvas() {
         } else if (title) {
           text = title;
         }
+      }
+
+      // Task cards: extract title + status + priority + assignee
+      if ((shape.type as string) === 'taskcard') {
+        const title = props.title as string | undefined;
+        const status = props.status as string | undefined;
+        const priority = props.priority as string | undefined;
+        const assignee = props.assignee as string | undefined;
+        const parts = [title || 'Untitled task'];
+        if (status) parts.push(`status:${status}`);
+        if (priority) parts.push(`priority:${priority}`);
+        if (assignee) parts.push(`assignee:${assignee}`);
+        text = parts.join(', ');
       }
 
       return {
@@ -1328,6 +1344,29 @@ export function Canvas() {
         }
       }
 
+      if (toolName === "updateTaskCard") {
+        const { itemId, ...updates } = args as { itemId: string; title?: string; description?: string; status?: string; priority?: string; assignee?: string; dueDate?: string; tags?: string[]; subtasks?: Array<{ id: string; title: string; completed: boolean }> };
+        const shape = editor.getShape(itemId as TLShapeId);
+        if (shape && (shape.type as string) === "taskcard") {
+          const currentProps = shape.props as Record<string, unknown>;
+          editor.updateShape({
+            id: shape.id,
+            type: "taskcard" as any,
+            props: {
+              ...currentProps,
+              ...(updates.title !== undefined && { title: updates.title }),
+              ...(updates.description !== undefined && { description: updates.description }),
+              ...(updates.status !== undefined && { status: updates.status }),
+              ...(updates.priority !== undefined && { priority: updates.priority }),
+              ...(updates.assignee !== undefined && { assignee: updates.assignee }),
+              ...(updates.dueDate !== undefined && { dueDate: updates.dueDate }),
+              ...(updates.tags !== undefined && { tags: updates.tags }),
+              ...(updates.subtasks !== undefined && { subtasks: updates.subtasks }),
+            },
+          });
+        }
+      }
+
       if (toolName === "createDataTable") {
         const { title, columns, rows, x, y, width, height } = args as {
           title?: string;
@@ -1443,6 +1482,46 @@ export function Canvas() {
           },
         });
         }
+      }
+
+      if (toolName === "createTaskCard") {
+        const { title, description, status, priority, assignee, dueDate, tags, subtasks, x, y } = args as {
+          title?: string;
+          description?: string;
+          status?: string;
+          priority?: string;
+          assignee?: string;
+          dueDate?: string;
+          tags?: string[];
+          subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+          x?: number;
+          y?: number;
+        };
+
+        const validWidth = 288;
+        const validHeight = 160;
+        const pos = findNonOverlappingPosition(x || 0, y || 0, validWidth, validHeight, "shape");
+
+        shapeId = createShapeId();
+        editor.createShape({
+          id: shapeId,
+          type: "taskcard" as any,
+          x: pos.x,
+          y: pos.y,
+          props: {
+            w: validWidth,
+            h: validHeight,
+            title: title || "Untitled task",
+            description: description || "",
+            status: status || "not_started",
+            priority: priority || "medium",
+            assignee: assignee || "",
+            dueDate: dueDate || "",
+            tags: tags || [],
+            subtasks: subtasks || [],
+          },
+          meta: { createdBy: "ai" },
+        });
       }
 
       if (toolName === "createArrow") {
@@ -3065,7 +3144,7 @@ export function Canvas() {
     const CREATION_TOOL_NAMES = [
       "createCanvas", "createLayout", "createFrame",
       "createSticky", "createShape", "createText",
-      "createDocument", "createDataTable", "createSticker",
+      "createDocument", "createDataTable", "createSticker", "createTaskCard",
     ];
     const creationTools = tools.filter((t: { toolName: string }) =>
       CREATION_TOOL_NAMES.includes(t.toolName)
@@ -3132,6 +3211,14 @@ export function Canvas() {
           break;
         case "createSticker":
           looseItems.push("stickers");
+          break;
+        case "createTaskCard":
+          entries.push({
+            id: `${latestMsg.id}:${tool.toolName}:${entries.length}`,
+            name: (args.title as string) || "task",
+            type: "task",
+            isCreating: isLoading,
+          });
           break;
         case "createSticky":
           looseItems.push("sticky notes");
@@ -3225,17 +3312,35 @@ export function Canvas() {
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail as FocusedShape | undefined;
-      if (detail) {
-        // For documents, unmount the on-canvas editor to avoid dual Yjs connections
-        if (detail.shapeType === "document" && detail.docId) {
-          setFocusedDocId(detail.docId);
-        }
-        setFocusedShape(detail);
+      if (!detail) return;
+
+      // Task cards open a sidebar instead of the full-screen overlay
+      if (detail.shapeType === "taskcard" && detail.taskId) {
+        setTaskSidebarShapeId(detail.taskId);
+        return;
       }
+
+      // All other types (document, datatable) use FocusModeOverlay
+      if (detail.shapeType === "document" && detail.docId) {
+        setFocusedDocId(detail.docId);
+      }
+      setFocusedShape(detail);
     };
     window.addEventListener("shape:focus", handler);
     return () => window.removeEventListener("shape:focus", handler);
   }, []);
+
+  // Close task sidebar when the task card is deselected
+  useEffect(() => {
+    if (!editor || !taskSidebarShapeId) return;
+    const unsub = editor.store.listen(() => {
+      const selectedIds = editor.getSelectedShapeIds();
+      if (!selectedIds.includes(taskSidebarShapeId as TLShapeId)) {
+        setTaskSidebarShapeId(null);
+      }
+    }, { source: 'user', scope: 'session' });
+    return unsub;
+  }, [editor, taskSidebarShapeId]);
 
   // Toolbar always visible - prompt input hides itself when sidebar is open
   const showToolbar = true;
@@ -3313,7 +3418,7 @@ export function Canvas() {
           )}
         </AnimatePresence>
 
-        {/* Focus mode overlay */}
+        {/* Focus mode overlay (documents + data tables) */}
         <AnimatePresence>
           {focusedShape && (
             <FocusModeOverlay
@@ -3326,6 +3431,14 @@ export function Canvas() {
             />
           )}
         </AnimatePresence>
+
+        {/* Task card detail sidebar */}
+        <TaskCardSidebar
+          isOpen={taskSidebarShapeId !== null}
+          shapeId={taskSidebarShapeId}
+          editor={editor}
+          onClose={() => setTaskSidebarShapeId(null)}
+        />
 
         {/* Floating UI wrapper */}
         <div className="absolute inset-0 z-[60] pointer-events-none" onWheel={(e) => e.stopPropagation()} style={{ visibility: focusedShape ? "hidden" : "visible" }}>
@@ -3652,6 +3765,32 @@ export function Canvas() {
                     w: displayW,
                     h: displayH,
                   },
+                });
+                editor.select(shapeId);
+              }}
+              onCreateTaskCard={() => {
+                if (!editor) return;
+                const viewportCenter = editor.getViewportScreenCenter();
+                const canvasPoint = editor.screenToPage(viewportCenter);
+                const shapeId = createShapeId();
+                editor.createShape({
+                  id: shapeId,
+                  type: "taskcard" as any,
+                  x: canvasPoint.x - 144,
+                  y: canvasPoint.y - 80,
+                  props: {
+                    w: 288,
+                    h: 160,
+                    title: "Untitled task",
+                    description: "",
+                    status: "not_started",
+                    priority: "medium",
+                    assignee: "",
+                    dueDate: "",
+                    tags: [],
+                    subtasks: [],
+                  },
+                  meta: { createdBy: "user" },
                 });
                 editor.select(shapeId);
               }}

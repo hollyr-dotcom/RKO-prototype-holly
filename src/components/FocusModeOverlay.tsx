@@ -7,9 +7,10 @@ import { DataTableEditor } from "./DataTableEditor";
 import { setPortalTarget } from "@/lib/focusModeStore";
 
 export interface FocusedShape {
-  shapeType: "document" | "datatable";
+  shapeType: "document" | "datatable" | "taskcard";
   docId?: string;
   tableId?: string;
+  taskId?: string;
   title: string;
 }
 

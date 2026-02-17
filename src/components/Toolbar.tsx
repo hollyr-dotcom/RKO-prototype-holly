@@ -18,6 +18,7 @@ import {
   IconChatLinesDot,
   IconArticle,
   IconTable,
+  IconCard,
   IconCross,
   IconSmileySticker,
 } from "@mirohq/design-system-icons";
@@ -59,6 +60,7 @@ interface ToolbarProps {
   onCreateDocument?: () => void;
   onCreateDataTable?: () => void;
   onPlaceSticker?: (sticker: { url: string; width: number; height: number; id: string }, screenPos?: { x: number; y: number }) => void;
+  onCreateTaskCard?: () => void;
   isCommentMode?: boolean;
   onToggleCommentMode?: () => void;
 }
@@ -84,6 +86,7 @@ export function Toolbar({
   onCreateDocument,
   onCreateDataTable,
   onPlaceSticker,
+  onCreateTaskCard,
   isCommentMode = false,
   onToggleCommentMode,
 }: ToolbarProps) {
@@ -319,6 +322,11 @@ export function Toolbar({
               triggerRef={stickerButtonRef}
             />
           </div>
+
+          {/* Task Card */}
+          <ToolButton active={false} onClick={() => onCreateTaskCard?.()} title="Task card">
+            <IconCard size="medium" />
+          </ToolButton>
         </div>
 
         {/* Separator line - hidden when expanded, chat open, or floating UI showing */}
