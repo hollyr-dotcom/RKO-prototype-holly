@@ -439,6 +439,77 @@ const createDataTableTool = tool({
   },
 });
 
+// --- Sticker Tool ---
+// Load sticker packs for keyword matching
+const miroPacks: {
+  id: string;
+  name: string;
+  stickers: {
+    id: string;
+    image: { url: string; dimensions: { width: string | number; height: string | number } };
+    keywords: string[];
+  }[];
+}[] = JSON.parse(
+  fs.readFileSync(path.join(process.cwd(), "src/data/miroPacks.json"), "utf-8")
+);
+
+function findBestSticker(query: string): { url: string; width: number; height: number; stickerId: string } | null {
+  const queryWords = query.toLowerCase().split(/\s+/);
+  let bestScore = 0;
+  let bestSticker: typeof miroPacks[0]["stickers"][0] | null = null;
+
+  for (const pack of miroPacks) {
+    for (const sticker of pack.stickers) {
+      let score = 0;
+      for (const word of queryWords) {
+        for (const keyword of sticker.keywords) {
+          const kw = keyword.toLowerCase();
+          if (kw === word) {
+            score += 3; // exact match
+          } else if (kw.includes(word) || word.includes(kw)) {
+            score += 1; // partial match
+          }
+        }
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        bestSticker = sticker;
+      }
+    }
+  }
+
+  if (!bestSticker || bestScore === 0) return null;
+  const w = typeof bestSticker.image.dimensions.width === "number"
+    ? bestSticker.image.dimensions.width
+    : parseInt(bestSticker.image.dimensions.width, 10);
+  const h = typeof bestSticker.image.dimensions.height === "number"
+    ? bestSticker.image.dimensions.height
+    : parseInt(bestSticker.image.dimensions.height, 10);
+  return { url: bestSticker.image.url, width: w, height: h, stickerId: bestSticker.id };
+}
+
+const createStickerTool = tool({
+  name: "createSticker",
+  description: "Place a Miro sticker on the canvas. Use for reactions, emotions, celebrations, or visual decoration. Describe what you want (e.g. 'thumbs up', 'heart', 'celebrate', 'thinking') and the best matching sticker will be found.",
+  parameters: z.object({
+    intent: z.string().describe("What the sticker should express (e.g. 'thumbs up', 'celebrate', 'heart', 'star', 'thinking', 'done')"),
+    x: z.number().default(0).describe("X position"),
+    y: z.number().default(0).describe("Y position"),
+  }),
+  execute: async ({ intent, x, y }) => {
+    const match = findBestSticker(intent);
+    if (!match) {
+      return JSON.stringify({ error: "No matching sticker found", intent });
+    }
+    return JSON.stringify({
+      created: "sticker",
+      ...match,
+      x,
+      y,
+    });
+  },
+});
+
 // --- Layout Tool (REQUIRED for multiple items) ---
 const createLayoutTool = tool({
   name: "createLayout",
@@ -869,6 +940,7 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     createDocumentTool,
     updateDocumentTool,
     createDataTableTool,
+    createStickerTool,
     createSourcesTool,
   ],
 });
@@ -1259,6 +1331,7 @@ MAX 2-3 COLORS PER FRAME. If you're reaching for a 4th color, stop and ask: "Doe
     createDocumentTool,
     updateDocumentTool,
     createDataTableTool,
+    createStickerTool,
     createSourcesTool,
   ],
 });

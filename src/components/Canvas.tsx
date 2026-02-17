@@ -829,6 +829,27 @@ export function Canvas() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
+  // Prevent browser zoom (pinch-to-zoom + Ctrl+scroll + Ctrl+/-)
+  // tldraw handles canvas zoom itself; browser zoom just breaks the UI
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === "+" || e.key === "-" || e.key === "=" || e.key === "0")) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener("wheel", handleWheel, { passive: false });
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("wheel", handleWheel);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   const [editor, setEditor] = useState<Editor | null>(null);
   const [responseToast, setResponseToast] = useState<string | null>(null);
   const [toastCentered, setToastCentered] = useState(false);
@@ -1374,6 +1395,54 @@ export function Canvas() {
             initialData: (columns && rows) ? { columns, rows } : undefined,
           },
         });
+      }
+
+      if (toolName === "createSticker_result") {
+        const { url, width, height, stickerId, x, y, error } = args as {
+          url: string;
+          width: number;
+          height: number;
+          stickerId: string;
+          x?: number;
+          y?: number;
+          error?: string;
+        };
+
+        if (error || !url) {
+          // No matching sticker found — skip
+        } else {
+
+        const displayW = 120;
+        const displayH = (height / width) * displayW;
+        const pos = findNonOverlappingPosition(x || 0, y || 0, displayW, displayH, "sticky");
+        const assetId = `asset:sticker-${stickerId}-${Date.now()}` as any;
+        editor.createAssets([{
+          id: assetId,
+          type: "image",
+          typeName: "asset",
+          props: {
+            name: stickerId,
+            src: url,
+            w: width,
+            h: height,
+            mimeType: "image/png",
+            isAnimated: false,
+          },
+          meta: {},
+        }]);
+        shapeId = createShapeId();
+        editor.createShape({
+          id: shapeId,
+          type: "image",
+          x: pos.x,
+          y: pos.y,
+          props: {
+            assetId,
+            w: displayW,
+            h: displayH,
+          },
+        });
+        }
       }
 
       if (toolName === "createArrow") {
@@ -2996,7 +3065,7 @@ export function Canvas() {
     const CREATION_TOOL_NAMES = [
       "createCanvas", "createLayout", "createFrame",
       "createSticky", "createShape", "createText",
-      "createDocument", "createDataTable",
+      "createDocument", "createDataTable", "createSticker",
     ];
     const creationTools = tools.filter((t: { toolName: string }) =>
       CREATION_TOOL_NAMES.includes(t.toolName)
@@ -3060,6 +3129,9 @@ export function Canvas() {
             type: "table",
             isCreating: isLoading,
           });
+          break;
+        case "createSticker":
+          looseItems.push("stickers");
           break;
         case "createSticky":
           looseItems.push("sticky notes");
@@ -3256,7 +3328,7 @@ export function Canvas() {
         </AnimatePresence>
 
         {/* Floating UI wrapper */}
-        <div className="absolute inset-0 z-[60] pointer-events-none" style={{ visibility: focusedShape ? "hidden" : "visible" }}>
+        <div className="absolute inset-0 z-[60] pointer-events-none" onWheel={(e) => e.stopPropagation()} style={{ visibility: focusedShape ? "hidden" : "visible" }}>
           {/* Floating question card */}
           <AnimatePresence>
             {!isChatOpen && pendingQuestion && !isLoading && (
@@ -3541,6 +3613,44 @@ export function Canvas() {
                     title: "Untitled table",
                     w: 480,
                     h: 280,
+                  },
+                });
+                editor.select(shapeId);
+              }}
+              onPlaceSticker={(sticker, screenPos) => {
+                if (!editor) return;
+                // Use drop position if provided, otherwise viewport center
+                const screenPt = screenPos
+                  ? { x: screenPos.x, y: screenPos.y }
+                  : editor.getViewportScreenCenter();
+                const canvasPoint = editor.screenToPage(screenPt);
+                const displayW = 120;
+                const displayH = (sticker.height / sticker.width) * displayW;
+                const assetId = `asset:sticker-${sticker.id}` as any;
+                editor.createAssets([{
+                  id: assetId,
+                  type: "image",
+                  typeName: "asset",
+                  props: {
+                    name: sticker.id,
+                    src: sticker.url,
+                    w: sticker.width,
+                    h: sticker.height,
+                    mimeType: "image/png",
+                    isAnimated: false,
+                  },
+                  meta: {},
+                }]);
+                const shapeId = createShapeId();
+                editor.createShape({
+                  id: shapeId,
+                  type: "image",
+                  x: canvasPoint.x - displayW / 2,
+                  y: canvasPoint.y - displayH / 2,
+                  props: {
+                    assetId,
+                    w: displayW,
+                    h: displayH,
                   },
                 });
                 editor.select(shapeId);

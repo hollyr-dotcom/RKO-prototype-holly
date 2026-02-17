@@ -182,7 +182,7 @@ export function CanvasMasthead() {
   const isChatMinimized = chatMode === "minimized";
 
   return (
-    <div className={`absolute top-3 left-3 z-[500] flex items-center justify-between pointer-events-none ${isChatMinimized ? 'right-16' : 'right-3'}`}>
+    <div className={`absolute top-3 left-3 z-[500] flex items-center justify-between pointer-events-none ${isChatMinimized ? 'right-16' : 'right-3'}`} onWheel={(e) => e.stopPropagation()}>
       {/* ── Left bar: Board identity ── */}
       <div
         className="h-12 bg-white rounded-full border border-gray-200 flex items-center pointer-events-auto p-1.5"

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Editor } from "tldraw";
 import { useState, useRef, useEffect, useCallback } from "react";
 import Markdown from "react-markdown";
@@ -18,8 +19,10 @@ import {
   IconArticle,
   IconTable,
   IconCross,
+  IconSmileySticker,
 } from "@mirohq/design-system-icons";
 import { PromptSuggestions } from "./PromptSuggestions";
+import { StickerPicker } from "./StickerPicker";
 
 // Custom voice wave icon (5 bars) - not available in Miro design system
 function VoiceWaveIcon() {
@@ -55,6 +58,7 @@ interface ToolbarProps {
   onInputChange?: (hasText: boolean) => void;
   onCreateDocument?: () => void;
   onCreateDataTable?: () => void;
+  onPlaceSticker?: (sticker: { url: string; width: number; height: number; id: string }, screenPos?: { x: number; y: number }) => void;
   isCommentMode?: boolean;
   onToggleCommentMode?: () => void;
 }
@@ -79,6 +83,7 @@ export function Toolbar({
   onInputChange,
   onCreateDocument,
   onCreateDataTable,
+  onPlaceSticker,
   isCommentMode = false,
   onToggleCommentMode,
 }: ToolbarProps) {
@@ -87,8 +92,10 @@ export function Toolbar({
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [isStickerPickerOpen, setIsStickerPickerOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const stickerButtonRef = useRef<HTMLButtonElement>(null);
 
   const selectTool = (tool: string) => {
     if (!editor) return;
@@ -204,7 +211,7 @@ export function Toolbar({
   }, [isLoading, isExpanded, isChatOpen, hideInput]);
 
   return (
-    <div ref={toolbarRef} className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[70]">
+    <div ref={toolbarRef} className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[70]" onWheel={(e) => e.stopPropagation()}>
       {/* Tools button - positioned absolutely to the left */}
       {isExpanded && (
         <button
@@ -294,6 +301,24 @@ export function Toolbar({
           <ToolButton active={false} onClick={() => onCreateDataTable?.()} title="Table">
             <IconTable size="medium" />
           </ToolButton>
+
+          {/* Sticker */}
+          <div className="relative">
+            <ToolButton
+              ref={stickerButtonRef}
+              active={isStickerPickerOpen}
+              onClick={() => setIsStickerPickerOpen((v) => !v)}
+              title="Stickers"
+            >
+              <IconSmileySticker size="medium" />
+            </ToolButton>
+            <StickerPicker
+              isOpen={isStickerPickerOpen}
+              onClose={() => setIsStickerPickerOpen(false)}
+              onPlaceSticker={(sticker, screenPos) => onPlaceSticker?.(sticker, screenPos)}
+              triggerRef={stickerButtonRef}
+            />
+          </div>
         </div>
 
         {/* Separator line - hidden when expanded, chat open, or floating UI showing */}
@@ -472,20 +497,19 @@ export function Toolbar({
   );
 }
 
-// Tool button component
-function ToolButton({
-  children,
-  active,
-  onClick,
-  title,
-}: {
-  children: React.ReactNode;
-  active: boolean;
-  onClick: () => void;
-  title: string;
-}) {
+// Tool button component (forwardRef for click-outside detection)
+const ToolButton = React.forwardRef<
+  HTMLButtonElement,
+  {
+    children: React.ReactNode;
+    active: boolean;
+    onClick: () => void;
+    title: string;
+  }
+>(function ToolButton({ children, active, onClick, title }, ref) {
   return (
     <button
+      ref={ref}
       onClick={onClick}
       title={title}
       className={`p-2.5 rounded-full transition-all duration-200 text-black flex items-center justify-center ${
@@ -495,4 +519,4 @@ function ToolButton({
       {children}
     </button>
   );
-}
+});

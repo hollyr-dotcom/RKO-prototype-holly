@@ -60,7 +60,7 @@ export function ZoomToolbar({ editor }: ZoomToolbarProps) {
   const zoomPercent = Math.round(zoomLevel * 100);
 
   return (
-    <div className="absolute bottom-6 right-6 z-[70]">
+    <div className="absolute bottom-6 right-6 z-[70]" onWheel={(e) => e.stopPropagation()}>
       <div
         className="flex items-center bg-white rounded-full border border-gray-200 p-1.5"
         style={{
