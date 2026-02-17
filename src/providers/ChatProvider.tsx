@@ -204,7 +204,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   pathnameRef.current = pathname;
 
   // Canvas tools that need a Canvas component to be mounted
-  const CANVAS_TOOLS = ['createLayout', 'createSticky', 'createText', 'createShape', 'createFrame', 'createArrow', 'createWorkingNote', 'deleteItem', 'updateSticky', 'moveItem', 'organizeIntoFrame', 'createDocument', 'createDataTable'];
+  const CANVAS_TOOLS = ['createLayout', 'createSticky', 'createText', 'createShape', 'createFrame', 'createArrow', 'createWorkingNote', 'deleteItem', 'updateSticky', 'moveItem', 'organizeIntoFrame', 'createDocument', 'createDataTable', '_streaming_start', '_streaming_scalars', '_streaming_item', '_streaming_content', '_streaming_done'];
 
   // Workspace-aware tool call handler — intercepts navigation tools, queues during navigation
   const handleToolCallWithWorkspace = useCallback((toolName: string, args: Record<string, unknown>) => {

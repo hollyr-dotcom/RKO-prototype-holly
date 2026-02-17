@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth/serverAuth";
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { IncrementalItemExtractor, STREAMING_TOOLS } from "@/lib/streamingParser";
 
 export const maxDuration = 120;
 
@@ -1870,6 +1871,14 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
         let textContent = "";
         let controllerClosed = false;
 
+        // Streaming tool call accumulators — keyed by itemId (fc_xxx from raw events)
+        const streamingAccumulators = new Map<string, {
+          toolName: string;
+          extractor: IncrementalItemExtractor;
+          callId: string;  // The call_xxx ID used by Agents SDK tool_call_item
+        }>();
+        const streamedCallIds = new Set<string>(); // call_xxx IDs that were streamed
+
         const safeEnqueue = (chunk: Uint8Array) => {
           if (!controllerClosed) {
             try {
@@ -1956,6 +1965,94 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
                   if (delta) sendTextDelta(delta);
                 }
               }
+
+              // STREAMING TOOL CALLS — Responses API events inside "model" wrapper
+              // The Agents SDK wraps raw OpenAI events as data.type === "model"
+              // with the actual Responses API event in data.event:
+              //   data.event.type === "response.output_item.added"  → tool call starts
+              //   data.event.type === "response.function_call_arguments.delta" → partial args
+              if (data.type === "model") {
+                const rawEvent = data.event as Record<string, unknown>;
+                const rawType = rawEvent?.type as string;
+
+                // Tool call started
+                if (rawType === "response.output_item.added") {
+                  const item = rawEvent.item as Record<string, unknown>;
+                  if (item?.type === "function_call") {
+                    const toolName = item.name as string;
+                    const itemId = item.id as string;      // fc_xxx — referenced by delta events
+                    const callId = item.call_id as string;  // call_xxx — used by Agents SDK tool_call_item
+                    if (toolName && itemId && STREAMING_TOOLS[toolName]) {
+                      // console.log(`[STREAM] Tool call started: ${toolName}`);
+                      streamingAccumulators.set(itemId, {
+                        toolName,
+                        extractor: new IncrementalItemExtractor(toolName),
+                        callId: callId || itemId,
+                      });
+                      if (callId) {
+                        callIdToToolName.set(callId, toolName);
+                        streamedCallIds.add(callId);
+                      }
+                      // Emit start immediately — Canvas creates the container shape
+                      safeEnqueue(
+                        encoder.encode(`data: ${JSON.stringify({
+                          type: "tool_streaming_start",
+                          toolName,
+                          callId: callId || itemId,
+                          partialArgs: {},
+                        })}\n\n`)
+                      );
+                    }
+                  }
+                }
+
+                // Partial function arguments — item_id is the fc_xxx ID
+                if (rawType === "response.function_call_arguments.delta") {
+                  const itemId = rawEvent.item_id as string;
+                  const argDelta = rawEvent.delta as string;
+                  const acc = itemId ? streamingAccumulators.get(itemId) : undefined;
+
+                  if (acc && argDelta) {
+                    const extractResult = acc.extractor.feed(argDelta);
+                    const clientCallId = acc.callId;
+
+                    // Forward newly-extracted scalars
+                    if (Object.keys(extractResult.scalars).length > 0) {
+                      safeEnqueue(
+                        encoder.encode(`data: ${JSON.stringify({
+                          type: "tool_streaming_scalars",
+                          callId: clientCallId,
+                          scalars: extractResult.scalars,
+                        })}\n\n`)
+                      );
+                    }
+
+                    // Emit item for each completed array item
+                    for (const { index, item } of extractResult.newItems) {
+                      // console.log(`[STREAM] Emitting item #${index}`);
+                      safeEnqueue(
+                        encoder.encode(`data: ${JSON.stringify({
+                          type: "tool_streaming_item",
+                          callId: clientCallId,
+                          item,
+                          index,
+                        })}\n\n`)
+                      );
+                    }
+
+                    // Emit content progress for documents
+                    if (extractResult.contentSoFar) {
+                      safeEnqueue(
+                        encoder.encode(`data: ${JSON.stringify({
+                          type: "tool_streaming_content",
+                          callId: clientCallId,
+                          content: extractResult.contentSoFar,
+                        })}\n\n`)
+                      );
+                    }
+                  }
+                }
+              }
             }
 
             // Handle text_delta events directly (fallback)
@@ -2003,9 +2100,23 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
                   try {
                     const args = JSON.parse(rawArgs);
                     toolCalls.push({ toolName, args });
-                    safeEnqueue(
-                      encoder.encode(`data: ${JSON.stringify({ type: "tool", toolName, args })}\n\n`)
-                    );
+
+                    // If this call was streamed, send _streaming_done instead of normal tool event
+                    if (callId && streamedCallIds.has(callId)) {
+                      streamingAccumulators.delete(callId);
+                      safeEnqueue(
+                        encoder.encode(`data: ${JSON.stringify({
+                          type: "tool_streaming_done",
+                          callId,
+                          toolName,
+                          args,
+                        })}\n\n`)
+                      );
+                    } else {
+                      safeEnqueue(
+                        encoder.encode(`data: ${JSON.stringify({ type: "tool", toolName, args })}\n\n`)
+                      );
+                    }
                   } catch {
                     // Skip malformed
                   }

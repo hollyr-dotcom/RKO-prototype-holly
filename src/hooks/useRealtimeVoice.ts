@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { IncrementalItemExtractor, STREAMING_TOOLS } from "@/lib/streamingParser";
 
 type VoiceState = "idle" | "connecting" | "listening" | "speaking" | "error";
 
@@ -26,6 +27,13 @@ export function useRealtimeVoice() {
   const captureScreenshotRef = useRef<(() => Promise<string | null>) | null>(null);
   // Track pending tool call for sending responses back to OpenAI
   const pendingToolCallRef = useRef<{ name: string; call_id: string; arguments: string; addedToMessages: boolean } | null>(null);
+  // Track streaming state for incremental tool call parsing
+  const voiceStreamingRef = useRef<{
+    callId: string;
+    toolName: string;
+    extractor: IncrementalItemExtractor;
+    hasStreamedItems: boolean;
+  } | null>(null);
 
   // Connect to OpenAI Realtime API
   const connect = useCallback(async (
@@ -153,14 +161,57 @@ export function useRealtimeVoice() {
               arguments: "",
               addedToMessages: false,
             };
+
+            // Initialize streaming extractor for supported tools — emit start immediately
+            if (STREAMING_TOOLS[message.item.name] && onToolCallRef.current) {
+              voiceStreamingRef.current = {
+                callId: message.item.call_id,
+                toolName: message.item.name,
+                extractor: new IncrementalItemExtractor(message.item.name),
+                hasStreamedItems: true, // Mark as streamed from the start
+              };
+              onToolCallRef.current("_streaming_start", {
+                toolName: message.item.name,
+                callId: message.item.call_id,
+                partialArgs: {},
+              });
+            }
           }
 
-          // Buffer arguments as they stream - add to messages EARLY for UI tools
+          // Buffer arguments as they stream — also feed incremental parser for streaming
           if (message.type === "response.function_call_arguments.delta" && pendingToolCallRef.current) {
             pendingToolCallRef.current.arguments += message.delta || "";
 
-            // No early detection needed for voice mode tools currently
-            // (checkpoint removed from voice mode - natural conversation instead)
+            // Feed the streaming extractor if active
+            const vs = voiceStreamingRef.current;
+            if (vs && message.delta && onToolCallRef.current) {
+              const result = vs.extractor.feed(message.delta);
+
+              // Forward scalar updates (title, frameName, columns, etc.)
+              if (Object.keys(result.scalars).length > 0) {
+                onToolCallRef.current("_streaming_scalars", {
+                  callId: vs.callId,
+                  scalars: result.scalars,
+                });
+              }
+
+              // Emit _streaming_item for each newly completed array item
+              for (const { index, item } of result.newItems) {
+                onToolCallRef.current("_streaming_item", {
+                  callId: vs.callId,
+                  item,
+                  index,
+                });
+              }
+
+              // Emit _streaming_content for document content progress
+              if (result.contentSoFar) {
+                onToolCallRef.current("_streaming_content", {
+                  callId: vs.callId,
+                  content: result.contentSoFar,
+                });
+              }
+            }
           }
 
           // Handle tool call completion
@@ -172,6 +223,7 @@ export function useRealtimeVoice() {
               args = JSON.parse(message.arguments);
             } catch {
               console.warn("[VOICE] Skipping malformed tool arguments");
+              voiceStreamingRef.current = null;
               return;
             }
 
@@ -186,9 +238,21 @@ export function useRealtimeVoice() {
               onMessageToolCallRef.current(toolCall);
             }
 
-            // Canvas tools → execute directly on canvas
-            if (onToolCallRef.current) {
-              onToolCallRef.current(toolName, args);
+            // If this was a streamed tool call, emit _streaming_done instead of normal dispatch
+            const vs = voiceStreamingRef.current;
+            if (vs && vs.hasStreamedItems && onToolCallRef.current) {
+              onToolCallRef.current("_streaming_done", {
+                callId: vs.callId,
+                toolName: vs.toolName,
+                args,
+              });
+              voiceStreamingRef.current = null;
+            } else {
+              voiceStreamingRef.current = null;
+              // Canvas tools → execute directly on canvas (normal path)
+              if (onToolCallRef.current) {
+                onToolCallRef.current(toolName, args);
+              }
             }
 
             // webSearch - make async HTTP call for real results

@@ -873,6 +873,24 @@ export function Canvas() {
   const createdShapesRef = useRef<TLShapeId[]>([]);
   const placementEngineRef = useRef<PlacementEngine | null>(null);
   const isProcessingToolCallRef = useRef(false);
+
+  // Streaming tool call tracking — shapes created incrementally as model generates
+  const streamingLayoutsRef = useRef<Map<string, {
+    frameId: TLShapeId;
+    columns: number;
+    type: string;
+    isGrid: boolean;
+    itemWidth: number;
+    shapeHeight: number;
+    gapX: number;
+    gapY: number;
+    padding: number;
+    titleSpace: number;
+    itemCount: number;
+    pendingItems?: Record<string, unknown>[]; // For hierarchy/flow: items accumulated during streaming
+  }>>(new Map());
+  const streamingDocsRef = useRef<Map<string, { shapeId: TLShapeId }>>(new Map());
+  const streamingTablesRef = useRef<Map<string, { shapeId: TLShapeId; columns: string[]; rowCount: number; accumulatedRows: string[][] }>>(new Map());
   const userEditsRef = useRef<Array<{ shapeId: string; field: string; oldValue: string; newValue: string }>>([]);
   const shouldHideToastRef = useRef(false); // Track if toast should be hidden during new request
   const voiceRef = useRef<{ isConnected: boolean; sendCanvasUpdate: () => void; sendScreenshot: (changeDescription?: string) => void } | null>(null);
@@ -1058,7 +1076,8 @@ export function Canvas() {
       // Data tables: extract column names + row preview from meta
       if (shape.type === 'datatable') {
         const title = props.title as string | undefined;
-        const tableData = meta?.initialData as { columns: string[]; rows: string[][] } | undefined;
+        const rawTableData = meta?.initialData;
+        const tableData = typeof rawTableData === "string" ? (() => { try { return JSON.parse(rawTableData); } catch { return undefined; } })() as { columns: string[]; rows: string[][] } | undefined : rawTableData as { columns: string[]; rows: string[][] } | undefined;
         if (tableData) {
           const cols = tableData.columns.join(', ');
           const rowPreview = tableData.rows.slice(0, 3).map(r => r.join(' | ')).join('; ');
@@ -1152,6 +1171,410 @@ export function Canvas() {
       let shapeId: TLShapeId | null = null;
 
       try {
+
+      // ===== STREAMING TOOL CALL HANDLERS =====
+      // These handle shapes appearing incrementally as the model generates them.
+      // The _streaming_* events are sent by useAgent (chat) and useRealtimeVoice (voice).
+
+      if (toolName === "_streaming_start") {
+        const { toolName: streamToolName, callId, partialArgs } = args as {
+          toolName: string;
+          callId: string;
+          partialArgs: Record<string, unknown>;
+        };
+
+        if (streamToolName === "createLayout") {
+          const type = (partialArgs.type as string) || "grid";
+          const isGrid = type === "grid" || type === undefined;
+          const columns = (partialArgs.columns as number) || 3;
+          const itemWidth = 220;
+          const shapeHeight = 120;
+          const gapX = 60;
+          const gapY = 60;
+          const padding = 80;
+          const titleSpace = 70;
+
+          // Estimate initial frame size (will grow as items arrive)
+          const estimatedCols = Math.min(columns, 6);
+          const frameWidth = padding * 2 + estimatedCols * itemWidth + (estimatedCols - 1) * gapX;
+          const frameHeight = padding + titleSpace + 200 + padding; // Start small
+
+          const engine = getPlacementEngine();
+          const canvasPos = engine.place({ category: "format", width: frameWidth, height: frameHeight });
+
+          const frameId = createShapeId();
+          editor.createShape({
+            id: frameId,
+            type: "frame",
+            x: canvasPos.x,
+            y: canvasPos.y,
+            props: {
+              name: (partialArgs.frameName as string) || "Loading...",
+              w: frameWidth,
+              h: frameHeight,
+            },
+            meta: { createdBy: "ai" },
+          });
+          engine.recordPlacement(frameId, { category: "format", width: frameWidth, height: frameHeight }, canvasPos);
+          createdShapesRef.current.push(frameId);
+
+          streamingLayoutsRef.current.set(callId, {
+            frameId, columns, type, isGrid, itemWidth, shapeHeight,
+            gapX, gapY, padding, titleSpace, itemCount: 0,
+          });
+          // Layout frame created for streaming
+        }
+
+        if (streamToolName === "createDocument") {
+          const validWidth = 780;
+          const validHeight = 400; // Start small, will grow
+
+          const engine = getPlacementEngine();
+          const pos = engine.place({ category: "format", width: validWidth, height: validHeight });
+
+          const docShapeId = createShapeId();
+          editor.createShape({
+            id: docShapeId,
+            type: "document",
+            x: pos.x,
+            y: pos.y,
+            props: {
+              docId: generateId(),
+              title: (partialArgs.title as string) || "Writing...",
+              w: validWidth,
+              h: validHeight,
+            },
+            meta: { createdBy: "ai" },
+          });
+          engine.recordPlacement(docShapeId, { category: "format", width: validWidth, height: validHeight }, pos);
+          createdShapesRef.current.push(docShapeId);
+
+          streamingDocsRef.current.set(callId, { shapeId: docShapeId });
+          // Document shape created for streaming
+        }
+
+        if (streamToolName === "createDataTable") {
+          const columns = (partialArgs.columns as string[]) || [];
+          const title = (partialArgs.title as string) || "Loading...";
+          const validWidth = Math.max(columns.length * 120 + 68, 400);
+          const validHeight = 200; // Start small
+
+          const engine = getPlacementEngine();
+          const pos = engine.place({ category: "format", width: validWidth, height: validHeight });
+
+          const tableShapeId = createShapeId();
+          const tableMeta: Record<string, string> = { createdBy: "ai" };
+          if (columns.length > 0) {
+            tableMeta.initialData = JSON.stringify({ columns, rows: [] });
+          }
+          // DataTable shape created for streaming
+          editor.createShape({
+            id: tableShapeId,
+            type: "datatable",
+            x: pos.x,
+            y: pos.y,
+            props: {
+              tableId: generateId(),
+              title,
+              w: validWidth,
+              h: validHeight,
+            },
+            meta: tableMeta,
+          });
+          engine.recordPlacement(tableShapeId, { category: "format", width: validWidth, height: validHeight }, pos);
+          createdShapesRef.current.push(tableShapeId);
+
+          streamingTablesRef.current.set(callId, { shapeId: tableShapeId, columns, rowCount: 0, accumulatedRows: [] });
+          // DataTable tracking initialized
+        }
+
+        return;
+      }
+
+      if (toolName === "_streaming_scalars") {
+        const { callId, scalars } = args as { callId: string; scalars: Record<string, unknown> };
+
+        // Update layout frame name
+        const layoutState = streamingLayoutsRef.current.get(callId);
+        if (layoutState) {
+          if (scalars.frameName) {
+            editor.updateShape({ id: layoutState.frameId, type: "frame", props: { name: scalars.frameName as string } });
+          }
+          if (scalars.columns) layoutState.columns = scalars.columns as number;
+          if (scalars.type) {
+            // Layout type updated via scalar
+            layoutState.type = scalars.type as string;
+            layoutState.isGrid = (scalars.type === "grid" || scalars.type === undefined);
+          }
+        }
+
+        // Update document title
+        const docState = streamingDocsRef.current.get(callId);
+        if (docState && scalars.title) {
+          editor.updateShape({ id: docState.shapeId, type: "document", props: { title: scalars.title as string } });
+        }
+
+        // Update table title and columns
+        const tableState = streamingTablesRef.current.get(callId);
+        if (tableState) {
+          if (scalars.title) {
+            editor.updateShape({ id: tableState.shapeId, type: "datatable", props: { title: scalars.title as string } });
+          }
+          if (scalars.columns && Array.isArray(scalars.columns)) {
+            tableState.columns = scalars.columns as string[];
+            const shape = editor.getShape(tableState.shapeId);
+            if (shape) {
+              editor.updateShape({
+                id: tableState.shapeId,
+                type: "datatable",
+                meta: { ...(shape.meta as Record<string, unknown>), initialData: JSON.stringify({ columns: tableState.columns, rows: [] }) },
+              });
+            }
+          }
+        }
+        return;
+      }
+
+      if (toolName === "_streaming_item") {
+        const { callId, item, index } = args as {
+          callId: string;
+          item: Record<string, unknown>;
+          index: number;
+        };
+
+        // Layout items (stickies/shapes in a frame)
+        const layoutState = streamingLayoutsRef.current.get(callId);
+        if (layoutState) {
+          const { frameId, columns, isGrid, itemWidth, shapeHeight, gapX, gapY, padding, titleSpace } = layoutState;
+
+          // For hierarchy/flow layouts, DON'T stream individual shapes — the grid
+          // placement logic doesn't work for tree structures. Accumulate items and
+          // let _streaming_done place them all at once with proper layout.
+          if (!isGrid) {
+            if (!layoutState.pendingItems) layoutState.pendingItems = [];
+            layoutState.pendingItems.push(item);
+            layoutState.itemCount = (layoutState.pendingItems?.length || 0);
+            return;
+          }
+
+          const col = index % columns;
+          const row = Math.floor(index / columns);
+
+          // Estimate sticky height from text
+          const text = (item.text as string) || "";
+          const charsPerLine = 14;
+          const lineHeight = 28;
+          const verticalPadding = 80;
+          const lines = Math.ceil(text.length / charsPerLine);
+          const itemH = Math.max(200, lines * lineHeight + verticalPadding);
+
+          const x = padding + col * (itemWidth + gapX);
+          const y = titleSpace + padding + row * (Math.max(200, shapeHeight) + gapY);
+
+          const itemId = createShapeId();
+          editor.createShape({
+            id: itemId,
+            type: "note",
+            x, y,
+            parentId: frameId,
+            props: {
+              richText: toRichText(text),
+              color: colorMap[(item.color as string) || "yellow"] || "yellow",
+              font: "sans",
+              size: "s",
+            },
+            meta: { createdBy: "ai" },
+          });
+          createdShapesRef.current.push(itemId);
+
+          // Grow frame height if we've entered a new row
+          layoutState.itemCount = index + 1;
+          const totalRows = Math.floor(index / columns) + 1;
+          const neededHeight = padding + titleSpace + totalRows * (Math.max(200, shapeHeight) + gapY) + padding;
+          const frame = editor.getShape(frameId);
+          if (frame) {
+            const currentH = (frame.props as { h: number }).h;
+            if (neededHeight > currentH) {
+              editor.updateShape({
+                id: frameId,
+                type: "frame",
+                props: { h: neededHeight },
+              });
+            }
+          }
+          return;
+        }
+
+        // DataTable rows
+        const tableState = streamingTablesRef.current.get(callId);
+        if (tableState) {
+          // item is a string[] (row data) — accumulate in tracking state
+          const row = item as unknown as string[];
+          tableState.accumulatedRows.push(row);
+          tableState.rowCount = tableState.accumulatedRows.length;
+          const shape = editor.getShape(tableState.shapeId);
+          if (shape) {
+            const meta = (shape.meta || {}) as Record<string, unknown>;
+            editor.updateShape({
+              id: tableState.shapeId,
+              type: "datatable",
+              meta: {
+                ...meta,
+                pendingRows: JSON.stringify(tableState.accumulatedRows),
+              },
+            });
+
+            // Grow table height as rows arrive
+            const ROW_HEIGHT = 32;
+            const CHROME_HEIGHT = 42 + 34 + 32; // title + header + add-row button
+            const neededHeight = CHROME_HEIGHT + tableState.accumulatedRows.length * ROW_HEIGHT;
+            const currentH = (shape.props as { h: number }).h;
+            if (neededHeight > currentH) {
+              editor.updateShape({
+                id: tableState.shapeId,
+                type: "datatable",
+                props: { h: neededHeight },
+              });
+            }
+          }
+          return;
+        }
+
+        return;
+      }
+
+      if (toolName === "_streaming_content") {
+        const { callId, content } = args as { callId: string; content: string };
+
+        const docState = streamingDocsRef.current.get(callId);
+        if (docState) {
+          // Update the document shape's pendingContent — DocumentEditor watches this
+          const shape = editor.getShape(docState.shapeId);
+          if (shape) {
+            editor.updateShape({
+              id: docState.shapeId,
+              type: "document",
+              meta: {
+                ...(shape.meta as Record<string, unknown>),
+                pendingContent: content,
+              },
+            });
+          }
+        }
+        return;
+      }
+
+      if (toolName === "_streaming_done") {
+        const { callId, toolName: streamToolName, args: finalArgs } = args as {
+          callId: string;
+          toolName: string;
+          args: Record<string, unknown>;
+        };
+
+        // Finalize createLayout
+        const layoutState = streamingLayoutsRef.current.get(callId);
+        if (layoutState) {
+          const { frameId, columns, itemWidth, gapX, gapY, padding, titleSpace, isGrid, shapeHeight } = layoutState;
+          const finalLayout = finalArgs as {
+            items: Array<{ text?: string; color?: string; parentIndex?: number }>;
+            frameName?: string;
+          };
+
+          if (!isGrid) {
+            // HIERARCHY/FLOW: items weren't streamed individually — delete the
+            // placeholder frame and dispatch through the normal createLayout handler
+            // which has proper tree layout logic.
+            editor.deleteShape(frameId);
+            streamingLayoutsRef.current.delete(callId);
+            // Fall through to normal createLayout by calling handleToolCall recursively
+            handleToolCall("createLayout", finalArgs);
+            return;
+          }
+
+          // GRID: Resize frame to exact fit
+          const totalItems = finalLayout.items?.length || layoutState.itemCount;
+          const totalRows = Math.ceil(totalItems / columns);
+          const actualCols = Math.min(columns, totalItems);
+          const frameWidth = padding * 2 + actualCols * itemWidth + (actualCols - 1) * gapX;
+          const frameHeight = padding + titleSpace + totalRows * (Math.max(200, shapeHeight) + gapY) + padding;
+
+          editor.updateShape({
+            id: frameId,
+            type: "frame",
+            props: {
+              name: finalLayout.frameName || (editor.getShape(frameId)?.props as { name: string }).name,
+              w: frameWidth,
+              h: frameHeight,
+            },
+          });
+
+          streamingLayoutsRef.current.delete(callId);
+          // Layout finalized
+          return;
+        }
+
+        // Finalize createDocument
+        const docState = streamingDocsRef.current.get(callId);
+        if (docState) {
+          const finalDoc = finalArgs as { content?: string; title?: string };
+          const shape = editor.getShape(docState.shapeId);
+          if (shape && finalDoc.content) {
+            // Set final content via pendingContent — DocumentEditor applies it
+            const meta = (shape.meta || {}) as Record<string, unknown>;
+            editor.updateShape({
+              id: docState.shapeId,
+              type: "document",
+              props: {
+                ...(shape.props as Record<string, unknown>),
+                title: finalDoc.title || (shape.props as { title: string }).title,
+              },
+              meta: {
+                ...meta,
+                pendingContent: finalDoc.content,
+              },
+            });
+          }
+          streamingDocsRef.current.delete(callId);
+          // Document finalized
+          return;
+        }
+
+        // Finalize createDataTable
+        const tableState = streamingTablesRef.current.get(callId);
+        if (tableState) {
+          const finalTable = finalArgs as { columns?: string[]; rows?: string[][]; title?: string };
+          const shape = editor.getShape(tableState.shapeId);
+          if (shape) {
+            const meta = (shape.meta || {}) as Record<string, unknown>;
+            const cols = finalTable.columns || tableState.columns;
+            const rows = finalTable.rows || [];
+
+            // Build clean meta without undefined values (tldraw rejects them)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const cleanMeta: any = { ...meta, initialData: JSON.stringify({ columns: cols, rows }) };
+            delete cleanMeta.pendingRows;
+
+            // Only update title and meta — keep the size the table grew to during streaming
+            editor.updateShape({
+              id: tableState.shapeId,
+              type: "datatable",
+              props: {
+                title: finalTable.title || (shape.props as { title: string }).title,
+              },
+              meta: cleanMeta,
+            });
+          }
+          streamingTablesRef.current.delete(callId);
+          // DataTable finalized
+          return;
+        }
+
+        // If no streaming state found, this was a non-streamed tool — fall through to normal handlers
+        // (shouldn't happen, but safe fallback)
+        return;
+      }
+
+      // ===== END STREAMING HANDLERS =====
 
       if (toolName === "createSticky") {
         const { text, color } = args as {
@@ -1417,7 +1840,7 @@ export function Canvas() {
           },
           meta: {
             createdBy: "ai",
-            initialData: (columns && rows) ? { columns, rows } : undefined,
+            initialData: (columns && rows) ? JSON.stringify({ columns, rows }) : undefined,
           },
         });
         engine.recordPlacement(shapeId, { category: "format", width: validWidth, height: validHeight }, pos);

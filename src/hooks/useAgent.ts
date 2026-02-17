@@ -241,6 +241,64 @@ export function useAgent(
                   }
                 }
 
+                // STREAMING TOOL CALL EVENTS — shapes appear as model generates them
+                if (data.type === "tool_streaming_start") {
+                  // Tool call started streaming — forward to canvas for early frame/shape creation
+                  if (toolTextSplit === undefined) {
+                    toolTextSplit = bufferedText.length;
+                  }
+                  if (onToolCall) {
+                    onToolCall("_streaming_start", {
+                      toolName: data.toolName,
+                      callId: data.callId,
+                      partialArgs: data.partialArgs,
+                    });
+                  }
+                }
+
+                if (data.type === "tool_streaming_scalars") {
+                  // Updated scalar fields (title, frameName, columns, etc.)
+                  if (onToolCall) {
+                    onToolCall("_streaming_scalars", {
+                      callId: data.callId,
+                      scalars: data.scalars,
+                    });
+                  }
+                }
+
+                if (data.type === "tool_streaming_item") {
+                  // One complete item from an array — forward to canvas for immediate placement
+                  if (onToolCall) {
+                    onToolCall("_streaming_item", {
+                      callId: data.callId,
+                      item: data.item,
+                      index: data.index,
+                    });
+                  }
+                }
+
+                if (data.type === "tool_streaming_content") {
+                  // Progressive document content — forward to canvas
+                  if (onToolCall) {
+                    onToolCall("_streaming_content", {
+                      callId: data.callId,
+                      content: data.content,
+                    });
+                  }
+                }
+
+                if (data.type === "tool_streaming_done") {
+                  // Streamed tool call is complete — finalize and skip normal tool event
+                  bufferedTools.push({ toolName: data.toolName, args: data.args });
+                  if (onToolCall) {
+                    onToolCall("_streaming_done", {
+                      callId: data.callId,
+                      toolName: data.toolName,
+                      args: data.args,
+                    });
+                  }
+                }
+
                 if (data.type === "done") {
                   // Stream complete - update message with all buffered content at once
                   setMessages((prev) =>

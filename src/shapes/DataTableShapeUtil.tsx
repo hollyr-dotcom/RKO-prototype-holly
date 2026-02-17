@@ -80,7 +80,10 @@ export class DataTableShapeUtil extends ShapeUtil<IDataTableShape> {
     const isEditing = this.editor.getEditingShapeId() === shape.id;
     const isSelected = this.editor.getSelectedShapeIds().includes(shape.id);
     const meta = shape.meta as Record<string, unknown>;
-    const initialData = meta?.initialData as { columns: string[]; rows: string[][] } | undefined;
+    const rawInitialData = meta?.initialData;
+    const initialData = typeof rawInitialData === "string" ? (() => { try { return JSON.parse(rawInitialData); } catch { return undefined; } })() as { columns: string[]; rows: string[][] } | undefined : rawInitialData as { columns: string[]; rows: string[][] } | undefined;
+    const rawPendingRows = meta?.pendingRows;
+    const pendingRows = typeof rawPendingRows === "string" ? (() => { try { return JSON.parse(rawPendingRows); } catch { return undefined; } })() as string[][] | undefined : rawPendingRows as string[][] | undefined;
 
     return (
       <HTMLContainer
@@ -149,6 +152,7 @@ export class DataTableShapeUtil extends ShapeUtil<IDataTableShape> {
             h={shape.props.h}
             onEscape={() => this.editor.setEditingShape(null)}
             initialData={initialData}
+            pendingRows={pendingRows}
           />
         </AutoSizeWrapper>
       </HTMLContainer>

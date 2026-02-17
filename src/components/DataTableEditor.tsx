@@ -39,6 +39,7 @@ interface DataTableEditorProps {
   h: number;
   onEscape?: () => void;
   initialData?: { columns: string[]; rows: string[][] };
+  pendingRows?: string[][];
 }
 
 // Editable header component with type icon and config menu
@@ -215,12 +216,14 @@ function DataTableGrid({
   isSelected,
   tldrawEditor,
   onEscape,
+  pendingRows,
 }: {
   title: string;
   isEditing: boolean;
   isSelected?: boolean;
   tldrawEditor?: Editor;
   onEscape?: () => void;
+  pendingRows?: string[][];
 }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -372,6 +375,39 @@ function DataTableGrid({
     },
     []
   );
+
+  // Apply pending rows from AI streaming (same pattern as DocumentEditor's pendingContent)
+  const applyPendingRows = useMutation(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ({ storage }: any, { rows }: { rows: string[][] }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const records = storage.get("records") as LiveMap<string, any>;
+      if (!records) return;
+      const currentMeta = records.get("meta") as TableMeta | undefined;
+      if (!currentMeta) return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cols = migrateColumns(currentMeta.columns as any);
+      // Update row count and populate cells
+      records.set("meta", { ...currentMeta, rowCount: rows.length });
+      rows.forEach((row, rowIdx) => {
+        row.forEach((cell, colIdx) => {
+          if (colIdx < cols.length) {
+            records.set(`cell:${rowIdx}:${colIdx}`, cell);
+          }
+        });
+      });
+    },
+    []
+  );
+
+  const appliedPendingRowsRef = useRef<number>(0);
+  useEffect(() => {
+    // Wait for Liveblocks storage to be loaded (meta available) before applying rows
+    if (!meta) return;
+    if (!pendingRows || pendingRows.length <= appliedPendingRowsRef.current) return;
+    applyPendingRows({ rows: pendingRows });
+    appliedPendingRowsRef.current = pendingRows.length;
+  }, [pendingRows, applyPendingRows, meta]);
 
   // Add a new column with a specified type
   const addColumnWithType = useMutation(
@@ -747,6 +783,7 @@ export function DataTableEditor({
   h,
   onEscape,
   initialData,
+  pendingRows,
 }: DataTableEditorProps) {
   // Build initial Liveblocks storage from AI-provided data (or fall back to defaults).
   // initialStorage only applies when the room is first created — existing rooms keep their data.
@@ -830,7 +867,7 @@ export function DataTableEditor({
           </div>
         }
       >
-        <DataTableGrid title={title} isEditing={isEditing} isSelected={isSelected} tldrawEditor={tldrawEditor} onEscape={onEscape} />
+        <DataTableGrid title={title} isEditing={isEditing} isSelected={isSelected} tldrawEditor={tldrawEditor} onEscape={onEscape} pendingRows={pendingRows} />
       </Suspense>
     </RoomProvider>
   );
