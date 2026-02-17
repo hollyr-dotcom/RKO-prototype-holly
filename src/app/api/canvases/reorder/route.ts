@@ -1,27 +1,6 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { requireAuth } from "@/lib/auth/serverAuth";
-
-const CANVASES_PATH = path.join(process.cwd(), "src/data/canvases.json");
-
-type Canvas = {
-  id: string;
-  spaceId: string;
-  name: string;
-  emoji?: string;
-  createdAt: string;
-  updatedAt: string;
-  order: number;
-};
-
-function readCanvases(): Canvas[] {
-  return JSON.parse(fs.readFileSync(CANVASES_PATH, "utf-8"));
-}
-
-function writeCanvases(canvases: Canvas[]) {
-  fs.writeFileSync(CANVASES_PATH, JSON.stringify(canvases, null, 2) + "\n");
-}
+import { supabase } from "@/lib/supabase";
 
 /** PATCH /api/canvases/reorder — update the order of canvases within a space */
 export async function PATCH(req: Request) {
@@ -44,22 +23,21 @@ export async function PATCH(req: Request) {
       );
     }
 
-    const canvases = readCanvases();
+    const updates = orderedIds.map((id: string, index: number) =>
+      supabase
+        .from('canvases')
+        .update({ order: index })
+        .eq('id', id)
+        .eq('space_id', spaceId)
+    );
 
-    // Only update order for canvases in the specified space
-    for (const canvas of canvases) {
-      if (canvas.spaceId === spaceId) {
-        const newOrder = orderedIds.indexOf(canvas.id);
-        if (newOrder !== -1) {
-          canvas.order = newOrder;
-        }
-      }
-    }
-
-    writeCanvases(canvases);
+    await Promise.all(updates);
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    if (msg === 'Unauthorized') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.error('PATCH /api/canvases/reorder error:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

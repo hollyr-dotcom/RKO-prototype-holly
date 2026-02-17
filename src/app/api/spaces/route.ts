@@ -1,58 +1,44 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { requireAuth } from "@/lib/auth/serverAuth";
-
-const SPACES_PATH = path.join(process.cwd(), "src/data/spaces.json");
-const CANVASES_PATH = path.join(process.cwd(), "src/data/canvases.json");
-
-type Space = {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
-  order?: number;
-};
-
-type Canvas = {
-  id: string;
-  spaceId: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-function readSpaces(): Space[] {
-  return JSON.parse(fs.readFileSync(SPACES_PATH, "utf-8"));
-}
-
-function writeSpaces(spaces: Space[]) {
-  fs.writeFileSync(SPACES_PATH, JSON.stringify(spaces, null, 2) + "\n");
-}
-
-function readCanvases(): Canvas[] {
-  return JSON.parse(fs.readFileSync(CANVASES_PATH, "utf-8"));
-}
+import { supabase } from "@/lib/supabase";
+import { spaceRowToApi } from "@/lib/supabase-types";
 
 /** GET /api/spaces — list all spaces with canvas counts */
 export async function GET() {
   try {
     await requireAuth();
 
-    const spaces = readSpaces();
-    const canvases = readCanvases();
+    const { data: spaces, error } = await supabase
+      .from('spaces')
+      .select('*')
+      .order('order', { ascending: true });
 
-    const spacesWithCounts = spaces
-      .map((space) => ({
-        ...space,
-        canvasCount: canvases.filter((c) => c.spaceId === space.id).length,
-      }))
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    if (error) throw error;
 
-    return NextResponse.json(spacesWithCounts);
+    const { data: counts, error: countError } = await supabase
+      .from('canvases')
+      .select('space_id');
+
+    if (countError) throw countError;
+
+    const countMap: Record<string, number> = {};
+    for (const row of counts || []) {
+      countMap[row.space_id] = (countMap[row.space_id] || 0) + 1;
+    }
+
+    const result = (spaces || []).map(row => ({
+      ...spaceRowToApi(row),
+      canvasCount: countMap[row.id] || 0,
+    }));
+
+    return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    if (message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    console.error('GET /api/spaces error:', message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -67,26 +53,38 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
-    const spaces = readSpaces();
+    const { data: maxRow } = await supabase
+      .from('spaces')
+      .select('order')
+      .order('order', { ascending: false })
+      .limit(1)
+      .single();
+
+    const maxOrder = maxRow?.order ?? -1;
     const now = new Date().toISOString();
 
-    // Assign order to the end of the list
-    const maxOrder = spaces.reduce((max, s) => Math.max(max, s.order ?? 0), -1);
+    const { data, error } = await supabase
+      .from('spaces')
+      .insert({
+        id: `space-${Date.now()}`,
+        name,
+        description: description || '',
+        created_at: now,
+        updated_at: now,
+        order: maxOrder + 1,
+      })
+      .select()
+      .single();
 
-    const newSpace: Space = {
-      id: `space-${Date.now()}`,
-      name,
-      description: description || "",
-      createdAt: now,
-      updatedAt: now,
-      order: maxOrder + 1,
-    };
+    if (error) throw error;
 
-    spaces.push(newSpace);
-    writeSpaces(spaces);
-
-    return NextResponse.json(newSpace, { status: 201 });
+    return NextResponse.json(spaceRowToApi(data), { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    if (message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    console.error('POST /api/spaces error:', message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

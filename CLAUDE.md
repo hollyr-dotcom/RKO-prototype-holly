@@ -141,19 +141,26 @@ Built on **tldraw** (`tldraw` package).
 
 - `useChat()` — Manages chat messages and agent streaming
 - `useRealtimeVoice()` — OpenAI Realtime API for voice mode
-- `useStorageStore()` — Manages spaces and canvases (JSON file storage)
+- `useStorageStore()` — Manages spaces and canvases (Supabase via API routes)
 - `useSidebar()` — Global sidebar state
 - `useAuth()` — Auth.js authentication state
 
 ## Storage
 
-**File-based storage using JSON files (no database).**
+**Supabase PostgreSQL for spaces/canvases metadata. Liveblocks for canvas content (tldraw shapes).**
 
-- **Spaces**: `spaces/` directory — Each space is a folder
-- **Canvases**: `spaces/{spaceId}/{canvasId}.json` — tldraw snapshots
-- **Metadata**: `spaces/{spaceId}/metadata.json` — Space name, created date, canvases list
+- **Spaces table**: `id`, `name`, `description`, `created_at`, `updated_at`, `order`
+- **Canvases table**: `id`, `space_id`, `name`, `emoji`, `created_at`, `updated_at`, `order`
+- **Canvas content**: Stored in Liveblocks (not in Supabase)
+- **Read-only demo data**: `src/data/` JSON files (connectors, web search results, etc.) — still file-based
 
-API routes in `src/app/api/spaces/` and `src/app/api/canvases/` handle CRUD operations.
+### Key Files
+
+- `src/lib/supabase.ts` — Server-side Supabase client (service role key, bypasses RLS)
+- `src/lib/supabase-types.ts` — `SpaceRow`, `CanvasRow` types + `spaceRowToApi()`, `canvasRowToApi()` helpers (snake_case DB → camelCase API)
+- `scripts/migrate-to-supabase.ts` — One-time migration script to seed data from JSON files
+
+API routes in `src/app/api/spaces/` and `src/app/api/canvases/` handle CRUD operations via Supabase queries.
 
 ## Deployment
 
@@ -167,8 +174,6 @@ GitHub Actions workflow: `.github/workflows/deploy-vercel.yml`
 
 GitHub secrets required: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, plus all env vars below.
 
-**Note**: File-based storage in `src/data/` works for reads but writes are ephemeral on Vercel's serverless functions.
-
 ### Environment Variables
 
 - `OPENAI_API_KEY`
@@ -178,6 +183,8 @@ GitHub secrets required: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, p
 - `GOOGLE_CLIENT_ID` — Google OAuth client ID
 - `GOOGLE_CLIENT_SECRET` — Google OAuth client secret
 - `NEXT_PUBLIC_AUTH_CONFIGURED=true` — Enables the auth gate client-side
+- `SUPABASE_URL` — Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key (server-side only, bypasses RLS)
 
 ## Tech Stack Overview
 
@@ -188,7 +195,7 @@ GitHub secrets required: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, p
 - **Styling**: Tailwind CSS 4, Miro Design System
 - **Animation**: Framer Motion
 - **State**: React hooks, no global state library
-- **Storage**: JSON files (no database)
+- **Storage**: Supabase PostgreSQL (spaces/canvases metadata), Liveblocks (canvas content)
 
 ## Key Patterns
 
@@ -205,7 +212,7 @@ GitHub secrets required: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, p
 2. Tool returns shape data as JSON
 3. Client receives tool call → Calls `editor.createShape()` or `editor.updateShape()`
 4. tldraw updates canvas immediately
-5. Canvas state saved to JSON file via `/api/canvases/[canvasId]`
+5. Canvas metadata saved to Supabase via `/api/canvases/[canvasId]`
 
 ### Authentication Flow
 

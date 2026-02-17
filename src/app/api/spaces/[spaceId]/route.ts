@@ -1,39 +1,7 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { requireAuth } from "@/lib/auth/serverAuth";
-
-const SPACES_PATH = path.join(process.cwd(), "src/data/spaces.json");
-const CANVASES_PATH = path.join(process.cwd(), "src/data/canvases.json");
-
-type Space = {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type Canvas = {
-  id: string;
-  spaceId: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  order?: number;
-};
-
-function readSpaces(): Space[] {
-  return JSON.parse(fs.readFileSync(SPACES_PATH, "utf-8"));
-}
-
-function writeSpaces(spaces: Space[]) {
-  fs.writeFileSync(SPACES_PATH, JSON.stringify(spaces, null, 2) + "\n");
-}
-
-function readCanvases(): Canvas[] {
-  return JSON.parse(fs.readFileSync(CANVASES_PATH, "utf-8"));
-}
+import { supabase } from "@/lib/supabase";
+import { spaceRowToApi, canvasRowToApi } from "@/lib/supabase-types";
 
 /** GET /api/spaces/[spaceId] — single space with its canvases */
 export async function GET(
@@ -44,21 +12,34 @@ export async function GET(
     await requireAuth();
 
     const { spaceId } = await params;
-    const spaces = readSpaces();
-    const space = spaces.find((s) => s.id === spaceId);
 
-    if (!space) {
+    const { data: space, error } = await supabase
+      .from('spaces')
+      .select('*')
+      .eq('id', spaceId)
+      .single();
+
+    if (error || !space) {
       return NextResponse.json({ error: "Space not found" }, { status: 404 });
     }
 
-    const canvases = readCanvases();
-    const spaceCanvases = canvases
-      .filter((c) => c.spaceId === spaceId)
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    const { data: canvases, error: canvasError } = await supabase
+      .from('canvases')
+      .select('*')
+      .eq('space_id', spaceId)
+      .order('order', { ascending: true });
 
-    return NextResponse.json({ ...space, canvases: spaceCanvases });
+    if (canvasError) throw canvasError;
+
+    return NextResponse.json({
+      ...spaceRowToApi(space),
+      canvases: (canvases || []).map(canvasRowToApi),
+    });
   } catch (error) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    if (msg === 'Unauthorized') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.error('API /api/spaces/[spaceId] error:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -72,23 +53,31 @@ export async function PATCH(
 
     const { spaceId } = await params;
     const body = await req.json();
-    const spaces = readSpaces();
-    const index = spaces.findIndex((s) => s.id === spaceId);
 
-    if (index === -1) {
+    const updates: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (body.name !== undefined && typeof body.name === "string" && body.name.trim()) {
+      updates.name = body.name.trim();
+    }
+
+    const { data, error } = await supabase
+      .from('spaces')
+      .update(updates)
+      .eq('id', spaceId)
+      .select()
+      .single();
+
+    if (error || !data) {
       return NextResponse.json({ error: "Space not found" }, { status: 404 });
     }
 
-    // Only allow updating specific fields
-    if (body.name !== undefined && typeof body.name === "string" && body.name.trim()) {
-      spaces[index].name = body.name.trim();
-    }
-
-    spaces[index].updatedAt = new Date().toISOString();
-    writeSpaces(spaces);
-
-    return NextResponse.json(spaces[index]);
+    return NextResponse.json(spaceRowToApi(data));
   } catch (error) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    if (msg === 'Unauthorized') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.error('API /api/spaces/[spaceId] error:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

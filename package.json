@@ -44,6 +44,7 @@
     "@mirohq/design-system-typography": "*",
     "@openai/agents": "^0.4.4",
     "@stitches/react": "^1.2.8",
+    "@supabase/supabase-js": "^2.96.0",
     "@svar-ui/react-gantt": "^2.5.2",
     "@tailwindcss/postcss": "^4.1.18",
     "@tailwindcss/typography": "^0.5.19",

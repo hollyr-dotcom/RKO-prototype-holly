@@ -1,31 +1,16 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { requireAuth } from "@/lib/auth/serverAuth";
+import { supabase } from "@/lib/supabase";
+import { canvasRowToApi } from "@/lib/supabase-types";
 
-const CANVASES_PATH = path.join(process.cwd(), "src/data/canvases.json");
-
-type Canvas = {
-  id: string;
-  spaceId: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  order?: number;
-};
-
-function readCanvases(): Canvas[] {
-  return JSON.parse(fs.readFileSync(CANVASES_PATH, "utf-8"));
-}
-
-function writeCanvases(canvases: Canvas[]) {
-  fs.writeFileSync(CANVASES_PATH, JSON.stringify(canvases, null, 2) + "\n");
-}
-
-/** GET /api/canvases — list all canvases (reads from src/data, not public) */
+/** GET /api/canvases — list all canvases */
 export async function GET() {
-  const canvases = readCanvases();
-  return NextResponse.json(canvases);
+  const { data, error } = await supabase.from('canvases').select('*');
+  if (error) {
+    console.error('GET /api/canvases error:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  return NextResponse.json((data || []).map(canvasRowToApi));
 }
 
 /** POST /api/canvases — create a new canvas, optionally in a space */
@@ -42,29 +27,39 @@ export async function POST(req: Request) {
       );
     }
 
-    const canvases = readCanvases();
+    const targetSpaceId = spaceId || "";
+
+    const { data: maxRow } = await supabase
+      .from('canvases')
+      .select('order')
+      .eq('space_id', targetSpaceId)
+      .order('order', { ascending: false })
+      .limit(1)
+      .single();
+
+    const maxOrder = maxRow?.order ?? -1;
     const now = new Date().toISOString();
 
-    // Assign order to the end of the list within the same space
-    const targetSpaceId = spaceId || "";
-    const maxOrder = canvases
-      .filter((c) => c.spaceId === targetSpaceId)
-      .reduce((max, c) => Math.max(max, c.order ?? 0), -1);
+    const { data, error } = await supabase
+      .from('canvases')
+      .insert({
+        id: `canvas-${Date.now()}`,
+        space_id: targetSpaceId,
+        name,
+        created_at: now,
+        updated_at: now,
+        order: maxOrder + 1,
+      })
+      .select()
+      .single();
 
-    const newCanvas: Canvas = {
-      id: `canvas-${Date.now()}`,
-      spaceId: targetSpaceId,
-      name,
-      createdAt: now,
-      updatedAt: now,
-      order: maxOrder + 1,
-    };
+    if (error) throw error;
 
-    canvases.push(newCanvas);
-    writeCanvases(canvases);
-
-    return NextResponse.json(newCanvas, { status: 201 });
+    return NextResponse.json(canvasRowToApi(data), { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    if (msg === 'Unauthorized') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.error('POST /api/canvases error:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

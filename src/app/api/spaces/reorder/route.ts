@@ -1,26 +1,6 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { requireAuth } from "@/lib/auth/serverAuth";
-
-const SPACES_PATH = path.join(process.cwd(), "src/data/spaces.json");
-
-type Space = {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
-  order: number;
-};
-
-function readSpaces(): Space[] {
-  return JSON.parse(fs.readFileSync(SPACES_PATH, "utf-8"));
-}
-
-function writeSpaces(spaces: Space[]) {
-  fs.writeFileSync(SPACES_PATH, JSON.stringify(spaces, null, 2) + "\n");
-}
+import { supabase } from "@/lib/supabase";
 
 /** PATCH /api/spaces/reorder — update the order of spaces */
 export async function PATCH(req: Request) {
@@ -36,20 +16,20 @@ export async function PATCH(req: Request) {
       );
     }
 
-    const spaces = readSpaces();
+    const updates = orderedIds.map((id: string, index: number) =>
+      supabase
+        .from('spaces')
+        .update({ order: index })
+        .eq('id', id)
+    );
 
-    // Update order based on position in the orderedIds array
-    for (const space of spaces) {
-      const newOrder = orderedIds.indexOf(space.id);
-      if (newOrder !== -1) {
-        space.order = newOrder;
-      }
-    }
-
-    writeSpaces(spaces);
+    await Promise.all(updates);
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    if (msg === 'Unauthorized') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.error('PATCH /api/spaces/reorder error:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

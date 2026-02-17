@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth/serverAuth";
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { supabase } from "@/lib/supabase";
 import { IncrementalItemExtractor, STREAMING_TOOLS } from "@/lib/streamingParser";
 
 export const maxDuration = 120;
@@ -734,23 +735,23 @@ const createCanvasTool = tool({
     navigate: z.boolean().default(true).describe("Whether to take the user to the new canvas after creation"),
   }),
   execute: async ({ name, spaceId, navigate }) => {
-    const canvasesPath = path.join(process.cwd(), "src/data/canvases.json");
-    const canvases = JSON.parse(fs.readFileSync(canvasesPath, "utf-8"));
     const now = new Date().toISOString();
     const newCanvas = {
       id: `canvas-${Date.now()}`,
-      spaceId: spaceId || "",
+      space_id: spaceId || "",
       name,
-      createdAt: now,
-      updatedAt: now,
+      created_at: now,
+      updated_at: now,
+      order: 0,
     };
-    canvases.push(newCanvas);
-    fs.writeFileSync(canvasesPath, JSON.stringify(canvases, null, 2) + "\n");
+
+    const { error } = await supabase.from('canvases').insert(newCanvas);
+    if (error) throw error;
 
     return JSON.stringify({
       created: "canvas",
       canvasId: newCanvas.id,
-      spaceId: newCanvas.spaceId,
+      spaceId: newCanvas.space_id,
       name: newCanvas.name,
       navigate,
     });
