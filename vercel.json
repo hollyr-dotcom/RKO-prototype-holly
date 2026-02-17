@@ -1,0 +1,23 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "functions": {
+    "src/app/api/chat/route.ts": {
+      "maxDuration": 120,
+      "includeFiles": "src/data/**"
+    },
+    "src/app/api/plan/route.ts": {
+      "maxDuration": 300,
+      "includeFiles": "src/data/**"
+    },
+    "src/app/api/spaces/**/*.ts": {
+      "includeFiles": "src/data/**"
+    },
+    "src/app/api/canvases/**/*.ts": {
+      "includeFiles": "src/data/**"
+    },
+    "src/app/api/voice/search/route.ts": {
+      "includeFiles": "src/data/**"
+    }
+  }
+}

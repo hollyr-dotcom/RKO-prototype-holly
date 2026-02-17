@@ -8,8 +8,8 @@
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p 5000",
     "lint": "next lint",
-    "deploy": "firebase deploy --only hosting",
-    "deploy:preview": "firebase hosting:channel:deploy preview",
+    "deploy:vercel": "vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod --scope miro-web --force",
+    "deploy:vercel:preview": "vercel pull --yes --environment=preview && vercel build && vercel deploy --prebuilt --scope miro-web --force",
     "ship": "bash scripts/ship.sh"
   },
   "dependencies": {
@@ -55,11 +55,10 @@
     "@tiptap/y-tiptap": "^3.0.2",
     "ai": "3.3.0",
     "emoji-mart": "^5.6.0",
-    "firebase": "^12.9.0",
-    "firebase-admin": "^13.0.0",
     "framer-motion": "^12.31.0",
     "lib0": "^0.2.117",
     "next": "15.5.12",
+    "next-auth": "^5.0.0-beta.30",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",

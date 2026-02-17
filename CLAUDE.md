@@ -46,32 +46,34 @@ npm run build
 # Lint
 npm run lint
 
-# Deploy to Firebase
-npm run deploy              # Production
-npm run deploy:preview      # Preview channel
+# Deploy to Vercel
+npm run deploy:vercel       # Production
+npm run deploy:vercel:preview  # Preview
 ```
 
 **Note**: This project uses npm as the package manager. Always use `npm install`.
 
 ## Authentication Architecture
 
-**Firebase Authentication with Google OAuth restricted to @miro.com emails only.**
+**Auth.js v5 (NextAuth.js) with Google OAuth restricted to @miro.com emails only.**
 
 ### Multi-layer Email Domain Restriction
 
-1. **Client hint**: Google OAuth `hd=miro.com` parameter
-2. **Post-auth validation**: Immediate sign-out if email domain doesn't match
-3. **Server middleware**: Validates auth cookie on every request
-4. **API guards**: All API routes require authenticated @miro.com user
+1. **Provider hint**: Google OAuth `hd=miro.com` parameter
+2. **signIn callback**: Auth.js rejects non-miro.com emails at sign-in time
+3. **Server middleware**: Auth.js middleware runs on every request
+4. **API guards**: All API routes require authenticated @miro.com user via `requireAuth()`
 
 ### Key Files
 
+- `src/lib/auth/auth.ts` — Auth.js config (Google provider, callbacks, domain restriction)
+- `src/app/api/auth/[...nextauth]/route.ts` — Auth.js route handler
 - `src/lib/auth/serverAuth.ts` — Server-side auth utilities (`requireAuth()`, `getAuthenticatedUser()`)
 - `src/lib/auth/validation.ts` — Email domain validation (`isAllowedEmail()`)
-- `src/lib/auth/constants.ts` — Auth configuration (allowed domain, cookie name)
-- `src/hooks/useAuth.ts` — Client-side auth hook
+- `src/lib/auth/constants.ts` — Auth configuration (allowed domain)
+- `src/hooks/useAuth.ts` — Client-side auth hook (wraps `useSession()`)
 - `src/components/AuthGate.tsx` — Auth UI overlay (wraps entire app in `layout.tsx`)
-- `src/middleware.ts` — Route protection middleware
+- `src/middleware.ts` — Auth.js middleware export
 
 ### API Route Pattern
 
@@ -141,7 +143,7 @@ Built on **tldraw** (`tldraw` package).
 - `useRealtimeVoice()` — OpenAI Realtime API for voice mode
 - `useStorageStore()` — Manages spaces and canvases (JSON file storage)
 - `useSidebar()` — Global sidebar state
-- `useAuth()` — Firebase authentication state
+- `useAuth()` — Auth.js authentication state
 
 ## Storage
 
@@ -155,32 +157,34 @@ API routes in `src/app/api/spaces/` and `src/app/api/canvases/` handle CRUD oper
 
 ## Deployment
 
-**Firebase App Hosting** with GitHub Actions.
+### Vercel
+
+GitHub Actions workflow: `.github/workflows/deploy-vercel.yml`
+
+- **PR**: Deploys preview with URL commented on PR
+- **Main branch**: Deploys to production
+- **Manual**: Workflow dispatch available for any branch
+
+GitHub secrets required: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, plus all env vars below.
+
+**Note**: File-based storage in `src/data/` works for reads but writes are ephemeral on Vercel's serverless functions.
 
 ### Environment Variables
 
-Production secrets stored in GitHub repository secrets:
 - `OPENAI_API_KEY`
 - `TAVILY_API_KEY`
 - `NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY`
-- Firebase client config (all `NEXT_PUBLIC_FIREBASE_*`)
-- Firebase Admin SDK credentials (`FIREBASE_ADMIN_*`)
-- `FIREBASE_SERVICE_ACCOUNT` (for deployment)
-
-### Pipeline
-
-- **PR**: Deploys preview to Firebase preview channel (expires in 7 days)
-- **Main branch**: Deploys to production (`rko-project-2026.web.app`)
-- **Manual**: Workflow dispatch available for any branch
-
-Workflow file: `.github/workflows/deploy.yml`
+- `AUTH_SECRET` — Auth.js session secret (generate with `openssl rand -base64 32`)
+- `GOOGLE_CLIENT_ID` — Google OAuth client ID
+- `GOOGLE_CLIENT_SECRET` — Google OAuth client secret
+- `NEXT_PUBLIC_AUTH_CONFIGURED=true` — Enables the auth gate client-side
 
 ## Tech Stack Overview
 
 - **Framework**: Next.js 15 (App Router, React Server Components)
 - **Canvas**: tldraw 4.x
 - **AI**: OpenAI Agents SDK, OpenAI Realtime API
-- **Auth**: Firebase Authentication + Firebase Admin SDK
+- **Auth**: Auth.js v5 (NextAuth.js) with Google OAuth
 - **Styling**: Tailwind CSS 4, Miro Design System
 - **Animation**: Framer Motion
 - **State**: React hooks, no global state library
@@ -205,14 +209,15 @@ Workflow file: `.github/workflows/deploy.yml`
 
 ### Authentication Flow
 
-1. User visits app → `AuthGate` component checks `useAuth()` hook
+1. User visits app → `AuthGate` component checks `useAuth()` hook (wraps `useSession()`)
 2. If not authenticated → Show sign-in overlay with Google button
-3. User signs in → Firebase verifies email ends with @miro.com
-4. If valid → Set auth cookie, dismiss overlay, show app
-5. If invalid → Sign out immediately, show error
-6. All API calls → Middleware checks cookie → Server verifies with Firebase Admin SDK
+3. User clicks sign in → Auth.js redirects to Google OAuth
+4. Auth.js `signIn` callback verifies email ends with @miro.com
+5. If valid → Session created, user redirected back, auth gate dismissed
+6. If invalid → Sign-in rejected, error shown
+7. All API calls → `requireAuth()` calls `auth()` to get session from Auth.js
 
 ---
 
 **Project**: Canvas Prototype — AI-powered interactive canvas with voice and chat
-**Last Updated**: 2026-02-12
+**Last Updated**: 2026-02-17

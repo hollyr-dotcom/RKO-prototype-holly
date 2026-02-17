@@ -1,6 +1,4 @@
-import { cookies } from 'next/headers';
-import { adminAuth } from '@/lib/firebase/adminApp';
-import { AUTH_COOKIE_NAME } from './constants';
+import { auth } from './auth';
 import { isAllowedEmail } from './validation';
 
 export type AuthenticatedUser = {
@@ -10,36 +8,29 @@ export type AuthenticatedUser = {
   photoURL: string | null;
 };
 
+const isConfigured = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.AUTH_SECRET);
+
 export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
-  if (!adminAuth) return null;
+  if (!isConfigured) return null;
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+  const session = await auth();
+  if (!session?.user?.email) return null;
 
-  if (!token) return null;
-
-  try {
-    const decodedToken = await adminAuth.verifyIdToken(token);
-
-    if (!isAllowedEmail(decodedToken.email)) {
-      return null;
-    }
-
-    return {
-      uid: decodedToken.uid,
-      email: decodedToken.email!,
-      displayName: decodedToken.name || null,
-      photoURL: decodedToken.picture || null,
-    };
-  } catch (error) {
-    console.error('Token verification failed:', error);
+  if (!isAllowedEmail(session.user.email)) {
     return null;
   }
+
+  return {
+    uid: session.user.id,
+    email: session.user.email,
+    displayName: session.user.name || null,
+    photoURL: session.user.image || null,
+  };
 }
 
 export async function requireAuth(): Promise<AuthenticatedUser> {
-  // Skip auth when Firebase isn't configured (local dev)
-  if (!adminAuth) return { uid: 'local', email: 'dev@local', displayName: 'Local Dev', photoURL: null };
+  // Skip auth when Auth.js isn't configured (local dev)
+  if (!isConfigured) return { uid: 'local', email: 'dev@local', displayName: 'Local Dev', photoURL: null };
 
   const user = await getAuthenticatedUser();
   if (!user) {

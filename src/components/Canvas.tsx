@@ -813,11 +813,11 @@ function estimateDocumentHeight(html: string, shapeWidth: number = 780): number 
 }
 
 export function Canvas() {
-  // Get authenticated Firebase user
-  const { user: firebaseUser } = useAuth();
+  // Get authenticated user
+  const { user: authUser } = useAuth();
 
   // LiveBlocks multiplayer store -- syncs tldraw state across users
-  const [sessionUser] = useState(() => firebaseUser ? getSessionUser(firebaseUser) : getLocalDevUser());
+  const [sessionUser] = useState(() => authUser ? getSessionUser(authUser) : getLocalDevUser());
   const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 

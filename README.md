@@ -40,7 +40,7 @@ Built on [tldraw](https://tldraw.dev) and powered by OpenAI, the AI understands 
 - An [OpenAI API key](https://platform.openai.com/api-keys)
 - _(Optional)_ Tavily API key for web search
 - _(Optional)_ Liveblocks key for collaboration features
-- _(Optional)_ Firebase credentials for authentication (see [Local Setup Guide](docs/LOCAL_SETUP.md))
+- _(Optional)_ Google OAuth credentials for authentication (see [Local Setup Guide](docs/LOCAL_SETUP.md))
 
 ### Setup
 
@@ -53,7 +53,7 @@ cp .env.example .env.local
 # Add your API keys to .env.local (see .env.example for details)
 ```
 
-**Note:** Firebase authentication is **optional** for local development. The app automatically bypasses auth when Firebase credentials are missing. See the [Local Setup Guide](docs/LOCAL_SETUP.md) for details.
+**Note:** Authentication is **optional** for local development. The app automatically bypasses auth when credentials are missing. See the [Local Setup Guide](docs/LOCAL_SETUP.md) for details.
 
 ### Run
 
@@ -76,8 +76,10 @@ npm run dev:clean
 | `OPENAI_API_KEY` | Yes | Your OpenAI API key |
 | `TAVILY_API_KEY` | No | Enables web search on the canvas |
 | `NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY` | No | Enables real-time collaboration |
-| `NEXT_PUBLIC_FIREBASE_*` | No | Firebase client config (optional for local dev) |
-| `FIREBASE_ADMIN_*` | No | Firebase admin config (optional for local dev) |
+| `AUTH_SECRET` | No | Auth.js session secret (optional for local dev) |
+| `GOOGLE_CLIENT_ID` | No | Google OAuth client ID (optional for local dev) |
+| `GOOGLE_CLIENT_SECRET` | No | Google OAuth client secret (optional for local dev) |
+| `NEXT_PUBLIC_AUTH_CONFIGURED` | No | Set to `true` to enable auth gate |
 
 For full environment setup details, see [Local Setup Guide](docs/LOCAL_SETUP.md).
 

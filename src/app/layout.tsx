@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans } from "next/font/google";
 import "./globals.css";
+import { SessionProvider } from "next-auth/react";
 import { Providers } from "./Providers";
 import { ChatProvider } from "@/providers/ChatProvider";
 import { SidebarProvider } from "@/providers/SidebarProvider";
@@ -26,15 +27,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${notoSans.variable} font-sans antialiased`}>
-        <Providers>
-          <AuthGate>
-            <SidebarProvider>
-              <ChatProvider>
-                <NavigationShell>{children}</NavigationShell>
-              </ChatProvider>
-            </SidebarProvider>
-          </AuthGate>
-        </Providers>
+        <SessionProvider>
+          <Providers>
+            <AuthGate>
+              <SidebarProvider>
+                <ChatProvider>
+                  <NavigationShell>{children}</NavigationShell>
+                </ChatProvider>
+              </SidebarProvider>
+            </AuthGate>
+          </Providers>
+        </SessionProvider>
       </body>
     </html>
   );

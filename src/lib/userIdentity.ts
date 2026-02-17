@@ -1,4 +1,4 @@
-import { User } from 'firebase/auth';
+import type { AuthUser } from '@/hooks/useAuth';
 
 export type SessionUser = {
   id: string;
@@ -28,21 +28,21 @@ function hashStringToColor(str: string): string {
   return `hsl(${hue}, 70%, 60%)`;
 }
 
-export function getSessionUser(firebaseUser: User): SessionUser {
-  const firstName = firebaseUser.displayName?.split(' ')[0] ||
-                     firebaseUser.email?.split('@')[0] ||
+export function getSessionUser(authUser: AuthUser): SessionUser {
+  const firstName = authUser.displayName?.split(' ')[0] ||
+                     authUser.email?.split('@')[0] ||
                      'User';
 
   return {
-    id: firebaseUser.uid,
+    id: authUser.uid,
     name: firstName,
-    color: hashStringToColor(firebaseUser.uid),
-    email: firebaseUser.email!,
-    photoURL: firebaseUser.photoURL,
+    color: hashStringToColor(authUser.uid),
+    email: authUser.email!,
+    photoURL: authUser.photoURL,
   };
 }
 
-// Fallback for local dev without Firebase auth
+// Fallback for local dev without auth
 export function getLocalDevUser(): SessionUser {
   return {
     id: 'local-dev',
