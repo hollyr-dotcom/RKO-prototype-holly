@@ -1170,6 +1170,23 @@ export function Canvas() {
       isProcessingToolCallRef.current = true;
       let shapeId: TLShapeId | null = null;
 
+      // Helper: get a ZonePlacementEngine for placing content inside a parent frame
+      const getZoneEngineForFrame = (parentFrameId: string) => {
+        const frameShape = editor.getShape(parentFrameId as any);
+        if (!frameShape) return null;
+        const engine = getPlacementEngine();
+        const w = (frameShape.props as any).w || 800;
+        const h = (frameShape.props as any).h || 600;
+        return engine.getZoneEngine(parentFrameId, w, h);
+      };
+
+      // Helper: after zone engine placement, resize the parent frame if content exceeds its bounds
+      const maybeResizeParentFrame = (parentFrameId: string, newHeight: number | undefined) => {
+        if (newHeight !== undefined) {
+          editor.updateShape({ id: parentFrameId as any, type: "frame", props: { h: newHeight } });
+        }
+      };
+
       try {
 
       // ===== STREAMING TOOL CALL HANDLERS =====
@@ -1199,8 +1216,25 @@ export function Canvas() {
           const frameWidth = padding * 2 + estimatedCols * itemWidth + (estimatedCols - 1) * gapX;
           const frameHeight = padding + titleSpace + 200 + padding; // Start small
 
-          const engine = getPlacementEngine();
-          const canvasPos = engine.place({ category: "format", width: frameWidth, height: frameHeight });
+          const parentFrameId = partialArgs.parentFrameId as string | undefined;
+          let canvasPos: { x: number; y: number };
+
+          if (parentFrameId) {
+            const zoneEngine = getZoneEngineForFrame(parentFrameId);
+            if (zoneEngine) {
+              canvasPos = zoneEngine.place({ category: "format", width: frameWidth, height: frameHeight });
+              const newH = zoneEngine.recordPlacement(`streaming-layout-${callId}`, { category: "format", width: frameWidth, height: frameHeight }, canvasPos);
+              maybeResizeParentFrame(parentFrameId, newH);
+            } else {
+              const engine = getPlacementEngine();
+              canvasPos = engine.place({ category: "format", width: frameWidth, height: frameHeight });
+              engine.recordPlacement(`streaming-layout-${callId}`, { category: "format", width: frameWidth, height: frameHeight }, canvasPos);
+            }
+          } else {
+            const engine = getPlacementEngine();
+            canvasPos = engine.place({ category: "format", width: frameWidth, height: frameHeight });
+            engine.recordPlacement(`streaming-layout-${callId}`, { category: "format", width: frameWidth, height: frameHeight }, canvasPos);
+          }
 
           const frameId = createShapeId();
           editor.createShape({
@@ -1208,6 +1242,7 @@ export function Canvas() {
             type: "frame",
             x: canvasPos.x,
             y: canvasPos.y,
+            ...(parentFrameId ? { parentId: parentFrameId as any } : {}),
             props: {
               name: (partialArgs.frameName as string) || "Loading...",
               w: frameWidth,
@@ -1215,7 +1250,6 @@ export function Canvas() {
             },
             meta: { createdBy: "ai" },
           });
-          engine.recordPlacement(frameId, { category: "format", width: frameWidth, height: frameHeight }, canvasPos);
           createdShapesRef.current.push(frameId);
 
           streamingLayoutsRef.current.set(callId, {
@@ -1229,8 +1263,25 @@ export function Canvas() {
           const validWidth = 780;
           const validHeight = 400; // Start small, will grow
 
-          const engine = getPlacementEngine();
-          const pos = engine.place({ category: "format", width: validWidth, height: validHeight });
+          const parentFrameId = partialArgs.parentFrameId as string | undefined;
+          let pos: { x: number; y: number };
+
+          if (parentFrameId) {
+            const zoneEngine = getZoneEngineForFrame(parentFrameId);
+            if (zoneEngine) {
+              pos = zoneEngine.place({ category: "format", width: validWidth, height: validHeight });
+              const newH = zoneEngine.recordPlacement(`streaming-doc-${callId}`, { category: "format", width: validWidth, height: validHeight }, pos);
+              maybeResizeParentFrame(parentFrameId, newH);
+            } else {
+              const engine = getPlacementEngine();
+              pos = engine.place({ category: "format", width: validWidth, height: validHeight });
+              engine.recordPlacement(`streaming-doc-${callId}`, { category: "format", width: validWidth, height: validHeight }, pos);
+            }
+          } else {
+            const engine = getPlacementEngine();
+            pos = engine.place({ category: "format", width: validWidth, height: validHeight });
+            engine.recordPlacement(`streaming-doc-${callId}`, { category: "format", width: validWidth, height: validHeight }, pos);
+          }
 
           const docShapeId = createShapeId();
           editor.createShape({
@@ -1238,6 +1289,7 @@ export function Canvas() {
             type: "document",
             x: pos.x,
             y: pos.y,
+            ...(parentFrameId ? { parentId: parentFrameId as any } : {}),
             props: {
               docId: generateId(),
               title: (partialArgs.title as string) || "Writing...",
@@ -1246,7 +1298,6 @@ export function Canvas() {
             },
             meta: { createdBy: "ai" },
           });
-          engine.recordPlacement(docShapeId, { category: "format", width: validWidth, height: validHeight }, pos);
           createdShapesRef.current.push(docShapeId);
 
           streamingDocsRef.current.set(callId, { shapeId: docShapeId });
@@ -1259,8 +1310,25 @@ export function Canvas() {
           const validWidth = Math.max(columns.length * 120 + 68, 400);
           const validHeight = 200; // Start small
 
-          const engine = getPlacementEngine();
-          const pos = engine.place({ category: "format", width: validWidth, height: validHeight });
+          const parentFrameId = partialArgs.parentFrameId as string | undefined;
+          let pos: { x: number; y: number };
+
+          if (parentFrameId) {
+            const zoneEngine = getZoneEngineForFrame(parentFrameId);
+            if (zoneEngine) {
+              pos = zoneEngine.place({ category: "format", width: validWidth, height: validHeight });
+              const newH = zoneEngine.recordPlacement(`streaming-table-${callId}`, { category: "format", width: validWidth, height: validHeight }, pos);
+              maybeResizeParentFrame(parentFrameId, newH);
+            } else {
+              const engine = getPlacementEngine();
+              pos = engine.place({ category: "format", width: validWidth, height: validHeight });
+              engine.recordPlacement(`streaming-table-${callId}`, { category: "format", width: validWidth, height: validHeight }, pos);
+            }
+          } else {
+            const engine = getPlacementEngine();
+            pos = engine.place({ category: "format", width: validWidth, height: validHeight });
+            engine.recordPlacement(`streaming-table-${callId}`, { category: "format", width: validWidth, height: validHeight }, pos);
+          }
 
           const tableShapeId = createShapeId();
           const tableMeta: Record<string, string> = { createdBy: "ai" };
@@ -1273,6 +1341,7 @@ export function Canvas() {
             type: "datatable",
             x: pos.x,
             y: pos.y,
+            ...(parentFrameId ? { parentId: parentFrameId as any } : {}),
             props: {
               tableId: generateId(),
               title,
@@ -1281,7 +1350,6 @@ export function Canvas() {
             },
             meta: tableMeta,
           });
-          engine.recordPlacement(tableShapeId, { category: "format", width: validWidth, height: validHeight }, pos);
           createdShapesRef.current.push(tableShapeId);
 
           streamingTablesRef.current.set(callId, { shapeId: tableShapeId, columns, rowCount: 0, accumulatedRows: [] });
@@ -1577,38 +1645,64 @@ export function Canvas() {
       // ===== END STREAMING HANDLERS =====
 
       if (toolName === "createSticky") {
-        const { text, color } = args as {
+        const { text, color, parentFrameId } = args as {
           text: string;
           color: string;
+          parentFrameId?: string;
         };
 
-        const engine = getPlacementEngine();
-        const pos = engine.place({ category: "widget", width: 200, height: 200 });
+        if (parentFrameId) {
+          const zoneEngine = getZoneEngineForFrame(parentFrameId);
+          if (zoneEngine) {
+            const pos = zoneEngine.place({ category: "widget", width: 200, height: 200 });
+            shapeId = createShapeId();
+            editor.createShape({
+              id: shapeId,
+              type: "note",
+              x: pos.x,
+              y: pos.y,
+              parentId: parentFrameId as any,
+              props: {
+                richText: toRichText(text),
+                color: colorMap[color] || "yellow",
+                font: "sans",
+                size: "s",
+              },
+              meta: { createdBy: "ai" },
+            });
+            const newH = zoneEngine.recordPlacement(shapeId, { category: "widget", width: 200, height: 200 }, pos);
+            maybeResizeParentFrame(parentFrameId, newH);
+          }
+        } else {
+          const engine = getPlacementEngine();
+          const pos = engine.place({ category: "widget", width: 200, height: 200 });
 
-        shapeId = createShapeId();
-        editor.createShape({
-          id: shapeId,
-          type: "note",
-          x: pos.x,
-          y: pos.y,
-          props: {
-            richText: toRichText(text),
-            color: colorMap[color] || "yellow",
-            font: "sans",
-            size: "s",
-          },
-          meta: { createdBy: "ai" },
-        });
-        engine.recordPlacement(shapeId, { category: "widget", width: 200, height: 200 }, pos);
+          shapeId = createShapeId();
+          editor.createShape({
+            id: shapeId,
+            type: "note",
+            x: pos.x,
+            y: pos.y,
+            props: {
+              richText: toRichText(text),
+              color: colorMap[color] || "yellow",
+              font: "sans",
+              size: "s",
+            },
+            meta: { createdBy: "ai" },
+          });
+          engine.recordPlacement(shapeId, { category: "widget", width: 200, height: 200 }, pos);
+        }
       }
 
       if (toolName === "createShape") {
-        const { type, text, width, height, color } = args as {
+        const { type, text, width, height, color, parentFrameId } = args as {
           type: string;
           text?: string;
           width: number;
           height: number;
           color: string;
+          parentFrameId?: string;
         };
 
         const geoMap: Record<
@@ -1625,55 +1719,106 @@ export function Canvas() {
         const validWidth = Math.max(width || 150, 50);
         const validHeight = Math.max(height || 80, 50);
 
-        const engine = getPlacementEngine();
-        const pos = engine.place({ category: "widget", width: validWidth, height: validHeight });
+        if (parentFrameId) {
+          const zoneEngine = getZoneEngineForFrame(parentFrameId);
+          if (zoneEngine) {
+            const pos = zoneEngine.place({ category: "widget", width: validWidth, height: validHeight });
+            shapeId = createShapeId();
+            editor.createShape({
+              id: shapeId,
+              type: "geo",
+              x: pos.x,
+              y: pos.y,
+              parentId: parentFrameId as any,
+              props: {
+                geo: geoMap[type] || "rectangle",
+                w: validWidth,
+                h: validHeight,
+                color: colorMap[color] || "black",
+                font: "sans",
+                dash: "solid",
+                fill: "solid",
+                richText: text ? toRichText(text) : toRichText(""),
+              },
+              meta: { createdBy: "ai" },
+            });
+            const newH = zoneEngine.recordPlacement(shapeId, { category: "widget", width: validWidth, height: validHeight }, pos);
+            maybeResizeParentFrame(parentFrameId, newH);
+          }
+        } else {
+          const engine = getPlacementEngine();
+          const pos = engine.place({ category: "widget", width: validWidth, height: validHeight });
 
-        shapeId = createShapeId();
-        editor.createShape({
-          id: shapeId,
-          type: "geo",
-          x: pos.x,
-          y: pos.y,
-          props: {
-            geo: geoMap[type] || "rectangle",
-            w: validWidth,
-            h: validHeight,
-            color: colorMap[color] || "black",
-            font: "sans",
-            dash: "solid",
-            fill: "solid",
-            richText: text ? toRichText(text) : toRichText(""),
-          },
-          meta: { createdBy: "ai" },
-        });
-        engine.recordPlacement(shapeId, { category: "widget", width: validWidth, height: validHeight }, pos);
+          shapeId = createShapeId();
+          editor.createShape({
+            id: shapeId,
+            type: "geo",
+            x: pos.x,
+            y: pos.y,
+            props: {
+              geo: geoMap[type] || "rectangle",
+              w: validWidth,
+              h: validHeight,
+              color: colorMap[color] || "black",
+              font: "sans",
+              dash: "solid",
+              fill: "solid",
+              richText: text ? toRichText(text) : toRichText(""),
+            },
+            meta: { createdBy: "ai" },
+          });
+          engine.recordPlacement(shapeId, { category: "widget", width: validWidth, height: validHeight }, pos);
+        }
       }
 
       if (toolName === "createText") {
-        const { text } = args as {
+        const { text, parentFrameId } = args as {
           text: string;
+          parentFrameId?: string;
         };
 
         // Estimate text size (roughly 10px per char width, 30px height)
         const estimatedWidth = Math.max(text.length * 10, 100);
         const estimatedHeight = 40;
 
-        const engine = getPlacementEngine();
-        const pos = engine.place({ category: "widget", width: estimatedWidth, height: estimatedHeight });
+        if (parentFrameId) {
+          const zoneEngine = getZoneEngineForFrame(parentFrameId);
+          if (zoneEngine) {
+            const pos = zoneEngine.place({ category: "widget", width: estimatedWidth, height: estimatedHeight });
+            shapeId = createShapeId();
+            editor.createShape({
+              id: shapeId,
+              type: "text",
+              x: pos.x,
+              y: pos.y,
+              parentId: parentFrameId as any,
+              props: {
+                richText: toRichText(text),
+                size: "m",
+              },
+              meta: { createdBy: "ai" },
+            });
+            const newH = zoneEngine.recordPlacement(shapeId, { category: "widget", width: estimatedWidth, height: estimatedHeight }, pos);
+            maybeResizeParentFrame(parentFrameId, newH);
+          }
+        } else {
+          const engine = getPlacementEngine();
+          const pos = engine.place({ category: "widget", width: estimatedWidth, height: estimatedHeight });
 
-        shapeId = createShapeId();
-        editor.createShape({
-          id: shapeId,
-          type: "text",
-          x: pos.x,
-          y: pos.y,
-          props: {
-            richText: toRichText(text),
-            size: "m",
-          },
-          meta: { createdBy: "ai" },
-        });
-        engine.recordPlacement(shapeId, { category: "widget", width: estimatedWidth, height: estimatedHeight }, pos);
+          shapeId = createShapeId();
+          editor.createShape({
+            id: shapeId,
+            type: "text",
+            x: pos.x,
+            y: pos.y,
+            props: {
+              richText: toRichText(text),
+              size: "m",
+            },
+            meta: { createdBy: "ai" },
+          });
+          engine.recordPlacement(shapeId, { category: "widget", width: estimatedWidth, height: estimatedHeight }, pos);
+        }
       }
 
       if (toolName === "createFrame") {
@@ -1707,11 +1852,12 @@ export function Canvas() {
       }
 
       if (toolName === "createDocument") {
-        const { title, content, width, height } = args as {
+        const { title, content, width, height, parentFrameId } = args as {
           title?: string;
           content?: string;
           width?: number;
           height?: number;
+          parentFrameId?: string;
         };
 
         const validWidth = Math.max(width || 780, 200);
@@ -1719,27 +1865,54 @@ export function Canvas() {
         const estimatedH = content ? estimateDocumentHeight(content, validWidth) : 660;
         const validHeight = Math.max(height || estimatedH, 200);
 
-        const engine = getPlacementEngine();
-        const pos = engine.place({ category: "format", width: validWidth, height: validHeight });
+        if (parentFrameId) {
+          const zoneEngine = getZoneEngineForFrame(parentFrameId);
+          if (zoneEngine) {
+            const pos = zoneEngine.place({ category: "format", width: validWidth, height: validHeight });
+            shapeId = createShapeId();
+            editor.createShape({
+              id: shapeId,
+              type: "document",
+              x: pos.x,
+              y: pos.y,
+              parentId: parentFrameId as any,
+              props: {
+                docId: generateId(),
+                title: title || "Untitled document",
+                w: validWidth,
+                h: validHeight,
+              },
+              meta: {
+                createdBy: "ai",
+                initialContent: content || undefined,
+              },
+            });
+            const newH = zoneEngine.recordPlacement(shapeId, { category: "format", width: validWidth, height: validHeight }, pos);
+            maybeResizeParentFrame(parentFrameId, newH);
+          }
+        } else {
+          const engine = getPlacementEngine();
+          const pos = engine.place({ category: "format", width: validWidth, height: validHeight });
 
-        shapeId = createShapeId();
-        editor.createShape({
-          id: shapeId,
-          type: "document",
-          x: pos.x,
-          y: pos.y,
-          props: {
-            docId: generateId(),
-            title: title || "Untitled document",
-            w: validWidth,
-            h: validHeight,
-          },
-          meta: {
-            createdBy: "ai",
-            initialContent: content || undefined,
-          },
-        });
-        engine.recordPlacement(shapeId, { category: "format", width: validWidth, height: validHeight }, pos);
+          shapeId = createShapeId();
+          editor.createShape({
+            id: shapeId,
+            type: "document",
+            x: pos.x,
+            y: pos.y,
+            props: {
+              docId: generateId(),
+              title: title || "Untitled document",
+              w: validWidth,
+              h: validHeight,
+            },
+            meta: {
+              createdBy: "ai",
+              initialContent: content || undefined,
+            },
+          });
+          engine.recordPlacement(shapeId, { category: "format", width: validWidth, height: validHeight }, pos);
+        }
       }
 
       if (toolName === "updateDocument") {
@@ -1778,12 +1951,13 @@ export function Canvas() {
       }
 
       if (toolName === "createDataTable") {
-        const { title, columns, rows, width, height } = args as {
+        const { title, columns, rows, width, height, parentFrameId } = args as {
           title?: string;
           columns?: string[];
           rows?: string[][];
           width?: number;
           height?: number;
+          parentFrameId?: string;
         };
 
         // Calculate size from content if not explicitly provided
@@ -1823,36 +1997,64 @@ export function Canvas() {
         const validWidth = Math.max(calcWidth || 700, 200);
         const validHeight = Math.max(calcHeight || 460, 150);
 
-        const engine = getPlacementEngine();
-        const pos = engine.place({ category: "format", width: validWidth, height: validHeight });
+        if (parentFrameId) {
+          const zoneEngine = getZoneEngineForFrame(parentFrameId);
+          if (zoneEngine) {
+            const pos = zoneEngine.place({ category: "format", width: validWidth, height: validHeight });
+            shapeId = createShapeId();
+            editor.createShape({
+              id: shapeId,
+              type: "datatable",
+              x: pos.x,
+              y: pos.y,
+              parentId: parentFrameId as any,
+              props: {
+                tableId: generateId(),
+                title: title || "Untitled table",
+                w: validWidth,
+                h: validHeight,
+              },
+              meta: {
+                createdBy: "ai",
+                initialData: (columns && rows) ? JSON.stringify({ columns, rows }) : undefined,
+              },
+            });
+            const newH = zoneEngine.recordPlacement(shapeId, { category: "format", width: validWidth, height: validHeight }, pos);
+            maybeResizeParentFrame(parentFrameId, newH);
+          }
+        } else {
+          const engine = getPlacementEngine();
+          const pos = engine.place({ category: "format", width: validWidth, height: validHeight });
 
-        shapeId = createShapeId();
-        editor.createShape({
-          id: shapeId,
-          type: "datatable",
-          x: pos.x,
-          y: pos.y,
-          props: {
-            tableId: generateId(),
-            title: title || "Untitled table",
-            w: validWidth,
-            h: validHeight,
-          },
-          meta: {
-            createdBy: "ai",
-            initialData: (columns && rows) ? JSON.stringify({ columns, rows }) : undefined,
-          },
-        });
-        engine.recordPlacement(shapeId, { category: "format", width: validWidth, height: validHeight }, pos);
+          shapeId = createShapeId();
+          editor.createShape({
+            id: shapeId,
+            type: "datatable",
+            x: pos.x,
+            y: pos.y,
+            props: {
+              tableId: generateId(),
+              title: title || "Untitled table",
+              w: validWidth,
+              h: validHeight,
+            },
+            meta: {
+              createdBy: "ai",
+              initialData: (columns && rows) ? JSON.stringify({ columns, rows }) : undefined,
+            },
+          });
+          engine.recordPlacement(shapeId, { category: "format", width: validWidth, height: validHeight }, pos);
+        }
       }
 
       if (toolName === "createSticker_result") {
-        const { url, width, height, stickerId, error } = args as {
+        const { url, width, height, stickerId, error, parentFrameId } = args as {
           url: string;
           width: number;
           height: number;
           stickerId: string;
           error?: string;
+          parentFrameId?: string;
         };
 
         if (error || !url) {
@@ -1861,8 +2063,6 @@ export function Canvas() {
 
         const displayW = 120;
         const displayH = (height / width) * displayW;
-        const engine = getPlacementEngine();
-        const pos = engine.place({ category: "decorative", width: displayW, height: displayH });
         const assetId = `asset:sticker-${stickerId}-${Date.now()}` as any;
         editor.createAssets([{
           id: assetId,
@@ -1878,24 +2078,49 @@ export function Canvas() {
           },
           meta: {},
         }]);
-        shapeId = createShapeId();
-        editor.createShape({
-          id: shapeId,
-          type: "image",
-          x: pos.x,
-          y: pos.y,
-          props: {
-            assetId,
-            w: displayW,
-            h: displayH,
-          },
-        });
-        engine.recordPlacement(shapeId, { category: "decorative", width: displayW, height: displayH }, pos);
+
+        if (parentFrameId) {
+          const zoneEngine = getZoneEngineForFrame(parentFrameId);
+          if (zoneEngine) {
+            const pos = zoneEngine.place({ category: "decorative", width: displayW, height: displayH });
+            shapeId = createShapeId();
+            editor.createShape({
+              id: shapeId,
+              type: "image",
+              x: pos.x,
+              y: pos.y,
+              parentId: parentFrameId as any,
+              props: {
+                assetId,
+                w: displayW,
+                h: displayH,
+              },
+            });
+            const newH = zoneEngine.recordPlacement(shapeId, { category: "decorative", width: displayW, height: displayH }, pos);
+            maybeResizeParentFrame(parentFrameId, newH);
+          }
+        } else {
+          const engine = getPlacementEngine();
+          const pos = engine.place({ category: "decorative", width: displayW, height: displayH });
+          shapeId = createShapeId();
+          editor.createShape({
+            id: shapeId,
+            type: "image",
+            x: pos.x,
+            y: pos.y,
+            props: {
+              assetId,
+              w: displayW,
+              h: displayH,
+            },
+          });
+          engine.recordPlacement(shapeId, { category: "decorative", width: displayW, height: displayH }, pos);
+        }
         }
       }
 
       if (toolName === "createTaskCard") {
-        const { title, description, status, priority, assignee, dueDate, tags, subtasks } = args as {
+        const { title, description, status, priority, assignee, dueDate, tags, subtasks, parentFrameId } = args as {
           title?: string;
           description?: string;
           status?: string;
@@ -1904,34 +2129,66 @@ export function Canvas() {
           dueDate?: string;
           tags?: string[];
           subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+          parentFrameId?: string;
         };
 
         const validWidth = 288;
         const validHeight = 160;
-        const engine = getPlacementEngine();
-        const pos = engine.place({ category: "widget", width: validWidth, height: validHeight });
 
-        shapeId = createShapeId();
-        editor.createShape({
-          id: shapeId,
-          type: "taskcard" as any,
-          x: pos.x,
-          y: pos.y,
-          props: {
-            w: validWidth,
-            h: validHeight,
-            title: title || "Untitled task",
-            description: description || "",
-            status: status || "not_started",
-            priority: priority || "medium",
-            assignee: assignee || "",
-            dueDate: dueDate || "",
-            tags: tags || [],
-            subtasks: subtasks || [],
-          },
-          meta: { createdBy: "ai" },
-        });
-        engine.recordPlacement(shapeId, { category: "widget", width: validWidth, height: validHeight }, pos);
+        if (parentFrameId) {
+          const zoneEngine = getZoneEngineForFrame(parentFrameId);
+          if (zoneEngine) {
+            const pos = zoneEngine.place({ category: "widget", width: validWidth, height: validHeight });
+            shapeId = createShapeId();
+            editor.createShape({
+              id: shapeId,
+              type: "taskcard" as any,
+              x: pos.x,
+              y: pos.y,
+              parentId: parentFrameId as any,
+              props: {
+                w: validWidth,
+                h: validHeight,
+                title: title || "Untitled task",
+                description: description || "",
+                status: status || "not_started",
+                priority: priority || "medium",
+                assignee: assignee || "",
+                dueDate: dueDate || "",
+                tags: tags || [],
+                subtasks: subtasks || [],
+              },
+              meta: { createdBy: "ai" },
+            });
+            const newH = zoneEngine.recordPlacement(shapeId, { category: "widget", width: validWidth, height: validHeight }, pos);
+            maybeResizeParentFrame(parentFrameId, newH);
+          }
+        } else {
+          const engine = getPlacementEngine();
+          const pos = engine.place({ category: "widget", width: validWidth, height: validHeight });
+
+          shapeId = createShapeId();
+          editor.createShape({
+            id: shapeId,
+            type: "taskcard" as any,
+            x: pos.x,
+            y: pos.y,
+            props: {
+              w: validWidth,
+              h: validHeight,
+              title: title || "Untitled task",
+              description: description || "",
+              status: status || "not_started",
+              priority: priority || "medium",
+              assignee: assignee || "",
+              dueDate: dueDate || "",
+              tags: tags || [],
+              subtasks: subtasks || [],
+            },
+            meta: { createdBy: "ai" },
+          });
+          engine.recordPlacement(shapeId, { category: "widget", width: validWidth, height: validHeight }, pos);
+        }
       }
 
       if (toolName === "createGanttChart") {
@@ -2100,6 +2357,7 @@ export function Canvas() {
           type: LayoutType;
           frameName: string;
           replaceFrame?: string;
+          parentFrameId?: string;
           items: Array<{
             type: "sticky" | "shape" | "text";
             text: string;
@@ -2203,8 +2461,24 @@ export function Canvas() {
           };
 
           const result = calculateLayout("hierarchy", layoutItems, options);
-          const engine = getPlacementEngine();
-          const canvasPos = engine.place({ category: "format", width: result.frame.width, height: result.frame.height, replacePosition });
+
+          let canvasPos: { x: number; y: number };
+          if (layout.parentFrameId) {
+            const zoneEngine = getZoneEngineForFrame(layout.parentFrameId);
+            if (zoneEngine) {
+              canvasPos = zoneEngine.place({ category: "format", width: result.frame.width, height: result.frame.height, replacePosition });
+              const newH = zoneEngine.recordPlacement(`layout-hierarchy-${Date.now()}`, { category: "format", width: result.frame.width, height: result.frame.height }, canvasPos);
+              maybeResizeParentFrame(layout.parentFrameId, newH);
+            } else {
+              const engine = getPlacementEngine();
+              canvasPos = engine.place({ category: "format", width: result.frame.width, height: result.frame.height, replacePosition });
+              engine.recordPlacement(`layout-hierarchy-${Date.now()}`, { category: "format", width: result.frame.width, height: result.frame.height }, canvasPos);
+            }
+          } else {
+            const engine = getPlacementEngine();
+            canvasPos = engine.place({ category: "format", width: result.frame.width, height: result.frame.height, replacePosition });
+            engine.recordPlacement(`layout-hierarchy-${Date.now()}`, { category: "format", width: result.frame.width, height: result.frame.height }, canvasPos);
+          }
 
           // Create frame
           const frameId = createShapeId();
@@ -2213,6 +2487,7 @@ export function Canvas() {
             type: "frame",
             x: canvasPos.x,
             y: canvasPos.y,
+            ...(layout.parentFrameId ? { parentId: layout.parentFrameId as any } : {}),
             props: {
               name: layout.frameName,
               w: result.frame.width,
@@ -2220,7 +2495,6 @@ export function Canvas() {
             },
             meta: { createdBy: "ai" },
           });
-          engine.recordPlacement(frameId, { category: "format", width: result.frame.width, height: result.frame.height }, canvasPos);
           createdShapesRef.current.push(frameId);
 
           // Create items INSIDE frame with RELATIVE coordinates
@@ -2317,8 +2591,24 @@ export function Canvas() {
           };
 
           const result = calculateLayout("timeline", layoutItems, options);
-          const engine = getPlacementEngine();
-          const canvasPos = engine.place({ category: "format", width: result.frame.width, height: result.frame.height, replacePosition });
+
+          let canvasPos: { x: number; y: number };
+          if (layout.parentFrameId) {
+            const zoneEngine = getZoneEngineForFrame(layout.parentFrameId);
+            if (zoneEngine) {
+              canvasPos = zoneEngine.place({ category: "format", width: result.frame.width, height: result.frame.height, replacePosition });
+              const newH = zoneEngine.recordPlacement(`layout-timeline-${Date.now()}`, { category: "format", width: result.frame.width, height: result.frame.height }, canvasPos);
+              maybeResizeParentFrame(layout.parentFrameId, newH);
+            } else {
+              const engine = getPlacementEngine();
+              canvasPos = engine.place({ category: "format", width: result.frame.width, height: result.frame.height, replacePosition });
+              engine.recordPlacement(`layout-timeline-${Date.now()}`, { category: "format", width: result.frame.width, height: result.frame.height }, canvasPos);
+            }
+          } else {
+            const engine = getPlacementEngine();
+            canvasPos = engine.place({ category: "format", width: result.frame.width, height: result.frame.height, replacePosition });
+            engine.recordPlacement(`layout-timeline-${Date.now()}`, { category: "format", width: result.frame.width, height: result.frame.height }, canvasPos);
+          }
 
           // Create frame
           const frameId = createShapeId();
@@ -2327,6 +2617,7 @@ export function Canvas() {
             type: "frame",
             x: canvasPos.x,
             y: canvasPos.y,
+            ...(layout.parentFrameId ? { parentId: layout.parentFrameId as any } : {}),
             props: {
               name: layout.frameName,
               w: result.frame.width,
@@ -2334,7 +2625,6 @@ export function Canvas() {
             },
             meta: { createdBy: "ai" },
           });
-          engine.recordPlacement(frameId, { category: "format", width: result.frame.width, height: result.frame.height }, canvasPos);
           createdShapesRef.current.push(frameId);
 
           // Render decorations (time labels, dots, connecting bar)
@@ -2479,8 +2769,23 @@ export function Canvas() {
         const frameWidth = padding * 2 + actualCols * itemWidth + (actualCols - 1) * gapX;
         const frameHeight = padding + titleSpace + rowYOffsets[rows] + padding;
 
-        const engine = getPlacementEngine();
-        const canvasPos = engine.place({ category: "format", width: frameWidth, height: frameHeight, replacePosition });
+        let canvasPos: { x: number; y: number };
+        if (layout.parentFrameId) {
+          const zoneEngine = getZoneEngineForFrame(layout.parentFrameId);
+          if (zoneEngine) {
+            canvasPos = zoneEngine.place({ category: "format", width: frameWidth, height: frameHeight, replacePosition });
+            const newH = zoneEngine.recordPlacement(`layout-grid-${Date.now()}`, { category: "format", width: frameWidth, height: frameHeight }, canvasPos);
+            maybeResizeParentFrame(layout.parentFrameId, newH);
+          } else {
+            const engine = getPlacementEngine();
+            canvasPos = engine.place({ category: "format", width: frameWidth, height: frameHeight, replacePosition });
+            engine.recordPlacement(`layout-grid-${Date.now()}`, { category: "format", width: frameWidth, height: frameHeight }, canvasPos);
+          }
+        } else {
+          const engine = getPlacementEngine();
+          canvasPos = engine.place({ category: "format", width: frameWidth, height: frameHeight, replacePosition });
+          engine.recordPlacement(`layout-grid-${Date.now()}`, { category: "format", width: frameWidth, height: frameHeight }, canvasPos);
+        }
         console.log('[LAYOUT] Frame at', canvasPos, 'size', frameWidth, 'x', frameHeight);
 
         // Create frame
@@ -2490,6 +2795,7 @@ export function Canvas() {
           type: "frame",
           x: canvasPos.x,
           y: canvasPos.y,
+          ...(layout.parentFrameId ? { parentId: layout.parentFrameId as any } : {}),
           props: {
             name: layout.frameName,
             w: frameWidth,
@@ -2497,7 +2803,6 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
-        engine.recordPlacement(frameId, { category: "format", width: frameWidth, height: frameHeight }, canvasPos);
         createdShapesRef.current.push(frameId);
 
         // Create items
