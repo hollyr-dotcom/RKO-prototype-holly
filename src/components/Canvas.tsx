@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { DocumentShapeUtil } from "@/shapes/DocumentShapeUtil";
 import { DataTableShapeUtil } from "@/shapes/DataTableShapeUtil";
 import { CommentShapeUtil } from "@/shapes/CommentShapeUtil";
+import { TaskCardShapeUtil } from "@/shapes/TaskCardShapeUtil";
 import { Toolbar } from "./Toolbar";
 import { StartingPromptCards } from "./StartingPromptCards";
 import { CanvasComments } from "./CanvasComments";
@@ -785,7 +786,7 @@ const colorMap: Record<string, TLColor> = {
 type CreationToastInfo = {
   id: string; // unique key per tool call
   name: string;
-  type: "board" | "frame" | "items" | "document" | "table";
+  type: "board" | "frame" | "items" | "document" | "table" | "task";
   isCreating: boolean;
   canvasId?: string;
   frameName?: string;
@@ -812,7 +813,7 @@ export function Canvas() {
 
   // LiveBlocks multiplayer store -- syncs tldraw state across users
   const [sessionUser] = useState(() => firebaseUser ? getSessionUser(firebaseUser) : getLocalDevUser());
-  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil], []);
+  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 
   // Prevent browser back/forward navigation from trackpad gestures (Safari + fallback)
@@ -1059,6 +1060,19 @@ export function Canvas() {
         }
       }
 
+      // Task cards: extract title + status + priority + assignee
+      if ((shape.type as string) === 'taskcard') {
+        const title = props.title as string | undefined;
+        const status = props.status as string | undefined;
+        const priority = props.priority as string | undefined;
+        const assignee = props.assignee as string | undefined;
+        const parts = [title || 'Untitled task'];
+        if (status) parts.push(`status:${status}`);
+        if (priority) parts.push(`priority:${priority}`);
+        if (assignee) parts.push(`assignee:${assignee}`);
+        text = parts.join(', ');
+      }
+
       return {
         id: shape.id,
         type: shape.type,
@@ -1300,6 +1314,29 @@ export function Canvas() {
         }
       }
 
+      if (toolName === "updateTaskCard") {
+        const { itemId, ...updates } = args as { itemId: string; title?: string; description?: string; status?: string; priority?: string; assignee?: string; dueDate?: string; tags?: string[]; subtasks?: Array<{ id: string; title: string; completed: boolean }> };
+        const shape = editor.getShape(itemId as TLShapeId);
+        if (shape && (shape.type as string) === "taskcard") {
+          const currentProps = shape.props as Record<string, unknown>;
+          editor.updateShape({
+            id: shape.id,
+            type: "taskcard" as any,
+            props: {
+              ...currentProps,
+              ...(updates.title !== undefined && { title: updates.title }),
+              ...(updates.description !== undefined && { description: updates.description }),
+              ...(updates.status !== undefined && { status: updates.status }),
+              ...(updates.priority !== undefined && { priority: updates.priority }),
+              ...(updates.assignee !== undefined && { assignee: updates.assignee }),
+              ...(updates.dueDate !== undefined && { dueDate: updates.dueDate }),
+              ...(updates.tags !== undefined && { tags: updates.tags }),
+              ...(updates.subtasks !== undefined && { subtasks: updates.subtasks }),
+            },
+          });
+        }
+      }
+
       if (toolName === "createDataTable") {
         const { title, columns, rows, x, y, width, height } = args as {
           title?: string;
@@ -1366,6 +1403,46 @@ export function Canvas() {
             createdBy: "ai",
             initialData: (columns && rows) ? { columns, rows } : undefined,
           },
+        });
+      }
+
+      if (toolName === "createTaskCard") {
+        const { title, description, status, priority, assignee, dueDate, tags, subtasks, x, y } = args as {
+          title?: string;
+          description?: string;
+          status?: string;
+          priority?: string;
+          assignee?: string;
+          dueDate?: string;
+          tags?: string[];
+          subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+          x?: number;
+          y?: number;
+        };
+
+        const validWidth = 280;
+        const validHeight = 160;
+        const pos = findNonOverlappingPosition(x || 0, y || 0, validWidth, validHeight, "shape");
+
+        shapeId = createShapeId();
+        editor.createShape({
+          id: shapeId,
+          type: "taskcard" as any,
+          x: pos.x,
+          y: pos.y,
+          props: {
+            w: validWidth,
+            h: validHeight,
+            title: title || "Untitled task",
+            description: description || "",
+            status: status || "not_started",
+            priority: priority || "medium",
+            assignee: assignee || "",
+            dueDate: dueDate || "",
+            tags: tags || [],
+            subtasks: subtasks || [],
+          },
+          meta: { createdBy: "ai" },
         });
       }
 
@@ -2744,7 +2821,7 @@ export function Canvas() {
     const CREATION_TOOL_NAMES = [
       "createCanvas", "createLayout", "createFrame",
       "createSticky", "createShape", "createText",
-      "createDocument", "createDataTable",
+      "createDocument", "createDataTable", "createTaskCard",
     ];
     const creationTools = tools.filter((t: { toolName: string }) =>
       CREATION_TOOL_NAMES.includes(t.toolName)
@@ -2806,6 +2883,14 @@ export function Canvas() {
             id: `${latestMsg.id}:${tool.toolName}:${entries.length}`,
             name: (args.title as string) || "table",
             type: "table",
+            isCreating: isLoading,
+          });
+          break;
+        case "createTaskCard":
+          entries.push({
+            id: `${latestMsg.id}:${tool.toolName}:${entries.length}`,
+            name: (args.title as string) || "task",
+            type: "task",
             isCreating: isLoading,
           });
           break;
@@ -2995,6 +3080,7 @@ export function Canvas() {
             <FocusModeOverlay
               key="focus-mode"
               shape={focusedShape}
+              editor={editor}
               onClose={() => {
                 setFocusedDocId(null);
                 setFocusedShape(null);

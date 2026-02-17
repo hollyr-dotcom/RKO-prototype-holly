@@ -5,17 +5,21 @@ import { motion, type Variants } from "framer-motion";
 import { IconArrowsInSimple } from "@mirohq/design-system-icons";
 import { DataTableEditor } from "./DataTableEditor";
 import { setPortalTarget } from "@/lib/focusModeStore";
+import { TaskCardPanel } from "@/shapes/TaskCardPanel";
+import { Editor, TLShapeId } from "tldraw";
 
 export interface FocusedShape {
-  shapeType: "document" | "datatable";
+  shapeType: "document" | "datatable" | "taskcard";
   docId?: string;
   tableId?: string;
+  taskId?: string;
   title: string;
 }
 
 interface FocusModeOverlayProps {
   shape: FocusedShape;
   onClose: () => void;
+  editor?: Editor | null;
 }
 
 const contentVariants: Variants = {
@@ -32,7 +36,7 @@ const contentVariants: Variants = {
   },
 };
 
-export function FocusModeOverlay({ shape, onClose }: FocusModeOverlayProps) {
+export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 600 });
 
@@ -128,6 +132,32 @@ export function FocusModeOverlay({ shape, onClose }: FocusModeOverlayProps) {
             onEscape={onClose}
           />
         )}
+        {shape.shapeType === "taskcard" && shape.taskId && editor && (() => {
+          const tldrawShape = editor.getShape(shape.taskId as TLShapeId);
+          if (!tldrawShape || (tldrawShape.type as string) !== "taskcard") return null;
+          const p = tldrawShape.props as Record<string, unknown>;
+          return (
+            <TaskCardPanel
+              shapeId={shape.taskId}
+              title={(p.title as string) || ""}
+              description={(p.description as string) || ""}
+              status={(p.status as "not_started" | "in_progress" | "complete") || "not_started"}
+              priority={(p.priority as "low" | "medium" | "high") || "medium"}
+              assignee={(p.assignee as string) || ""}
+              dueDate={(p.dueDate as string) || ""}
+              tags={(p.tags as string[]) || []}
+              subtasks={(p.subtasks as Array<{ id: string; title: string; completed: boolean }>) || []}
+              onUpdate={(updates: Record<string, unknown>) => {
+                editor.updateShape({
+                  id: tldrawShape.id,
+                  type: "taskcard" as any,
+                  props: { ...p, ...updates },
+                });
+              }}
+              onClose={onClose}
+            />
+          );
+        })()}
       </div>
     </motion.div>
   );

@@ -342,6 +342,52 @@ const createDataTableTool = tool({
   },
 });
 
+const createTaskCardTool = tool({
+  name: "createTaskCard",
+  description: "Create a task card on the canvas. Use for actionable work items, todos, or tasks. Shows as a compact card with status, priority, and assignee. Space items left-to-right with 50px gaps.",
+  parameters: z.object({
+    title: z.string().describe("Task title"),
+    description: z.string().optional().describe("Task description as HTML"),
+    status: z.enum(["not_started", "in_progress", "complete"]).optional().describe("Task status (default: not_started)"),
+    priority: z.enum(["low", "medium", "high"]).optional().describe("Task priority (default: medium)"),
+    assignee: z.string().optional().describe("Person assigned to the task"),
+    dueDate: z.string().optional().describe("Due date in ISO format (YYYY-MM-DD)"),
+    tags: z.array(z.string()).optional().describe("Tags/labels for the task"),
+    subtasks: z.array(z.object({
+      id: z.string(),
+      title: z.string(),
+      completed: z.boolean(),
+    })).optional().describe("Subtask checklist items"),
+    x: z.number().describe("X position"),
+    y: z.number().describe("Y position"),
+  }),
+  execute: async (args) => {
+    const id = generateItemId();
+    return JSON.stringify({ created: "taskcard", id, ...args });
+  },
+});
+
+const updateTaskCardTool = tool({
+  name: "updateTaskCard",
+  description: "Update an existing task card on the canvas. Get the task card's ID from [CANVAS STATE]. Only provide fields you want to change.",
+  parameters: z.object({
+    itemId: z.string().describe("The shape ID of the task card to update (from canvas state)"),
+    title: z.string().optional().describe("New task title"),
+    description: z.string().optional().describe("New task description as HTML"),
+    status: z.enum(["not_started", "in_progress", "complete"]).optional().describe("New status"),
+    priority: z.enum(["low", "medium", "high"]).optional().describe("New priority"),
+    assignee: z.string().optional().describe("New assignee"),
+    dueDate: z.string().optional().describe("New due date (ISO format)"),
+    tags: z.array(z.string()).optional().describe("New tags (replaces all)"),
+    subtasks: z.array(z.object({
+      id: z.string(),
+      title: z.string(),
+      completed: z.boolean(),
+    })).optional().describe("New subtasks (replaces all)"),
+  }),
+  execute: async (args) => JSON.stringify({ updated: "taskcard", ...args }),
+});
+
 // --- Layout Tool (REQUIRED for multiple items) ---
 const createLayoutTool = tool({
   name: "createLayout",
@@ -619,6 +665,12 @@ A great canvas uses MULTIPLE formats. Don't just spam stickies — pick the best
   - Anything with rows and columns
   - "Compare these options" → table, not stickies
 
+✅ createTaskCard — for ACTIONABLE WORK ITEMS (tasks, todos, action items):
+  - Use createTaskCard, NOT stickies!
+  - Tasks, todos, action items with status tracking
+  - Shows as a compact card with status, priority, and assignee
+  - "Create tasks for the sprint" → task cards, not stickies
+
 📌 createLayout(type:"sticky") — for QUICK IDEAS:
   - Brainstorms, idea lists, feedback, tags, categories
   - Short items that benefit from visual clustering
@@ -674,6 +726,8 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     createDocumentTool,
     updateDocumentTool,
     createDataTableTool,
+    createTaskCardTool,
+    updateTaskCardTool,
     createSourcesTool,
   ],
 });
@@ -726,6 +780,7 @@ Work through steps in sequence. For each step:
 2. Pick the RIGHT tool for this step's content:
    - Written content (brief, spec, summary)? → createDocument
    - Tabular data (comparison, matrix, timeline)? → createDataTable
+   - Actionable work item (task, todo, action)? → createTaskCard
    - Quick ideas, brainstorm items? → createLayout(type:"sticky")
    - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy"/"flow")
 3. Call showProgress(stepNumber, "step title", "completed")
@@ -776,6 +831,19 @@ createDataTable({
     ["Implementation", "Eng lead", "PM", "Design", "QA"],
     ["QA & testing", "QA lead", "Eng lead", "Design", "PM"]
   ],
+  x: 0, y: 0
+})
+
+✅ createTaskCard — ACTIONABLE WORK ITEMS (tasks, todos, action items):
+Step says "task", "todo", "action item", "assign", "sprint backlog"?
+→ Use createTaskCard, NOT stickies!
+Example:
+createTaskCard({
+  title: "Implement user authentication",
+  status: "not_started",
+  priority: "high",
+  assignee: "Mark",
+  tags: ["auth", "backend"],
   x: 0, y: 0
 })
 
@@ -912,6 +980,8 @@ BAD: 13 stickies each with random different colors`,
     createDocumentTool,
     updateDocumentTool,
     createDataTableTool,
+    createTaskCardTool,
+    updateTaskCardTool,
     createSourcesTool,
   ],
 });
@@ -1030,6 +1100,7 @@ DO THIS IMMEDIATELY:
 2. Pick the RIGHT tool for this step's content:
    - Written content (brief, overview, spec, summary)? → createDocument
    - Tabular data (roles, comparison, timeline, matrix)? → createDataTable
+   - Actionable work item (task, todo, action)? → createTaskCard
    - Research? → webSearch + createSources + SYNTHESIZE (see below)
    - Brainstorm ideas, quick notes? → createLayout(type:"sticky")
    - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy")
