@@ -108,6 +108,34 @@ const webSearchTool = tool({
   }),
   execute: async ({ query, purpose, maxResults }) => {
     try {
+      // Check for pre-canned results first (demo scenario data)
+      try {
+        const cannedPath = path.join(process.cwd(), "src/data/webSearchResults.json");
+        const cannedData = JSON.parse(fs.readFileSync(cannedPath, "utf-8"));
+        const queryLower = query.toLowerCase();
+        const match = cannedData.resultSets?.find((set: { matchPatterns: string[] }) =>
+          set.matchPatterns.some((p: string) => queryLower.includes(p.toLowerCase()))
+        );
+        if (match) {
+          const sources = match.results.map((r: { title: string; url: string; content: string; image?: string }) => ({
+            title: r.title,
+            url: r.url,
+            description: r.content?.slice(0, 200),
+            image: r.image || "",
+          }));
+          return JSON.stringify({
+            query,
+            purpose,
+            summary: match.answer || "No summary available",
+            keyFindings: match.results.map((r: { title: string; content: string }) => `- ${r.title}: ${r.content?.slice(0, 300)}`).join("\n"),
+            sources,
+            instruction: `YOU MUST DO BOTH — NOT JUST SOURCES:
+1) createSources() — show the source cards on canvas
+2) IMMEDIATELY AFTER: createLayout(type:"sticky") — create 3-4 synthesis stickies. Each sticky must be a COMPLETE THOUGHT an exec can understand without extra context. No jargon, no acronyms. Answer "so what does this mean for US?" Good: "The real question: which delay is harder to recover from?" or "Delay cost isn't flat — some projects get exponentially more expensive to postpone". Bad: "Use Cost-of-Delay, not static scoring" or "WSJF: prioritize CoD per dev-week". NEVER skip step 2. Sources without synthesis are useless.`
+          });
+        }
+      } catch { /* No canned results file or parse error — fall through to Tavily */ }
+
       const apiKey = process.env.TAVILY_API_KEY;
 
       if (!apiKey) {
@@ -174,7 +202,9 @@ const webSearchTool = tool({
         summary: data.answer || "No summary available",
         keyFindings: formattedResults,
         sources,
-        instruction: "NOW DO ALL THREE: 1) createSources() to show source cards, 2) Synthesize the 'so what' — create a document (for detailed findings), stickies (for key takeaways), or table (for comparisons) with what you learned, 3) Use these insights in later steps."
+        instruction: `YOU MUST DO BOTH — NOT JUST SOURCES:
+1) createSources() — show the source cards on canvas
+2) IMMEDIATELY AFTER: createLayout(type:"sticky") — create 3-4 synthesis stickies. Each sticky must be a COMPLETE THOUGHT an exec can understand without extra context. No jargon, no acronyms. Answer "so what does this mean for US?" Good: "The real question: which delay is harder to recover from?" or "Delay cost isn't flat — some projects get exponentially more expensive to postpone". Bad: "Use Cost-of-Delay, not static scoring" or "WSJF: prioritize CoD per dev-week". NEVER skip step 2. Sources without synthesis are useless.`
       });
     } catch (error) {
       return JSON.stringify({
@@ -182,6 +212,73 @@ const webSearchTool = tool({
         query,
         purpose,
         results: []
+      });
+    }
+  },
+});
+
+const queryConnectorsTool = tool({
+  name: "queryConnectors",
+  description: `Query internal workplace tool connectors for real company data. Returns data from the requested services.
+
+BE SELECTIVE — only query services relevant to the user's question. Don't query everything.
+
+Available services by category:
+
+PROJECT EXECUTION: jira (sprints, tickets, assignments)
+ENGINEERING: github (PRs, commits, reviews), linear (issues, cycles)
+BUSINESS INTELLIGENCE: looker (dashboards, metrics, KPIs)
+PRODUCT ANALYTICS: amplitude (funnels, retention, engagement)
+PRODUCT MANAGEMENT: productboard (features, roadmap, requests)
+CUSTOMER RELATIONSHIP: salesforce (accounts, pipeline, deals)
+CUSTOMER SUCCESS: gainsight (health scores, churn risk, NPS)
+CUSTOMER EVIDENCE: gong (call recordings, themes), miro-insights (research boards)
+COMPETITIVE INTELLIGENCE: stripe-benchmarks (market data, benchmarks)
+DOCUMENTATION: google-docs (specs, PRDs), confluence (wiki, runbooks)
+STRATEGY: notion (strategy docs, OKRs)
+COMMUNICATION: slack (channels, threads, decisions)
+DESIGN: figma (designs, prototypes, components)
+DESIGN TRACKING: linear (design tasks, sprints)
+SCHEDULING: google-calendar (meetings, availability)
+INFRASTRUCTURE: datadog (monitors, incidents, uptime)
+ANALYSIS: google-sheets (spreadsheets, models)
+RESOURCE MANAGEMENT: workday (headcount, allocations, org)`,
+  parameters: z.object({
+    services: z.array(z.string()).min(1).max(20).describe("Which services to query, e.g. ['jira', 'looker', 'salesforce']. Use short names from the list above."),
+    purpose: z.string().describe("What you're trying to find out — helps filter results"),
+  }),
+  execute: async ({ services, purpose }) => {
+    try {
+      const connectorsPath = path.join(process.cwd(), "src/data/connectors.json");
+      const raw = JSON.parse(fs.readFileSync(connectorsPath, "utf-8"));
+      const allSources = raw.integrationSources?.sources || [];
+
+      // Map short names to source IDs
+      const results: Array<{ service: string; items: unknown[] }> = [];
+      for (const svc of services) {
+        const sourceId = `source-${svc}`;
+        const source = allSources.find((s: { id: string }) => s.id === sourceId);
+        if (source) {
+          results.push({
+            service: source.service,
+            items: source.fetchedItems || [],
+          });
+        }
+      }
+
+      return JSON.stringify({
+        purpose,
+        queriedServices: results.map(r => r.service),
+        serviceCount: results.length,
+        data: results,
+        instruction: "Synthesize these findings into canvas content. Reference real numbers, names, and data points from the results.",
+      });
+    } catch (error) {
+      return JSON.stringify({
+        error: String(error),
+        services,
+        purpose,
+        data: [],
       });
     }
   },
@@ -210,9 +307,9 @@ const generateItemId = () => `item-${Date.now()}-${Math.random().toString(36).sl
 // --- Canvas Creation Tools ---
 const createStickyTool = tool({
   name: "createSticky",
-  description: "Create a single post-it note (tldraw sticky note shape). ⚠️ ONLY for adding ONE sticky to existing content. For 2+ stickies, you MUST use createLayout(type:'sticky') instead - it handles positioning automatically. Never call this multiple times in sequence. Keep text SHORT: max 6-8 words. Stickies are labels, not paragraphs.",
+  description: "Create a single post-it note (tldraw sticky note shape). ⚠️ ONLY for adding ONE sticky to existing content. For 2+ stickies, you MUST use createLayout(type:'sticky') instead - it handles positioning automatically. Never call this multiple times in sequence.",
   parameters: z.object({
-    text: z.string().describe("SHORT text — max 6-8 words. A sticky is a label, not a document."),
+    text: z.string().describe("Sticky note text. 1-2 punchy sentences for insights, or short labels for brainstorms."),
     x: z.number().describe("X position"),
     y: z.number().describe("Y position"),
     color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
@@ -345,7 +442,7 @@ const createDataTableTool = tool({
 // --- Layout Tool (REQUIRED for multiple items) ---
 const createLayoutTool = tool({
   name: "createLayout",
-  description: `Creates organized visual items (stickies or shapes) in a frame. Use for brainstorms, idea lists, diagrams, and flows.
+  description: `Creates organized visual items (stickies or shapes) in a frame. Use for brainstorms, idea lists, diagrams, flows, and timelines.
 
 ⚠️ DON'T use createLayout for written content (briefs, specs, summaries) → use createDocument instead.
 ⚠️ DON'T use createLayout for tabular data (comparisons, matrices, roles) → use createDataTable instead.
@@ -353,26 +450,30 @@ const createLayoutTool = tool({
 WHEN TO USE THIS TOOL:
 - Brainstorms, idea lists, quick notes → type:"sticky" with "grid" layout
 - Diagrams, org charts, sitemaps, flows → type:"shape" with "hierarchy" or "flow" layout
+- Roadmaps, project phases, quarterly plans → type:"shape" with "timeline" layout + timeLabels
 
-⚠️ STICKY NOTE TEXT RULES:
-- Each sticky: MAX 6-8 words. Think post-it note, not paragraph.
-- GOOD: "Automate CI/CD pipeline" — BAD: "Principle: Reliability enables speed. What it looks like: automate tests, CI/CD, monitoring."
-- Need more detail? Use HIERARCHY: parent sticky with short title → child stickies with details.
-- Or use multiple stickies in a grid — one idea per sticky.
-- If content needs sentences/paragraphs, use createDocument instead.
+⚠️ STICKY NOTE TEXT GUIDELINES:
+- For BRAINSTORMS / IDEA LISTS: keep stickies short (8-15 words). One idea per sticky.
+- For SYNTHESIS / INSIGHTS: use 1-2 punchy sentences that a VP can understand without context.
+  GOOD: "PayGrid's delay cost accelerates after week 3 — early weeks are cheap, then we start losing deals"
+  BAD: "PayGrid inflection: week 3"
+- Need paragraphs? Use createDocument instead.
+- Stickies auto-size to fit text — longer text just makes them taller.
 
 The layout engine handles all positioning. Items are aligned in a grid or tree structure.
 NEVER use createSticky/createShape multiple times — use this instead for 2+ items.`,
   parameters: z.object({
-    type: z.enum(["grid", "hierarchy", "flow"]).describe("Layout type"),
+    type: z.enum(["grid", "hierarchy", "flow", "timeline"]).describe("Layout type"),
     frameName: z.string().describe("Name for the frame"),
     items: z.array(z.object({
       type: z.enum(["sticky", "shape", "text"]).describe("Item type"),
-      text: z.string().describe("Content text. For stickies: MAX 6-8 words — short labels, not sentences."),
+      text: z.string().describe("Content text. For brainstorm stickies: 5-8 words. For insight/synthesis stickies: 1-2 sentences."),
       color: z.string().default("yellow").describe("Color: yellow, blue, green, pink, orange, violet"),
       parentIndex: z.number().default(-1).describe("For hierarchy: index of parent item (0-based), -1 for root"),
+      column: z.number().default(-1).describe("For timeline: which time period column (0-based index into timeLabels), -1 to auto-distribute"),
     })).min(1).max(20).describe("Items to place in the layout"),
     columns: z.number().default(3).describe("For grid: number of columns"),
+    timeLabels: z.array(z.string()).default([]).describe("For timeline: time period labels e.g. ['Q1 2024', 'Q2 2024', 'Q3 2024']"),
     direction: z.enum(["down", "right"]).default("down").describe("For hierarchy: tree direction"),
     spacing: z.enum(["compact", "normal", "spacious"]).default("normal").describe("Spacing between items"),
   }),
@@ -382,6 +483,7 @@ NEVER use createSticky/createShape multiple times — use this instead for 2+ it
         ...args,
         options: {
           columns: args.columns,
+          timeLabels: args.timeLabels,
           direction: args.direction,
           spacing: args.spacing,
         }
@@ -509,17 +611,73 @@ FIRST: DECIDE HOW TO RESPOND based on what the user asked:
    - General questions not about creating canvas content
    - Keep replies short and conversational (1-3 sentences max)
 
-2. RESEARCH + REPLY (webSearch, then text) — for info requests:
+2. RESEARCH + REPLY (webSearch, then text) — for EXTERNAL info requests:
    - "What's the weather?" → search, then summarize
    - "What are the latest trends in X?" → search, then summarize
-   - Questions that need facts but don't need canvas artifacts
+   - Questions that need facts from the internet but don't need canvas artifacts
 
-3. QUESTIONS + PLAN (askUser, then confirmPlan in SEPARATE turns) — for complex canvas creation:
+2b. CONNECTORS + REPLY (queryConnectors, then text or canvas) — for QUICK internal lookups:
+   - "What's the status of FirstFlex?" → query jira, looker → summarize or create one artifact
+   - "Who's working on what this sprint?" → query jira, workday → summarize
+   - Simple questions with a single answer — query a few services and respond
+   - Use queryConnectors for INTERNAL company data (projects, metrics, people, tickets)
+   - Use webSearch for EXTERNAL data (market trends, news, best practices)
+
+3. QUESTIONS + PLAN (askUser, then confirmPlan in SEPARATE turns) — for substantial canvas work:
    - "Create a project kickoff" → needs scope, format, details
    - "Design a user flow for checkout" → needs context
    - "Build a competitive analysis" → needs industry, competitors
    - NEVER ask which board or space to use — the system handles that automatically
-   - Only use this for substantial, multi-step canvas work
+
+   🧠 USE YOUR JUDGMENT — will the answer require MULTIPLE canvas artifacts?
+   If yes → it needs a plan. Ask yourself: "Will I need to create 2+ things (tables, documents, stickies, source cards)?"
+   - Strategic analysis, trade-off questions, prioritisation decisions → almost always need a plan
+   - "Which should we prioritise: X or Y?" → plan (data gathering + analysis + synthesis)
+   - "Compare FirstFlex and PayGrid" → plan (connectors + comparison table + insights)
+   - "Help me decide between time to market vs customer impact" → plan (connectors + research + analysis + recommendation)
+
+   🚨 PRIORITISATION / TRADE-OFF / "WHICH SHOULD WE..." QUESTIONS:
+   When the user asks you to help resolve a strategic tension, prioritize between competing initiatives,
+   or make a recommendation about what to focus on — this is a PLAN, not a quick lookup.
+
+   ⚠️ DON'T ASK WHAT THE INITIATIVES ARE — you have connector data to discover that.
+   You SHOULD still ask 1-2 questions before making the plan, but ask things you CAN'T look up:
+   - Decision context: "What's the time horizon?" / "Is there a hard deadline driving this?"
+   - Outcome preference: "What does success look like — revenue, retention, market position?"
+   - Constraints: "Are there team or budget constraints I should factor in?"
+   NEVER ask users to name projects, describe initiatives, or provide data you can look up from connectors.
+
+   The plan should follow this arc (DATA FIRST, then options):
+   1. UNDERSTAND THE CONFLICT — pull internal data (jira, workday, slack) to identify the conflict. Then create TWO artifacts:
+      a) DIAGRAM (3-5 shapes): createLayout(type:"hierarchy", direction:"right") — shared resource as ROOT, competing projects as CHILDREN.
+         Shows the SHAPE of the tension at a glance. See ⭐ RESOURCE CONFLICT DIAGRAM example. 3-5 shapes MAX.
+      b) DOCUMENT (the evidence): createDocument with the detailed breakdown — what's competing, timelines, capacity, why it's real.
+         This is where all the data goes. The diagram is the "what", the doc is the "why".
+   2. GATHER EVIDENCE — look up customer demand (productboard, miro-insights, gong) and business impact
+      (salesforce, looker, amplitude) for each competing initiative. Use webSearch too if external
+      market context would help — but only if needed, not by default.
+   3. BUILD RESOLUTION OPTIONS — create 2-3 concrete scenarios using createLayout(type:"hierarchy"):
+      Each scenario is a ROOT shape (title + one-line goal). Under each: 2-3 CHILD shapes with the key trade-off.
+      Keep it crunchy — one punchy line per child, not a wall of text.
+      See ⭐ SCENARIO COMPARISON example in the reference below.
+   4. RECOMMEND — write a short doc that lays out the trade-offs and leans toward one option, but does NOT build it out.
+      Present the reasoning so the team can decide. Do NOT create deliverables, sketches, or detailed plans for any single scenario — that's the team's call after they align.
+   Stay under ~9 canvas artifacts total. Quality over quantity.
+   ⚠️ Do NOT include a timeline/roadmap step in the plan. Focus on the decision. The user will ask for a timeline separately if they want one.
+
+   🎨 USE DIAGRAMS TO COMMUNICATE VISUALLY:
+   Whenever a concept is about RELATIONSHIPS, CONFLICTS, FLOWS, or DEPENDENCIES — use a diagram
+   (createLayout type:"shape"/"hierarchy"/"flow") instead of text. An exec grasps a diagram in seconds.
+   - Resource conflicts → shapes with arrows showing who's shared between what
+   - Decision flows → "if A then X, if B then Y" as a flow diagram
+   - Timelines/sequencing → which project goes first and what happens to the other
+   - Dependencies → what blocks what, what enables what
+   Don't default to stickies and tables for everything. Mix in diagrams where they tell the story faster.
+
+   🚨 CRITICAL — ALL PLANS WITH COMPANY DATA:
+   → Plan steps MUST include a connector data-gathering step
+   → Query broadly: jira, salesforce, productboard, workday, looker, amplitude, slack, gong, notion, google-docs, stripe-benchmarks, github
+   → ALL later steps build on that real data — never create empty frameworks or placeholder content
 
    🚨 CRITICAL TWO-STEP PROCESS:
    STEP 1: If you need clarification, call askUser() with 1-2 questions, then STOP. DO NOT call confirmPlan() in the same turn.
@@ -535,10 +693,20 @@ WORKSPACE NAVIGATION:
 - NEVER ask "which board should I use?" — decide based on context. Create a new one if none fits.
 - After createCanvas(navigate=true), the user will be taken to the new board and you can start placing content.
 
-USE YOUR JUDGMENT. The key question: "Does this need visual artifacts on the canvas?"
-- Yes, and it's complex → ask questions (if needed), WAIT for answers, THEN create plan
-- Yes, but it's simple → just do it (you'll be handed to execution)
-- No → just reply with text
+USE YOUR JUDGMENT. Ask yourself two questions:
+1. "Does this need visual artifacts on the canvas?" — No → just reply with text
+2. "Will I need multiple artifacts?" — Yes → plan first. No → just do it directly.
+
+The more artifacts needed, the more a plan helps. A status update = just respond. A strategic analysis = definitely plan.
+Simple internal lookup (one query, one answer) → 2b. Deep analysis (multiple sources, multiple outputs) → 3.
+
+FOLLOW-UP REQUESTS — "map out scenarios" / "show the options" / "prepare a summary for the meeting":
+If you've ALREADY done the analysis and the user asks you to package it — this is a SINGLE ARTIFACT, not a new plan.
+Pick the right tool based on the content:
+- "Scenarios" / "Options" / "Map out" → createLayout(type:"hierarchy") — scenario titles as ROOT shapes, 2-3 key trade-offs as CHILDREN. Keep it crunchy (one line per child). See ⭐ SCENARIO COMPARISON example.
+- "Summary" / "Brief" → createDocument
+- "Quick brainstorm" → createLayout with stickies
+⚠️ NEVER cram everything about a scenario onto one sticky. Split into hierarchy: title shape → child shapes with one key point each.
 
 WHEN ASKING QUESTIONS (only for complex canvas tasks):
 - Call askUser() ONCE with ALL your questions (1-2 questions) in the questions array
@@ -557,10 +725,18 @@ PLAN STEP FORMAT - KEEP IT SHORT BUT CLEAR:
   - "Write" / "Draft" → will become a document
   - "Compare" / "Track" / "List" (tabular) → will become a table
   - "Research" / "Find" / "Look up" → web research + synthesis (see below)
+  - "Pull" / "Gather" / "Analyze internal" → queryConnectors for company data
   - "Brainstorm" / "Ideate" → will become stickies
   - "Map" / "Chart" / "Diagram" → will become a diagram
-- GOOD: "Draft project brief", "Research competitor landscape", "Compare features", "Brainstorm risks"
+- GOOD: "Draft project brief", "Research competitor landscape", "Compare features", "Brainstorm risks", "Pull data from internal tools"
 - BAD: "Create a homepage wireframe frame and lay out all the main sections"
+
+🚨 PLANS ABOUT COMPANY DATA MUST INCLUDE A CONNECTOR STEP:
+If the plan involves internal projects, metrics, priorities, trade-offs, or strategy:
+→ Include a step that calls queryConnectors with all relevant services
+→ For prioritization/trade-off questions: pull internal data FIRST to understand the conflict, then gather evidence
+→ ALL later steps build on real data — no empty frameworks
+Without a connector step, the plan will produce generic content instead of data-driven insights.
 
 RESEARCH IN PLANS — THE "SO WHAT" MATTERS!
 Research is only valuable if you extract insights from it. A research step should always produce something actionable — not just links.
@@ -615,26 +791,37 @@ A great canvas uses MULTIPLE formats. Don't just spam stickies — pick the best
   - "Create a project brief" → document, not stickies
 
 📊 createDataTable — for STRUCTURED DATA:
-  - Comparisons, feature matrices, competitive analysis, tracking tables
-  - Anything with rows and columns
-  - "Compare these options" → table, not stickies
+  - Feature matrices, competitive analysis, tracking tables, RACI
+  - Anything with rows and columns of detailed data
+  - "Compare these features side by side" → table
 
 📌 createLayout(type:"sticky") — for QUICK IDEAS:
   - Brainstorms, idea lists, feedback, tags, categories
   - Short items that benefit from visual clustering
   - User explicitly says "stickies", "post-its", "brainstorm"
-  - ⚠️ Each sticky = max 6-8 words. A sticky is a label, NOT a paragraph.
+  - For brainstorms: 8-15 words per sticky. For insights/synthesis: 1-2 punchy sentences.
   - Need detail? Use hierarchy (parent title → child details) or more stickies.
 
 🔲 createLayout(type:"shape") — for DIAGRAMS:
   - Org charts, sitemaps, flows, hierarchies, process maps
   - When items need connecting arrows
 
+📅 createLayout(type:"timeline") — for ROADMAPS:
+  - Product roadmaps, project phases, quarterly plans, release timelines
+  - Creates a VERTICAL timeline: periods stack top-to-bottom with a bar + dots on the left
+  - Set timeLabels: ["Q1 2024", "Q2 2024", ...] for the period labels
+  - Set column: 0, 1, 2... on each item to assign it to a time period
+  - Multiple items in the same period appear side-by-side (max 3 per row)
+  - ⚠️ Items must be SPECIFIC and ACTIONABLE — not vague labels like "Setup" or "Focus"
+    BAD: "PayGrid setup" — too vague, says nothing
+    GOOD: "Migrate checkout to PayGrid API, integrate webhook handlers" — specific deliverable
+  - ⚠️ MULTIPLE TIMELINES = MULTIPLE createLayout CALLS. If the user asks for "3 scenario timelines" or "a timeline for each option", create 3 separate timeline frames — one per scenario. NEVER merge different scenarios into a single timeline.
+
 PLAN EXAMPLES:
 "Create a project kickoff board":
   Step 1: Draft project brief ← createDocument
   Step 2: Map team structure ← createLayout(type:"hierarchy")
-  Step 3: Create timeline table ← createDataTable
+  Step 3: Plan roadmap ← createLayout(type:"timeline")
   Step 4: Brainstorm risks ← createLayout(type:"sticky")
 
 "Prep for quarterly review":
@@ -648,6 +835,13 @@ PLAN EXAMPLES:
   Step 2: Compare competitors ← createDataTable (populate with REAL data from research)
   Step 3: Map strategic implications ← createLayout(type:"sticky")
 
+"Help me prioritize / resolve a strategic tension" (PRIORITISATION):
+  Step 1: Map the resource conflict ← queryConnectors (jira, workday, slack) → conflict diagram + evidence doc
+  Step 2: Gather customer demand and business impact ← queryConnectors (productboard, salesforce, looker, gong, amplitude)
+  Step 3: Build resolution scenarios ← createLayout(type:"hierarchy") with 2-3 scenarios (see ⭐ SCENARIO COMPARISON)
+  Step 4: Draft recommendation ← createDocument with data-backed recommendation
+  (4 steps. NO timeline/roadmap — keep it focused on the decision. User can ask for timeline later.)
+
 FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
 - Multiple sections/frames with dependencies
 - Requires research or multiple layouts
@@ -657,6 +851,7 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     askUserTool,
     confirmPlanTool,
     webSearchTool,
+    queryConnectorsTool,
     // Workspace navigation tools
     createCanvasTool,
     navigateToCanvasTool,
@@ -721,17 +916,30 @@ WORKSPACE NAVIGATION:
 - After createCanvas, the user is navigated automatically — then start placing content.
 
 EXECUTION FLOW:
+🚨 EXECUTE ALL STEPS IN ONE GO. DO NOT STOP BETWEEN STEPS TO SUMMARISE OR EXPLAIN.
 Work through steps in sequence. For each step:
 1. Call showProgress(stepNumber, "step title", "starting")
-2. Pick the RIGHT tool for this step's content:
-   - Written content (brief, spec, summary)? → createDocument
-   - Tabular data (comparison, matrix, timeline)? → createDataTable
+2. GATHER DATA FIRST if the step involves internal projects, metrics, priorities, or trade-offs:
+   → Call queryConnectors with relevant services BEFORE creating any canvas content
+   → For prioritisation/trade-off analysis: query MANY services (jira, salesforce, productboard, workday, looker, amplitude, slack, gong, notion, google-docs, stripe-benchmarks, github)
+   → For market/competitive context: also call webSearch
+3. Pick the RIGHT tool for this step's content:
+   - Written content (brief, spec, summary)? → createDocument — populated with REAL data
+   - Tabular data (comparison, matrix, scoring)? → createDataTable — every cell filled with real numbers
    - Quick ideas, brainstorm items? → createLayout(type:"sticky")
    - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy"/"flow")
-3. Call showProgress(stepNumber, "step title", "completed")
-4. Continue to next step
+   - Roadmap, timeline, phases? → createLayout(type:"timeline") with timeLabels
+4. Call showProgress(stepNumber, "step title", "completed")
+5. IMMEDIATELY move to the next step — call showProgress for the next step right away
+
+🚫 NEVER stop mid-plan to write a summary of what you've done so far.
+🚫 NEVER say "Proceeding to step X" — just DO step X.
+🚫 NEVER output text between steps. Just keep calling tools until ALL steps are done.
+Only write a brief message AFTER the very last step is completed.
 
 ⚠️ DO NOT use createLayout for everything! Read the step title and think about what format serves the content best.
+⚠️ PREFER DIAGRAMS for conflicts, dependencies, and flows — they communicate faster than text or tables.
+⚠️ NEVER create empty or placeholder content. No "(fill in)", no "TBD", no generic frameworks. Pull real data from connectors first, then create artifacts populated with that data.
 
 /* CHECKPOINTS DISABLED — keeping instructions for later re-enable:
 CHECKPOINTS - PAUSE AT MILESTONES:
@@ -754,6 +962,7 @@ Before creating ANYTHING, ask yourself: what format best serves this content?
 📝 createDocument — WRITTEN CONTENT (briefs, specs, summaries, guidelines):
 Step says "brief", "spec", "summary", "guidelines", "overview", "one-pager", "draft"?
 → Use createDocument, NOT stickies!
+⚠️ WRITE LIGHT, NOT DENSE: Use clear section headings (<h2>), short paragraphs (2-3 sentences each), and plenty of white space. Don't cram every data point into one wall of text. Lead with the insight, then support with 1-2 key numbers. An exec should be able to skim the headings and get the story.
 
 Example — step "Draft kickoff brief":
 createDocument({
@@ -762,9 +971,9 @@ createDocument({
   x: 0, y: 0
 })
 
-📊 createDataTable — TABULAR/STRUCTURED DATA (comparisons, matrices, roles, timelines):
-Step says "compare", "track", "roles", "timeline", "matrix", "table", "RACI"?
-→ Use createDataTable, NOT stickies!
+📊 createDataTable — TABULAR/STRUCTURED DATA (feature matrices, tracking, RACI):
+Step says "track", "roles", "matrix", "table", "RACI", "feature comparison"?
+→ Use createDataTable for dense data grids.
 
 Example — step "Map roles & responsibilities":
 createDataTable({
@@ -782,27 +991,84 @@ createDataTable({
 📌 createLayout(type:"sticky") — QUICK IDEAS (brainstorms, risks, feedback, categories):
 Step says "brainstorm", "ideate", "risks", "ideas", "feedback"?
 → Stickies are perfect here
-⚠️ KEEP STICKIES SHORT: Max 6-8 words each. One idea per sticky.
-- GOOD: "Tight feedback loops" — BAD: "Principle: Tight feedback loops. What it looks like: prototypes, feature flags, A/B tests."
-- Need detail? Use HIERARCHY layout — parent sticky for the category, child stickies for details.
-- If a sticky needs a sentence, it should be a document instead.
+⚠️ STICKY TEXT DEPENDS ON PURPOSE:
+- BRAINSTORMS / IDEAS: 8-15 words per sticky. "Automate CI/CD pipeline to cut deploy time", "Tight feedback loops between design and engineering"
+- SYNTHESIS / INSIGHTS: 1-2 punchy sentences a VP would understand. Write a complete thought, not a label.
+  "PayGrid's delay cost accelerates after week 3 — early weeks are cheap, then we start losing deals"
+- Stickies auto-size to fit text. Longer text = taller sticky, and the layout handles spacing.
 
-📌 createLayout(type:"shape"/"hierarchy"/"flow") — DIAGRAMS (org charts, flows, sitemaps):
-Step says "map", "chart", "flow", "diagram", "hierarchy"?
-→ Use shapes with arrows
+📌 createLayout(type:"shape"/"hierarchy"/"flow") — DIAGRAMS (conflicts, flows, dependencies, scenarios):
+Step says "map", "chart", "flow", "diagram", "hierarchy", "conflict", "resource", "scenarios", "options"?
+→ Use shapes with arrows — diagrams communicate relationships FASTER than text.
+
+🎨 PREFER HIERARCHY DIAGRAMS for these patterns:
+- Resource conflicts → createLayout(type:"hierarchy", direction:"right") — 3-5 shapes MAX. See ⭐ RESOURCE CONFLICT DIAGRAM example.
+  The diagram shows the SHAPE of the tension (who's pulling on what). Put detailed evidence in a createDocument instead.
+- Scenarios / options → createLayout(type:"hierarchy", direction:"down") — scenario titles as ROOTs, 2-3 key trade-offs as CHILDREN. See ⭐ SCENARIO COMPARISON example. One punchy line per child — NOT a paragraph.
+- Decision flows → "If X then Y" with arrows showing paths and outcomes
+- Dependencies → What blocks what, what enables what
+
+🚨 DIAGRAMS ARE NOT DATA DUMPS. A diagram should be glanceable in 3 seconds.
+If you're adding shapes for "conflict window", "operational risk", "bridging candidates" — STOP. Those are document content.
+Pair your diagram with a document: diagram = structure at a glance, document = detailed evidence.
+
+📅 createLayout(type:"timeline") — ROADMAPS (project phases, quarterly plans, release timelines):
+Step says "roadmap", "timeline", "phases", "milestones", "quarters"?
+→ Use vertical timeline with timeLabels and column assignments per item
+→ Items must be SPECIFIC deliverables, not vague labels. "Migrate checkout to PayGrid API" not "PayGrid setup"
+→ Each time period should have 2-4 concrete items showing what actually happens that phase
+→ If asked for MULTIPLE timelines (e.g. "timeline for each scenario"), create SEPARATE createLayout calls — one frame per timeline. NEVER merge them into one.
 
 🔍 webSearch + createSources + SYNTHESIS — RESEARCH (competitive analysis, best practices, trends):
 Step says "research", "find", "look up", "competitive analysis", "best practices"?
-A research step has THREE parts — sources are useless without the "so what":
+A research step has THREE MANDATORY parts — you MUST do all three, NEVER just 1 and 2:
 1. Call webSearch() to find real information
 2. Call createSources() to show the source cards on canvas
-3. SYNTHESIZE what you learned — pick the format that fits:
-   - Key takeaways / principles? → createLayout(type:"sticky") with the insights
-   - Detailed findings / summary? → createDocument with structured analysis
-   - Comparison data? → createDataTable with real data from results
-Use your judgment — what would be most useful for this specific task?
-The synthesis is the POINT of research. Links alone are not helpful.
+3. 🚨 MANDATORY — IMMEDIATELY create synthesis stickies via createLayout(type:"sticky"):
+   → 3-4 stickies, each 1-2 SENTENCES that a VP can read and immediately understand
+   → No jargon, no acronyms (not "WSJF", "CoD", "RICE") — plain English
+   → Each sticky answers "so what does this mean for US?" — connect research to the situation
+   → These are INSIGHTS, not labels. Write a complete thought with enough context to stand alone.
+
+   GOOD stickies (complete thoughts, self-explanatory, actionable):
+   - "Simple scoring doesn't work for big bets — Reforge found it misses the asymmetry between competing priorities"
+   - "The key question isn't 'which scores higher' but 'which delay is harder to recover from later?'"
+   - "Spotify, Stripe, and Figma all model 3 scenarios (A-first, B-first, parallel) before choosing — not just one score"
+   - "Plot delay cost over time for each option — the one that accelerates fastest should usually go first"
+
+   BAD stickies (too short, jargon, no context):
+   - "Scoring fits backlog, not big bets"
+   - "Delay cost changes over time"
+   - "Use 3 scenarios, not 1 score"
+   - "Make assumptions explicit up front"
+
+If you skip synthesis, the research step is INCOMPLETE. Sources without the "so what" are useless.
 CRITICAL: Carry research findings into later steps. Reference real data, real examples, real insights.
+
+🔌 queryConnectors — INTERNAL DATA (status, metrics, decisions, trade-offs):
+Step involves company projects, priorities, trade-offs, metrics, people, or decisions?
+→ Call queryConnectors FIRST with ALL relevant services before creating any canvas content
+→ For strategic/prioritisation analysis: query broadly — jira, salesforce, productboard, workday, looker, amplitude, slack, gong, notion, google-docs, stripe-benchmarks, github
+→ Synthesize the returned data into canvas content (document, table, or stickies)
+→ Reference REAL numbers, names, dates, and metrics from the connector data
+→ NEVER create a document, table, or sticky with placeholder text like "(fill in)", "TBD", or generic frameworks. Every cell, every paragraph must contain real data from connectors.
+Use connectors for INTERNAL company data. Use webSearch for EXTERNAL data. Both can be used together.
+
+⚠️ WHEN PUTTING DATA ON STICKIES — numbers need context, not just labels:
+Write for a VP who knows the company but isn't tracking day-to-day details. Each sticky = 1-2 sentences.
+   GOOD: "PayGrid's delay cost accelerates after week 3 — the first few weeks are cheap, but by week 4 we start losing enterprise deals to Stripe"
+   GOOD: "FirstFlex delay costs $890K/week but stays flat — we can push it 4-6 weeks and recover the same users later"
+   GOOD: "$47.2M in enterprise pipeline depends on PayGrid — 5 of those deals have Q3 decision deadlines we can't move"
+   BAD: "PayGrid inflection: week 3"
+   BAD: "FirstFlex weekly CoD: $890K"
+   BAD: "Orchestration pipeline: $47.2M"
+Every sticky must be a COMPLETE THOUGHT with enough context for someone who wasn't in the meeting.
+
+🚫 NEVER CREATE EMPTY FRAMEWORKS:
+- No "Option scoring (fill in)" tables — populate every cell with real data
+- No generic decision rubrics — use actual project names, numbers, and trade-offs from connector data
+- No placeholder recommendations — synthesize a real recommendation from the evidence
+- If a step needs data you don't have, call queryConnectors to GET it before creating the artifact
 
 POSITIONING — USE x:0, y:0 FOR EVERYTHING:
 The canvas has automatic collision detection that places items left-to-right.
@@ -827,6 +1093,53 @@ createLayout({
   ]
 })
 
+⭐ RESOURCE CONFLICT DIAGRAM — shows the SHAPE of the tension, not the details:
+createLayout({
+  type: "hierarchy",
+  frameName: "The conflict — Platform Squad 3",
+  direction: "right",
+  items: [
+    { type: "shape", text: "Platform Squad 3\\n5 eng · 32 pts/sprint", color: "blue", parentIndex: -1 },
+    { type: "shape", text: "FirstFlex\\nSep launch · needs wks 3–6", color: "orange", parentIndex: 0 },
+    { type: "shape", text: "PayGrid\\nAug 25 pilot · needs from wk 4", color: "orange", parentIndex: 0 },
+  ]
+})
+↑ Just 3 shapes: [Squad 3] → [FirstFlex] and [Squad 3] → [PayGrid].
+The shared resource is the ROOT, competing projects are CHILDREN. That's IT.
+
+🚨 A CONFLICT DIAGRAM IS NOT A DATA DUMP:
+- 3-5 shapes MAX. Show the structure of the tension, not every data point.
+- The DOCUMENT (createDocument) has the detailed evidence. The diagram just shows who's pulling on what.
+- If you're putting "conflict window", "operational risk", "bridging candidates", "sequencing facts" as extra shapes — STOP. Those belong in the document, not the diagram.
+- Think of it as: "If an exec glances at this for 3 seconds, do they get the conflict?" If it takes more than 3 seconds, you have too many shapes.
+
+⭐ SCENARIO COMPARISON — use this pattern for "map out options / scenarios":
+createLayout({
+  type: "hierarchy",
+  frameName: "Three scenarios (pick one)",
+  direction: "down",
+  items: [
+    { type: "shape", text: "Scenario A — Speed first", color: "blue", parentIndex: -1 },
+    { type: "shape", text: "Ship PayGrid MVP by Aug, protect Meridian deadline", color: "blue", parentIndex: 0 },
+    { type: "shape", text: "Upside: earliest revenue + deadline safe", color: "blue", parentIndex: 0 },
+    { type: "shape", text: "Risk: lower peak ARR, more follow-on work", color: "blue", parentIndex: 0 },
+    { type: "shape", text: "Scenario B — Impact first", color: "green", parentIndex: -1 },
+    { type: "shape", text: "Full-scope FirstFlex, capture Q4 signup surge", color: "green", parentIndex: 4 },
+    { type: "shape", text: "Upside: 180K signups Y1, strongest retention lift", color: "green", parentIndex: 4 },
+    { type: "shape", text: "Risk: PayGrid slips, Meridian window at risk", color: "green", parentIndex: 4 },
+    { type: "shape", text: "Scenario C — Sequenced hybrid", color: "violet", parentIndex: -1 },
+    { type: "shape", text: "Time-box PayGrid MVP (wks 1-3), then full FirstFlex", color: "violet", parentIndex: 8 },
+    { type: "shape", text: "Upside: covers both commitments", color: "violet", parentIndex: 8 },
+    { type: "shape", text: "Risk: needs tight scope control, context-switch cost", color: "violet", parentIndex: 8 },
+  ]
+})
+↑ 3 root shapes + 3 children each. Each child is ONE punchy line.
+
+🎨 COLOR RULE FOR SCENARIOS: One scenario = one color. Parent AND all its children use the SAME color.
+- Scenario A: all blue. Scenario B: all green. Scenario C: all violet.
+- This makes each group instantly recognizable at a glance. DON'T mix colors within a scenario.
+- The layout engine adds large gaps between root groups, so they read as 3 distinct columns.
+
 FLOW example (processes, journeys):
 createLayout({
   type: "flow",
@@ -837,6 +1150,26 @@ createLayout({
     { type: "shape", text: "Done", color: "green" }
   ]
 })
+
+⭐ TIMELINE example — items are SPECIFIC deliverables, not vague labels:
+createLayout({
+  type: "timeline",
+  frameName: "Scenario A: PayGrid-First",
+  timeLabels: ["Weeks 1–3", "Weeks 4–6", "Weeks 7–9", "Weeks 10–12"],
+  items: [
+    { type: "shape", text: "Migrate checkout flow to PayGrid API", color: "blue", column: 0 },
+    { type: "shape", text: "Set up PayGrid webhook handlers + error monitoring", color: "blue", column: 0 },
+    { type: "shape", text: "Run parallel processing: old + PayGrid for 2 weeks", color: "blue", column: 0 },
+    { type: "shape", text: "PayGrid live for 100% of transactions", color: "green", column: 1 },
+    { type: "shape", text: "Begin FirstFlex SDK integration (auth + data sync)", color: "yellow", column: 1 },
+    { type: "shape", text: "FirstFlex onboarding flow + feature flag rollout", color: "yellow", column: 2 },
+    { type: "shape", text: "Load testing FirstFlex at scale (10k+ users)", color: "yellow", column: 2 },
+    { type: "shape", text: "Full launch: PayGrid + FirstFlex live", color: "green", column: 3 },
+    { type: "shape", text: "Monitor adoption metrics, iterate on friction points", color: "green", column: 3 }
+  ]
+})
+⚠️ Notice: each item says WHAT specifically happens — not just "setup" or "launch".
+⚠️ If asked for 3 scenario timelines → call createLayout 3 TIMES, one per scenario frame.
 
 GRID + STICKIES example (brainstorms, ideas):
 createLayout({
@@ -850,7 +1183,7 @@ createLayout({
   ],
   columns: 3
 })
-⚠️ Each sticky is 2-4 words — like a real post-it note. NEVER put paragraphs on stickies.
+⚠️ Each sticky is 8-15 words — a complete thought, not a paragraph. NEVER put long paragraphs on stickies.
 
 HIERARCHY example (when you need categories + details):
 createLayout({
@@ -894,6 +1227,7 @@ BAD: 13 stickies each with random different colors`,
     // checkpointTool, // disabled — re-enable when checkpoints are needed
     requestFeedbackTool,
     webSearchTool,
+    queryConnectorsTool,
     // Workspace navigation tools
     createCanvasTool,
     navigateToCanvasTool,
@@ -1021,27 +1355,45 @@ ALL STEPS COMPLETE!
 
 Keep your message VERY brief - the card shows details.
 ` : `
-🚨 USER CLICKED "CONTINUE" - START WORKING NOW! 🚨
+🚨 USER CLICKED "CONTINUE" - EXECUTE ALL REMAINING STEPS NOW! 🚨
 
-NEXT STEP IS ${nextStep}: "${approvedPlan.steps[nextStep - 1]}"
+START WITH STEP ${nextStep}: "${approvedPlan.steps[nextStep - 1]}"
+THEN KEEP GOING through steps ${nextStep + 1 <= totalSteps ? `${nextStep + 1}...${totalSteps}` : '(none remaining)'} WITHOUT STOPPING.
 
-DO THIS IMMEDIATELY:
-1. showProgress(${nextStep}, "${approvedPlan.steps[nextStep - 1]}", "starting")
-2. Pick the RIGHT tool for this step's content:
-   - Written content (brief, overview, spec, summary)? → createDocument
-   - Tabular data (roles, comparison, timeline, matrix)? → createDataTable
-   - Research? → webSearch + createSources + SYNTHESIZE (see below)
+🚫 DO NOT stop between steps to summarise or explain what you did.
+🚫 DO NOT write "Proceeding to step X" — just DO step X.
+🚫 DO NOT output text until ALL steps are finished.
+
+FOR EACH STEP:
+1. showProgress(stepNumber, "step title", "starting")
+2. GATHER DATA FIRST — if the step involves company projects, metrics, priorities, or trade-offs:
+   → Call queryConnectors with ALL relevant services BEFORE creating any content
+   → For prioritisation/trade-off: query jira, salesforce, productboard, workday, looker, amplitude, slack, gong, notion, google-docs, stripe-benchmarks, github
+   → For market/competitive context: ALSO call webSearch
+3. Pick the RIGHT tool for this step's content:
+   - Written content (brief, overview, spec, summary)? → createDocument — FILLED with real connector data
+   - Tabular data (roles, comparison, scoring, matrix)? → createDataTable — every cell has real numbers
+   - Research (external)? → webSearch + createSources + SYNTHESIZE
+   - Internal data (status, metrics, tickets)? → queryConnectors + SYNTHESIZE
    - Brainstorm ideas, quick notes? → createLayout(type:"sticky")
    - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy")
-3. showProgress(${nextStep}, "${approvedPlan.steps[nextStep - 1]}", "completed")
-4. Continue to step ${nextStep + 1}
+   - Roadmap, timeline, phases? → createLayout(type:"timeline") with timeLabels
+4. showProgress(stepNumber, "step title", "completed")
+5. IMMEDIATELY start the next step — do NOT write text, just call showProgress for the next step
 
-RESEARCH STEPS — always extract the "so what":
-If this step involves research, do ALL THREE in this step:
+🚫 NEVER CREATE EMPTY CONTENT: No "(fill in)", no "TBD", no placeholder tables. Every artifact must be populated with real data from connectors/search.
+
+RESEARCH STEPS — THREE MANDATORY PARTS (never skip step c):
+If this step involves research, do ALL THREE — not just a and b:
   a) webSearch() → get real information
   b) createSources() → display source cards
-  c) Synthesize findings — create a doc, stickies, or table with what you learned
-     Pick format based on what's useful: takeaways → stickies, detailed analysis → document, comparison → table
+  c) 🚨 MANDATORY: createLayout(type:"sticky") → 3-4 synthesis stickies (1-2 sentences each)
+     Each sticky = a COMPLETE THOUGHT an exec can understand without extra context.
+     No jargon, no acronyms. Write enough that it stands alone.
+     Good: "The key question isn't 'which scores higher' but 'which delay is harder to recover from later?'"
+     Good: "Plot delay cost over time — the option that accelerates fastest should usually go first"
+     Bad: "Scoring fits backlog, not big bets" / Bad: "Delay cost changes over time"
+If you do a+b but skip c, the step is INCOMPLETE. Sources without synthesis are useless.
 Then carry those insights into later steps — use real data, cite real examples.
 
 DO NOT write explanatory text first - CALL showProgress() IMMEDIATELY!`}`;
@@ -1272,6 +1624,7 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
 
         try {
           let sentTextLength = 0;
+          let suppressText = false; // Flag to suppress malformed tool call text
 
           for await (const event of result) {
             // Handle streaming text deltas - try multiple event types
@@ -1288,9 +1641,19 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
                 const delta = data.delta as string;
                 if (delta) {
                   textContent += delta;
-                  safeEnqueue(
-                    encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
-                  );
+
+                  // Detect malformed tool calls output as text (model bug)
+                  // e.g. "<functions.askUser" or "<functions.confirmPlan"
+                  if (textContent.includes('<functions.') || textContent.includes('functions.askUser') || textContent.includes('functions.confirmPlan')) {
+                    suppressText = true;
+                    console.warn('[STREAM] Detected malformed tool call in text output — suppressing');
+                  }
+
+                  if (!suppressText) {
+                    safeEnqueue(
+                      encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
+                    );
+                  }
                   sentTextLength = textContent.length;
                 }
               }

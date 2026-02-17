@@ -1,0 +1,3748 @@
+{
+  "integrationSources": {
+    "metadata": {
+      "description": "Content fetched by the Product Leader Agent from 15 connected third-party services to support the FirstFlex \u2194 PayGrid priority decision",
+      "fetchedAt": "2026-02-10T09:20:30Z",
+      "fetchedBy": "agent-product-leader",
+      "triggeredBy": "alert-priority-conflict",
+      "totalSources": 20,
+      "fetchDuration": "2m 25s"
+    },
+    "sources": [
+      {
+        "id": "source-jira",
+        "service": "Jira",
+        "icon": "jira",
+        "connectionType": "mcp",
+        "category": "project-execution",
+        "fetchedItems": [
+          {
+            "id": "jira-squad3-board",
+            "type": "sprint-board",
+            "label": "Platform Squad 3 \u2014 Current Sprint",
+            "url": "https://flexfund.atlassian.net/jira/software/projects/PLAT/boards/12",
+            "fetchedAt": "2026-02-10T09:20:35Z",
+            "usedInElements": [
+              "el-ff-status",
+              "el-pg-status",
+              "section-conflict",
+              "tasklist-conflict-analysis"
+            ],
+            "data": {
+              "boardName": "Platform Squad 3 \u2014 Sprint 14",
+              "sprintStart": "2026-02-03",
+              "sprintEnd": "2026-02-14",
+              "teamMembers": [
+                {
+                  "name": "Daniel Park",
+                  "userId": "user-daniel",
+                  "role": "Engineering Lead",
+                  "allocation": "100%"
+                },
+                {
+                  "name": "Sarah Kim",
+                  "role": "Senior Engineer",
+                  "allocation": "100%",
+                  "crossTrained": [
+                    "firstflex",
+                    "paygrid"
+                  ]
+                },
+                {
+                  "name": "Alex Novak",
+                  "role": "Senior Engineer",
+                  "allocation": "100%",
+                  "crossTrained": [
+                    "firstflex",
+                    "paygrid"
+                  ]
+                },
+                {
+                  "name": "Mei Zhang",
+                  "role": "Backend Engineer",
+                  "allocation": "100%",
+                  "crossTrained": [
+                    "paygrid"
+                  ]
+                },
+                {
+                  "name": "Carlos Mendoza",
+                  "role": "Backend Engineer",
+                  "allocation": "80%",
+                  "crossTrained": [
+                    "firstflex"
+                  ]
+                }
+              ],
+              "velocityTrend": [
+                {
+                  "sprint": "Sprint 9",
+                  "points": 28
+                },
+                {
+                  "sprint": "Sprint 10",
+                  "points": 31
+                },
+                {
+                  "sprint": "Sprint 11",
+                  "points": 34
+                },
+                {
+                  "sprint": "Sprint 12",
+                  "points": 29
+                },
+                {
+                  "sprint": "Sprint 13",
+                  "points": 36
+                },
+                {
+                  "sprint": "Sprint 14",
+                  "points": 33,
+                  "inProgress": true
+                }
+              ],
+              "averageVelocity": 32,
+              "currentTickets": [
+                {
+                  "key": "PLAT-412",
+                  "summary": "RemitFlow API monitoring dashboard",
+                  "status": "in-review",
+                  "assignee": "Sarah Kim",
+                  "points": 5
+                },
+                {
+                  "key": "PLAT-415",
+                  "summary": "Payment service circuit breaker pattern",
+                  "status": "in-progress",
+                  "assignee": "Alex Novak",
+                  "points": 8
+                },
+                {
+                  "key": "PLAT-418",
+                  "summary": "Database migration \u2014 shared ledger schema",
+                  "status": "in-progress",
+                  "assignee": "Mei Zhang",
+                  "points": 5
+                },
+                {
+                  "key": "PLAT-420",
+                  "summary": "Auth service token refresh optimisation",
+                  "status": "todo",
+                  "assignee": "Carlos Mendoza",
+                  "points": 3
+                }
+              ],
+              "q3Allocation": {
+                "weeks1to3": {
+                  "project": "firstflex",
+                  "allocation": "100%",
+                  "epic": "FF-API-MIGRATION"
+                },
+                "weeks4to6": {
+                  "project": "CONFLICT",
+                  "firstflex": "100%",
+                  "paygrid": "100%",
+                  "note": "Double-allocated \u2014 both epics require full squad capacity"
+                },
+                "weeks7to8": {
+                  "project": "paygrid",
+                  "allocation": "100%",
+                  "epic": "PG-PAYMENT-ROUTING"
+                }
+              }
+            }
+          },
+          {
+            "id": "jira-ff-epic",
+            "type": "epic",
+            "label": "FirstFlex \u2014 API Migration Epic",
+            "url": "https://flexfund.atlassian.net/jira/software/projects/FF/boards/8/epics/FF-287",
+            "fetchedAt": "2026-02-10T09:20:40Z",
+            "usedInElements": [
+              "el-ff-brief",
+              "el-ff-status",
+              "option-c"
+            ],
+            "data": {
+              "epicKey": "FF-287",
+              "epicName": "API Migration \u2014 Payment Gateway Abstraction Layer",
+              "status": "in-progress",
+              "owner": "Marcus Chen",
+              "totalTickets": 14,
+              "completedTickets": 3,
+              "inProgressTickets": 2,
+              "blockedTickets": 0,
+              "totalPoints": 89,
+              "completedPoints": 21,
+              "estimatedSprintsRemaining": 4,
+              "scheduledStart": "2026-07-13",
+              "scheduledEnd": "2026-08-07",
+              "requiredSquad": "Platform Squad 3",
+              "keyDependency": "PLAT-389 \u2014 Shared API gateway must be upgraded before migration can start",
+              "strategicLabel": "Customer Impact Play",
+              "strategicRationale": "FirstFlex is a customer-impact bet: fix onboarding \u2192 unlock 106K monthly signups \u2192 drive retention and LTV. The impact compounds over time but is not time-gated by a single external deadline.",
+              "timelineComparison": {
+                "fullScope": {
+                  "duration": "4 sprints (8 weeks)",
+                  "points": 89,
+                  "delivers": "Full API migration with all 4 payment rail adapters, transaction routing engine, failover logic, load testing, monitoring",
+                  "launchDate": "2026-09-01",
+                  "impact": "34% \u2192 60% onboarding completion, 180K activated users Y1, $14.2M ARR uplift"
+                },
+                "mvpScope": {
+                  "duration": "2.5 sprints (5 weeks)",
+                  "points": 55,
+                  "delivers": "API migration with RemitFlow adapter reuse \u2014 SWIFT + SEPA adapters, basic routing. Deferred: card network adapter, load testing at scale, advanced failover",
+                  "launchDate": "2026-08-08",
+                  "impact": "34% \u2192 52% onboarding completion (partial), ~140K activated users Y1, $10.8M ARR uplift",
+                  "note": "Uses RemitFlow adapter pattern (RMFL-156) to compress effort from 89 to ~55 points. Misses card network adapter and advanced failover \u2014 adds 2 sprints of retrofit debt later."
+                }
+              },
+              "cutScopeOptions": [
+                {
+                  "cut": "Card network adapter (FF-292)",
+                  "saves": "8 points (1 sprint)",
+                  "cost": "Card-based transactions (22% of volume) fall back to legacy routing. Adds ~3 sprints to retrofit later due to API versioning complexity.",
+                  "riskLevel": "medium"
+                },
+                {
+                  "cut": "Load testing at 10K concurrent (FF-297)",
+                  "saves": "5 points",
+                  "cost": "Launch without scale validation. Acceptable if initial rollout is phased (EU-only first). Risk: capacity issues at US launch.",
+                  "riskLevel": "low"
+                },
+                {
+                  "cut": "Advanced failover and retry logic (FF-294)",
+                  "saves": "5 points",
+                  "cost": "Manual intervention needed for payment failures. ~2% of transactions affected. Customer support load increases by ~15%.",
+                  "riskLevel": "medium"
+                }
+              ],
+              "fastTrackNote": {
+                "ticketKey": "FF-302",
+                "summary": "Evaluate RemitFlow API patterns for reuse",
+                "description": "The payment gateway abstraction layer follows the same routing pattern we implemented for RemitFlow in Q4 2025. If we reuse the RemitFlow adapter pattern (see RMFL-156), estimated effort drops from 89 points to ~55 points. Daniel's team is already familiar with the pattern.",
+                "addedBy": "Daniel Park",
+                "addedAt": "2026-01-28T14:30:00Z"
+              },
+              "childTickets": [
+                {
+                  "key": "FF-288",
+                  "summary": "Design API abstraction layer interface",
+                  "points": 8,
+                  "status": "done"
+                },
+                {
+                  "key": "FF-289",
+                  "summary": "Implement SWIFT rail adapter",
+                  "points": 13,
+                  "status": "done"
+                },
+                {
+                  "key": "FF-290",
+                  "summary": "Implement SEPA rail adapter",
+                  "points": 8,
+                  "status": "done"
+                },
+                {
+                  "key": "FF-291",
+                  "summary": "Implement RTP rail adapter",
+                  "points": 8,
+                  "status": "in-progress"
+                },
+                {
+                  "key": "FF-292",
+                  "summary": "Implement card network adapter",
+                  "points": 8,
+                  "status": "in-progress"
+                },
+                {
+                  "key": "FF-293",
+                  "summary": "Transaction routing engine",
+                  "points": 13,
+                  "status": "todo"
+                },
+                {
+                  "key": "FF-294",
+                  "summary": "Failover and retry logic",
+                  "points": 5,
+                  "status": "todo"
+                },
+                {
+                  "key": "FF-295",
+                  "summary": "Rate limiting and throttling",
+                  "points": 3,
+                  "status": "todo"
+                },
+                {
+                  "key": "FF-296",
+                  "summary": "Integration test suite \u2014 all rails",
+                  "points": 8,
+                  "status": "todo"
+                },
+                {
+                  "key": "FF-297",
+                  "summary": "Load testing \u2014 10K concurrent transactions",
+                  "points": 5,
+                  "status": "todo"
+                },
+                {
+                  "key": "FF-298",
+                  "summary": "Monitoring and alerting setup",
+                  "points": 3,
+                  "status": "todo"
+                },
+                {
+                  "key": "FF-299",
+                  "summary": "Documentation \u2014 API migration runbook",
+                  "points": 2,
+                  "status": "todo"
+                },
+                {
+                  "key": "FF-300",
+                  "summary": "Rollback procedure and testing",
+                  "points": 5,
+                  "status": "todo"
+                },
+                {
+                  "key": "FF-302",
+                  "summary": "Evaluate RemitFlow API patterns for reuse",
+                  "points": 2,
+                  "status": "done",
+                  "resolution": "RemitFlow pattern confirmed reusable \u2014 see RMFL-156"
+                }
+              ]
+            }
+          },
+          {
+            "id": "jira-pg-epic",
+            "type": "epic",
+            "label": "PayGrid \u2014 Payment Routing Integration Epic",
+            "url": "https://flexfund.atlassian.net/jira/software/projects/PG/boards/10/epics/PG-164",
+            "fetchedAt": "2026-02-10T09:20:45Z",
+            "usedInElements": [
+              "el-pg-brief",
+              "el-pg-status",
+              "option-c"
+            ],
+            "data": {
+              "epicKey": "PG-164",
+              "epicName": "Payment Routing Integration \u2014 Multi-Rail Orchestration Engine",
+              "status": "in-progress",
+              "owner": "Priya Sharma",
+              "totalTickets": 18,
+              "completedTickets": 4,
+              "inProgressTickets": 3,
+              "blockedTickets": 0,
+              "totalPoints": 112,
+              "completedPoints": 28,
+              "estimatedSprintsRemaining": 5,
+              "scheduledStart": "2026-07-01",
+              "scheduledEnd": "2026-08-22",
+              "requiredSquad": "Platform Squad 3",
+              "strategicLabel": "Time to Market Play",
+              "strategicRationale": "PayGrid is a time-to-market bet: competitive window is closing (Stripe has 6\u20139mo head start), Meridian Bank has a hard Q3 deadline, and every month of delay widens the gap. Speed determines whether FlexFund stays in the enterprise game.",
+              "timelineComparison": {
+                "fullScope": {
+                  "duration": "5 sprints (10 weeks)",
+                  "points": 112,
+                  "delivers": "Full multi-rail orchestration engine with SWIFT, SEPA, RTP, card networks, automated reconciliation, smart payment timing, treasury dashboard",
+                  "launchDate": "2026-08-22",
+                  "impact": "Win rate 42% \u2192 65%, $47.2M pipeline unlocked, Meridian pilot on time, 12 enterprise pilots by Q3 end"
+                },
+                "mvpScope": {
+                  "duration": "3 sprints (6 weeks)",
+                  "points": 68,
+                  "delivers": "Multi-rail orchestration MVP with SWIFT + SEPA + RTP routing, basic reconciliation. Deferred: card networks, smart timing optimisation, advanced dashboard features",
+                  "launchDate": "2026-08-08",
+                  "impact": "Win rate 42% \u2192 55% (partial), Meridian pilot achievable, ~8 enterprise pilots by Q3 end",
+                  "note": "Covers Meridian's 3 required rails (SWIFT, SEPA, RTP). Card networks and advanced features follow in Q4. Adds 2\u20133 sprints of retrofit debt."
+                }
+              },
+              "cutScopeOptions": [
+                {
+                  "cut": "Card network orchestration (PG-178, PG-179)",
+                  "saves": "16 points (2 sprints)",
+                  "cost": "Card-based enterprise payments route through legacy. 8 of 45 pipeline deals require card orchestration \u2014 $9.2M ARR at risk of delayed close.",
+                  "riskLevel": "medium"
+                },
+                {
+                  "cut": "Smart payment timing optimisation (PG-182)",
+                  "saves": "8 points (1 sprint)",
+                  "cost": "Treasury teams must manually schedule payments for optimal FX windows. Nice-to-have for pilot, critical for GA.",
+                  "riskLevel": "low"
+                },
+                {
+                  "cut": "Advanced treasury dashboard (PG-185, PG-186)",
+                  "saves": "10 points",
+                  "cost": "Pilot uses basic dashboard. Acceptable for Meridian (they have internal tooling), but reduces wow-factor for new prospects.",
+                  "riskLevel": "low"
+                }
+              ],
+              "setupPhase": {
+                "description": "Weeks 1\u20133 of Q3 are a setup phase handled entirely by the PayGrid team \u2014 configuring test environments, finalising payment rail contracts, and building the orchestration rule engine. Platform Squad 3 is not needed until the integration phase begins in week 4.",
+                "ownerTeam": "PayGrid product team",
+                "duration": "3 weeks",
+                "squad3DependencyStart": "Week 4 of Q3",
+                "note": "Roadmap shows Squad 3 allocated from week 1, but actual dependency is week 4. Roadmap was set conservatively as a buffer."
+              },
+              "meridianBankLink": {
+                "ticketKey": "PG-180",
+                "summary": "Meridian Bank pilot \u2014 payment routing go-live",
+                "dueDate": "2026-08-25",
+                "contractualFlexibility": "Up to 2 weeks per MSA section 4.3",
+                "pilotScope": "SWIFT, SEPA, RTP \u2014 3 payment rails",
+                "blocking": true
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-looker",
+        "service": "Looker",
+        "icon": "looker",
+        "connectionType": "mcp",
+        "category": "business-intelligence",
+        "fetchedItems": [
+          {
+            "id": "looker-activation-dashboard",
+            "type": "dashboard",
+            "label": "Consumer Activation \u2014 Onboarding Funnel",
+            "url": "https://flexfund.looker.com/dashboards/consumer-activation",
+            "fetchedAt": "2026-02-10T09:21:00Z",
+            "usedInElements": [
+              "el-ff-impact",
+              "el-ff-customer-insight",
+              "option-a",
+              "option-c"
+            ],
+            "data": {
+              "dashboardName": "Consumer Activation \u2014 Onboarding Funnel",
+              "dateRange": "2025-08-01 to 2026-02-09",
+              "metrics": {
+                "firstSessionCompletionRate": {
+                  "current": 0.34,
+                  "target": 0.6,
+                  "trend": "declining",
+                  "thirtyDayChange": -0.02,
+                  "dataPoints": [
+                    {
+                      "month": "Aug 2025",
+                      "value": 0.38
+                    },
+                    {
+                      "month": "Sep 2025",
+                      "value": 0.37
+                    },
+                    {
+                      "month": "Oct 2025",
+                      "value": 0.36
+                    },
+                    {
+                      "month": "Nov 2025",
+                      "value": 0.35
+                    },
+                    {
+                      "month": "Dec 2025",
+                      "value": 0.35
+                    },
+                    {
+                      "month": "Jan 2026",
+                      "value": 0.34
+                    }
+                  ]
+                },
+                "timeToFirstTransaction": {
+                  "current": "4.2 days",
+                  "target": "<24 hours",
+                  "trend": "worsening",
+                  "sixMonthChange": "+0.8 days"
+                },
+                "thirtyDayRetention": {
+                  "current": 0.41,
+                  "target": 0.65,
+                  "byCompletionSpeed": [
+                    {
+                      "segment": "Under 4 minutes",
+                      "retention": 0.71,
+                      "cohortSize": 12400
+                    },
+                    {
+                      "segment": "4\u201310 minutes",
+                      "retention": 0.45,
+                      "cohortSize": 34200
+                    },
+                    {
+                      "segment": "10+ minutes",
+                      "retention": 0.28,
+                      "cohortSize": 18900
+                    },
+                    {
+                      "segment": "Incomplete",
+                      "retention": 0.09,
+                      "cohortSize": 41300
+                    }
+                  ]
+                },
+                "dropOffByStep": [
+                  {
+                    "step": 1,
+                    "name": "Account creation",
+                    "dropOff": 0.08
+                  },
+                  {
+                    "step": 2,
+                    "name": "Personal details",
+                    "dropOff": 0.12
+                  },
+                  {
+                    "step": 3,
+                    "name": "Identity verification",
+                    "dropOff": 0.31,
+                    "isHighest": true
+                  },
+                  {
+                    "step": 4,
+                    "name": "Address verification",
+                    "dropOff": 0.09
+                  },
+                  {
+                    "step": 5,
+                    "name": "Funding source",
+                    "dropOff": 0.22,
+                    "isSecondHighest": true
+                  },
+                  {
+                    "step": 6,
+                    "name": "Preferences",
+                    "dropOff": 0.06
+                  },
+                  {
+                    "step": 7,
+                    "name": "Review & confirm",
+                    "dropOff": 0.04
+                  }
+                ],
+                "neverReturnedRate": {
+                  "value": 0.78,
+                  "description": "78% of users who don't complete onboarding in the first session never return",
+                  "cohortSize": 41300,
+                  "period": "Q4 2025"
+                }
+              }
+            }
+          },
+          {
+            "id": "looker-enterprise-pipeline",
+            "type": "dashboard",
+            "label": "Enterprise Revenue Pipeline",
+            "url": "https://flexfund.looker.com/dashboards/enterprise-pipeline",
+            "fetchedAt": "2026-02-10T09:21:10Z",
+            "usedInElements": [
+              "el-pg-impact",
+              "el-pg-customer-insight",
+              "option-b",
+              "option-c"
+            ],
+            "data": {
+              "dashboardName": "Enterprise Revenue Pipeline \u2014 Payment Orchestration",
+              "dateRange": "2025-10-01 to 2026-02-09",
+              "metrics": {
+                "activePipeline": {
+                  "totalDeals": 45,
+                  "totalARR": "$68.4M",
+                  "byStage": [
+                    {
+                      "stage": "Discovery",
+                      "deals": 18,
+                      "arr": "$22.1M"
+                    },
+                    {
+                      "stage": "Evaluation",
+                      "deals": 14,
+                      "arr": "$19.8M"
+                    },
+                    {
+                      "stage": "Pilot/POC",
+                      "deals": 8,
+                      "arr": "$16.2M"
+                    },
+                    {
+                      "stage": "Negotiation",
+                      "deals": 5,
+                      "arr": "$10.3M"
+                    }
+                  ]
+                },
+                "paymentOrchestrationFilter": {
+                  "dealsRequiringMultiRail": 31,
+                  "arrAtRisk": "$47.2M",
+                  "note": "31 of 45 pipeline deals list multi-rail orchestration as a required or preferred capability"
+                },
+                "meridianBankDeal": {
+                  "dealName": "Meridian Bank \u2014 Platform Consolidation",
+                  "arr": "$3.2M",
+                  "stage": "Pilot/POC",
+                  "closeTarget": "Q3 2026",
+                  "championName": "Rachel Torres, Head of Treasury",
+                  "competingWith": "Stripe Treasury",
+                  "pilotRequirement": "Real-time orchestration across SWIFT, SEPA, RTP",
+                  "riskNote": "Decision tied to internal platform consolidation \u2014 if FlexFund can't demonstrate by Q3, they'll go with Stripe's existing capability"
+                },
+                "q4LostDeals": [
+                  {
+                    "dealName": "Nordic Payments AB",
+                    "arr": "$1.8M",
+                    "lostTo": "Stripe Treasury",
+                    "lossReason": "No multi-rail orchestration capability"
+                  },
+                  {
+                    "dealName": "Banco Meridional",
+                    "arr": "$1.6M",
+                    "lostTo": "Airwallex",
+                    "lossReason": "No real-time payment routing"
+                  },
+                  {
+                    "dealName": "Atlas Commerce Group",
+                    "arr": "$1.3M",
+                    "lostTo": "Stripe Treasury",
+                    "lossReason": "Multi-rail orchestration not on near-term roadmap"
+                  }
+                ],
+                "q4WinRate": {
+                  "overall": 0.42,
+                  "withOrchestration": 0.28,
+                  "withoutOrchestration": 0.61,
+                  "note": "Win rate drops from 61% to 28% when orchestration is a requirement"
+                }
+              }
+            }
+          },
+          {
+            "id": "looker-cost-of-delay",
+            "type": "dashboard",
+            "label": "Cost of Delay Model \u2014 FirstFlex vs PayGrid",
+            "url": "https://flexfund.looker.com/dashboards/cost-of-delay",
+            "fetchedAt": "2026-02-10T09:21:15Z",
+            "usedInElements": [
+              "strategic-prioritisation"
+            ],
+            "data": {
+              "dashboardName": "Cost of Delay Model \u2014 Side-by-Side Comparison",
+              "createdBy": "James Holloway",
+              "lastModified": "2026-02-09T16:00:00Z",
+              "methodology": "Cost of delay calculated as weekly opportunity cost of not shipping, using pipeline data (PayGrid) and LTV modeling (FirstFlex)",
+              "payGridDelayModel": {
+                "label": "PayGrid \u2014 Cost of Delay (Accelerating)",
+                "curve": "exponential",
+                "reason": "Competitive window closing + deal pipeline aging + champion fatigue",
+                "weeklyEstimates": [
+                  { "week": 1, "costPerWeek": "$420K", "cumulativeCost": "$420K", "note": "Meridian confidence dips slightly" },
+                  { "week": 2, "costPerWeek": "$580K", "cumulativeCost": "$1.0M", "note": "MSA flexibility window used" },
+                  { "week": 3, "costPerWeek": "$890K", "cumulativeCost": "$1.9M", "note": "Meridian starts Stripe pilot evaluation" },
+                  { "week": 4, "costPerWeek": "$1.4M", "cumulativeCost": "$3.3M", "note": "2 pipeline deals go to competitor shortlist" },
+                  { "week": 6, "costPerWeek": "$2.1M", "cumulativeCost": "$7.2M", "note": "Meridian likely lost, signal effect begins" },
+                  { "week": 8, "costPerWeek": "$2.8M", "cumulativeCost": "$12.6M", "note": "Enterprise positioning materially damaged" },
+                  { "week": 12, "costPerWeek": "$3.2M", "cumulativeCost": "$22.1M", "note": "Market crystallised around Stripe/Airwallex" }
+                ],
+                "inflectionPoint": "Week 3 \u2014 after this point, delay cost accelerates sharply as competitive dynamics compound"
+              },
+              "firstFlexDelayModel": {
+                "label": "FirstFlex \u2014 Cost of Delay (Linear with Q4 Step)",
+                "curve": "linear with seasonal step",
+                "reason": "Steady user loss + missed Q4 consumer signup surge",
+                "weeklyEstimates": [
+                  { "week": 1, "costPerWeek": "$890K", "cumulativeCost": "$890K", "note": "~70K signups not captured at improved conversion" },
+                  { "week": 2, "costPerWeek": "$890K", "cumulativeCost": "$1.8M" },
+                  { "week": 4, "costPerWeek": "$890K", "cumulativeCost": "$3.6M" },
+                  { "week": 8, "costPerWeek": "$890K", "cumulativeCost": "$7.1M", "note": "Still recoverable \u2014 users are still signing up, just at lower conversion" },
+                  { "week": 12, "costPerWeek": "$1.4M", "cumulativeCost": "$11.6M", "note": "Q4 surge missed \u2014 step-change in cost. 180K \u2192 110K Y1 projection" },
+                  { "week": 16, "costPerWeek": "$890K", "cumulativeCost": "$15.1M", "note": "Post-surge, returns to linear" }
+                ],
+                "inflectionPoint": "Week 12 \u2014 missing Q4 signup surge causes a one-time step up in cumulative cost"
+              },
+              "comparisonInsight": "In the first 4 weeks, FirstFlex delay costs more per week ($890K vs $420K\u2013$1.4M for PayGrid). But PayGrid's cost accelerates past FirstFlex by week 5 and never comes back. By week 12, PayGrid cumulative cost ($22.1M) is nearly double FirstFlex ($11.6M). The key difference: FirstFlex cost is recoverable (delayed users can still be acquired), PayGrid cost is permanent (lost deals and market position don't come back)."
+            }
+          },
+          {
+            "id": "looker-platform-capacity",
+            "type": "dashboard",
+            "label": "Platform Engineering Capacity Model",
+            "url": "https://flexfund.looker.com/dashboards/platform-capacity",
+            "fetchedAt": "2026-02-10T09:21:20Z",
+            "usedInElements": [
+              "section-conflict",
+              "option-c"
+            ],
+            "data": {
+              "dashboardName": "Platform Engineering \u2014 Q3 Capacity Model",
+              "squad": "Platform Squad 3",
+              "headcount": 5,
+              "totalCapacityPerWeek": "160 engineering hours",
+              "q3WeeklyAllocation": [
+                {
+                  "week": 1,
+                  "firstflex": 160,
+                  "paygrid": 0,
+                  "utilisation": 1.0
+                },
+                {
+                  "week": 2,
+                  "firstflex": 160,
+                  "paygrid": 0,
+                  "utilisation": 1.0
+                },
+                {
+                  "week": 3,
+                  "firstflex": 160,
+                  "paygrid": 0,
+                  "utilisation": 1.0
+                },
+                {
+                  "week": 4,
+                  "firstflex": 160,
+                  "paygrid": 160,
+                  "utilisation": 2.0,
+                  "conflict": true
+                },
+                {
+                  "week": 5,
+                  "firstflex": 160,
+                  "paygrid": 160,
+                  "utilisation": 2.0,
+                  "conflict": true
+                },
+                {
+                  "week": 6,
+                  "firstflex": 160,
+                  "paygrid": 160,
+                  "utilisation": 2.0,
+                  "conflict": true
+                },
+                {
+                  "week": 7,
+                  "firstflex": 0,
+                  "paygrid": 160,
+                  "utilisation": 1.0
+                },
+                {
+                  "week": 8,
+                  "firstflex": 0,
+                  "paygrid": 160,
+                  "utilisation": 1.0
+                }
+              ],
+              "optionCModel": {
+                "description": "Proposed 60/40 split based on actual dependency timing",
+                "weeklyAllocation": [
+                  {
+                    "week": 1,
+                    "firstflex": 160,
+                    "paygrid": 0,
+                    "utilisation": 1.0
+                  },
+                  {
+                    "week": 2,
+                    "firstflex": 160,
+                    "paygrid": 0,
+                    "utilisation": 1.0
+                  },
+                  {
+                    "week": 3,
+                    "firstflex": 128,
+                    "paygrid": 32,
+                    "utilisation": 1.0,
+                    "note": "PayGrid ramp-up begins \u2014 Mei Zhang starts integration prep"
+                  },
+                  {
+                    "week": 4,
+                    "firstflex": 96,
+                    "paygrid": 64,
+                    "utilisation": 1.0,
+                    "note": "60/40 split \u2014 Sarah Kim bridges both codebases"
+                  },
+                  {
+                    "week": 5,
+                    "firstflex": 64,
+                    "paygrid": 96,
+                    "utilisation": 1.0,
+                    "note": "Flip to PayGrid-priority"
+                  },
+                  {
+                    "week": 6,
+                    "firstflex": 32,
+                    "paygrid": 128,
+                    "utilisation": 1.0,
+                    "note": "FirstFlex wrap-up \u2014 Alex Novak finishes remaining tickets"
+                  },
+                  {
+                    "week": 7,
+                    "firstflex": 0,
+                    "paygrid": 160,
+                    "utilisation": 1.0
+                  },
+                  {
+                    "week": 8,
+                    "firstflex": 0,
+                    "paygrid": 160,
+                    "utilisation": 1.0
+                  }
+                ]
+              },
+              "plannedPTO": [
+                {
+                  "name": "Carlos Mendoza",
+                  "dates": "Week 3 \u2014 3 days",
+                  "impact": "Reduces capacity by 24 hours in week 3"
+                },
+                {
+                  "name": "Daniel Park",
+                  "dates": "Week 6 \u2014 Friday only",
+                  "impact": "Minimal"
+                }
+              ],
+              "recentIncidents": [
+                {
+                  "date": "2025-12-14",
+                  "description": "Deployment failure during RemitFlow/PayGrid parallel work",
+                  "rootCause": "Context-switching error \u2014 wrong branch merged",
+                  "daysLost": 1.5
+                },
+                {
+                  "date": "2026-01-22",
+                  "description": "Integration test regression",
+                  "rootCause": "Shared infrastructure config conflict between FirstFlex staging and PayGrid staging",
+                  "daysLost": 0.5
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-google-docs",
+        "service": "Google Docs",
+        "icon": "google-docs",
+        "connectionType": "mcp",
+        "category": "documentation",
+        "fetchedItems": [
+          {
+            "id": "gdoc-ff-prd",
+            "type": "document",
+            "label": "FirstFlex PRD \u2014 Product Requirements Document",
+            "url": "https://docs.google.com/document/d/1a2b3c4d5e6f/edit",
+            "fetchedAt": "2026-02-10T09:21:05Z",
+            "usedInElements": [
+              "el-ff-brief",
+              "task-1"
+            ],
+            "data": {
+              "title": "FirstFlex \u2014 Product Requirements Document",
+              "lastModified": "2026-02-06T11:20:00Z",
+              "lastModifiedBy": "Marcus Chen",
+              "status": "Approved",
+              "version": "2.3",
+              "sections": {
+                "problemStatement": "First-time FlexFund users face a 7-step onboarding flow with an average completion rate of 34%. Drop-off is highest at identity verification (step 3, 31% drop-off) and funding source linking (step 5, 22% drop-off). Users who don't complete onboarding within the first session have a 78% chance of never returning. Support tickets related to onboarding account for 42% of all consumer support volume.",
+                "proposedSolution": "Redesign the onboarding experience as a progressive, conversational flow that reduces perceived steps from 7 to 3, introduces smart document capture for identity verification, and defers non-critical steps to post-activation.",
+                "successMetrics": [
+                  "First-session completion rate: 34% \u2192 60%",
+                  "Time to first transaction: 4.2 days \u2192 <24 hours",
+                  "30-day retention: 41% \u2192 65%",
+                  "Support tickets related to onboarding: reduce by 50%"
+                ],
+                "dependencies": [
+                  {
+                    "name": "Platform Squad 3 \u2014 API Migration",
+                    "description": "The payment gateway abstraction layer requires Platform Squad 3 for 4 weeks (Q3 weeks 3\u20136). This is the critical path for the smart document capture and instant funding source verification features.",
+                    "criticality": "blocking",
+                    "alternativePath": "RemitFlow API patterns could compress to 2 weeks \u2014 pending Daniel's assessment"
+                  }
+                ],
+                "targetAudience": "First-time individual users across EU and US markets, predominantly 25\u201340 year-olds switching from traditional banking or competing fintech platforms."
+              }
+            }
+          },
+          {
+            "id": "gdoc-pg-prd",
+            "type": "document",
+            "label": "PayGrid PRD \u2014 Product Requirements Document",
+            "url": "https://docs.google.com/document/d/7g8h9i0j1k2l/edit",
+            "fetchedAt": "2026-02-10T09:21:10Z",
+            "usedInElements": [
+              "el-pg-brief",
+              "task-2"
+            ],
+            "data": {
+              "title": "PayGrid \u2014 Product Requirements Document",
+              "lastModified": "2026-02-04T16:45:00Z",
+              "lastModifiedBy": "Priya Sharma",
+              "status": "Approved",
+              "version": "3.1",
+              "sections": {
+                "problemStatement": "Enterprise clients managing 500+ supplier relationships process payments through an average of 3.2 separate systems. Reconciliation takes 5\u20138 business days. Late payment penalties average $2.1M annually per client. FlexFund currently loses 1 in 4 enterprise RFPs due to lack of real-time payment orchestration capabilities.",
+                "proposedSolution": "Build a unified payment orchestration engine that routes supplier payments in real-time across multiple rails (SWIFT, SEPA, RTP, card networks), with automated reconciliation, smart payment timing optimisation, and a single dashboard for treasury teams.",
+                "successMetrics": [
+                  "Enterprise RFP win rate: 42% \u2192 65%",
+                  "Same-day settlement rate: 12% \u2192 80%",
+                  "Client reconciliation time: 5\u20138 days \u2192 <24 hours",
+                  "Average revenue per enterprise client: +$320K ARR"
+                ],
+                "dependencies": [
+                  {
+                    "name": "Platform Squad 3 \u2014 Payment Routing Integration",
+                    "description": "The multi-rail orchestration engine requires Platform Squad 3 for infrastructure-level integration with SWIFT, SEPA, and RTP networks. Estimated 5 weeks of Squad 3 capacity. Note: first 3 weeks of Q3 are setup phase handled by PayGrid team \u2014 Squad 3 not needed until week 4.",
+                    "criticality": "blocking",
+                    "alternativePath": "None \u2014 this is core infrastructure work that requires platform team expertise"
+                  }
+                ],
+                "pilotScope": {
+                  "client": "Meridian Bank",
+                  "paymentRails": [
+                    "SWIFT",
+                    "SEPA",
+                    "RTP"
+                  ],
+                  "targetDate": "2026-08-25",
+                  "contractReference": "MSA section 4.3 \u2014 up to 2 weeks flexibility on pilot launch"
+                }
+              }
+            }
+          },
+          {
+            "id": "gdoc-meridian-msa",
+            "type": "document",
+            "label": "Meridian Bank \u2014 Master Service Agreement",
+            "url": "https://docs.google.com/document/d/3m4n5o6p7q8r/edit",
+            "fetchedAt": "2026-02-10T09:21:25Z",
+            "usedInElements": [
+              "option-c",
+              "comment-thread-2"
+            ],
+            "data": {
+              "title": "FlexFund \u00d7 Meridian Bank \u2014 Master Service Agreement",
+              "lastModified": "2025-11-15T10:00:00Z",
+              "status": "Executed",
+              "relevantSection": {
+                "sectionNumber": "4.3",
+                "sectionTitle": "Delivery Timeline and Adjustments",
+                "keyClause": "The pilot launch date may be adjusted by up to two (2) weeks with thirty (30) days' written notice from either party, provided such adjustment does not impact the client's Q3 2026 platform consolidation timeline.",
+                "penaltyClause": "Delays exceeding the two-week adjustment window may result in a 5% reduction in the first-year license fee per additional week of delay, capped at 20%.",
+                "currentPilotDate": "2026-08-25",
+                "latestAcceptableDate": "2026-09-08",
+                "noticeRequirement": "30 days written notice",
+                "noticeDeadline": "2026-07-28"
+              }
+            }
+          },
+          {
+            "id": "gdoc-q3-tradeoff",
+            "type": "document",
+            "label": "Q3 Trade-off Analysis \u2014 Time to Market vs Customer Impact",
+            "url": "https://docs.google.com/document/d/4t5u6v7w8x9y/edit",
+            "fetchedAt": "2026-02-10T09:21:28Z",
+            "usedInElements": [
+              "strategic-prioritisation"
+            ],
+            "data": {
+              "title": "Q3 Strategic Trade-off Analysis \u2014 Time to Market vs Maximum Customer Impact",
+              "lastModified": "2026-02-09T18:30:00Z",
+              "lastModifiedBy": "Kyra Osei",
+              "status": "PENDING DECISION",
+              "version": "1.2",
+              "sections": {
+                "executiveSummary": "FlexFund faces a resource-constrained choice between two board-level commitments in Q3 2026. This is not a resource allocation problem \u2014 it is a strategic prioritisation decision between optimising for time to market (PayGrid: close the enterprise competitive window) and maximising customer impact (FirstFlex: fix the consumer onboarding crisis). Both cannot be delivered at full scope with current capacity. This document frames the trade-off to inform the leadership decision.",
+                "theQuestion": "If we can only fully resource one initiative in Q3, which strategic bet do we make: ship fast to capture a closing market window (PayGrid), or ship deep to maximise proven customer impact (FirstFlex)?",
+                "caseForTimeToMarket": {
+                  "project": "PayGrid",
+                  "owner": "Priya Sharma",
+                  "arguments": [
+                    "Stripe launched multi-rail orchestration in Dec 2025 \u2014 6\u20139 month head start and growing",
+                    "Meridian Bank ($3.2M) has hard Q3 deadline \u2014 board-mandated, no flexibility",
+                    "31 of 45 pipeline deals ($47.2M) require orchestration capability",
+                    "Lost $4.7M in Q4 2025 deals specifically to orchestration gap",
+                    "Enterprise market crystallising \u2014 12\u201318 month window before 2\u20133 platforms dominate",
+                    "Cost of delay accelerates: each month, Stripe signs more clients, making the gap harder to close"
+                  ],
+                  "coreArgument": "This is a now-or-never window. Enterprise market positioning is permanent \u2014 once customers consolidate onto a platform, they don't switch back."
+                },
+                "caseForCustomerImpact": {
+                  "project": "FirstFlex",
+                  "owner": "Marcus Chen",
+                  "arguments": [
+                    "106K monthly signups, 78% of incomplete users never return \u2014 ~70K users lost/month",
+                    "$55/user LTV uplift from faster onboarding = $3.85M/month in foregone value",
+                    "September launch captures Q4 signup surge (180K Y1) vs December (110K Y1 \u2014 39% reduction)",
+                    "NeoBanq partnership ($1.8M ARR + 800K users) conditioned on September onboarding improvement",
+                    "Consumer retention compounds: faster onboarding \u2192 referral loops \u2192 organic growth",
+                    "User research is unambiguous: 73% of churned users cite onboarding friction"
+                  ],
+                  "coreArgument": "Customer impact is measurable, proven, and affects the largest user base. Every week of delay has a quantifiable cost in lost users and revenue."
+                },
+                "theAsymmetry": "PayGrid's cost of delay accelerates (competitive dynamics compound). FirstFlex's cost of delay is linear but larger in absolute weekly terms. PayGrid delay is not recoverable (lost deals are permanent). FirstFlex delay is partially recoverable (users still exist, just fewer captured). However, FirstFlex also has a time-gated element: the Q4 consumer surge and the NeoBanq partnership deadline.",
+                "openQuestions": [
+                  "Can MVP scope on both projects create a viable middle path? (See Workday scenario modeling)",
+                  "Is there a sequencing that captures the critical windows for both? (FirstFlex weeks 1\u20134, PayGrid weeks 4\u20138?)",
+                  "What is the board's risk appetite: miss a consumer commitment or miss an enterprise window?",
+                  "Could external contractors accelerate either timeline? (James estimates 4\u20136 week ramp-up = not viable for Q3)"
+                ],
+                "recommendation": "PENDING DECISION \u2014 Scheduled for leadership review. Kyra recommends framing this as a 'which risk do we accept?' conversation, not a 'which project matters more?' conversation. Both matter. The question is which delay is more survivable."
+              }
+            }
+          },
+          {
+            "id": "gdoc-investor-update",
+            "type": "document",
+            "label": "Q3 2026 Investor Update \u2014 Draft",
+            "url": "https://docs.google.com/document/d/9s0t1u2v3w4x/edit",
+            "fetchedAt": "2026-02-10T09:21:30Z",
+            "usedInElements": [
+              "option-a",
+              "option-b",
+              "option-c"
+            ],
+            "data": {
+              "title": "FlexFund \u2014 Q3 2026 Board & Investor Update",
+              "lastModified": "2026-02-07T14:00:00Z",
+              "lastModifiedBy": "Tom Andersen",
+              "status": "Draft \u2014 Board review Feb 28",
+              "relevantSlides": [
+                {
+                  "slideNumber": 7,
+                  "title": "Consumer Growth \u2014 FirstFlex",
+                  "content": "FirstFlex public launch targeted for September 2026. Expected to drive 180K new activated users in Y1 and $14.2M ARR uplift. Design review complete, build phase underway.",
+                  "commitment": "September public launch"
+                },
+                {
+                  "slideNumber": 9,
+                  "title": "Enterprise Expansion \u2014 PayGrid",
+                  "content": "PayGrid general availability targeted for October 2026. Meridian Bank pilot locked for August. Pipeline of 45 enterprise opportunities representing $68.4M in potential ARR. First enterprise pilot client secured.",
+                  "commitment": "Meridian Bank pilot in August, GA in October"
+                },
+                {
+                  "slideNumber": 12,
+                  "title": "Key Risks",
+                  "content": "Platform engineering capacity constraints in Q3 \u2014 mitigation plans in progress.",
+                  "note": "This line was added by Tom on Feb 7 after hearing early signals about the conflict"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-miro-insights",
+        "service": "Miro Insights",
+        "icon": "miro",
+        "connectionType": "native",
+        "category": "customer-evidence",
+        "fetchedItems": [
+          {
+            "id": "miro-ff-research",
+            "type": "research-repository",
+            "label": "FirstFlex \u2014 User Research Synthesis (Jan 2026)",
+            "url": "https://miro.com/app/board/ff-user-research-jan-2026",
+            "fetchedAt": "2026-02-10T09:21:40Z",
+            "usedInElements": [
+              "el-ff-customer-insight",
+              "sticky-ff-c1",
+              "sticky-ff-c2",
+              "sticky-ff-c3"
+            ],
+            "data": {
+              "studyName": "FirstFlex Onboarding \u2014 Drop-off & Activation Research",
+              "methodology": "12 moderated usability sessions + 2,400 survey responses",
+              "conductedBy": "Raj Patel, Amara Okafor",
+              "dateRange": "2026-01-06 to 2026-01-24",
+              "keyFindings": [
+                {
+                  "id": "finding-ff-1",
+                  "theme": "Too many steps",
+                  "insight": "73% of churned first-time users cited 'too many steps' as their primary frustration with onboarding",
+                  "confidence": "high",
+                  "evidenceCount": 9,
+                  "taggedQuotes": [
+                    {
+                      "participant": "P03",
+                      "quote": "I got to step 3 and thought, how many more of these are there? I just closed the app."
+                    },
+                    {
+                      "participant": "P07",
+                      "quote": "Revolut took me 2 minutes. This felt like a tax return."
+                    },
+                    {
+                      "participant": "P11",
+                      "quote": "I'll finish this later. [Researcher note: participant never returned]"
+                    }
+                  ]
+                },
+                {
+                  "id": "finding-ff-2",
+                  "theme": "Speed equals retention",
+                  "insight": "Users who completed onboarding in under 4 minutes had 2.3x higher 90-day retention than those who took longer",
+                  "confidence": "high",
+                  "evidenceCount": 6,
+                  "dataSource": "Cohort analysis \u2014 Q3\u2013Q4 2025 signups cross-referenced with retention"
+                },
+                {
+                  "id": "finding-ff-3",
+                  "theme": "ID verification friction",
+                  "insight": "Identity verification failures account for 38% of all onboarding support tickets. Most failures are due to poor image quality, not actual verification issues.",
+                  "confidence": "high",
+                  "evidenceCount": 4,
+                  "taggedQuotes": [
+                    {
+                      "participant": "P05",
+                      "quote": "It rejected my passport photo three times. The fourth time I just gave up."
+                    },
+                    {
+                      "participant": "P09",
+                      "quote": "I tried taking the photo in different lighting, different angles. Why can't it just work?"
+                    }
+                  ]
+                },
+                {
+                  "id": "finding-ff-4",
+                  "theme": "Deferred steps reduce anxiety",
+                  "insight": "In prototype testing, users shown a 3-step flow with 'complete later' options for non-critical steps reported 64% lower perceived complexity",
+                  "confidence": "medium",
+                  "evidenceCount": 3
+                }
+              ],
+              "affinityMap": {
+                "clusters": [
+                  {
+                    "name": "Too many steps",
+                    "stickyCount": 34,
+                    "color": "#DBEAFE"
+                  },
+                  {
+                    "name": "ID verification pain",
+                    "stickyCount": 22,
+                    "color": "#FEE2E2"
+                  },
+                  {
+                    "name": "Funding source confusion",
+                    "stickyCount": 18,
+                    "color": "#FEF3C7"
+                  },
+                  {
+                    "name": "Competitor comparison",
+                    "stickyCount": 14,
+                    "color": "#D1FAE5"
+                  },
+                  {
+                    "name": "Trust and security",
+                    "stickyCount": 11,
+                    "color": "#E0E7FF"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "miro-pg-advisory",
+            "type": "research-repository",
+            "label": "PayGrid \u2014 Enterprise Advisory Board Feedback (Dec 2025)",
+            "url": "https://miro.com/app/board/pg-advisory-board-dec-2025",
+            "fetchedAt": "2026-02-10T09:21:45Z",
+            "usedInElements": [
+              "el-pg-customer-insight",
+              "sticky-pg-c1",
+              "sticky-pg-c2"
+            ],
+            "data": {
+              "studyName": "Enterprise Advisory Board \u2014 Q4 2025 Session",
+              "methodology": "90-minute facilitated session with 12 enterprise treasury leaders",
+              "conductedBy": "Elena Vasquez, Priya Sharma",
+              "date": "2025-12-12",
+              "keyFindings": [
+                {
+                  "id": "finding-pg-1",
+                  "theme": "Real-time orchestration is #1 need",
+                  "insight": "8 of 12 advisory board members ranked real-time payment orchestration as their #1 unmet need",
+                  "confidence": "high",
+                  "evidenceCount": 8,
+                  "ranking": {
+                    "feature": "Real-time payment orchestration",
+                    "rank1Votes": 8,
+                    "rank2Votes": 3,
+                    "rank3Votes": 1,
+                    "totalParticipants": 12
+                  }
+                },
+                {
+                  "id": "finding-pg-2",
+                  "theme": "Meridian Bank \u2014 deal-breaker",
+                  "insight": "Meridian Bank specifically stated real-time orchestration is a 'deal-breaker' for their platform consolidation decision in Q3",
+                  "confidence": "high",
+                  "evidenceCount": 1,
+                  "taggedQuotes": [
+                    {
+                      "participant": "Rachel Torres, Head of Treasury, Meridian Bank",
+                      "quote": "We're consolidating onto one platform by end of Q3. If FlexFund can't do real-time orchestration by then, it's a deal-breaker for us. We'll go with Stripe."
+                    }
+                  ]
+                },
+                {
+                  "id": "finding-pg-3",
+                  "theme": "Reconciliation pain",
+                  "insight": "Average of 3.2 separate payment systems per enterprise client. Reconciliation described as 'the most hated process in treasury' by 6 participants",
+                  "confidence": "high",
+                  "evidenceCount": 6
+                }
+              ],
+              "sentimentSummary": {
+                "positive": 0.15,
+                "neutral": 0.25,
+                "negative": 0.6,
+                "themes": [
+                  "Frustration with current limitations",
+                  "Urgency around competitive pressure",
+                  "Willingness to pilot if capability demonstrated"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-salesforce",
+        "service": "Salesforce",
+        "icon": "salesforce",
+        "connectionType": "mcp",
+        "category": "customer-relationship",
+        "fetchedItems": [
+          {
+            "id": "sf-meridian-account",
+            "type": "account-record",
+            "label": "Meridian Bank \u2014 Account & Opportunity",
+            "url": "https://flexfund.my.salesforce.com/accounts/meridian-bank",
+            "fetchedAt": "2026-02-10T09:21:50Z",
+            "usedInElements": [
+              "el-pg-customer-insight",
+              "option-c",
+              "comment-thread-2"
+            ],
+            "data": {
+              "account": {
+                "name": "Meridian Bank",
+                "tier": "Strategic",
+                "industry": "Banking \u2014 Retail & Commercial",
+                "employees": "8,500+",
+                "headquarters": "Frankfurt, Germany",
+                "currentContractValue": "$480K ARR",
+                "expansionPipeline": "$3.2M ARR",
+                "accountOwner": "Elena Vasquez",
+                "executiveSponsor": "Tom Andersen",
+                "healthScore": 78,
+                "healthTrend": "stable",
+                "riskFlags": [
+                  "Platform consolidation decision in Q3 \u2014 competitive threat from Stripe Treasury"
+                ]
+              },
+              "opportunity": {
+                "name": "Meridian Bank \u2014 PayGrid Pilot & Platform Consolidation",
+                "stage": "Pilot/POC",
+                "arr": "$3.2M",
+                "closeDate": "2026-09-30",
+                "probability": 0.65,
+                "competitorInDeal": "Stripe Treasury",
+                "championName": "Rachel Torres",
+                "championTitle": "Head of Treasury",
+                "decisionMaker": "Klaus Weber, CFO",
+                "nextStep": "Pilot launch \u2014 dependent on PayGrid multi-rail capability",
+                "strategicNotes": "Meridian is consolidating from 4 payment platforms to 1 by end of Q3. FlexFund is their preferred vendor based on existing relationship, but Stripe Treasury has the orchestration capability today. If FlexFund can demonstrate multi-rail orchestration in a pilot, Meridian will commit to full platform migration worth $3.2M ARR in Y1, scaling to ~$5M by Y3."
+              },
+              "recentActivity": [
+                {
+                  "date": "2026-02-07",
+                  "type": "call",
+                  "subject": "Pilot scope confirmation \u2014 3 payment rails",
+                  "participants": [
+                    "Elena Vasquez",
+                    "Rachel Torres"
+                  ],
+                  "notes": "Rachel confirmed SWIFT, SEPA, RTP as pilot scope. Flagged that their internal deadline is firm \u2014 CFO has committed to board that consolidation decision happens in Q3."
+                },
+                {
+                  "date": "2026-01-22",
+                  "type": "meeting",
+                  "subject": "Technical architecture review",
+                  "participants": [
+                    "Priya Sharma",
+                    "Daniel Park",
+                    "Rachel Torres",
+                    "Meridian CTO Office"
+                  ],
+                  "notes": "Positive reception. Meridian CTO impressed with architecture approach. Asked about timeline \u2014 we committed to August pilot."
+                },
+                {
+                  "date": "2025-12-12",
+                  "type": "event",
+                  "subject": "Enterprise Advisory Board session",
+                  "participants": [
+                    "Elena Vasquez",
+                    "Priya Sharma",
+                    "Rachel Torres"
+                  ],
+                  "notes": "Rachel's 'deal-breaker' comment. See Miro Insights for full context."
+                }
+              ]
+            }
+          },
+          {
+            "id": "sf-enterprise-pipeline",
+            "type": "pipeline-report",
+            "label": "Enterprise Pipeline \u2014 Orchestration-Dependent Deals",
+            "url": "https://flexfund.my.salesforce.com/reports/enterprise-orchestration-pipeline",
+            "fetchedAt": "2026-02-10T09:21:55Z",
+            "usedInElements": [
+              "strategic-prioritisation"
+            ],
+            "data": {
+              "reportTitle": "Enterprise Deals Requiring Payment Orchestration \u2014 Q3 Decision Window",
+              "generatedAt": "2026-02-10T09:21:55Z",
+              "totalOrchestrationDeals": 31,
+              "totalPipelineARR": "$47.2M",
+              "dealsWithQ3DecisionDates": [
+                {
+                  "dealName": "Meridian Bank \u2014 Platform Consolidation",
+                  "arr": "$3.2M",
+                  "stage": "Pilot/POC",
+                  "decisionDate": "2026-09-30",
+                  "champion": "Rachel Torres",
+                  "competitor": "Stripe Treasury",
+                  "urgency": "critical",
+                  "note": "Board-mandated Q3 decision. Preferred vendor but capability must be demonstrated."
+                },
+                {
+                  "dealName": "Nordvest Finans Group",
+                  "arr": "$2.8M",
+                  "stage": "Evaluation",
+                  "decisionDate": "2026-08-15",
+                  "champion": "Lars Eriksson, VP Treasury",
+                  "competitor": "Airwallex",
+                  "urgency": "high",
+                  "note": "Currently in evaluation phase. Needs multi-rail demo by August or they'll advance Airwallex to pilot."
+                },
+                {
+                  "dealName": "Pacific Commerce Holdings",
+                  "arr": "$1.9M",
+                  "stage": "Evaluation",
+                  "decisionDate": "2026-09-01",
+                  "champion": "David Lim, CFO",
+                  "competitor": "Stripe Treasury",
+                  "urgency": "high",
+                  "note": "Consolidating from 5 payment providers. Q3 board presentation requires shortlisted vendor demos."
+                },
+                {
+                  "dealName": "Continental Logistics AG",
+                  "arr": "$2.4M",
+                  "stage": "Discovery",
+                  "decisionDate": "2026-10-15",
+                  "champion": "Anna Weber, Head of Payments",
+                  "competitor": "Adyen",
+                  "urgency": "medium",
+                  "note": "Later timeline but watching Meridian outcome. Said explicitly: 'If Meridian goes well, we'll fast-track our evaluation.'"
+                },
+                {
+                  "dealName": "TransAtlantic Financial Services",
+                  "arr": "$4.1M",
+                  "stage": "Discovery",
+                  "decisionDate": "2026-11-01",
+                  "champion": "Michael Brooks, CTO",
+                  "competitor": "Stripe Treasury, Airwallex",
+                  "urgency": "medium",
+                  "note": "Largest single deal in pipeline. Multi-region orchestration is table stakes for them. Watching how Meridian pilot goes."
+                },
+                {
+                  "dealName": "Baltic Trade Corp",
+                  "arr": "$1.1M",
+                  "stage": "Pilot/POC",
+                  "decisionDate": "2026-08-30",
+                  "champion": "Katja Ozols",
+                  "competitor": "None currently",
+                  "urgency": "high",
+                  "note": "Ready to pilot but blocked on orchestration capability. Will look elsewhere if no demo by end of August."
+                },
+                {
+                  "dealName": "SouthBridge Capital Partners",
+                  "arr": "$1.6M",
+                  "stage": "Evaluation",
+                  "decisionDate": "2026-09-15",
+                  "champion": "James Chen, Head of Operations",
+                  "competitor": "Stripe Treasury",
+                  "urgency": "high",
+                  "note": "Their evaluation committee meets quarterly. Missing Q3 eval means waiting until Q4 \u2014 by then Stripe will have stronger reference customers."
+                }
+              ],
+              "q3WindowSummary": {
+                "dealsWithQ3Deadlines": 5,
+                "arrAtRiskInQ3": "$10.6M",
+                "dealsInfluencedByMeridianOutcome": 4,
+                "arrInfluencedByMeridian": "$10.0M",
+                "cascadeEffect": "Meridian is the first domino. If the pilot succeeds, it becomes a reference case that accelerates 4 other deals. If it fails or is delayed, those 4 deals shift to competitors."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-confluence",
+        "service": "Confluence",
+        "icon": "confluence",
+        "connectionType": "mcp",
+        "category": "documentation",
+        "fetchedItems": [
+          {
+            "id": "confluence-remitflow-retro",
+            "type": "page",
+            "label": "RemitFlow API Integration \u2014 Post-Mortem & Reusable Patterns",
+            "url": "https://flexfund.atlassian.net/wiki/spaces/PLAT/pages/remitflow-api-retro",
+            "fetchedAt": "2026-02-10T09:22:00Z",
+            "usedInElements": [
+              "option-c",
+              "comment-1"
+            ],
+            "data": {
+              "title": "RemitFlow API Migration \u2014 Retrospective & Reusable Patterns",
+              "createdBy": "Daniel Park",
+              "lastModified": "2025-11-28T16:00:00Z",
+              "space": "Platform Engineering",
+              "sections": {
+                "summary": "The RemitFlow API migration was completed in Q4 2025, 2 weeks ahead of schedule. The adapter pattern developed for payment rail integration proved highly reusable and has been documented for future projects.",
+                "originalEstimate": "6 weeks (78 story points)",
+                "actualDuration": "4 weeks (52 story points)",
+                "timeSaved": "2 weeks \u2014 33% faster than estimated",
+                "reusablePatterns": [
+                  {
+                    "patternName": "Payment Rail Adapter Pattern",
+                    "jiraReference": "RMFL-156",
+                    "description": "Standardised interface for integrating with any payment rail (SWIFT, SEPA, RTP, card networks). Each rail is implemented as a pluggable adapter behind a unified routing API.",
+                    "reusableBy": [
+                      "FirstFlex \u2014 API migration",
+                      "PayGrid \u2014 payment routing"
+                    ],
+                    "estimatedTimeSavings": "30\u201340% reduction in integration effort",
+                    "prerequisites": "Shared API gateway must be on v3.2+"
+                  },
+                  {
+                    "patternName": "Transaction Routing Engine",
+                    "jiraReference": "RMFL-172",
+                    "description": "Rule-based routing engine that selects optimal payment rail based on amount, currency, destination, and SLA requirements.",
+                    "reusableBy": [
+                      "PayGrid \u2014 orchestration engine"
+                    ],
+                    "estimatedTimeSavings": "2 sprints"
+                  }
+                ],
+                "lessonsLearned": [
+                  "Start with the adapter interface design, not the rail-specific implementation \u2014 this saved 2 weeks",
+                  "Parallel testing across rails caught integration bugs early \u2014 allocate testing time upfront",
+                  "Sarah Kim and Alex Novak were critical to the success \u2014 their cross-domain knowledge bridged platform and product concerns"
+                ],
+                "teamWhoBuiltIt": [
+                  "Daniel Park",
+                  "Sarah Kim",
+                  "Alex Novak",
+                  "Mei Zhang"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-slack",
+        "service": "Slack",
+        "icon": "slack",
+        "connectionType": "mcp",
+        "category": "communication",
+        "fetchedItems": [
+          {
+            "id": "slack-thread-context",
+            "type": "thread",
+            "label": "#epd-leads \u2014 Resource Conflict Discussion",
+            "url": "https://flexfund.slack.com/archives/C0EPD-LEADS/p1707498000",
+            "fetchedAt": "2026-02-10T09:22:10Z",
+            "usedInElements": [
+              "alert-priority-conflict",
+              "slack-thread-conflict"
+            ],
+            "data": {
+              "channel": "#epd-leads",
+              "threadStartedBy": "Marcus Chen",
+              "threadStartedAt": "2026-02-09T16:40:00Z",
+              "totalReplies": 11,
+              "participants": [
+                "Marcus Chen",
+                "Priya Sharma",
+                "Daniel Park",
+                "James Holloway",
+                "Amara Okafor"
+              ],
+              "sentiment": "escalating \u2014 started factual, became positional",
+              "keySignals": [
+                {
+                  "from": "Daniel Park",
+                  "signal": "Can't realistically split between both projects \u2014 shared infrastructure makes context-switching harder",
+                  "timestamp": "2026-02-09T17:02:00Z"
+                },
+                {
+                  "from": "James Holloway",
+                  "signal": "Escalation request \u2014 'This feels like something we need to escalate. @kyra'",
+                  "timestamp": "2026-02-09T17:25:00Z"
+                },
+                {
+                  "from": "Daniel Park",
+                  "signal": "Bridging option \u2014 Sarah and Alex have worked on both codebases",
+                  "timestamp": "2026-02-09T18:00:00Z"
+                },
+                {
+                  "from": "Amara Okafor",
+                  "signal": "Design resource impact \u2014 both projects have active design workstreams, needs resolution soon",
+                  "timestamp": "2026-02-09T17:45:00Z"
+                }
+              ],
+              "unresolved": true,
+              "escalatedTo": "user-kyra"
+            }
+          },
+          {
+            "id": "slack-thread-strategy",
+            "type": "thread",
+            "label": "#product-strategy \u2014 Speed vs Impact Debate",
+            "url": "https://flexfund.slack.com/archives/C0PROD-STRATEGY/p1707580000",
+            "fetchedAt": "2026-02-10T09:22:12Z",
+            "usedInElements": [
+              "strategic-prioritisation"
+            ],
+            "data": {
+              "channel": "#product-strategy",
+              "threadStartedBy": "Kyra Osei",
+              "threadStartedAt": "2026-02-08T10:15:00Z",
+              "totalReplies": 14,
+              "participants": [
+                "Kyra Osei",
+                "Marcus Chen",
+                "Priya Sharma",
+                "Tom Andersen",
+                "James Holloway"
+              ],
+              "sentiment": "constructive but unresolved \u2014 two clear camps",
+              "threadSummary": "Kyra framed the core question: 'We keep calling this a resource conflict, but it's really a strategic choice \u2014 do we optimise for time to market or maximum customer impact?' Marcus argues FirstFlex impact (retention, LTV, user volume). Priya argues PayGrid urgency (competitive window, contractual deadline). Tom wants both but acknowledges something has to give.",
+              "messages": [
+                {
+                  "from": "Kyra Osei",
+                  "timestamp": "2026-02-08T10:15:00Z",
+                  "text": "I've been thinking about the Squad 3 conflict differently. We keep framing this as a resource allocation problem, but it's really a strategic prioritisation question. The real choice is: do we optimise for time to market (PayGrid \u2014 close the competitive window before Stripe locks us out) or maximum customer impact (FirstFlex \u2014 fix the onboarding crisis that's bleeding 70K users/month)? These are fundamentally different bets.",
+                  "reactions": ["5 \ud83d\udca1", "3 \u2764\ufe0f"]
+                },
+                {
+                  "from": "Marcus Chen",
+                  "timestamp": "2026-02-08T10:42:00Z",
+                  "text": "Customer impact, and it's not close. FirstFlex affects 106K signups/month. Every month we delay, we lose ~70K potential users who never come back. That's $55/user in LTV we're leaving on the table. Do the math: $3.85M/month in foregone lifetime value. PayGrid's pipeline is larger on paper, but it's speculative \u2014 deals that haven't closed vs users who are already at our door.",
+                  "reactions": ["4 \ud83d\udcaa"]
+                },
+                {
+                  "from": "Priya Sharma",
+                  "timestamp": "2026-02-08T11:08:00Z",
+                  "text": "Marcus, I respect the numbers but you're missing the time dimension. FirstFlex delay is painful but recoverable \u2014 those users will still exist in December. PayGrid delay might be fatal. Stripe launched multi-rail orchestration in December. Airwallex is expanding. Every month we wait, the enterprise market crystallises around competitors. If we miss the Q3 window, we don't get a second chance at Meridian or the 30+ deals behind it. $47.2M in pipeline doesn't wait.",
+                  "reactions": ["6 \ud83c\udfaf"]
+                },
+                {
+                  "from": "Marcus Chen",
+                  "timestamp": "2026-02-08T11:35:00Z",
+                  "text": "But here's the thing \u2014 FirstFlex has a time element too. Our research shows September is the optimal launch window because of the Q4 signup surge in consumer fintech. A December launch misses that entirely. We'd go from projecting 180K Y1 activations to maybe 110K. The consumer market is seasonal in ways enterprise isn't.",
+                  "reactions": ["3 \ud83e\udd14"]
+                },
+                {
+                  "from": "Tom Andersen",
+                  "timestamp": "2026-02-08T12:00:00Z",
+                  "text": "Both are board commitments. Slide 7 says September for FirstFlex, slide 9 says August pilot for PayGrid. I need to present to the board on Feb 28. If we're going to miss either date, I need to know now so I can manage expectations. What's the realistic scenario where we deliver both at reduced scope?",
+                  "reactions": ["2 \ud83d\udc4d"]
+                },
+                {
+                  "from": "James Holloway",
+                  "timestamp": "2026-02-08T12:20:00Z",
+                  "text": "From an engineering perspective, the cost of delay is asymmetric. PayGrid's cost of delay accelerates \u2014 each week we wait, Stripe signs more enterprise clients and the competitive gap widens non-linearly. FirstFlex's cost of delay is more linear \u2014 it's painful but doesn't compound the same way. That said, if we rush PayGrid and cut too much scope, the pilot won't be convincing enough to win Meridian anyway.",
+                  "reactions": ["5 \ud83d\udca1"]
+                },
+                {
+                  "from": "Kyra Osei",
+                  "timestamp": "2026-02-08T13:00:00Z",
+                  "text": "This is exactly the tension I want us to sit with before deciding. I'm going to write up a proper trade-off analysis. @Marcus can you pull together the consumer impact numbers? @Priya the enterprise urgency case? I want hard numbers, not vibes. Let's make this decision with data.",
+                  "reactions": ["8 \u2705"]
+                }
+              ],
+              "unresolved": true,
+              "pendingAction": "Kyra writing trade-off analysis, Marcus and Priya preparing data-backed cases"
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-figma",
+        "service": "Figma",
+        "icon": "figma",
+        "connectionType": "mcp",
+        "category": "design",
+        "fetchedItems": [
+          {
+            "id": "figma-ff-onboarding",
+            "type": "design-file",
+            "label": "FirstFlex \u2014 Onboarding Flow v3",
+            "url": "https://www.figma.com/design/firstflex-onboarding-v3",
+            "fetchedAt": "2026-02-10T09:22:15Z",
+            "usedInElements": [
+              "el-ff-brief",
+              "el-ff-status"
+            ],
+            "data": {
+              "fileName": "FirstFlex \u2014 Onboarding Flow v3",
+              "project": "FirstFlex",
+              "lastModified": "2026-02-09T14:00:00Z",
+              "lastModifiedBy": "Raj Patel",
+              "pages": [
+                {
+                  "name": "Flows \u2014 Progressive Onboarding",
+                  "frameCount": 12,
+                  "status": "final"
+                },
+                {
+                  "name": "Flows \u2014 Smart Document Capture",
+                  "frameCount": 8,
+                  "status": "in-review"
+                },
+                {
+                  "name": "Flows \u2014 Instant Funding Link",
+                  "frameCount": 6,
+                  "status": "in-progress"
+                },
+                {
+                  "name": "Components \u2014 Design System",
+                  "frameCount": 24,
+                  "status": "final"
+                },
+                {
+                  "name": "Prototype \u2014 End-to-End",
+                  "frameCount": 1,
+                  "status": "linked"
+                }
+              ],
+              "designCompletion": 0.78,
+              "openComments": 7,
+              "resolvedComments": 34,
+              "activeContributors": [
+                "Raj Patel",
+                "Amara Okafor"
+              ],
+              "designReviewStatus": "Approved with conditions \u2014 design system alignment pending for 3 components"
+            }
+          },
+          {
+            "id": "figma-pg-dashboard",
+            "type": "design-file",
+            "label": "PayGrid \u2014 Enterprise Treasury Dashboard",
+            "url": "https://www.figma.com/design/paygrid-treasury-dashboard",
+            "fetchedAt": "2026-02-10T09:22:20Z",
+            "usedInElements": [
+              "el-pg-brief",
+              "el-pg-status"
+            ],
+            "data": {
+              "fileName": "PayGrid \u2014 Enterprise Treasury Dashboard",
+              "project": "PayGrid",
+              "lastModified": "2026-02-08T16:30:00Z",
+              "lastModifiedBy": "Amara Okafor",
+              "pages": [
+                {
+                  "name": "Dashboard \u2014 Payment Overview",
+                  "frameCount": 6,
+                  "status": "final"
+                },
+                {
+                  "name": "Flows \u2014 Payment Routing Config",
+                  "frameCount": 10,
+                  "status": "in-review"
+                },
+                {
+                  "name": "Flows \u2014 Reconciliation View",
+                  "frameCount": 8,
+                  "status": "in-progress"
+                },
+                {
+                  "name": "Pilot \u2014 Meridian Bank Customisation",
+                  "frameCount": 4,
+                  "status": "in-progress"
+                }
+              ],
+              "designCompletion": 0.62,
+              "openComments": 12,
+              "resolvedComments": 28,
+              "activeContributors": [
+                "Amara Okafor",
+                "Elena Vasquez"
+              ],
+              "note": "Amara's team is actively working both FirstFlex and PayGrid design workstreams in parallel"
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-github",
+        "service": "GitHub",
+        "icon": "github",
+        "connectionType": "mcp",
+        "category": "engineering",
+        "fetchedItems": [
+          {
+            "id": "github-cross-repo",
+            "type": "contributor-analysis",
+            "label": "Platform Squad 3 \u2014 Cross-Repository Activity",
+            "url": "https://github.com/orgs/flexfund/teams/platform-squad-3",
+            "fetchedAt": "2026-02-10T09:22:25Z",
+            "usedInElements": [
+              "section-conflict",
+              "option-c"
+            ],
+            "data": {
+              "analysisType": "Cross-repository contributor activity \u2014 last 6 months",
+              "repositories": [
+                {
+                  "repo": "flexfund/firstflex-api",
+                  "description": "FirstFlex backend services and API layer",
+                  "squad3Contributors": [
+                    {
+                      "name": "Sarah Kim",
+                      "commits": 47,
+                      "prsOpen": 1,
+                      "prsMerged": 12,
+                      "lastCommit": "2026-02-08"
+                    },
+                    {
+                      "name": "Alex Novak",
+                      "commits": 31,
+                      "prsOpen": 0,
+                      "prsMerged": 8,
+                      "lastCommit": "2026-01-28"
+                    },
+                    {
+                      "name": "Carlos Mendoza",
+                      "commits": 22,
+                      "prsOpen": 1,
+                      "prsMerged": 6,
+                      "lastCommit": "2026-02-05"
+                    }
+                  ]
+                },
+                {
+                  "repo": "flexfund/paygrid-engine",
+                  "description": "PayGrid payment orchestration engine",
+                  "squad3Contributors": [
+                    {
+                      "name": "Sarah Kim",
+                      "commits": 38,
+                      "prsOpen": 0,
+                      "prsMerged": 9,
+                      "lastCommit": "2026-02-06"
+                    },
+                    {
+                      "name": "Alex Novak",
+                      "commits": 42,
+                      "prsOpen": 2,
+                      "prsMerged": 11,
+                      "lastCommit": "2026-02-09"
+                    },
+                    {
+                      "name": "Mei Zhang",
+                      "commits": 56,
+                      "prsOpen": 1,
+                      "prsMerged": 14,
+                      "lastCommit": "2026-02-10"
+                    }
+                  ]
+                },
+                {
+                  "repo": "flexfund/platform-core",
+                  "description": "Shared platform infrastructure \u2014 API gateway, auth, monitoring",
+                  "squad3Contributors": [
+                    {
+                      "name": "Daniel Park",
+                      "commits": 28,
+                      "prsOpen": 0,
+                      "prsMerged": 7,
+                      "lastCommit": "2026-02-07"
+                    },
+                    {
+                      "name": "Sarah Kim",
+                      "commits": 19,
+                      "prsOpen": 1,
+                      "prsMerged": 5,
+                      "lastCommit": "2026-02-04"
+                    },
+                    {
+                      "name": "Alex Novak",
+                      "commits": 15,
+                      "prsOpen": 0,
+                      "prsMerged": 4,
+                      "lastCommit": "2026-01-30"
+                    }
+                  ]
+                }
+              ],
+              "technicalDebtAnalysis": {
+                "title": "MVP Shortcut Cost Analysis \u2014 Technical Debt from Reduced Scope",
+                "analyzedBy": "Daniel Park",
+                "analyzedAt": "2026-02-09T15:00:00Z",
+                "summary": "If either project ships at MVP scope to save time, the shortcuts create technical debt that must be paid later. This analysis quantifies the retrofit cost.",
+                "firstFlexMVPDebt": {
+                  "totalRetrofitCost": "2\u20133 sprints (4\u20136 weeks)",
+                  "items": [
+                    {
+                      "shortcut": "Skip card network adapter",
+                      "retrofitCost": "3 sprints",
+                      "reason": "Card network adapter touches the same routing layer as SWIFT/SEPA but with different auth patterns. Building it later requires re-opening and re-testing the routing engine. API versioning adds complexity.",
+                      "riskIfDeferred": "22% of payment volume on legacy routing. Customer complaints likely."
+                    },
+                    {
+                      "shortcut": "Skip advanced failover logic",
+                      "retrofitCost": "1 sprint",
+                      "reason": "Failover patterns are easier to add later because they're additive. But manual intervention during the gap means ops team load increases.",
+                      "riskIfDeferred": "Low technical risk, high ops burden."
+                    },
+                    {
+                      "shortcut": "Skip load testing at 10K concurrent",
+                      "retrofitCost": "0.5 sprints",
+                      "reason": "Load testing can happen post-launch with a phased rollout. But unexpected scale issues would be costly.",
+                      "riskIfDeferred": "Low if EU-only phased launch. High if full rollout."
+                    }
+                  ]
+                },
+                "payGridMVPDebt": {
+                  "totalRetrofitCost": "2\u20133 sprints (4\u20136 weeks)",
+                  "items": [
+                    {
+                      "shortcut": "Skip card network orchestration",
+                      "retrofitCost": "2 sprints",
+                      "reason": "Card networks have different latency profiles and auth flows than SWIFT/SEPA/RTP. Adding them later requires refactoring the routing decision engine to handle async auth callbacks.",
+                      "riskIfDeferred": "8 pipeline deals ($9.2M ARR) require card orchestration. They'll close slower."
+                    },
+                    {
+                      "shortcut": "Skip smart payment timing",
+                      "retrofitCost": "1 sprint",
+                      "reason": "Timing optimisation is a separate module that can be added without touching core routing. Clean separation of concerns.",
+                      "riskIfDeferred": "Minimal for pilot. Important for GA."
+                    },
+                    {
+                      "shortcut": "Skip advanced treasury dashboard",
+                      "retrofitCost": "1 sprint",
+                      "reason": "Dashboard is frontend-heavy. Can be iterated without backend changes.",
+                      "riskIfDeferred": "Meridian has internal tooling so pilot is fine. New prospects may be less impressed."
+                    }
+                  ]
+                },
+                "recommendation": "Both projects have similar retrofit cost profiles (2\u20133 sprints). The debt is manageable if planned for Q4. The risk is that Q4 also has its own priorities, so retrofit competes with new work. Daniel recommends: if we go MVP, explicitly budget Q4 sprint 1\u20132 for retrofit before starting anything new."
+              },
+              "bridgingCandidates": [
+                {
+                  "name": "Sarah Kim",
+                  "reason": "Active contributor on both firstflex-api (47 commits) and paygrid-engine (38 commits). Most recent commits on both repos within last week. Strong candidate for capacity bridging.",
+                  "firstflexCommits": 47,
+                  "paygridCommits": 38,
+                  "contextSwitchRisk": "low \u2014 has maintained parallel familiarity"
+                },
+                {
+                  "name": "Alex Novak",
+                  "reason": "Active contributor on both firstflex-api (31 commits) and paygrid-engine (42 commits). Slightly heavier on PayGrid recently.",
+                  "firstflexCommits": 31,
+                  "paygridCommits": 42,
+                  "contextSwitchRisk": "low \u2014 has maintained parallel familiarity"
+                }
+              ],
+              "openPullRequests": [
+                {
+                  "repo": "firstflex-api",
+                  "pr": "#342",
+                  "title": "Payment gateway abstraction \u2014 SWIFT adapter",
+                  "author": "Sarah Kim",
+                  "reviewers": [
+                    "Daniel Park"
+                  ],
+                  "status": "approved",
+                  "created": "2026-02-07"
+                },
+                {
+                  "repo": "paygrid-engine",
+                  "pr": "#218",
+                  "title": "SEPA rail configuration and test harness",
+                  "author": "Alex Novak",
+                  "reviewers": [
+                    "Mei Zhang"
+                  ],
+                  "status": "changes-requested",
+                  "created": "2026-02-08"
+                },
+                {
+                  "repo": "paygrid-engine",
+                  "pr": "#219",
+                  "title": "RTP settlement timing optimisation",
+                  "author": "Alex Novak",
+                  "reviewers": [
+                    "Daniel Park"
+                  ],
+                  "status": "open",
+                  "created": "2026-02-09"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-google-calendar",
+        "service": "Google Calendar",
+        "icon": "google-calendar",
+        "connectionType": "mcp",
+        "category": "scheduling",
+        "fetchedItems": [
+          {
+            "id": "gcal-availability",
+            "type": "availability-check",
+            "label": "Key Stakeholder Availability \u2014 This Week",
+            "fetchedAt": "2026-02-10T09:22:30Z",
+            "usedInElements": [
+              "action-share",
+              "share-priority-decision"
+            ],
+            "data": {
+              "analysisRange": "2026-02-10 to 2026-02-14",
+              "stakeholders": [
+                {
+                  "userId": "user-kyra",
+                  "name": "Kyra Osei",
+                  "timezone": "Europe/London",
+                  "availableSlots": [
+                    {
+                      "date": "2026-02-12",
+                      "time": "10:00\u201311:00",
+                      "type": "open"
+                    },
+                    {
+                      "date": "2026-02-12",
+                      "time": "14:00\u201315:00",
+                      "type": "open"
+                    },
+                    {
+                      "date": "2026-02-13",
+                      "time": "09:00\u201310:00",
+                      "type": "open"
+                    }
+                  ],
+                  "existingMeetings": [
+                    {
+                      "date": "2026-02-12",
+                      "time": "11:00\u201312:00",
+                      "title": "EPD Leadership Sync",
+                      "recurring": true
+                    },
+                    {
+                      "date": "2026-02-14",
+                      "time": "10:00\u201311:00",
+                      "title": "Board Prep with Tom",
+                      "recurring": false
+                    }
+                  ]
+                },
+                {
+                  "userId": "user-marcus",
+                  "name": "Marcus Chen",
+                  "timezone": "America/New_York",
+                  "availableSlots": [
+                    {
+                      "date": "2026-02-12",
+                      "time": "10:00\u201311:00 GMT",
+                      "type": "open"
+                    },
+                    {
+                      "date": "2026-02-12",
+                      "time": "15:00\u201316:00 GMT",
+                      "type": "open"
+                    }
+                  ]
+                },
+                {
+                  "userId": "user-priya",
+                  "name": "Priya Sharma",
+                  "timezone": "Europe/London",
+                  "availableSlots": [
+                    {
+                      "date": "2026-02-12",
+                      "time": "10:00\u201311:00",
+                      "type": "open"
+                    },
+                    {
+                      "date": "2026-02-13",
+                      "time": "14:00\u201315:00",
+                      "type": "open"
+                    }
+                  ]
+                },
+                {
+                  "userId": "user-daniel",
+                  "name": "Daniel Park",
+                  "timezone": "America/San_Francisco",
+                  "availableSlots": [
+                    {
+                      "date": "2026-02-12",
+                      "time": "17:00\u201318:00 GMT",
+                      "type": "open"
+                    }
+                  ],
+                  "note": "Daniel has back-to-back sprint ceremonies across both projects Mon\u2013Tue, confirming the double-allocation at the team level"
+                },
+                {
+                  "userId": "user-james",
+                  "name": "James Holloway",
+                  "timezone": "America/New_York",
+                  "availableSlots": [
+                    {
+                      "date": "2026-02-12",
+                      "time": "10:00\u201311:00 GMT",
+                      "type": "open"
+                    },
+                    {
+                      "date": "2026-02-12",
+                      "time": "16:00\u201317:00 GMT",
+                      "type": "open"
+                    }
+                  ]
+                }
+              ],
+              "bestOverlap": {
+                "date": "2026-02-12",
+                "time": "10:00\u201311:00 GMT",
+                "title": "Wednesday sync \u2014 FirstFlex \u2194 PayGrid priority decision",
+                "availableParticipants": [
+                  "user-kyra",
+                  "user-marcus",
+                  "user-priya",
+                  "user-james"
+                ],
+                "partialAvailability": [
+                  "user-daniel"
+                ],
+                "note": "All key decision-makers available Wednesday 10am GMT. Daniel can join for the last 30 minutes from San Francisco (2am PST) or review async."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-gong",
+        "service": "Gong",
+        "icon": "gong",
+        "connectionType": "mcp",
+        "category": "customer-evidence",
+        "fetchedItems": [
+          {
+            "id": "gong-meridian-call",
+            "type": "call-recording",
+            "label": "Meridian Bank \u2014 Discovery Call (Jan 15, 2026)",
+            "url": "https://app.gong.io/call/meridian-bank-jan-15",
+            "fetchedAt": "2026-02-10T09:22:35Z",
+            "usedInElements": [
+              "el-pg-customer-insight",
+              "sticky-pg-c1"
+            ],
+            "data": {
+              "callTitle": "Meridian Bank \u2014 Platform Consolidation Discovery",
+              "date": "2026-01-15T14:00:00Z",
+              "duration": "47 minutes",
+              "participants": {
+                "flexfund": [
+                  "Elena Vasquez",
+                  "Priya Sharma"
+                ],
+                "meridianBank": [
+                  "Rachel Torres (Head of Treasury)",
+                  "Stefan M\u00fcller (Platform Architecture)"
+                ]
+              },
+              "aiSummary": "Rachel Torres confirmed Meridian Bank is consolidating from 4 payment platforms to 1. Decision must happen by end of Q3 per board mandate. FlexFund is preferred vendor based on existing relationship and UX quality, but Stripe Treasury has real-time orchestration capability today. Rachel explicitly stated this is a 'deal-breaker' \u2014 if FlexFund can't demonstrate multi-rail orchestration in a pilot by August, they will go with Stripe. Stefan was positive about the architecture approach and asked detailed questions about SWIFT integration.",
+              "keyMoments": [
+                {
+                  "timestamp": "12:34",
+                  "speaker": "Rachel Torres",
+                  "topic": "Timeline pressure",
+                  "transcript": "We're consolidating onto one platform by end of Q3. Our board approved the budget in November and they expect a decision by September. If you can't show us real-time orchestration working in a pilot, we'll go with Stripe. It's that simple.",
+                  "sentiment": "urgent",
+                  "taggedAs": "deal-breaker"
+                },
+                {
+                  "timestamp": "28:15",
+                  "speaker": "Stefan M\u00fcller",
+                  "topic": "Architecture validation",
+                  "transcript": "I like your approach to the adapter pattern for different payment rails. It's cleaner than what Stripe showed us. My concern is whether you can actually build this in time.",
+                  "sentiment": "cautiously-positive"
+                },
+                {
+                  "timestamp": "41:02",
+                  "speaker": "Rachel Torres",
+                  "topic": "Competitive pressure",
+                  "transcript": "Stripe's account team has been very aggressive. They offered us a custom integration timeline and dedicated engineering support. You need to match that commitment.",
+                  "sentiment": "challenging"
+                }
+              ],
+              "trackers": {
+                "competitorMentions": {
+                  "Stripe Treasury": 7,
+                  "Airwallex": 2
+                },
+                "riskSignals": 3,
+                "positiveSignals": 4,
+                "nextSteps": [
+                  "Pilot scope confirmation by Feb 7",
+                  "Architecture walkthrough with CTO office by Jan 22"
+                ]
+              }
+            }
+          },
+          {
+            "id": "gong-b2b-partner-call",
+            "type": "call-recording",
+            "label": "NeoBanq Partnership \u2014 Onboarding Integration Call (Feb 3, 2026)",
+            "url": "https://app.gong.io/call/neobanq-partnership-feb-3",
+            "fetchedAt": "2026-02-10T09:22:38Z",
+            "usedInElements": [
+              "strategic-prioritisation"
+            ],
+            "data": {
+              "callTitle": "NeoBanq \u2014 White-Label Onboarding Partnership Discussion",
+              "date": "2026-02-03T10:00:00Z",
+              "duration": "38 minutes",
+              "participants": {
+                "flexfund": [
+                  "Marcus Chen",
+                  "Elena Vasquez"
+                ],
+                "neoBanq": [
+                  "Sophie Andersson (Head of Partnerships)",
+                  "Mikael Johansson (VP Product)"
+                ]
+              },
+              "aiSummary": "NeoBanq (2.4M users, Nordic market leader) wants to white-label FlexFund's onboarding for their expansion into EU markets. Deal is worth $1.8M ARR. But they explicitly conditioned the partnership on FlexFund fixing onboarding completion rates. Sophie said: 'Fix onboarding completion and you're our first choice for the EU launch.' They're evaluating 2 alternatives and will decide by end of Q3.",
+              "keyMoments": [
+                {
+                  "timestamp": "14:22",
+                  "speaker": "Sophie Andersson",
+                  "topic": "Partnership condition",
+                  "transcript": "We love the FlexFund platform, and your payment rail coverage is exactly what we need for EU expansion. But I'll be honest \u2014 your onboarding completion rate is a problem for us. Our users expect under-3-minute activation. Fix the onboarding completion and you're our first choice for the EU launch. We're looking at two alternatives but would prefer to go with you.",
+                  "sentiment": "conditionally positive",
+                  "taggedAs": "customer-impact-urgency"
+                },
+                {
+                  "timestamp": "26:15",
+                  "speaker": "Mikael Johansson",
+                  "topic": "Timeline pressure",
+                  "transcript": "Our EU launch is January 2027. We need our onboarding partner selected and integrated by October 2026. If your redesigned onboarding isn't live and proving results by September, we can't risk it. We'd need to go with one of the alternatives.",
+                  "sentiment": "urgent"
+                },
+                {
+                  "timestamp": "32:40",
+                  "speaker": "Sophie Andersson",
+                  "topic": "Scale of opportunity",
+                  "transcript": "Our EU expansion targets 800K new users in the first year. At your current 34% activation rate, that's 528K lost activations. At 60%, it's only 320K lost. That's 208K additional activated users just from the rate improvement. The math is compelling if you can hit the numbers.",
+                  "sentiment": "analytical"
+                }
+              ],
+              "trackers": {
+                "competitorMentions": {
+                  "Revolut (as benchmark)": 3,
+                  "N26": 1
+                },
+                "partnershipValue": "$1.8M ARR + 800K user volume",
+                "decisionDate": "2026-09-30",
+                "conditionedOn": "FirstFlex onboarding completion improvement demonstrated by September"
+              },
+              "strategicImplication": "This call proves customer impact has a time element too. NeoBanq's $1.8M partnership and 800K user pipeline is conditioned on FirstFlex shipping by September. Delaying FirstFlex doesn't just affect FlexFund's own users \u2014 it costs a strategic partnership."
+            }
+          },
+          {
+            "id": "gong-ff-prospect-calls",
+            "type": "call-summary",
+            "label": "FirstFlex \u2014 Prospect Call Analysis (Jan\u2013Feb 2026)",
+            "url": "https://app.gong.io/deals/firstflex-prospects",
+            "fetchedAt": "2026-02-10T09:22:40Z",
+            "usedInElements": [
+              "el-ff-customer-insight",
+              "el-ff-market-insight"
+            ],
+            "data": {
+              "analysisTitle": "FirstFlex Onboarding \u2014 Prospect Sentiment Analysis",
+              "dateRange": "2026-01-01 to 2026-02-09",
+              "totalCalls": 34,
+              "callsWithOnboardingMention": 12,
+              "keyThemes": [
+                {
+                  "theme": "Onboarding speed comparison",
+                  "frequency": 8,
+                  "exampleTranscripts": [
+                    {
+                      "call": "Prospects: Nordic Digital Bank",
+                      "timestamp": "8:22",
+                      "speaker": "Prospect",
+                      "content": "We evaluated Revolut's API last month. Their onboarding is under 2 minutes now. What's your timeline for matching that?"
+                    },
+                    {
+                      "call": "Prospects: FinStart GmbH",
+                      "timestamp": "15:40",
+                      "speaker": "Prospect",
+                      "content": "Our users are Gen Z. If the onboarding takes more than 3 minutes, we lose them. That's not a preference, it's data from our own product."
+                    }
+                  ]
+                },
+                {
+                  "theme": "ID verification friction",
+                  "frequency": 5,
+                  "exampleTranscripts": [
+                    {
+                      "call": "Prospects: Atlas Fintech",
+                      "timestamp": "22:10",
+                      "speaker": "Prospect",
+                      "content": "The document capture step is the main drop-off point. Our compliance team wants it, but our product team says it's killing activation."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-notion",
+        "service": "Notion",
+        "icon": "notion",
+        "connectionType": "mcp",
+        "category": "strategy",
+        "fetchedItems": [
+          {
+            "id": "notion-okrs",
+            "type": "database",
+            "label": "FlexFund OKRs 2026 \u2014 Q3 Objectives",
+            "url": "https://www.notion.so/flexfund/okrs-2026",
+            "fetchedAt": "2026-02-10T09:22:45Z",
+            "usedInElements": [
+              "option-a",
+              "option-b",
+              "option-c"
+            ],
+            "data": {
+              "title": "FlexFund \u2014 2026 OKRs",
+              "lastModified": "2026-02-03T10:00:00Z",
+              "lastModifiedBy": "Kyra Osei",
+              "objectives": [
+                {
+                  "id": "okr-consumer-growth",
+                  "objective": "Accelerate consumer acquisition and activation",
+                  "owner": "Kyra Osei",
+                  "quarter": "Q3 2026",
+                  "boardLevel": true,
+                  "linkedProject": "project-firstflex",
+                  "keyResults": [
+                    {
+                      "kr": "Increase first-session onboarding completion from 34% to 60%",
+                      "current": 0.34,
+                      "target": 0.6,
+                      "status": "on-track",
+                      "dependency": "FirstFlex public launch \u2014 Sep 2026"
+                    },
+                    {
+                      "kr": "Reduce time-to-first-transaction from 4.2 days to <24 hours",
+                      "current": 4.2,
+                      "target": 1.0,
+                      "unit": "days",
+                      "status": "on-track"
+                    },
+                    {
+                      "kr": "Achieve 180K new activated users in the first 12 months post-launch",
+                      "current": 0,
+                      "target": 180000,
+                      "status": "not-started"
+                    }
+                  ]
+                },
+                {
+                  "id": "okr-enterprise-expansion",
+                  "objective": "Expand enterprise revenue through payment orchestration",
+                  "owner": "Kyra Osei",
+                  "quarter": "Q3 2026",
+                  "boardLevel": true,
+                  "linkedProject": "project-paygrid",
+                  "keyResults": [
+                    {
+                      "kr": "Increase enterprise RFP win rate from 42% to 65%",
+                      "current": 0.42,
+                      "target": 0.65,
+                      "status": "on-track",
+                      "dependency": "PayGrid GA \u2014 Oct 2026"
+                    },
+                    {
+                      "kr": "Achieve same-day settlement rate of 80% (from 12%)",
+                      "current": 0.12,
+                      "target": 0.8,
+                      "status": "on-track"
+                    },
+                    {
+                      "kr": "Secure 12 enterprise pilot clients by end of Q3",
+                      "current": 1,
+                      "target": 12,
+                      "status": "at-risk",
+                      "note": "Meridian Bank is the first \u2014 pipeline has 45 but conversion depends on capability demonstration"
+                    }
+                  ]
+                },
+                {
+                  "id": "okr-conflict-analysis",
+                  "conflictAnalysis": {
+                    "title": "OKR Conflict \u2014 Consumer Growth vs Enterprise Expansion",
+                    "identifiedBy": "Kyra Osei",
+                    "identifiedAt": "2026-02-08T09:00:00Z",
+                    "nature": "Both OKRs are board-level commitments with Q3 dependencies on the same engineering team. Achieving one at full scope requires partially sacrificing the other.",
+                    "consumerOKRImpactIfDelayed": "KR1 (completion rate) slips to 52% instead of 60%. KR3 (180K activations) drops to 110K. Board commitment on September launch missed.",
+                    "enterpriseOKRImpactIfDelayed": "KR1 (win rate) stays at 42% instead of reaching 65%. KR3 (12 pilots) likely reaches 3\u20134 instead of 12. Meridian Bank ($3.2M) likely lost.",
+                    "kyraNote": "Both are board commitments. We can't deliver both at full scope. The question isn't which OKR matters more \u2014 it's which partial delivery is more acceptable to the board and more survivable for the business."
+                  }
+                },
+                {
+                  "id": "okr-platform-reliability",
+                  "objective": "Maintain platform reliability while scaling engineering output",
+                  "owner": "James Holloway",
+                  "quarter": "Q3 2026",
+                  "boardLevel": false,
+                  "keyResults": [
+                    {
+                      "kr": "Zero P1 incidents caused by resource context-switching",
+                      "current": 2,
+                      "target": 0,
+                      "status": "at-risk",
+                      "note": "2 incidents in last quarter during parallel work \u2014 see Datadog"
+                    },
+                    {
+                      "kr": "Platform Squad utilisation at 85\u201395% (avoid burnout)",
+                      "current": 0.91,
+                      "target": "0.85\u20130.95",
+                      "status": "on-track"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-productboard",
+        "service": "Productboard",
+        "icon": "productboard",
+        "connectionType": "mcp",
+        "category": "product-management",
+        "fetchedItems": [
+          {
+            "id": "pb-feature-priorities",
+            "type": "prioritisation-matrix",
+            "label": "Feature Prioritisation \u2014 Enterprise vs. Consumer",
+            "url": "https://flexfund.productboard.com/feature-board/prioritisation",
+            "fetchedAt": "2026-02-10T09:22:50Z",
+            "usedInElements": [
+              "option-a",
+              "option-b",
+              "option-c"
+            ],
+            "data": {
+              "title": "Feature Prioritisation Matrix \u2014 Q3 2026",
+              "lastUpdated": "2026-02-05T11:00:00Z",
+              "scoringModel": "RICE (Reach \u00d7 Impact \u00d7 Confidence / Effort)",
+              "enterpriseFeatures": [
+                {
+                  "feature": "Multi-rail payment orchestration",
+                  "riceScore": 94,
+                  "rank": 1,
+                  "reach": "45 pipeline deals",
+                  "impact": "high",
+                  "confidence": 0.85,
+                  "effort": "5 sprints",
+                  "linkedProject": "project-paygrid",
+                  "customerRequests": 31,
+                  "arrWeighted": "$47.2M"
+                },
+                {
+                  "feature": "Real-time reconciliation dashboard",
+                  "riceScore": 72,
+                  "rank": 2,
+                  "linkedProject": "project-paygrid"
+                },
+                {
+                  "feature": "Custom payment approval workflows",
+                  "riceScore": 58,
+                  "rank": 3
+                },
+                {
+                  "feature": "Multi-entity treasury view",
+                  "riceScore": 45,
+                  "rank": 4
+                }
+              ],
+              "consumerFeatures": [
+                {
+                  "feature": "Progressive onboarding redesign",
+                  "riceScore": 88,
+                  "rank": 1,
+                  "reach": "106K monthly signups",
+                  "impact": "high",
+                  "confidence": 0.8,
+                  "effort": "4 sprints",
+                  "linkedProject": "project-firstflex",
+                  "customerRequests": 0,
+                  "surveyDemand": "73% of churned users cited onboarding friction"
+                },
+                {
+                  "feature": "Smart document capture (ID verification)",
+                  "riceScore": 76,
+                  "rank": 2,
+                  "linkedProject": "project-firstflex"
+                },
+                {
+                  "feature": "Instant funding source verification",
+                  "riceScore": 65,
+                  "rank": 3,
+                  "linkedProject": "project-firstflex"
+                },
+                {
+                  "feature": "Social sign-up integration",
+                  "riceScore": 42,
+                  "rank": 4
+                }
+              ],
+              "impactAnalysis": {
+                "title": "Head-to-Head Impact Comparison \u2014 FirstFlex vs PayGrid",
+                "analysisDate": "2026-02-06",
+                "firstFlex": {
+                  "label": "Customer Impact Play",
+                  "reach": "106K monthly signups (consumer)",
+                  "ltvUplift": "$55/user additional LTV from faster onboarding",
+                  "projectedARRUplift": "$14.2M Y1",
+                  "retentionImpact": "30-day retention 41% \u2192 65% (+24pp)",
+                  "userVolume": "180K new activated users Y1 (September launch) vs 110K (December launch)",
+                  "costOfInaction": "78% of incomplete signups never return = ~70K lost users/month at $55 LTV = $3.85M/month foregone",
+                  "timeElement": "September launch captures Q4 consumer fintech signup surge. December launch misses it entirely.",
+                  "recoverability": "Partially recoverable \u2014 delayed launch still captures users, just fewer. Network effects and referral loops start later."
+                },
+                "payGrid": {
+                  "label": "Time to Market Play",
+                  "reach": "45 enterprise pipeline deals",
+                  "pipelineValue": "$47.2M ARR (31 deals requiring multi-rail orchestration)",
+                  "anchorDeal": "Meridian Bank \u2014 $3.2M ARR, hard Q3 deadline",
+                  "competitiveWindow": "12\u201318 months before market crystallises around 2\u20133 dominant platforms",
+                  "costOfInaction": "Stripe has 6\u20139mo head start. Each month widens gap. Already lost $4.7M in Q4 deals to orchestration gap.",
+                  "timeElement": "Meridian Bank decision in Q3 (board-mandated). If FlexFund can't demo by August, Stripe wins.",
+                  "recoverability": "Not recoverable \u2014 lost enterprise deals don't come back. Meridian chooses Stripe and 7 other accounts follow. Market positioning is permanent."
+                },
+                "verdict": "Both have compelling cases. FirstFlex is higher volume, PayGrid is higher urgency. The asymmetry: FirstFlex impact is large but partially recoverable; PayGrid impact is permanent if missed."
+              },
+              "insightsSummary": {
+                "enterpriseVoice": "Multi-rail orchestration dominates enterprise requests \u2014 31 of 45 pipeline deals require it. Weighted by potential ARR, it's 4x more impactful than the next enterprise feature.",
+                "consumerVoice": "Onboarding redesign is the clear #1 consumer priority \u2014 not from explicit feature requests but from churn analysis and user research showing 78% of incomplete signups never return."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-datadog",
+        "service": "Datadog",
+        "icon": "datadog",
+        "connectionType": "mcp",
+        "category": "infrastructure",
+        "fetchedItems": [
+          {
+            "id": "datadog-platform-health",
+            "type": "monitoring-dashboard",
+            "label": "Platform Squad 3 \u2014 Infrastructure Health & Incident History",
+            "url": "https://app.datadoghq.com/dashboard/flexfund-platform-squad3",
+            "fetchedAt": "2026-02-10T09:22:55Z",
+            "usedInElements": [
+              "option-c"
+            ],
+            "data": {
+              "dashboardName": "Platform Infrastructure \u2014 Squad 3 Services",
+              "timeRange": "Last 90 days",
+              "serviceHealth": {
+                "apiGateway": {
+                  "status": "healthy",
+                  "uptime": 0.9997,
+                  "p99Latency": "42ms",
+                  "errorRate": 0.0008
+                },
+                "paymentRouter": {
+                  "status": "healthy",
+                  "uptime": 0.9994,
+                  "p99Latency": "128ms",
+                  "errorRate": 0.0012
+                },
+                "authService": {
+                  "status": "healthy",
+                  "uptime": 0.9999,
+                  "p99Latency": "18ms",
+                  "errorRate": 0.0002
+                },
+                "sharedLedger": {
+                  "status": "healthy",
+                  "uptime": 0.9996,
+                  "p99Latency": "65ms",
+                  "errorRate": 0.0005
+                }
+              },
+              "incidentHistory": [
+                {
+                  "id": "INC-2025-1214",
+                  "date": "2025-12-14",
+                  "severity": "P2",
+                  "title": "Deployment failure \u2014 wrong branch merged during parallel RemitFlow/PayGrid work",
+                  "rootCause": "Context-switching error. Engineer working on both RemitFlow and PayGrid merged PayGrid feature branch into RemitFlow release branch. Caught in staging but delayed deployment by 1.5 days.",
+                  "impactHours": 12,
+                  "relatedToContextSwitching": true,
+                  "resolution": "Added branch protection rules and mandatory PR labels per project"
+                },
+                {
+                  "id": "INC-2026-0122",
+                  "date": "2026-01-22",
+                  "severity": "P3",
+                  "title": "Integration test regression \u2014 shared infrastructure config conflict",
+                  "rootCause": "FirstFlex staging environment and PayGrid staging environment used conflicting configuration for the shared API gateway. Tests passed individually but failed when run in sequence.",
+                  "impactHours": 4,
+                  "relatedToContextSwitching": true,
+                  "resolution": "Isolated staging environments per project. Added config validation step to CI pipeline."
+                }
+              ],
+              "contextSwitchingRiskAssessment": {
+                "incidentsRelatedToParallelWork": 2,
+                "totalIncidentsLastQuarter": 5,
+                "percentage": 0.4,
+                "recommendation": "If proceeding with the 60/40 split (Option C), implement project-specific deployment windows and enforce isolated staging environments. The branch protection and config isolation fixes from the recent incidents should mitigate most risk.",
+                "mitigationsCurrent": [
+                  "Branch protection rules per project",
+                  "Isolated staging environments",
+                  "Config validation in CI pipeline"
+                ]
+              },
+              "currentLoad": {
+                "cpuUtilisation": 0.34,
+                "memoryUtilisation": 0.52,
+                "activeConnections": 12400,
+                "headroom": "Sufficient for both projects running in parallel \u2014 no infrastructure capacity concern"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-google-sheets",
+        "service": "Google Sheets",
+        "icon": "google-sheets",
+        "connectionType": "mcp",
+        "category": "analysis",
+        "fetchedItems": [
+          {
+            "id": "gsheets-win-loss",
+            "type": "spreadsheet",
+            "label": "Q4 2025 Win/Loss Analysis \u2014 Enterprise Deals",
+            "url": "https://docs.google.com/spreadsheets/d/5y6z7a8b9c0d/edit",
+            "fetchedAt": "2026-02-10T09:22:58Z",
+            "usedInElements": [
+              "el-pg-customer-insight",
+              "el-pg-impact"
+            ],
+            "data": {
+              "sheetName": "Q4 2025 \u2014 Enterprise Win/Loss",
+              "lastModified": "2026-01-18T09:30:00Z",
+              "lastModifiedBy": "Elena Vasquez",
+              "totalDeals": 23,
+              "summary": {
+                "won": 9,
+                "lost": 11,
+                "noDecision": 3,
+                "totalARRWon": "$8.4M",
+                "totalARRLost": "$12.1M",
+                "winRate": 0.42
+              },
+              "lostDealsWithOrchestrationGap": [
+                {
+                  "dealName": "Nordic Payments AB",
+                  "arr": "$1.8M",
+                  "lostTo": "Stripe Treasury",
+                  "lossReason": "No multi-rail orchestration capability",
+                  "salesCycle": "4 months",
+                  "decisionDate": "2025-10-28",
+                  "notes": "Prospect explicitly asked for SWIFT + SEPA routing in a single API call. Our team had to explain it wasn't available yet. Stripe demonstrated it live in a follow-up meeting."
+                },
+                {
+                  "dealName": "Banco Meridional",
+                  "arr": "$1.6M",
+                  "lostTo": "Airwallex",
+                  "lossReason": "No real-time payment routing",
+                  "salesCycle": "3 months",
+                  "decisionDate": "2025-11-15",
+                  "notes": "Strong relationship with their treasury team, but they couldn't wait for our roadmap. Airwallex offered a faster path to real-time routing with their existing multi-rail engine."
+                },
+                {
+                  "dealName": "Atlas Commerce Group",
+                  "arr": "$1.3M",
+                  "lostTo": "Stripe Treasury",
+                  "lossReason": "Multi-rail orchestration not on near-term roadmap",
+                  "salesCycle": "5 months",
+                  "decisionDate": "2025-12-10",
+                  "notes": "We were the preferred vendor for UX and relationship \u2014 but lost on capability. Their Head of Payments said: 'We love FlexFund's product but we need real-time orchestration now, not in 6 months.'"
+                }
+              ],
+              "topLossReasons": [
+                {
+                  "reason": "No multi-rail payment orchestration",
+                  "count": 3,
+                  "arrImpact": "$4.7M"
+                },
+                {
+                  "reason": "Pricing",
+                  "count": 3,
+                  "arrImpact": "$2.8M"
+                },
+                {
+                  "reason": "Missing regulatory coverage (APAC)",
+                  "count": 2,
+                  "arrImpact": "$2.4M"
+                },
+                {
+                  "reason": "Integration complexity",
+                  "count": 2,
+                  "arrImpact": "$1.6M"
+                },
+                {
+                  "reason": "Competitor relationship",
+                  "count": 1,
+                  "arrImpact": "$0.6M"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-workday",
+        "service": "Workday",
+        "icon": "workday",
+        "connectionType": "mcp",
+        "category": "resource-management",
+        "fetchedItems": [
+          {
+            "id": "workday-squad3-allocation",
+            "type": "resource-allocation",
+            "label": "Platform Squad 3 \u2014 Q3 Allocation & Availability",
+            "url": "https://flexfund.workday.com/resource-management/squad3",
+            "fetchedAt": "2026-02-10T09:21:55Z",
+            "usedInElements": [
+              "section-conflict",
+              "option-c",
+              "tasklist-conflict-analysis"
+            ],
+            "data": {
+              "reportName": "Platform Squad 3 \u2014 Q3 2026 Resource Allocation",
+              "generatedAt": "2026-02-10T09:21:55Z",
+              "teamSize": 5,
+              "teamMembers": [
+                {
+                  "name": "Daniel Park",
+                  "role": "Engineering Lead",
+                  "fte": 1.0,
+                  "q3Projects": [
+                    {
+                      "project": "FirstFlex",
+                      "allocation": 0.3,
+                      "weeks": "1\u20136"
+                    },
+                    {
+                      "project": "PayGrid",
+                      "allocation": 0.5,
+                      "weeks": "4\u20138"
+                    },
+                    {
+                      "project": "Platform maintenance",
+                      "allocation": 0.2,
+                      "weeks": "1\u20138",
+                      "recurring": true
+                    }
+                  ],
+                  "totalUtilisation": 0.94,
+                  "pto": [
+                    {
+                      "type": "PTO",
+                      "date": "2026-08-15",
+                      "days": 1
+                    }
+                  ],
+                  "trainingDays": [],
+                  "riskFlag": "Lead is split across 3 commitments \u2014 single point of failure for architectural decisions"
+                },
+                {
+                  "name": "Sarah Kim",
+                  "role": "Senior Engineer",
+                  "fte": 1.0,
+                  "q3Projects": [
+                    {
+                      "project": "FirstFlex",
+                      "allocation": 0.6,
+                      "weeks": "1\u20135"
+                    },
+                    {
+                      "project": "PayGrid",
+                      "allocation": 0.4,
+                      "weeks": "3\u20138"
+                    }
+                  ],
+                  "totalUtilisation": 0.92,
+                  "pto": [],
+                  "crossTrainedOn": [
+                    "firstflex-api",
+                    "paygrid-engine",
+                    "platform-core"
+                  ],
+                  "bridgingCandidate": true,
+                  "note": "Strongest candidate for bridging role \u2014 recent commits on both codebases"
+                },
+                {
+                  "name": "Alex Novak",
+                  "role": "Senior Engineer",
+                  "fte": 1.0,
+                  "q3Projects": [
+                    {
+                      "project": "FirstFlex",
+                      "allocation": 0.4,
+                      "weeks": "1\u20134"
+                    },
+                    {
+                      "project": "PayGrid",
+                      "allocation": 0.6,
+                      "weeks": "3\u20138"
+                    }
+                  ],
+                  "totalUtilisation": 0.9,
+                  "pto": [],
+                  "crossTrainedOn": [
+                    "firstflex-api",
+                    "paygrid-engine",
+                    "platform-core"
+                  ],
+                  "bridgingCandidate": true
+                },
+                {
+                  "name": "Mei Zhang",
+                  "role": "Backend Engineer",
+                  "fte": 1.0,
+                  "q3Projects": [
+                    {
+                      "project": "PayGrid",
+                      "allocation": 1.0,
+                      "weeks": "1\u20138"
+                    }
+                  ],
+                  "totalUtilisation": 0.96,
+                  "pto": [],
+                  "crossTrainedOn": [
+                    "paygrid-engine"
+                  ],
+                  "note": "PayGrid only \u2014 no FirstFlex context. Moving her to FirstFlex would require ramp-up time."
+                },
+                {
+                  "name": "Carlos Mendoza",
+                  "role": "Backend Engineer",
+                  "fte": 0.8,
+                  "q3Projects": [
+                    {
+                      "project": "FirstFlex",
+                      "allocation": 0.8,
+                      "weeks": "1\u20136"
+                    }
+                  ],
+                  "totalUtilisation": 0.82,
+                  "pto": [
+                    {
+                      "type": "PTO",
+                      "date": "2026-07-14",
+                      "days": 3
+                    }
+                  ],
+                  "crossTrainedOn": [
+                    "firstflex-api"
+                  ],
+                  "note": "80% FTE \u2014 has a standing 20% allocation to on-call rotation"
+                }
+              ],
+              "capacitySummary": {
+                "totalWeeklyHours": 184,
+                "effectiveAfterMeetings": 148,
+                "meetingOverheadPercent": 0.2,
+                "q3UtilisationProjected": 0.94,
+                "burnoutRiskThreshold": 0.95,
+                "status": "near-threshold",
+                "recommendation": "Team is at 94% utilisation projected \u2014 1% below burnout threshold. Any unplanned work or scope increase pushes into unsustainable territory. The 60/40 split works only if scope is tightly managed."
+              },
+              "historicalUtilisation": [
+                {
+                  "quarter": "Q1 2025",
+                  "utilisation": 0.82
+                },
+                {
+                  "quarter": "Q2 2025",
+                  "utilisation": 0.86
+                },
+                {
+                  "quarter": "Q3 2025",
+                  "utilisation": 0.91
+                },
+                {
+                  "quarter": "Q4 2025",
+                  "utilisation": 0.93
+                },
+                {
+                  "quarter": "Q1 2026",
+                  "utilisation": 0.94
+                }
+              ],
+              "companyBenchmark": {
+                "averageSquadUtilisation": 0.85,
+                "squad3Percentile": "P92",
+                "note": "Squad 3 is in the top 8% of engineering utilisation across FlexFund \u2014 consistently above company average"
+              },
+              "scenarioModeling": {
+                "title": "Strategic Scenario Comparison \u2014 Time to Market vs Customer Impact",
+                "modeledBy": "James Holloway",
+                "modeledAt": "2026-02-09T14:00:00Z",
+                "scenarios": [
+                  {
+                    "name": "Scenario A: Maximise Time to Market (PayGrid-first)",
+                    "description": "Ship PayGrid MVP fast, defer FirstFlex to Q4",
+                    "squad3Focus": "PayGrid weeks 1\u20136, FirstFlex weeks 7\u20138 (cleanup only)",
+                    "payGridLaunch": "2026-08-08 (MVP)",
+                    "firstFlexLaunch": "2026-12-01 (delayed)",
+                    "costOfDelay": {
+                      "payGrid": "$0/week (on time)",
+                      "firstFlex": "$890K/week in foregone consumer LTV",
+                      "firstFlexTotal13Weeks": "$11.6M foregone LTV over 13-week delay",
+                      "note": "FirstFlex delay cost is linear but compounds through lost network effects and missed Q4 signup surge"
+                    },
+                    "upside": "$47.2M enterprise pipeline protected, Meridian pilot on time, competitive window secured",
+                    "downside": "180K \u2192 110K projected Y1 activations (misses Q4 consumer surge), board commitment on FirstFlex missed"
+                  },
+                  {
+                    "name": "Scenario B: Maximise Customer Impact (FirstFlex-first)",
+                    "description": "Deliver full FirstFlex scope for September launch, defer PayGrid",
+                    "squad3Focus": "FirstFlex weeks 1\u20136, PayGrid weeks 7\u20138 (setup only)",
+                    "payGridLaunch": "2026-11-15 (delayed)",
+                    "firstFlexLaunch": "2026-09-01 (on time)",
+                    "costOfDelay": {
+                      "payGrid": "$1.2M/week in at-risk enterprise pipeline + competitive gap widening",
+                      "firstFlex": "$0/week (on time)",
+                      "payGridTotal12Weeks": "$14.4M pipeline at risk over 12-week delay",
+                      "note": "PayGrid delay cost accelerates: Stripe signs more clients each month, making the gap harder to close. Cost is front-loaded, not linear."
+                    },
+                    "upside": "180K Y1 activations captured, $14.2M consumer ARR on track, September board commitment met",
+                    "downside": "Meridian Bank likely lost to Stripe ($3.2M deal), 12\u201318mo competitive window in enterprise may close, signal effect on 7 other strategic accounts"
+                  }
+                ],
+                "asymmetryInsight": "The cost-of-delay profiles are fundamentally different. PayGrid's cost accelerates (competitive window closing, deals lost permanently). FirstFlex's cost is linear but larger in absolute weekly terms ($890K/week). The question isn't which costs more per week \u2014 it's which is more recoverable. A delayed consumer launch can partially catch up; a missed enterprise window cannot."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-amplitude",
+        "service": "Amplitude",
+        "icon": "amplitude",
+        "connectionType": "mcp",
+        "category": "product-analytics",
+        "fetchedItems": [
+          {
+            "id": "amplitude-ff-onboarding",
+            "type": "funnel-analysis",
+            "label": "FirstFlex Onboarding \u2014 Behavioural Funnel Analysis",
+            "url": "https://analytics.amplitude.com/flexfund/chart/onboarding-funnel",
+            "fetchedAt": "2026-02-10T09:22:05Z",
+            "usedInElements": [
+              "el-ff-customer-insight",
+              "el-ff-impact",
+              "option-a"
+            ],
+            "data": {
+              "chartName": "FirstFlex Onboarding \u2014 Step-by-Step Funnel",
+              "dateRange": "2025-11-01 to 2026-02-09",
+              "totalUsersEntered": 106800,
+              "totalUsersCompleted": 36312,
+              "overallCompletionRate": 0.34,
+              "medianTimeToComplete": "6m 42s",
+              "stepAnalysis": [
+                {
+                  "step": 1,
+                  "name": "Account creation",
+                  "usersEntering": 106800,
+                  "usersCompleting": 98256,
+                  "dropOffRate": 0.08,
+                  "medianTime": "45s",
+                  "topDropOffReason": "Email verification bounce \u2014 users abandon before confirming"
+                },
+                {
+                  "step": 2,
+                  "name": "Personal details",
+                  "usersEntering": 98256,
+                  "usersCompleting": 86465,
+                  "dropOffRate": 0.12,
+                  "medianTime": "1m 12s",
+                  "topDropOffReason": "Address lookup failures on mobile devices"
+                },
+                {
+                  "step": 3,
+                  "name": "Identity verification",
+                  "usersEntering": 86465,
+                  "usersCompleting": 59641,
+                  "dropOffRate": 0.31,
+                  "medianTime": "2m 28s",
+                  "isHighestDropOff": true,
+                  "topDropOffReason": "Camera quality rejection \u2014 62% of failures are image quality, not identity mismatch",
+                  "deviceBreakdown": {
+                    "iOS": {
+                      "dropOff": 0.24,
+                      "topIssue": "Camera permissions denied on first attempt"
+                    },
+                    "android": {
+                      "dropOff": 0.35,
+                      "topIssue": "Image compression reduces document legibility"
+                    },
+                    "web": {
+                      "dropOff": 0.41,
+                      "topIssue": "Webcam quality insufficient for document capture"
+                    }
+                  },
+                  "retryRate": 0.48,
+                  "averageRetries": 2.1,
+                  "supportTicketsPerWeek": 340
+                },
+                {
+                  "step": 4,
+                  "name": "Address verification",
+                  "usersEntering": 59641,
+                  "usersCompleting": 54273,
+                  "dropOffRate": 0.09,
+                  "medianTime": "32s",
+                  "topDropOffReason": "International address formats not recognised"
+                },
+                {
+                  "step": 5,
+                  "name": "Funding source",
+                  "usersEntering": 54273,
+                  "usersCompleting": 42333,
+                  "dropOffRate": 0.22,
+                  "medianTime": "1m 48s",
+                  "isSecondHighestDropOff": true,
+                  "topDropOffReason": "Open banking connection failures \u2014 34% of attempts fail on first try",
+                  "bankConnectionSuccessRate": 0.66,
+                  "manualFallbackRate": 0.28,
+                  "note": "Users who fall back to manual bank details have 3x longer completion time"
+                },
+                {
+                  "step": 6,
+                  "name": "Preferences",
+                  "usersEntering": 42333,
+                  "usersCompleting": 39790,
+                  "dropOffRate": 0.06,
+                  "medianTime": "22s",
+                  "topDropOffReason": "Minimal \u2014 most users click through defaults"
+                },
+                {
+                  "step": 7,
+                  "name": "Review & confirm",
+                  "usersEntering": 39790,
+                  "usersCompleting": 36312,
+                  "dropOffRate": 0.04,
+                  "medianTime": "15s",
+                  "topDropOffReason": "Terms & conditions hesitation"
+                }
+              ],
+              "cohortAnalysis": {
+                "title": "Retention by Onboarding Completion Speed",
+                "cohorts": [
+                  {
+                    "segment": "Under 4 minutes",
+                    "users": 12400,
+                    "day30Retention": 0.71,
+                    "day90Retention": 0.58,
+                    "ltv": "$142"
+                  },
+                  {
+                    "segment": "4\u201310 minutes",
+                    "users": 34200,
+                    "day30Retention": 0.45,
+                    "day90Retention": 0.31,
+                    "ltv": "$87"
+                  },
+                  {
+                    "segment": "10+ minutes",
+                    "users": 18900,
+                    "day30Retention": 0.28,
+                    "day90Retention": 0.14,
+                    "ltv": "$43"
+                  },
+                  {
+                    "segment": "Incomplete (returned later)",
+                    "users": 14800,
+                    "day30Retention": 0.19,
+                    "day90Retention": 0.08,
+                    "ltv": "$22"
+                  },
+                  {
+                    "segment": "Incomplete (never returned)",
+                    "users": 41300,
+                    "day30Retention": 0.0,
+                    "day90Retention": 0.0,
+                    "ltv": "$0"
+                  }
+                ],
+                "insight": "Users who complete in under 4 minutes generate 3.3x the lifetime value of users who take 10+ minutes. Speed isn't just a UX metric \u2014 it's a revenue driver."
+              },
+              "competitorBenchmark": {
+                "source": "Public benchmark data + internal testing",
+                "competitors": [
+                  {
+                    "name": "Revolut",
+                    "medianOnboardingTime": "1m 48s",
+                    "completionRate": 0.72
+                  },
+                  {
+                    "name": "N26",
+                    "medianOnboardingTime": "2m 15s",
+                    "completionRate": 0.65
+                  },
+                  {
+                    "name": "Wise",
+                    "medianOnboardingTime": "3m 30s",
+                    "completionRate": 0.58
+                  },
+                  {
+                    "name": "FlexFund (current)",
+                    "medianOnboardingTime": "6m 42s",
+                    "completionRate": 0.34
+                  }
+                ],
+                "gap": "FlexFund's onboarding takes 3.7x longer than Revolut and converts at less than half the rate"
+              },
+              "projectedImpact": {
+                "title": "Launch Timing Impact Model \u2014 September vs December",
+                "modeledBy": "Data Science team",
+                "modeledAt": "2026-02-07T10:00:00Z",
+                "septemberLaunch": {
+                  "label": "September 2026 (on time)",
+                  "y1Activations": 180000,
+                  "y1Revenue": "$14.2M ARR uplift",
+                  "q4SurgeCapture": true,
+                  "q4SurgeDetails": "Q4 is historically 2.3x consumer fintech signup volume due to new year financial resolutions, holiday spending awareness, and competitor marketing lifting the category. A September launch captures this entire wave with the improved onboarding.",
+                  "monthlyProjection": [
+                    { "month": "Sep 2026", "newActivations": 8200, "note": "Soft launch, EU-first" },
+                    { "month": "Oct 2026", "newActivations": 12400, "note": "Full rollout" },
+                    { "month": "Nov 2026", "newActivations": 16800, "note": "Q4 surge begins" },
+                    { "month": "Dec 2026", "newActivations": 22100, "note": "Peak Q4 surge" },
+                    { "month": "Jan 2027", "newActivations": 19400, "note": "New year resolution wave" },
+                    { "month": "Feb 2027", "newActivations": 14200, "note": "Normalising" }
+                  ],
+                  "referralLoopEffect": "Early activated users generate referrals. Each month of activated users adds 8\u201312% organic growth from referral loops. September launch means 3 months of referral compounding before the Q4 surge."
+                },
+                "decemberLaunch": {
+                  "label": "December 2026 (delayed)",
+                  "y1Activations": 110000,
+                  "y1Revenue": "$8.7M ARR uplift",
+                  "q4SurgeCapture": false,
+                  "q4SurgeMissed": "December launch means the Q4 surge (Oct\u2013Nov) hits with the old onboarding flow. At 34% completion, we lose ~45K potential activations during the highest-volume months. These users are unlikely to retry.",
+                  "monthlyProjection": [
+                    { "month": "Dec 2026", "newActivations": 5800, "note": "Soft launch, post-surge" },
+                    { "month": "Jan 2027", "newActivations": 9200, "note": "Partial new year capture" },
+                    { "month": "Feb 2027", "newActivations": 10400, "note": "Full rollout" },
+                    { "month": "Mar 2027", "newActivations": 11200, "note": "Steady state" }
+                  ],
+                  "referralLoopEffect": "Referral loops start 3 months later. Lost compounding means ~18K fewer organic acquisitions in Y1."
+                },
+                "timingInsight": "The 13-week delay doesn't just shift revenue \u2014 it permanently reduces Y1 impact by 39% (180K \u2192 110K activations, $14.2M \u2192 $8.7M). This is because consumer fintech has strong seasonality that enterprise payments does not. Time to market matters for FirstFlex too, just in a different way."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-stripe-benchmarks",
+        "service": "Stripe (Competitive Intelligence)",
+        "icon": "stripe",
+        "connectionType": "mcp",
+        "category": "competitive-intelligence",
+        "fetchedItems": [
+          {
+            "id": "stripe-competitive-analysis",
+            "type": "competitive-report",
+            "label": "Payment Orchestration \u2014 Competitive Landscape",
+            "url": "https://flexfund.internal/competitive-intelligence/payment-orchestration",
+            "fetchedAt": "2026-02-10T09:22:08Z",
+            "usedInElements": [
+              "el-pg-market-insight",
+              "option-b",
+              "option-c"
+            ],
+            "data": {
+              "reportTitle": "Payment Orchestration \u2014 Competitive Landscape Q1 2026",
+              "lastUpdated": "2026-02-07T10:00:00Z",
+              "compiledBy": "agent-product-leader",
+              "competitors": [
+                {
+                  "name": "Stripe Treasury",
+                  "threatLevel": "critical",
+                  "recentMoves": [
+                    {
+                      "date": "2025-12-15",
+                      "event": "Launched multi-rail orchestration API \u2014 SWIFT, SEPA, RTP in single endpoint",
+                      "impact": "Directly addresses the gap FlexFund lost 3 deals to in Q4"
+                    },
+                    {
+                      "date": "2026-01-22",
+                      "event": "Expanded to 12 new EU markets with local payment rail support",
+                      "impact": "Now covers all 6 jurisdictions FlexFund operates in"
+                    },
+                    {
+                      "date": "2026-02-03",
+                      "event": "Announced dedicated enterprise integration team \u2014 offering custom onboarding for $5M+ ARR clients",
+                      "impact": "Direct competitive threat to Meridian Bank deal"
+                    }
+                  ],
+                  "capabilities": {
+                    "multiRailOrchestration": true,
+                    "realTimeSettlement": true,
+                    "paymentRailsCovered": [
+                      "SWIFT",
+                      "SEPA",
+                      "RTP",
+                      "ACH",
+                      "FPS",
+                      "Card networks"
+                    ],
+                    "reconciliationTime": "< 4 hours",
+                    "apiLatency": "< 200ms",
+                    "enterpriseClients": "200+",
+                    "recentGrowth": "38% YoY enterprise revenue growth"
+                  },
+                  "competitiveWindow": "Stripe has a 6\u20139 month head start on multi-rail orchestration. Every month FlexFund delays PayGrid, the gap widens. By Q4 2026, Stripe will likely have 50+ enterprise clients on their orchestration platform \u2014 making it the de facto standard.",
+                  "dealsLostToStripe": 2,
+                  "arrLostToStripe": "$3.1M"
+                },
+                {
+                  "name": "Airwallex",
+                  "threatLevel": "high",
+                  "recentMoves": [
+                    {
+                      "date": "2025-11-28",
+                      "event": "Raised $200M Series F at $5.6B valuation",
+                      "impact": "Significant runway to invest in enterprise capabilities"
+                    },
+                    {
+                      "date": "2026-01-15",
+                      "event": "Launched real-time payment orchestration in 4 additional EU markets",
+                      "impact": "Closing the geographic coverage gap with Stripe"
+                    },
+                    {
+                      "date": "2026-02-01",
+                      "event": "Published customer case study \u2014 'How Meridian Logistics reduced payment processing from 5 days to 4 hours'",
+                      "impact": "Social proof in FlexFund's target segment"
+                    }
+                  ],
+                  "capabilities": {
+                    "multiRailOrchestration": true,
+                    "realTimeSettlement": true,
+                    "paymentRailsCovered": [
+                      "SWIFT",
+                      "SEPA",
+                      "RTP",
+                      "ACH",
+                      "FPS"
+                    ],
+                    "reconciliationTime": "< 6 hours",
+                    "enterpriseClients": "80+",
+                    "recentGrowth": "52% YoY"
+                  },
+                  "dealsLostToAirwallex": 1,
+                  "arrLostToAirwallex": "$1.6M"
+                },
+                {
+                  "name": "Adyen",
+                  "threatLevel": "medium",
+                  "recentMoves": [
+                    {
+                      "date": "2026-01-30",
+                      "event": "Announced enterprise treasury module in beta",
+                      "impact": "Entering the same space from a payments-first angle"
+                    }
+                  ],
+                  "note": "Less direct threat currently \u2014 focused on retail payments, not treasury/supplier orchestration. But their enterprise module could become competitive by Q1 2027."
+                }
+              ],
+              "marketTrends": {
+                "totalAddressableMarket": "$18.2B by 2028",
+                "growthRate": "24% CAGR",
+                "keyTrend": "Enterprise treasuries consolidating from average of 3.2 payment platforms to 1. First movers in multi-rail orchestration are winning the consolidation deals.",
+                "windowOfOpportunity": "12\u201318 months before the market crystallises around 2\u20133 dominant platforms. FlexFund must be one of them or risk being relegated to niche/SMB positioning."
+              },
+              "consumerOnboardingBenchmarks": {
+                "title": "Consumer Fintech Onboarding \u2014 Market Benchmarks & Trends",
+                "source": "Internal competitive intelligence + public data",
+                "lastUpdated": "2026-02-05",
+                "industryTrend": "Consumer fintech companies that invested in onboarding redesigns in 2024\u20132025 saw 2\u20133x activation rate improvements. This is now table stakes for the category.",
+                "benchmarks": [
+                  {
+                    "company": "Revolut",
+                    "onboardingRedesign": "2024 Q3",
+                    "before": { "completionRate": 0.41, "medianTime": "5m 20s" },
+                    "after": { "completionRate": 0.72, "medianTime": "1m 48s" },
+                    "improvement": "1.76x completion rate, 66% faster",
+                    "keyChange": "Moved to progressive onboarding with deferred KYC. Smart document capture with AI-assisted image quality.",
+                    "businessImpact": "Reported 2.1x increase in 30-day activation, leading to $340M incremental revenue in first year"
+                  },
+                  {
+                    "company": "N26",
+                    "onboardingRedesign": "2025 Q1",
+                    "before": { "completionRate": 0.38, "medianTime": "4m 45s" },
+                    "after": { "completionRate": 0.65, "medianTime": "2m 15s" },
+                    "improvement": "1.71x completion rate, 53% faster",
+                    "keyChange": "Video-based ID verification replaced document upload. Instant bank linking via open banking.",
+                    "businessImpact": "30-day retention improved from 45% to 68%. Support tickets dropped 40%."
+                  },
+                  {
+                    "company": "Wise",
+                    "onboardingRedesign": "2024 Q4",
+                    "before": { "completionRate": 0.35, "medianTime": "6m 10s" },
+                    "after": { "completionRate": 0.58, "medianTime": "3m 30s" },
+                    "improvement": "1.66x completion rate, 43% faster",
+                    "keyChange": "Reduced steps from 8 to 4. Deferred full KYC to first transaction above threshold.",
+                    "businessImpact": "New user acquisition cost dropped 28% as organic activation improved."
+                  },
+                  {
+                    "company": "FlexFund (current)",
+                    "completionRate": 0.34,
+                    "medianTime": "6m 42s",
+                    "gap": "Worst in category. 52\u2013112% behind top 3 competitors on completion rate.",
+                    "note": "FlexFund is now the slowest and lowest-converting onboarding in the consumer fintech category among comparable platforms."
+                  }
+                ],
+                "strategicImplication": "Competitors have already moved. Onboarding redesign is no longer a differentiator \u2014 it's catching up to baseline. Every month FlexFund delays, the competitive gap in consumer fintech widens alongside the enterprise gap."
+              },
+              "flexfundPosition": {
+                "currentCapability": "Single-rail processing only (SEPA). No orchestration, no real-time settlement.",
+                "payGridTimeline": "Multi-rail orchestration targeted for Q3 2026 GA",
+                "gapToClose": "6\u20139 months behind Stripe, 3\u20134 months behind Airwallex",
+                "strategicImplication": "Every month of delay on PayGrid increases the competitive gap. Deferring PayGrid by a full quarter (Option A) would put FlexFund ~12 months behind Stripe \u2014 likely unrecoverable in enterprise positioning."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-gainsight",
+        "service": "Gainsight",
+        "icon": "gainsight",
+        "connectionType": "mcp",
+        "category": "customer-success",
+        "fetchedItems": [
+          {
+            "id": "gainsight-enterprise-health",
+            "type": "health-dashboard",
+            "label": "Enterprise Client Health \u2014 Payment Orchestration Sensitivity",
+            "url": "https://flexfund.gainsight.com/dashboards/enterprise-health",
+            "fetchedAt": "2026-02-10T09:22:12Z",
+            "usedInElements": [
+              "el-pg-customer-insight",
+              "option-a",
+              "option-b",
+              "option-c"
+            ],
+            "data": {
+              "dashboardName": "Enterprise Client Health \u2014 Orchestration-Sensitive Accounts",
+              "lastUpdated": "2026-02-09T23:00:00Z",
+              "summary": {
+                "totalEnterpriseClients": 142,
+                "clientsRequestingOrchestration": 28,
+                "atRiskDueToCapabilityGap": 8,
+                "totalARRAtRisk": "$12.8M",
+                "churnPredictionNext6Months": 3,
+                "predictedChurnARR": "$4.1M"
+              },
+              "keyAccounts": [
+                {
+                  "name": "Meridian Bank",
+                  "tier": "Strategic",
+                  "currentARR": "$480K",
+                  "expansionPipeline": "$3.2M",
+                  "healthScore": 72,
+                  "healthTrend": "declining",
+                  "healthHistory": [
+                    {
+                      "month": "Sep 2025",
+                      "score": 85
+                    },
+                    {
+                      "month": "Oct 2025",
+                      "score": 82
+                    },
+                    {
+                      "month": "Nov 2025",
+                      "score": 78
+                    },
+                    {
+                      "month": "Dec 2025",
+                      "score": 76
+                    },
+                    {
+                      "month": "Jan 2026",
+                      "score": 72
+                    }
+                  ],
+                  "riskFactors": [
+                    "Platform consolidation decision in Q3 \u2014 competitive bake-off with Stripe Treasury",
+                    "Champion (Rachel Torres) sentiment has shifted from 'strong advocate' to 'cautiously optimistic'",
+                    "Internal deadline is board-mandated \u2014 no flexibility beyond Q3"
+                  ],
+                  "recentCSMNotes": [
+                    {
+                      "date": "2026-02-07",
+                      "csm": "Elena Vasquez",
+                      "note": "Rachel asked directly whether PayGrid pilot is still on track for August. She's hearing good things from Stripe's account team and is getting pressure from procurement to shortlist by mid-Q3. We need to demonstrate capability soon or risk losing champion support."
+                    },
+                    {
+                      "date": "2026-01-28",
+                      "csm": "Elena Vasquez",
+                      "note": "Positive meeting with CTO office on architecture. But Rachel mentioned 'we love the relationship but at some point capability has to win.' Clear signal that goodwill alone won't hold this account."
+                    }
+                  ],
+                  "contractualContext": "MSA allows 2-week pilot delay. But relationally, any delay signals unreliability. Meridian's procurement team is already evaluating Stripe as a backup.",
+                  "strategicImplication": "Losing Meridian would cost $480K in current ARR + $3.2M expansion pipeline, and send a negative signal to the 7 other strategic accounts considering similar consolidation."
+                },
+                {
+                  "name": "EuroTrade Partners",
+                  "tier": "Growth",
+                  "currentARR": "$220K",
+                  "expansionPipeline": "$680K",
+                  "healthScore": 65,
+                  "healthTrend": "declining",
+                  "riskFactors": [
+                    "Explicitly asked about multi-rail capabilities in Jan QBR",
+                    "Evaluating Airwallex as secondary provider \u2014 could become primary"
+                  ],
+                  "recentCSMNotes": [
+                    {
+                      "date": "2026-01-15",
+                      "csm": "James Crawford",
+                      "note": "During QBR, CFO asked when we'd have real-time orchestration. I said H2 2026. He said 'Airwallex told us Q1.' We need to be more specific about our timeline or risk this account going to dual-provider."
+                    }
+                  ]
+                },
+                {
+                  "name": "Baltic Shipping Co",
+                  "tier": "Growth",
+                  "currentARR": "$310K",
+                  "expansionPipeline": "$450K",
+                  "healthScore": 58,
+                  "healthTrend": "at-risk",
+                  "riskFactors": [
+                    "Supplier payment delays causing operational friction \u2014 escalated twice in January",
+                    "CEO mentioned at dinner event that 'we might need to look at alternatives for payments'"
+                  ]
+                }
+              ],
+              "aggregateInsight": {
+                "narrative": "8 enterprise accounts representing $12.8M in current + pipeline ARR have flagged payment orchestration as a capability gap. 3 are predicted to churn within 6 months if the gap isn't addressed. Meridian Bank is the most strategic \u2014 losing it would have a cascading signal effect on 7 other accounts in similar consolidation cycles.",
+                "recommendation": "PayGrid delays beyond 2 weeks create measurable churn risk. The MSA flexibility on the pilot date is contractually safe but relationally dangerous \u2014 Meridian's health score has dropped 13 points in 5 months and their champion is wavering."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-linear",
+        "service": "Linear",
+        "icon": "linear",
+        "connectionType": "mcp",
+        "category": "design-tracking",
+        "fetchedItems": [
+          {
+            "id": "linear-design-workstreams",
+            "type": "project-board",
+            "label": "Design Team \u2014 FirstFlex & PayGrid Workstreams",
+            "url": "https://linear.app/flexfund/team/design",
+            "fetchedAt": "2026-02-10T09:22:18Z",
+            "usedInElements": [
+              "section-conflict",
+              "option-c"
+            ],
+            "data": {
+              "teamName": "Product Design",
+              "teamLead": "Amara Okafor",
+              "totalDesigners": 4,
+              "activeProjects": [
+                {
+                  "project": "FirstFlex",
+                  "status": "in-progress",
+                  "assignedDesigners": [
+                    {
+                      "name": "Raj Patel",
+                      "allocation": 0.8,
+                      "focus": "Onboarding flow design + smart document capture"
+                    },
+                    {
+                      "name": "Amara Okafor",
+                      "allocation": 0.3,
+                      "focus": "Design review + design system alignment"
+                    }
+                  ],
+                  "totalTasks": 24,
+                  "completed": 16,
+                  "inProgress": 5,
+                  "blocked": 1,
+                  "blockedDetail": {
+                    "taskId": "DES-287",
+                    "title": "Smart document capture \u2014 camera integration UX",
+                    "blockedBy": "Waiting for API migration spec from Platform Squad 3 to confirm capture-to-verification data flow",
+                    "impact": "Blocks 3 downstream design tasks (error states, retry flow, fallback to manual upload)",
+                    "daysBlocked": 4
+                  },
+                  "upcomingHandoffs": [
+                    {
+                      "task": "Progressive onboarding \u2014 final screens",
+                      "handoffTo": "Engineering",
+                      "date": "2026-02-14",
+                      "status": "on-track"
+                    },
+                    {
+                      "task": "Smart document capture \u2014 full flow",
+                      "handoffTo": "Engineering",
+                      "date": "2026-02-21",
+                      "status": "at-risk",
+                      "dependsOn": "DES-287 unblocked"
+                    }
+                  ],
+                  "designCompletion": 0.78
+                },
+                {
+                  "project": "PayGrid",
+                  "status": "in-progress",
+                  "assignedDesigners": [
+                    {
+                      "name": "Amara Okafor",
+                      "allocation": 0.4,
+                      "focus": "Treasury dashboard + payment routing config"
+                    },
+                    {
+                      "name": "Lin Wei",
+                      "allocation": 0.6,
+                      "focus": "Reconciliation view + Meridian pilot customisation"
+                    }
+                  ],
+                  "totalTasks": 18,
+                  "completed": 8,
+                  "inProgress": 6,
+                  "blocked": 0,
+                  "upcomingHandoffs": [
+                    {
+                      "task": "Payment routing configuration \u2014 v1",
+                      "handoffTo": "Engineering",
+                      "date": "2026-02-18",
+                      "status": "on-track"
+                    },
+                    {
+                      "task": "Reconciliation dashboard \u2014 pilot scope",
+                      "handoffTo": "Engineering",
+                      "date": "2026-03-01",
+                      "status": "on-track"
+                    },
+                    {
+                      "task": "Meridian Bank customisation package",
+                      "handoffTo": "Engineering",
+                      "date": "2026-03-08",
+                      "status": "on-track",
+                      "note": "Elena Vasquez reviewing with Meridian CTO office \u2014 feedback expected Feb 14"
+                    }
+                  ],
+                  "designCompletion": 0.62
+                }
+              ],
+              "capacityAnalysis": {
+                "amaraOkaforSplit": {
+                  "firstflex": 0.3,
+                  "paygrid": 0.4,
+                  "designOps": 0.2,
+                  "available": 0.1,
+                  "totalUtilisation": 0.9,
+                  "risk": "Amara is the only designer on both projects. If either project's scope increases, she becomes the bottleneck. She's also the design team lead \u2014 management responsibilities are competing with IC work."
+                },
+                "designEngineeringHandoffGap": {
+                  "description": "If the 60/40 engineering split is implemented without a matching design split, there's a risk of engineering capacity without ready design handoffs.",
+                  "firstflexHandoffsReady": 2,
+                  "firstflexHandoffsPending": 1,
+                  "paygridHandoffsReady": 1,
+                  "paygridHandoffsPending": 2,
+                  "recommendation": "The 60/40 engineering split should be mirrored in design prioritisation. Raj should complete the FirstFlex document capture flow before Amara shifts more time to PayGrid. Sequence: FirstFlex handoffs first (weeks 1\u20133), then PayGrid handoffs ramp (weeks 3\u20136)."
+                },
+                "totalDesignCapacity": {
+                  "designers": 4,
+                  "hoursPerWeek": 128,
+                  "effectiveAfterReviews": 102,
+                  "firstflexAllocation": 0.45,
+                  "paygridAllocation": 0.4,
+                  "otherAllocation": 0.15,
+                  "slack": "Near zero \u2014 any unplanned design work (e.g. Meridian pilot customisation changes) would require deprioritising something else"
+                }
+              },
+              "amiraSlackMessage": {
+                "context": "Amara flagged this concern in the #epd-leads Slack thread",
+                "quote": "Both projects have active design workstreams right now, and my team is spread across both. Whatever the resource decision is, I need to know soon so I can adjust design allocation too.",
+                "timestamp": "2026-02-09T17:45:00Z",
+                "resolved": false
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "agentSourceMapping": {
+    "description": "Maps each agent task to the sources it pulled from",
+    "taskToSources": {
+      "task-1": {
+        "label": "Pull FirstFlex project brief and current status",
+        "sources": [
+          "jira-ff-epic",
+          "gdoc-ff-prd",
+          "figma-ff-onboarding",
+          "looker-activation-dashboard"
+        ],
+        "fetchTime": "15s"
+      },
+      "task-2": {
+        "label": "Pull PayGrid project brief and current status",
+        "sources": [
+          "jira-pg-epic",
+          "gdoc-pg-prd",
+          "figma-pg-dashboard",
+          "looker-enterprise-pipeline"
+        ],
+        "fetchTime": "15s"
+      },
+      "task-3": {
+        "label": "Analyse shared resource dependencies",
+        "sources": [
+          "jira-squad3-board",
+          "looker-platform-capacity",
+          "github-cross-repo",
+          "gcal-availability",
+          "datadog-platform-health",
+          "slack-thread-context",
+          "workday-squad3-allocation",
+          "linear-design-workstreams"
+        ],
+        "fetchTime": "30s"
+      },
+      "task-4": {
+        "label": "Retrieve latest market and customer insights",
+        "sources": [
+          "miro-ff-research",
+          "miro-pg-advisory",
+          "sf-meridian-account",
+          "gong-meridian-call",
+          "gong-ff-prospect-calls",
+          "gsheets-win-loss",
+          "pb-feature-priorities",
+          "amplitude-ff-onboarding",
+          "gainsight-enterprise-health"
+        ],
+        "fetchTime": "45s"
+      },
+      "task-5": {
+        "label": "Generate prioritisation options with trade-off analysis",
+        "sources": [
+          "gdoc-meridian-msa",
+          "gdoc-investor-update",
+          "notion-okrs",
+          "confluence-remitflow-retro",
+          "stripe-competitive-analysis"
+        ],
+        "synthesisOf": [
+          "task-1",
+          "task-2",
+          "task-3",
+          "task-4"
+        ],
+        "fetchTime": "40s"
+      }
+    }
+  },
+  "canvasElementMapping": {
+    "description": "Maps each canvas element to its primary and secondary data sources",
+    "elements": {
+      "el-ff-brief": {
+        "primary": [
+          "jira-ff-epic",
+          "gdoc-ff-prd"
+        ],
+        "secondary": [
+          "confluence-remitflow-retro",
+          "figma-ff-onboarding"
+        ]
+      },
+      "el-ff-status": {
+        "primary": [
+          "jira-ff-epic",
+          "jira-squad3-board"
+        ],
+        "secondary": [
+          "figma-ff-onboarding",
+          "linear-design-workstreams"
+        ]
+      },
+      "el-ff-impact": {
+        "primary": [
+          "looker-activation-dashboard",
+          "amplitude-ff-onboarding"
+        ],
+        "secondary": [
+          "gong-ff-prospect-calls"
+        ]
+      },
+      "el-ff-customer-insight": {
+        "primary": [
+          "miro-ff-research",
+          "amplitude-ff-onboarding"
+        ],
+        "secondary": [
+          "gong-ff-prospect-calls"
+        ]
+      },
+      "el-ff-market-insight": {
+        "primary": [
+          "amplitude-ff-onboarding",
+          "stripe-competitive-analysis"
+        ],
+        "secondary": [
+          "gong-ff-prospect-calls"
+        ]
+      },
+      "el-pg-brief": {
+        "primary": [
+          "jira-pg-epic",
+          "gdoc-pg-prd"
+        ],
+        "secondary": [
+          "figma-pg-dashboard"
+        ]
+      },
+      "el-pg-status": {
+        "primary": [
+          "jira-pg-epic",
+          "jira-squad3-board"
+        ],
+        "secondary": [
+          "linear-design-workstreams"
+        ]
+      },
+      "el-pg-impact": {
+        "primary": [
+          "looker-enterprise-pipeline",
+          "gsheets-win-loss"
+        ],
+        "secondary": [
+          "sf-meridian-account",
+          "gainsight-enterprise-health"
+        ]
+      },
+      "el-pg-customer-insight": {
+        "primary": [
+          "miro-pg-advisory",
+          "sf-meridian-account",
+          "gong-meridian-call"
+        ],
+        "secondary": [
+          "gainsight-enterprise-health"
+        ]
+      },
+      "el-pg-market-insight": {
+        "primary": [
+          "stripe-competitive-analysis"
+        ],
+        "secondary": [
+          "gsheets-win-loss"
+        ]
+      },
+      "section-conflict": {
+        "primary": [
+          "jira-squad3-board",
+          "workday-squad3-allocation",
+          "looker-platform-capacity"
+        ],
+        "secondary": [
+          "github-cross-repo",
+          "gcal-availability",
+          "linear-design-workstreams",
+          "datadog-platform-health"
+        ]
+      },
+      "option-a": {
+        "primary": [
+          "notion-okrs",
+          "looker-activation-dashboard",
+          "amplitude-ff-onboarding"
+        ],
+        "secondary": [
+          "gdoc-investor-update",
+          "gainsight-enterprise-health",
+          "stripe-competitive-analysis"
+        ]
+      },
+      "option-b": {
+        "primary": [
+          "notion-okrs",
+          "looker-enterprise-pipeline",
+          "stripe-competitive-analysis"
+        ],
+        "secondary": [
+          "gdoc-investor-update",
+          "sf-meridian-account",
+          "gainsight-enterprise-health"
+        ]
+      },
+      "option-c": {
+        "primary": [
+          "jira-squad3-board",
+          "workday-squad3-allocation",
+          "github-cross-repo",
+          "confluence-remitflow-retro"
+        ],
+        "secondary": [
+          "gdoc-meridian-msa",
+          "notion-okrs",
+          "gdoc-investor-update",
+          "linear-design-workstreams",
+          "datadog-platform-health"
+        ]
+      }
+    }
+  }
+}

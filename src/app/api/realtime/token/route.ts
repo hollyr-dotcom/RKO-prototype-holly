@@ -65,15 +65,17 @@ When user says "move", "rearrange", "organize", "edit", "change":
 CHOOSING THE RIGHT FORMAT — MIX THEM:
 A great canvas uses multiple formats. Pick the best tool for each piece of content:
 - createDocument: written content (briefs, specs, guidelines, summaries)
-- createDataTable: structured data (comparisons, matrices, timelines)
-- createLayout(type:"sticky"): brainstorms, quick ideas, categories — KEEP EACH STICKY TO 6-8 WORDS MAX. Use hierarchy for detail.
-- createLayout(type:"shape/hierarchy"): diagrams, org charts, flows
+- createDataTable: structured data (comparisons, matrices, feature grids)
+- createLayout(type:"sticky"): brainstorms, quick ideas, categories — 8-15 words per sticky (a complete thought, not a paragraph). Use hierarchy for more detail.
+- createLayout(type:"shape/hierarchy"): diagrams, org charts, conflicts, scenarios
+- createLayout(type:"timeline"): roadmaps, project timelines, phased plans — use timeLabels for periods and column index per item. Items must be SPECIFIC deliverables ("Migrate checkout to PayGrid API"), not vague ("PayGrid setup"). If asked for multiple timelines (e.g. 3 scenarios), create SEPARATE createLayout calls — one per timeline.
 
-BE CONVERSATIONAL:
-You're a helpful colleague, not a robot. Speak naturally and vary your language.
-- Never use the same phrase twice
-- Keep it brief (1-2 sentences)
-- React to what the user says
+VOICE & TONE:
+You're friendly, approachable, and concise. Think smart colleague, not presentation mode.
+- Be brief when brief is right. Go deeper when the moment calls for it — use your judgment.
+- Don't narrate what the user can already see on the canvas.
+- No filler, no monologues, no repeating yourself. Every word should earn its place.
+- Vary your language naturally.
 
 🔊 ACKNOWLEDGE + EXECUTE TOGETHER (CRITICAL):
 When user asks you to do something, you MUST do BOTH in the SAME response:
@@ -221,11 +223,11 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
             {
               type: "function",
               name: "createLayout",
-              description: "Create visual layouts. GRID: sticky notes for brainstorms. HIERARCHY: shapes/stickies for principles with parent-child arrows. FLOW: shapes for processes. ⚠️ Stickies: MAX 6-8 words each — short labels, not paragraphs. Use hierarchy for detail (parent category → child details).",
+              description: "Create visual layouts. GRID: sticky notes for brainstorms. HIERARCHY: shapes with parent-child arrows (org charts, conflicts, scenarios). FLOW: shapes for processes. TIMELINE: phased roadmaps with time periods. ⚠️ Stickies: 8-15 words each. For timelines: use timeLabels + column index per item.",
               parameters: {
                 type: "object",
                 properties: {
-                  type: { type: "string", enum: ["grid", "hierarchy", "flow"], description: "grid for brainstorm stickies, hierarchy for principles with arrows, flow for processes" },
+                  type: { type: "string", enum: ["grid", "hierarchy", "flow", "timeline"], description: "grid for brainstorm stickies, hierarchy for diagrams with arrows, flow for processes, timeline for roadmaps/phased plans" },
                   frameName: { type: "string" },
                   replaceFrame: { type: "string", description: "Name of existing frame to replace" },
                   items: {
@@ -233,14 +235,16 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
                     items: {
                       type: "object",
                       properties: {
-                        text: { type: "string", description: "Content text. Stickies: MAX 6-8 words — like a real post-it." },
+                        text: { type: "string", description: "Content text. Stickies: 8-15 words — a complete thought, not a paragraph." },
                         color: { type: "string", description: "yellow/green/orange/violet/pink for stickies, blue/light-blue for hierarchy" },
-                        parentIndex: { type: "number", description: "HIERARCHY ONLY: -1 for root items, or index of parent (0, 2, 4...) for children" }
+                        parentIndex: { type: "number", description: "HIERARCHY ONLY: -1 for root items, or index of parent for children" },
+                        column: { type: "number", description: "TIMELINE ONLY: which time period (0-based index into timeLabels)" }
                       },
                       required: ["text"]
                     }
                   },
                   columns: { type: "number" },
+                  timeLabels: { type: "array", items: { type: "string" }, description: "TIMELINE ONLY: period labels e.g. ['Week 1-3', 'Week 4-6', 'Week 7+']" },
                   direction: { type: "string", enum: ["down", "right"] },
                   spacing: { type: "string", enum: ["compact", "normal", "spacious"] }
                 },

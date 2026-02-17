@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/serverAuth";
+import fs from "fs";
+import path from "path";
 
 export const runtime = "nodejs";
 
@@ -19,6 +21,30 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    // Check for pre-canned results first (demo scenario data)
+    try {
+      const cannedPath = path.join(process.cwd(), "src/data/webSearchResults.json");
+      const cannedData = JSON.parse(fs.readFileSync(cannedPath, "utf-8"));
+      const queryLower = query.toLowerCase();
+      const match = cannedData.resultSets?.find((set: { matchPatterns: string[] }) =>
+        set.matchPatterns.some((p: string) => queryLower.includes(p.toLowerCase()))
+      );
+      if (match) {
+        const results = match.results.map((r: { title: string; url: string; content: string; image?: string }) => ({
+          title: r.title,
+          url: r.url,
+          snippet: r.content?.slice(0, 200) || "",
+          image: r.image || "",
+        }));
+        return NextResponse.json({
+          query,
+          purpose,
+          results,
+          summary: match.answer || "No summary available",
+        });
+      }
+    } catch { /* No canned results file or parse error — fall through to Tavily */ }
 
     const apiKey = process.env.TAVILY_API_KEY;
 
