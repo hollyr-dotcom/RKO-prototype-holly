@@ -568,6 +568,37 @@ const createGanttChartTool = tool({
   },
 });
 
+const createKanbanBoardTool = tool({
+  name: "createKanbanBoard",
+  description: "Create a Kanban board on the canvas to organize tasks into swimlanes. Use for sprint boards, project tracking, workflow visualization, or any work that needs status-based columns. Default lanes: To Do, Doing, Done.",
+  parameters: z.object({
+    title: z.string().describe("Board title (e.g. 'Sprint 24 Board', 'Feature Tracker')"),
+    lanes: z.array(z.object({
+      title: z.string().describe("Lane name (e.g. 'To Do', 'In Progress', 'Done')"),
+      color: z.string().optional().describe("Hex color for lane header dot"),
+    })).optional().describe("Custom lane definitions. Default: To Do, Doing, Done"),
+    cards: z.array(z.object({
+      title: z.string().describe("Card title"),
+      lane: z.string().describe("Lane title to place this card in"),
+      status: z.enum(["not_started", "in_progress", "complete"]).optional().describe("Card status"),
+      priority: z.enum(["low", "medium", "high"]).optional().describe("Card priority"),
+      assignee: z.string().optional().describe("Person assigned"),
+      tags: z.array(z.string()).optional().describe("Tags/labels"),
+    })).optional().describe("Initial cards to populate the board"),
+    x: z.number().default(0).describe("X position"),
+    y: z.number().default(0).describe("Y position"),
+  }),
+  execute: async (args) => {
+    return JSON.stringify({
+      created: "kanbanboard",
+      id: `kb_${Date.now()}`,
+      title: args.title,
+      lanes: args.lanes,
+      cards: args.cards,
+    });
+  },
+});
+
 const updateTaskCardTool = tool({
   name: "updateTaskCard",
   description: "Update an existing task card on the canvas. Get the task card's ID from [CANVAS STATE]. Only provide fields you want to change — pass empty string to clear a field.",
@@ -971,6 +1002,11 @@ A great canvas uses MULTIPLE formats. Don't just spam stickies — pick the best
   - Add e2s (end-to-start) links for dependencies between tasks
   - Use milestones for key dates
 
+📋 createKanbanBoard — for KANBAN BOARDS and SPRINT BOARDS:
+  - Sprint planning, task tracking, workflow boards
+  - Default lanes: To Do, Doing, Done (customizable)
+  - Can include initial cards assigned to lanes
+
 📌 createLayout(type:"sticky") — for QUICK IDEAS ONLY:
   - Brainstorms, idea lists, feedback, tags, categories
   - Short items that benefit from visual clustering
@@ -1053,6 +1089,7 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     createTaskCardTool,
     updateTaskCardTool,
     createGanttChartTool,
+    createKanbanBoardTool,
     createSourcesTool,
   ],
 });
@@ -1108,6 +1145,7 @@ Work through steps in sequence. For each step:
    - Tabular data (comparison, matrix, timeline)? → createDataTable
    - Actionable work item (task, todo, action)? → createTaskCard
    - Project timeline with dependencies? → createGanttChart
+   - Sprint board or task tracking? → createKanbanBoard
    - Quick ideas, brainstorm items? → createLayout(type:"sticky")
    - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy"/"flow")
    - Roadmap, timeline, phases? → createLayout(type:"timeline") with timeLabels
@@ -1196,6 +1234,19 @@ createGanttChart({
     { id: 3, text: "Build", start: "2026-02-28T00:00:00.000Z", end: "2026-03-06T00:00:00.000Z", progress: 0, parent: 1, type: "task", open: false },
   ],
   links: [{ id: 1, source: 2, target: 3, type: "e2s" }]
+})
+
+📋 createKanbanBoard — KANBAN / SPRINT BOARDS:
+Step says "kanban", "sprint board", "task board", "workflow board", "status columns"?
+→ Use createKanbanBoard for boards with swimlane columns and draggable cards.
+Example:
+createKanbanBoard({
+  title: "Sprint 24 Board",
+  lanes: [{ title: "To Do" }, { title: "In Progress" }, { title: "Done" }],
+  cards: [
+    { title: "Design login flow", lane: "To Do", priority: "high", assignee: "Alice" },
+    { title: "Set up CI", lane: "In Progress", priority: "medium", tags: ["Infra"] },
+  ]
 })
 
 📌 createLayout(type:"sticky") — QUICK IDEAS (brainstorms, risks, feedback, categories):
@@ -1473,6 +1524,7 @@ MAX 2-3 COLORS PER FRAME. If you're reaching for a 4th color, stop and ask: "Doe
     createTaskCardTool,
     updateTaskCardTool,
     createGanttChartTool,
+    createKanbanBoardTool,
     createSourcesTool,
   ],
 });

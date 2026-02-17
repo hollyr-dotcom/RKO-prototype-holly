@@ -36,6 +36,23 @@ function GanttChartIcon() {
   );
 }
 
+// Custom Kanban board icon - not available in Miro design system
+function KanbanBoardIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <rect x="2" y="3" width="5.5" height="18" rx="1.5" opacity="0.3" />
+      <rect x="9.25" y="3" width="5.5" height="12" rx="1.5" opacity="0.3" />
+      <rect x="16.5" y="3" width="5.5" height="15" rx="1.5" opacity="0.3" />
+      <rect x="3" y="4.5" width="3.5" height="2" rx="0.75" />
+      <rect x="3" y="8" width="3.5" height="2" rx="0.75" />
+      <rect x="3" y="11.5" width="3.5" height="2" rx="0.75" />
+      <rect x="10.25" y="4.5" width="3.5" height="2" rx="0.75" />
+      <rect x="10.25" y="8" width="3.5" height="2" rx="0.75" />
+      <rect x="17.5" y="4.5" width="3.5" height="2" rx="0.75" />
+    </svg>
+  );
+}
+
 // Custom voice wave icon (5 bars) - not available in Miro design system
 function VoiceWaveIcon() {
   return (
@@ -73,6 +90,7 @@ interface ToolbarProps {
   onPlaceSticker?: (sticker: { url: string; width: number; height: number; id: string }, screenPos?: { x: number; y: number }) => void;
   onCreateTaskCard?: () => void;
   onCreateGanttChart?: () => void;
+  onCreateKanbanBoard?: () => void;
   onMultiLineChange?: (multiLine: boolean) => void;
   isCommentMode?: boolean;
   onToggleCommentMode?: () => void;
@@ -101,6 +119,7 @@ export function Toolbar({
   onPlaceSticker,
   onCreateTaskCard,
   onCreateGanttChart,
+  onCreateKanbanBoard,
   onMultiLineChange,
   isCommentMode = false,
   onToggleCommentMode,
@@ -341,6 +360,11 @@ export function Toolbar({
           {/* Task Card */}
           <ToolButton active={false} onClick={() => onCreateTaskCard?.()} title="Task card">
             <IconCard size="medium" />
+          </ToolButton>
+
+          {/* Kanban Board */}
+          <ToolButton active={false} onClick={() => onCreateKanbanBoard?.()} title="Kanban board">
+            <KanbanBoardIcon />
           </ToolButton>
 
           {/* Gantt Chart */}

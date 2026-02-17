@@ -15,6 +15,7 @@ import { DataTableShapeUtil } from "@/shapes/DataTableShapeUtil";
 import { CommentShapeUtil } from "@/shapes/CommentShapeUtil";
 import { TaskCardShapeUtil } from "@/shapes/TaskCardShapeUtil";
 import { GanttChartShapeUtil } from "@/shapes/GanttChartShapeUtil";
+import { KanbanBoardShapeUtil } from "@/shapes/KanbanBoardShapeUtil";
 import { Toolbar } from "./Toolbar";
 import { StartingPromptCards } from "./StartingPromptCards";
 import { CanvasComments } from "./CanvasComments";
@@ -816,7 +817,7 @@ export function Canvas() {
 
   // LiveBlocks multiplayer store -- syncs tldraw state across users
   const [sessionUser] = useState(() => firebaseUser ? getSessionUser(firebaseUser) : getLocalDevUser());
-  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil], []);
+  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 
   // Prevent browser back/forward navigation from trackpad gestures (Safari + fallback)
@@ -1083,6 +1084,14 @@ export function Canvas() {
         } else if (title) {
           text = title;
         }
+      }
+
+      // Kanban boards: extract title + lane/card counts
+      if ((shape.type as string) === 'kanbanboard') {
+        const kbTitle = props.title as string | undefined;
+        const laneCount = (props.lanes as any[])?.length ?? 0;
+        const cardCount = (props.cards as any[])?.length ?? 0;
+        text = `"${kbTitle || 'Kanban Board'}" (${laneCount} lanes, ${cardCount} cards)`;
       }
 
       // Task cards: extract title + status + priority + assignee
@@ -1555,6 +1564,72 @@ export function Canvas() {
               { id: "start", header: "Start date", width: 106, align: "center" },
               { id: "add-task", header: "", width: 40, align: "center" },
             ],
+          },
+          meta: { createdBy: "ai" },
+        });
+      }
+
+      if (toolName === "createKanbanBoard") {
+        const { title, lanes: lanesArg, cards: cardsArg } = args as {
+          title?: string;
+          lanes?: Array<{ title: string; color?: string }>;
+          cards?: Array<{ title: string; lane: string; status?: string; priority?: string; assignee?: string; tags?: string[] }>;
+        };
+
+        const validWidth = 800;
+        const validHeight = 500;
+        const pos = findNonOverlappingPosition(0, 0, validWidth, validHeight, "frame");
+
+        // Build lanes
+        const defaultLanes = [
+          { id: "lane-todo", title: "To Do", color: "#3B82F6", statusMapping: "To Do" },
+          { id: "lane-doing", title: "Doing", color: "#F59E0B", statusMapping: "In Progress" },
+          { id: "lane-done", title: "Done", color: "#10B981", statusMapping: "Done" },
+        ];
+        const lanes = lanesArg?.length ? lanesArg.map((l, i) => ({
+          id: `lane-${i}-${Date.now()}`,
+          title: l.title,
+          color: l.color || ["#3B82F6", "#F59E0B", "#10B981", "#8B5CF6", "#EF4444"][i % 5],
+          statusMapping: l.title,
+        })) : defaultLanes;
+
+        // Build cards and cardsByLane
+        const builtCards: any[] = [];
+        const cardsByLane: Record<string, string[]> = {};
+        lanes.forEach(l => { cardsByLane[l.id] = []; });
+
+        if (cardsArg) {
+          cardsArg.forEach((c, i) => {
+            const cardId = `kb-card-${Date.now()}-${i}`;
+            const targetLane = lanes.find(l => l.title.toLowerCase() === c.lane.toLowerCase()) || lanes[0];
+            builtCards.push({
+              id: cardId,
+              title: c.title,
+              description: "",
+              status: c.status || "not_started",
+              priority: c.priority || "medium",
+              assignee: c.assignee || "",
+              dueDate: "",
+              tags: c.tags || [],
+              subtasks: [],
+            });
+            cardsByLane[targetLane.id].push(cardId);
+          });
+        }
+
+        shapeId = createShapeId();
+        editor.createShape({
+          id: shapeId,
+          type: "kanbanboard" as any,
+          x: pos.x,
+          y: pos.y,
+          props: {
+            w: validWidth,
+            h: validHeight,
+            title: title || "Kanban Board",
+            lanes,
+            cards: builtCards,
+            cardsByLane,
           },
           meta: { createdBy: "ai" },
         });
@@ -2724,8 +2799,8 @@ export function Canvas() {
       const shape = editor.getShape(shapeId);
       if (!shape) return;
 
-      // Auto-edit for document and data table shapes
-      if (shape.type === 'document' || shape.type === 'datatable') {
+      // Auto-edit for document, data table, and gantt chart shapes
+      if (shape.type === 'document' || shape.type === 'datatable' || shape.type === 'ganttchart' || shape.type === 'kanbanboard') {
         // Only enter editing if we're not already editing this shape
         if (editor.getEditingShapeId() !== shapeId) {
           // Check if the click landed inside the inner area (past the 20px border)
@@ -3802,6 +3877,39 @@ export function Canvas() {
                     dueDate: "",
                     tags: [],
                     subtasks: [],
+                  },
+                  meta: { createdBy: "user" },
+                });
+                editor.select(shapeId);
+              }}
+              onCreateKanbanBoard={() => {
+                if (!editor) return;
+                const viewportCenter = editor.getViewportScreenCenter();
+                const canvasPoint = editor.screenToPage(viewportCenter);
+                const shapeId = createShapeId();
+                editor.createShape({
+                  id: shapeId,
+                  type: "kanbanboard" as any,
+                  x: canvasPoint.x - 400,
+                  y: canvasPoint.y - 250,
+                  props: {
+                    w: 800,
+                    h: 500,
+                    title: "Kanban Board",
+                    lanes: [
+                      { id: "lane-todo", title: "To Do", color: "#3B82F6", statusMapping: "To Do" },
+                      { id: "lane-doing", title: "Doing", color: "#F59E0B", statusMapping: "In Progress" },
+                      { id: "lane-done", title: "Done", color: "#10B981", statusMapping: "Done" },
+                    ],
+                    cards: [
+                      { id: "kb-card-1", title: "Design navigation patterns", description: "", status: "not_started", priority: "high", assignee: "Mark B", dueDate: "", tags: ["Design", "Feature"], subtasks: [] },
+                      { id: "kb-card-2", title: "Set up CI pipeline", description: "", status: "not_started", priority: "medium", assignee: "", dueDate: "", tags: ["Infra"], subtasks: [] },
+                    ],
+                    cardsByLane: {
+                      "lane-todo": ["kb-card-1", "kb-card-2"],
+                      "lane-doing": [],
+                      "lane-done": [],
+                    },
                   },
                   meta: { createdBy: "user" },
                 });

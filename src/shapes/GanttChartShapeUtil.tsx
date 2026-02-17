@@ -11,11 +11,8 @@ import {
   TLShape,
   resizeBox,
 } from "tldraw";
-import { Gantt, Willow } from "@svar-ui/react-gantt";
-import "@svar-ui/react-gantt/all.css";
-import "./gantt-theme.css";
 import { IconArrowsOutSimple } from "@mirohq/design-system-icons";
-import { useMemo } from "react";
+import { GanttInteractive } from "./GanttInteractive";
 
 // ── Data Types ──
 
@@ -156,44 +153,6 @@ function getDefaultColumns(): GanttColumn[] {
   ];
 }
 
-// ── Compact Preview Component ──
-
-function GanttPreview({ shape }: { shape: IGanttChartShape }) {
-  const tasks = useMemo(() => {
-    const raw = (shape.props.tasks ?? []) as GanttTask[];
-    return raw.map((t) => ({
-      ...t,
-      start: new Date(t.start),
-      end: new Date(t.end),
-    }));
-  }, [shape.props.tasks]);
-
-  const links = (shape.props.links ?? []) as GanttLink[];
-  const scales = (shape.props.scales ?? []) as GanttScale[];
-  const columns = (shape.props.columns ?? []) as GanttColumn[];
-
-  return (
-    <div
-      className="gantt-canvas-shape"
-      style={{
-        width: "100%",
-        height: "100%",
-        overflow: "hidden",
-      }}
-    >
-      <Willow>
-        <Gantt
-          tasks={tasks}
-          links={links}
-          scales={scales}
-          columns={columns}
-          readonly={true}
-        />
-      </Willow>
-    </div>
-  );
-}
-
 // ── Shape Util ──
 
 export class GanttChartShapeUtil extends ShapeUtil<IGanttChartShape> {
@@ -223,11 +182,11 @@ export class GanttChartShapeUtil extends ShapeUtil<IGanttChartShape> {
   }
 
   override canEdit() {
-    return false;
+    return true;
   }
 
   override canScroll() {
-    return false;
+    return true;
   }
 
   override canResize() {
@@ -254,6 +213,7 @@ export class GanttChartShapeUtil extends ShapeUtil<IGanttChartShape> {
   }
 
   component(shape: IGanttChartShape) {
+    const isEditing = this.editor.getEditingShapeId() === shape.id;
     const isSelected = this.editor.getSelectedShapeIds().includes(shape.id);
 
     return (
@@ -271,8 +231,60 @@ export class GanttChartShapeUtil extends ShapeUtil<IGanttChartShape> {
           pointerEvents: "all",
           display: "flex",
           flexDirection: "column",
+          position: "relative",
         }}
       >
+        {/* Overlay blocks pointer events when NOT editing */}
+        {!isEditing && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 10,
+            }}
+          />
+        )}
+
+        {/* Expand button — absolutely positioned, always above overlay */}
+        {isSelected && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              window.dispatchEvent(
+                new CustomEvent("shape:focus", {
+                  detail: {
+                    shapeType: "ganttchart",
+                    ganttId: shape.id,
+                    title: shape.props.title,
+                  },
+                })
+              );
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              zIndex: 20,
+              width: 28,
+              height: 28,
+              borderRadius: 8,
+              border: "1px solid #e5e7eb",
+              background: "white",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+              flexShrink: 0,
+            }}
+          >
+            <IconArrowsOutSimple
+              css={{ width: 14, height: 14, color: "#6b7280" }}
+            />
+          </button>
+        )}
+
         {/* Title bar */}
         <div
           style={{
@@ -296,53 +308,16 @@ export class GanttChartShapeUtil extends ShapeUtil<IGanttChartShape> {
           >
             {shape.props.title}
           </span>
-
-          {/* Expand button — only when selected */}
-          {isSelected && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                window.dispatchEvent(
-                  new CustomEvent("shape:focus", {
-                    detail: {
-                      shapeType: "ganttchart",
-                      ganttId: shape.id,
-                      title: shape.props.title,
-                    },
-                  })
-                );
-              }}
-              onPointerDown={(e) => e.stopPropagation()}
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 8,
-                border: "1px solid #e5e7eb",
-                background: "white",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-                flexShrink: 0,
-              }}
-            >
-              <IconArrowsOutSimple
-                css={{ width: 14, height: 14, color: "#6b7280" }}
-              />
-            </button>
-          )}
         </div>
 
-        {/* Gantt preview — pointer events disabled so canvas handles drag */}
-        <div
-          style={{
-            flex: 1,
-            pointerEvents: "none",
-            overflow: "hidden",
-          }}
-        >
-          <GanttPreview shape={shape} />
+        {/* Interactive Gantt */}
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <GanttInteractive
+            shapeId={shape.id}
+            editor={this.editor}
+            isEditing={isEditing}
+            onEscape={() => this.editor.setEditingShape(null)}
+          />
         </div>
       </HTMLContainer>
     );

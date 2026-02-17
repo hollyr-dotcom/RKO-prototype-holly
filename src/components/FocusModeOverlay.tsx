@@ -6,15 +6,17 @@ import { IconArrowsInSimple } from "@mirohq/design-system-icons";
 import { DataTableEditor } from "./DataTableEditor";
 import { TaskCardFocusPanel } from "@/shapes/TaskCardPanel";
 import { GanttChartFocusPanel } from "@/shapes/GanttChartFocusPanel";
+import { KanbanBoardFocusPanel } from "@/shapes/KanbanBoardFocusPanel";
 import { setPortalTarget } from "@/lib/focusModeStore";
 import type { Editor } from "tldraw";
 
 export interface FocusedShape {
-  shapeType: "document" | "datatable" | "taskcard" | "ganttchart";
+  shapeType: "document" | "datatable" | "taskcard" | "ganttchart" | "kanbanboard";
   docId?: string;
   tableId?: string;
   taskId?: string;
   ganttId?: string;
+  kanbanId?: string;
   title: string;
 }
 
@@ -64,6 +66,7 @@ export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayPro
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 600 });
   const isGanttChart = shape.shapeType === "ganttchart";
+  const isKanbanBoard = shape.shapeType === "kanbanboard";
   const isTaskCard = shape.shapeType === "taskcard";
 
   // Measure container (used by DataTableEditor)
@@ -149,6 +152,51 @@ export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayPro
           {shape.ganttId && editor && (
             <GanttChartFocusPanel
               shapeId={shape.ganttId}
+              editor={editor}
+            />
+          )}
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Kanban boards: full-screen overlay (like gantt charts)
+  if (isKanbanBoard) {
+    return (
+      <motion.div
+        className="absolute inset-0 z-[500] bg-white flex flex-col overflow-hidden"
+        variants={contentVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+      >
+        <button
+          onClick={onClose}
+          onPointerDown={(e) => e.stopPropagation()}
+          style={{
+            position: "absolute",
+            top: 7,
+            right: 8,
+            zIndex: 510,
+            width: 28,
+            height: 28,
+            borderRadius: 8,
+            border: "1px solid #e5e7eb",
+            background: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+            padding: 0,
+          }}
+        >
+          <IconArrowsInSimple css={{ width: 14, height: 14, color: "#6b7280" }} />
+        </button>
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          {shape.kanbanId && editor && (
+            <KanbanBoardFocusPanel
+              shapeId={shape.kanbanId}
               editor={editor}
             />
           )}
