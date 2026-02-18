@@ -1,29 +1,19 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { HomePromptInput } from "@/components/HomePromptInput";
-import { HomeFeed } from "@/components/feed/HomeFeed";
-import { PromptStickyNotes } from "@/components/PromptStickyNotes";
+import { CardStack } from "@/components/feed/CardStack";
 import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function HomePage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"foryou" | "recent">("foryou");
   const [isCreating, setIsCreating] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
-  const [notesVisible, setNotesVisible] = useState(true);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [allDone, setAllDone] = useState(false);
   const { user } = useAuth();
   const firstName = user?.displayName?.split(" ")[0] || "Andy";
-
-  const handleScroll = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    setNotesVisible(el.scrollTop === 0);
-  }, []);
 
   // Pre-warm the canvas route so it's already compiled when user clicks "Create new"
   useEffect(() => {
@@ -42,13 +32,8 @@ export default function HomePage() {
     });
   }, [registerHandlers]);
 
-  // Navigation from home → canvas is handled by ChatProvider:
-  // - When AI calls createCanvas → ChatProvider intercepts and navigates
-  // - When AI uses canvas tools without createCanvas → ChatProvider's safety net auto-creates and navigates
-  // - Chat transitions from fullscreen → sidepanel via canvas-handoff in sessionStorage
-
   const handleSubmit = (text: string) => {
-    openFullscreen(true); // Set fromHome FIRST before append
+    openFullscreen(true);
     append({ role: "user", content: text });
   };
 
@@ -71,7 +56,6 @@ export default function HomePage() {
 
       const newCanvas = await response.json();
       const space = newCanvas.spaceId || "unassigned";
-      // Clear any stale chatMode so the canvas opens clean (no fullscreen overlay)
       localStorage.setItem("chatMode", "minimized");
       router.push(`/space/${space}/canvas/${newCanvas.id}`);
     } catch {
@@ -92,8 +76,8 @@ export default function HomePage() {
   }
 
   return (
-    <div ref={scrollRef} onScroll={handleScroll} className="relative h-full w-full overflow-y-auto bg-white">
-      {/* Create new button — fixed top-right, positioned next to spark button */}
+    <div className="relative h-full w-full bg-white overflow-hidden">
+      {/* Create new button — fixed top-right */}
       <button
         onClick={handleCreateEmptyCanvas}
         disabled={isCreating}
@@ -109,71 +93,47 @@ export default function HomePage() {
         )}
       </button>
 
-      {/* Two-section layout: hero sticky, cards scroll underneath */}
-      <div className="w-full flex flex-col">
-        {/* Top spacer — positions hero at ~1/3 from top initially */}
-        <div className="h-[18vh] shrink-0" />
-
-        {/* Welcome heading — scrolls with page */}
-        <div className="flex flex-col items-center px-6">
-          <h1 className="text-3xl font-semibold text-gray-900 mb-3">
-            Welcome back, {firstName}
-          </h1>
+      {/* Feed content — fades out when all cards are done */}
+      <motion.div
+        animate={{ opacity: allDone ? 0 : 1 }}
+        transition={{ duration: 0.4 }}
+        style={{ pointerEvents: allDone ? "none" : "auto" }}
+        className="absolute inset-0 overflow-y-auto flex flex-col items-center px-6 pt-[8vh] pb-28"
+      >
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-bold text-gray-900">Welcome back, {firstName}</h1>
+          <p className="text-xl text-gray-500 mt-1">Here&apos;s what you need to know</p>
         </div>
+        <CardStack onAllDone={() => setAllDone(true)} />
+      </motion.div>
 
-        {/* Sticky search: prompt + suggestions */}
-        <div className="sticky top-0 z-20">
+      {/* Centered heading shown after all cards are done */}
+      <AnimatePresence>
+        {allDone && (
           <motion.div
-            className="bg-white pb-2 flex flex-col items-center px-6"
-            animate={{ paddingTop: notesVisible ? 16 : 80 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30, mass: 1 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-x-6 text-center pointer-events-none"
+            style={{ bottom: "calc(50% + 48px)" }}
           >
-            <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} onInputChange={(v) => setIsTyping(v.length > 0)} />
-
-            <div className={`mt-5 transition-all duration-300 ${isTyping ? "opacity-0 pointer-events-none" : "opacity-100"} ${notesVisible ? "" : "-mb-[220px]"}`}>
-              <PromptStickyNotes onSelect={handleSubmit} visible={notesVisible} />
-            </div>
+            <h1 className="text-4xl font-bold text-gray-900">Nicely done!</h1>
+            <p className="text-xl text-gray-500 mt-2">How can I help next?</p>
           </motion.div>
+        )}
+      </AnimatePresence>
 
-          {/* Fade overlay — white fading to transparent so content disappears under search */}
-          <div className="h-24 -mb-24 pointer-events-none bg-gradient-to-b from-white to-transparent" />
-        </div>
-
-        {/* Bottom section */}
-        <div className="flex flex-col items-center pt-20 pb-16">
-          {/* Tab toggle */}
-          <div className="z-10 bg-gray-100 rounded-full p-1 flex shrink-0">
-            <button
-              onClick={() => setActiveTab("foryou")}
-              className={`px-5 py-1.5 rounded-full text-sm transition-all ${
-                activeTab === "foryou"
-                  ? "bg-white shadow-sm font-medium text-gray-900"
-                  : "text-gray-500"
-              }`}
-            >
-              For you
-            </button>
-            <button
-              onClick={() => setActiveTab("recent")}
-              className={`px-5 py-1.5 rounded-full text-sm transition-all ${
-                activeTab === "recent"
-                  ? "bg-white shadow-sm font-medium text-gray-900"
-                  : "text-gray-500"
-              }`}
-            >
-              Recent
-            </button>
-          </div>
-
-          {/* Feed content — clips at viewport edge */}
-          {activeTab === "foryou" ? (
-            <HomeFeed />
-          ) : (
-            <div className="text-center py-16 w-full max-w-[1200px] px-6">
-              <p className="text-sm text-gray-400">Recent items coming soon</p>
-            </div>
-          )}
-        </div>
+      {/* Prompt bar — slides to vertical center when all cards are done */}
+      <div
+        className="absolute left-6 right-6"
+        style={{
+          bottom: allDone ? "50%" : "2rem",
+          transform: allDone ? "translateY(50%)" : "translateY(0)",
+          transition: "bottom 700ms, transform 700ms",
+          transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+        }}
+      >
+        <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} />
       </div>
     </div>
   );
