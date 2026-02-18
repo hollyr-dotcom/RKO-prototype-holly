@@ -130,18 +130,9 @@ export default function HomePage() {
           >
             <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} onInputChange={(v) => setIsTyping(v.length > 0)} />
 
-            <motion.div
-              className={isTyping ? "pointer-events-none" : ""}
-              animate={{
-                height: notesVisible && !isTyping ? 200 : 0,
-                opacity: isTyping ? 0 : 1,
-                marginTop: notesVisible && !isTyping ? 20 : 0,
-              }}
-              transition={{ type: "spring", stiffness: 400, damping: 30, mass: 1 }}
-              style={{ overflow: "visible" }}
-            >
+            <div className={`mt-5 transition-all duration-300 ${isTyping ? "opacity-0 pointer-events-none" : "opacity-100"} ${notesVisible ? "" : "-mb-[220px]"}`}>
               <PromptStickyNotes onSelect={handleSubmit} visible={notesVisible} />
-            </motion.div>
+            </div>
           </motion.div>
 
           {/* Fade overlay — white fading to transparent so content disappears under search */}
