@@ -59,8 +59,19 @@ function deserializeTasks(raw: GanttTask[]) {
     // CRITICAL: only summary/parent tasks can have open=true.
     // Leaf tasks with open=true crash the library (null.forEach).
     open: parentIds.has(t.id) ? (t.open ?? true) : false,
+    // Map color:"red" to custom type "conflict" for native bar styling.
+    // Only remap "task" type — summary/milestone need their original type for behavior.
+    type: (t.color === "red" && t.type === "task") ? "conflict" : t.type,
   }));
 }
+
+// Custom task types for the Gantt library — includes "conflict" for red bars
+const GANTT_TASK_TYPES = [
+  { id: "task", label: "Task" },
+  { id: "summary", label: "Summary task" },
+  { id: "milestone", label: "Milestone" },
+  { id: "conflict", label: "Conflict" },
+];
 
 function serializeTasks(
   tasks: Array<{
@@ -213,6 +224,7 @@ export function GanttInteractive({
                     links={links}
                     scales={scales}
                     columns={columns}
+                    taskTypes={GANTT_TASK_TYPES}
                     init={(a: IApi) => setApi(a)}
                   />
                 </Tooltip>
@@ -225,6 +237,7 @@ export function GanttInteractive({
               links={links}
               scales={scales}
               columns={columns}
+              taskTypes={GANTT_TASK_TYPES}
               readonly={true}
             />
           )}

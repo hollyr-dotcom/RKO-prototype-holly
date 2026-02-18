@@ -2399,398 +2399,619 @@ export function Canvas() {
 
       // ─── createZone_result: composed frame with mixed content ────────────
       if (toolName === "createZone_result") {
-        const { title, description, teamTable, gantt, insights, resolvedStickers } = args as {
+        const {
+          title, layout, gantt, summary, teams,
+          userInsight, evaluation, resolvedStickers,
+        } = args as {
           title?: string;
-          description?: { title: string; content: string } | null;
-          teamTable?: { title: string; columns: string[]; rows: string[][] } | null;
+          layout?: "overview" | "scenario";
           gantt?: {
             title: string;
-            tasks: Array<{ id: number; text: string; start: string; end: string; duration: number; progress: number; parent: number; type: string; open: boolean }>;
+            tasks: Array<{ id: number; text: string; start: string; end: string; duration: number; progress: number; parent: number; type: string; open: boolean; color?: string }>;
             links: Array<{ id: number; source: number; target: number; type: string }>;
           } | null;
-          insights?: Array<{ text: string; color: string }>;
+          summary?: { title: string; content: string } | null;
+          teams?: Array<{ name: string; color: string }> | null;
+          userInsight?: {
+            feedback: Array<{ title: string; description: string; status?: string; assignee?: string; tags?: string[] }>;
+            metrics: Array<{ text: string; color: string }>;
+            requests: Array<{ text: string; color: string }>;
+          } | null;
+          evaluation?: {
+            opportunity: Array<{ text: string; color: string }>;
+            risks: Array<{ text: string; color: string }>;
+            potential: Array<{ text: string; color: string }>;
+          } | null;
           resolvedStickers?: Array<{ url: string; width: number; height: number; stickerId: string }>;
         };
 
         // ── Layout constants ──
-        const pad = 24;           // frame padding
-        const contentWidth = 750; // usable width inside frame
-        const gap = 40;           // uniform gap between sections
-        const sectionLabelH = 28; // height of section title text shapes
-        const optionTitleLabelH = 36; // height of large option title label
-        const frameWidth = contentWidth + pad * 2;
+        const pad = 36;           // increased from 24 for airier feel
+        const gap = 56;           // increased from 40 for more spacing between sections
+        const sectionLabelH = 28;
 
-        // ── Detect option number for sticker + headline ──
-        const optionMatch = (title || "").match(/Option\s+(\d)/i);
-        const optionNum = optionMatch ? parseInt(optionMatch[1]) : 0;
-        const titleSpace = optionNum > 0 ? 0 : 40; // no frame title bar for option zones
-
-        // ── Manual cursor — bypasses zone engine for precise, even gaps ──
-        let cursorY = pad + titleSpace;
-
-        // ── Estimate total height for initial frame size ──
-        let estH = cursorY;
-        // Option zones get a large title label above the doc
-        if (optionNum > 0) estH += optionTitleLabelH + 16;
-        if (description) estH += estimateDocumentHeight(description.content, contentWidth, 200) + gap;
-        if (teamTable) {
-          const avgCW = Math.max(120, (contentWidth - 68) / teamTable.columns.length);
-          let trh = 0;
-          for (const row of teamTable.rows) {
-            let ml = 1;
-            for (const cell of row) { ml = Math.max(ml, Math.ceil((cell?.length || 0) * 7.5 / avgCW)); }
-            trh += Math.max(32, ml * 20 + 16);
-          }
-          estH += sectionLabelH + 16 + 42 + 34 + trh + 32 + gap;
-        }
-        if (gantt) estH += sectionLabelH + 8 + Math.max(300, 80 + (gantt.tasks?.length || 0) * 32) + gap;
-        if (insights && insights.length > 0) {
-          const cardRows = Math.ceil(Math.min(insights.length, 4) / 2);
-          estH += sectionLabelH + 16 + cardRows * 180 + (cardRows - 1) * gap + gap;
-        }
-        estH += pad;
-        const frameHeight = Math.max(estH, 400);
-
-        // ── Create parent frame ──
-        const engine = getPlacementEngine();
-        const framePos = engine.place({ category: "format", width: frameWidth, height: frameHeight });
-        const frameId = createShapeId();
-        editor.createShape({
-          id: frameId,
-          type: "frame",
-          x: framePos.x,
-          y: framePos.y,
-          props: { name: optionNum > 0 ? "" : (title || "Zone"), w: frameWidth, h: frameHeight },
-          meta: { createdBy: "ai" },
-        });
-        engine.recordPlacement(frameId as unknown as string, { category: "format", width: frameWidth, height: frameHeight }, framePos);
-
-        // Track format shape IDs for delayed reposition (fixes uneven gaps)
-        type ZoneItem = { id: ReturnType<typeof createShapeId>; kind: "format" | "cards" | "label"; cardIds?: ReturnType<typeof createShapeId>[]; cardW?: number; cardGapH?: number; cardH?: number };
+        // Track items for delayed reposition
+        type ZoneItem = {
+          id: ReturnType<typeof createShapeId>;
+          kind: "format" | "cards" | "label" | "stickyRow" | "stickyGrid" | "threeCol";
+          cardIds?: ReturnType<typeof createShapeId>[];
+          cardW?: number; cardGapH?: number; cardH?: number;
+          stickyIds?: ReturnType<typeof createShapeId>[];
+          stickyW?: number; stickyH?: number; stickyCols?: number;
+          colData?: Array<{ labelId: ReturnType<typeof createShapeId>; itemIds: ReturnType<typeof createShapeId>[]; colWidth: number }>;
+          xOffset?: number;
+        };
         const zoneItems: ZoneItem[] = [];
 
-        // Helper: create a section title label (sans-serif text shape)
-        const createSectionLabel = (text: string, y: number): ReturnType<typeof createShapeId> => {
-          const labelId = createShapeId();
+        // ════════════════════════════════════════════════════════
+        // OVERVIEW LAYOUT — vertical: doc on top, then Gantt below
+        // ════════════════════════════════════════════════════════
+        if (layout === "overview") {
+          const frameWidth = 1100;
+          const contentWidth = frameWidth - pad * 2;
+          const titleSpace = 40;
+
+          // Estimate height: doc + Gantt stacked vertically
+          let estH = pad + titleSpace;
+          if (summary) estH += estimateDocumentHeight(summary.content, contentWidth, 300) + gap;
+          const ganttH = gantt ? Math.max(400, 120 + (gantt.tasks?.length || 0) * 40) : 400;
+          if (gantt) estH += sectionLabelH + 20 + ganttH + gap;
+          estH += pad;
+          const frameHeight = Math.max(estH, 400);
+
+          // Create frame
+          const engine = getPlacementEngine();
+          const framePos = engine.place({ category: "format", width: frameWidth, height: frameHeight });
+          const frameId = createShapeId();
           editor.createShape({
-            id: labelId,
-            type: "text",
-            x: pad,
-            y,
-            parentId: frameId,
-            props: {
-              richText: toRichText(text),
-              size: "m",
-              font: "sans",
-              color: "black",
-            },
+            id: frameId, type: "frame",
+            x: framePos.x, y: framePos.y,
+            props: { name: "", w: frameWidth, h: frameHeight },
             meta: { createdBy: "ai" },
           });
-          return labelId;
-        };
+          engine.recordPlacement(frameId as unknown as string, { category: "format", width: frameWidth, height: frameHeight }, framePos);
 
-        // ── 1. Description → document ──
-        // Option zones: large title label above the doc (no h1 inside the doc)
-        if (description) {
-          if (optionNum > 0 && title) {
-            const optTitleId = createShapeId();
+          let cursorY = pad;
+
+          // Helper: create a section title label
+          const createSectionLabel = (text: string, y: number, size: "s" | "m" | "l" = "m"): ReturnType<typeof createShapeId> => {
+            const labelId = createShapeId();
             editor.createShape({
-              id: optTitleId,
-              type: "text",
-              x: pad,
-              y: cursorY,
-              parentId: frameId,
+              id: labelId, type: "text", x: pad, y, parentId: frameId,
+              props: { richText: toRichText(text), size, font: "sans", color: "black" },
+              meta: { createdBy: "ai" },
+            });
+            return labelId;
+          };
+
+          // 0. Overview title label (large, like scenario titles)
+          const overviewTitleId = createSectionLabel("Overview", cursorY, "l");
+          zoneItems.push({ id: overviewTitleId, kind: "label" });
+          cursorY += titleSpace + 20;
+
+          // 1. Summary document
+          if (summary) {
+            const docH = estimateDocumentHeight(summary.content, contentWidth, 300);
+            const docId = createShapeId();
+            editor.createShape({
+              id: docId, type: "document",
+              x: pad, y: cursorY, parentId: frameId,
+              props: { docId: generateId(), title: summary.title, w: contentWidth, h: docH },
+              meta: { createdBy: "ai", initialContent: summary.content },
+            });
+            zoneItems.push({ id: docId, kind: "format" });
+            cursorY += docH + gap;
+          }
+
+          // 2. Conflict timeline → Gantt
+          if (gantt) {
+            const conflictLabelId = createSectionLabel("Conflict Timeline", cursorY);
+            zoneItems.push({ id: conflictLabelId, kind: "label" });
+            cursorY += sectionLabelH + 20;
+
+            const gH = Math.max(400, 120 + (gantt.tasks?.length || 0) * 40);
+            const ganttId = createShapeId();
+            editor.createShape({
+              id: ganttId, type: "ganttchart" as any,
+              x: pad, y: cursorY, parentId: frameId,
               props: {
-                richText: toRichText(title),
-                size: "l",
-                font: "sans",
-                color: "black",
+                w: contentWidth, h: gH, title: gantt.title,
+                tasks: gantt.tasks || [], links: gantt.links || [],
+                scales: [{ unit: "month", step: 1, format: "%F %Y" }, { unit: "week", step: 1, format: "%j" }],
+                columns: [{ id: "text", header: "Task name", width: 200 }, { id: "start", header: "Start", width: 90, align: "center" }, { id: "add-task", header: "", width: 40, align: "center" }],
               },
               meta: { createdBy: "ai" },
             });
-            zoneItems.push({ id: optTitleId, kind: "label" });
-            cursorY += optionTitleLabelH + 16;
+            zoneItems.push({ id: ganttId, kind: "format" });
+            cursorY += gH + gap;
           }
-          const fullContent = description.content;
-          const docH = estimateDocumentHeight(fullContent, contentWidth, 200);
-          const docId = createShapeId();
-          editor.createShape({
-            id: docId,
-            type: "document",
-            x: pad,
-            y: cursorY,
-            parentId: frameId,
-            props: { docId: generateId(), title: description.title, w: contentWidth, h: docH },
-            meta: { createdBy: "ai", initialContent: fullContent },
-          });
-          zoneItems.push({ id: docId, kind: "format" });
-          cursorY += docH + gap;
-        }
 
-        // ── 2. Table → datatable (FULL WIDTH) with section label ──
-        if (teamTable) {
-          const tableLabelId = createSectionLabel(teamTable.title, cursorY);
-          zoneItems.push({ id: tableLabelId, kind: "label" });
-          cursorY += sectionLabelH + 16;
-          const CHAR_WIDTH = 7.5, COL_PADDING = 24;
-          const colWidths: number[] = [];
-          teamTable.columns.forEach((header, colIdx) => {
-            let maxLen = header.length;
-            teamTable.rows.forEach((row) => { if (row[colIdx]) maxLen = Math.max(maxLen, row[colIdx].length); });
-            colWidths.push(Math.min(Math.max(maxLen * CHAR_WIDTH + COL_PADDING, 90), 220));
-          });
-          let tableRowsH = 0;
-          for (const row of teamTable.rows) {
-            let ml = 1;
-            row.forEach((cell, ci) => {
-              if (!cell) return;
-              ml = Math.max(ml, Math.ceil(cell.length * CHAR_WIDTH / ((colWidths[ci] || 120) - 12)));
-            });
-            tableRowsH += Math.max(32, ml * 20 + 16);
-          }
-          const tableH = 42 + 34 + tableRowsH + 32;
-          const tableId = createShapeId();
-          editor.createShape({
-            id: tableId,
-            type: "datatable",
-            x: pad,
-            y: cursorY,
-            parentId: frameId,
-            props: { tableId: generateId(), title: teamTable.title, w: contentWidth, h: tableH },
-            meta: { createdBy: "ai", initialData: JSON.stringify({ columns: teamTable.columns, rows: teamTable.rows }) },
-          });
-          zoneItems.push({ id: tableId, kind: "format" });
-          cursorY += tableH + gap;
-        }
+          // Set initial frame height + reposition
+          const initialH = cursorY + pad;
+          editor.updateShape({ id: frameId, type: "frame", props: { h: initialH } });
 
-        // ── 3. Gantt → ganttchart (FULL WIDTH) with section label ──
-        if (gantt) {
-          const ganttLabelId = createSectionLabel(gantt.title, cursorY);
-          zoneItems.push({ id: ganttLabelId, kind: "label" });
-          cursorY += sectionLabelH + 16;
-          const ganttH = Math.max(300, 80 + (gantt.tasks?.length || 0) * 32);
-          const ganttId = createShapeId();
+          let lastTotalH = 0;
+          const reposition = () => {
+            try {
+              let y = pad;
+              for (const item of zoneItems) {
+                if (item.kind === "label") {
+                  const shape = editor.getShape(item.id);
+                  if (!shape) continue;
+                  const bounds = editor.getShapeGeometry(item.id)?.bounds;
+                  const labelH = bounds ? Math.ceil(bounds.height) : sectionLabelH;
+                  if (Math.abs((shape as any).y - y) > 2) {
+                    editor.updateShape({ id: item.id, type: "text" as any, x: pad, y });
+                  }
+                  y += labelH + 20;
+                } else if (item.kind === "format") {
+                  const shape = editor.getShape(item.id);
+                  if (!shape) continue;
+                  if (Math.abs((shape as any).y - y) > 2) {
+                    editor.updateShape({ id: item.id, type: shape.type as any, x: pad, y });
+                  }
+                  const propsH = (shape.props as any).h || 200;
+                  y += propsH + gap;
+                }
+              }
+              const newH = y + pad;
+              editor.updateShape({ id: frameId, type: "frame", props: { h: newH } });
+              lastTotalH = newH;
+            } catch {
+              // Silently recover
+            }
+          };
+          let passCount = 0;
+          const repositionLoop = () => {
+            reposition();
+            passCount++;
+            if (passCount < 40) setTimeout(repositionLoop, 500);
+          };
+          setTimeout(repositionLoop, 600);
+
+          shapeId = frameId;
+
+        // ════════════════════════════════════════════════════════
+        // SCENARIO LAYOUT
+        // ════════════════════════════════════════════════════════
+        } else {
+          const frameWidth = 1100;
+          const contentWidth = frameWidth - pad * 2;
+          const scenarioTitleH = 36;
+          const colGap = 15;
+          const col3W = Math.floor((contentWidth - colGap * 2) / 3);
+
+          // Detect scenario letter (A/B/C)
+          const scenarioMatch = (title || "").match(/Scenario\s+([A-C])/i);
+          const scenarioLetter = scenarioMatch ? scenarioMatch[1].toUpperCase() : "";
+          const isScenarioC = scenarioLetter === "C";
+
+          // ── Estimate height ──
+          let estH = pad;
+          estH += scenarioTitleH + 16; // title
+          if (summary) estH += sectionLabelH + 20 + estimateDocumentHeight(summary.content, contentWidth, 250) + gap;
+          if (gantt) estH += sectionLabelH + 20 + Math.max(350, 120 + (gantt.tasks?.length || 0) * 40) + gap;
+          if (teams && teams.length > 0) estH += sectionLabelH + 20 + 160 + gap;
+          if (userInsight) estH += sectionLabelH + 16 + 500 + gap; // approximate
+          if (evaluation) estH += 400 + gap;
+          estH += pad;
+          const frameHeight = Math.max(estH, 400);
+
+          // Create frame (no title bar text for scenario zones — the big label is inside)
+          const engine = getPlacementEngine();
+          const framePos = engine.place({ category: "format", width: frameWidth, height: frameHeight });
+          const frameId = createShapeId();
           editor.createShape({
-            id: ganttId,
-            type: "ganttchart" as any,
-            x: pad,
-            y: cursorY,
-            parentId: frameId,
-            props: {
-              w: contentWidth,
-              h: ganttH,
-              title: gantt.title,
-              tasks: gantt.tasks || [],
-              links: gantt.links || [],
-              scales: [
-                { unit: "month", step: 1, format: "%F %Y" },
-                { unit: "week", step: 1, format: "%j" },
-              ],
-              columns: [
-                { id: "text", header: "Task name", width: 180 },
-                { id: "start", header: "Start", width: 90, align: "center" },
-                { id: "add-task", header: "", width: 40, align: "center" },
-              ],
-            },
+            id: frameId, type: "frame",
+            x: framePos.x, y: framePos.y,
+            props: { name: "", w: frameWidth, h: frameHeight },
             meta: { createdBy: "ai" },
           });
-          zoneItems.push({ id: ganttId, kind: "format" });
-          cursorY += ganttH + gap;
-        }
+          engine.recordPlacement(frameId as unknown as string, { category: "format", width: frameWidth, height: frameHeight }, framePos);
 
-        // ── 4. Insight cards → task cards in 2×2 grid (45% width, 10% gap) with section label ──
-        const createdCardIds: ReturnType<typeof createShapeId>[] = [];
-        const cardW = Math.floor(contentWidth * 0.45);
-        const cardGapH = Math.floor(contentWidth * 0.10);
-        const cardH = 180;
-        if (insights && insights.length > 0) {
-          const insightsLabelId = createSectionLabel("Key insights", cursorY);
-          zoneItems.push({ id: insightsLabelId, kind: "label" });
-          cursorY += sectionLabelH + 16;
-          const researchTypes = ["Quantitative", "Qualitative", "Mixed-method", "Behavioral"];
-          const personas = ["VP Engineering", "Product Lead", "Exec Sponsor", "Design Lead"];
-          const dataSources: Record<string, string[]> = {
-            blue: ["Jira · Looker", "Salesforce · Gong", "Amplitude · Slack", "Productboard · Jira"],
-            green: ["Productboard · Amplitude", "Workday · Jira", "Stripe · Looker", "Gong · Slack"],
-            violet: ["Jira · Salesforce", "Amplitude · Productboard", "Gong · Notion", "Looker · Workday"],
-          };
-          const signalStrengths: Array<"high" | "medium"> = ["high", "medium", "high", "medium"];
-          const confidenceTags: Record<string, string[]> = {
-            blue: ["Revenue signal", "Pipeline risk", "Cost model", "Adoption driver"],
-            green: ["Growth signal", "Retention driver", "Market timing", "NPS lift"],
-            violet: ["Sequencing", "Resource model", "Hybrid path", "Risk hedge"],
-          };
+          let cursorY = pad;
 
-          const maxCards = Math.min(insights.length, 4);
-          for (let i = 0; i < maxCards; i++) {
-            const col = i % 2;
-            const row = Math.floor(i / 2);
-            const x = pad + col * (cardW + cardGapH);
-            const y = cursorY + row * (cardH + gap);
-            const insight = insights[i];
-            const color = insight.color || "blue";
-            const sources = (dataSources[color] || dataSources.blue)[i % 4];
-            const confidence = (confidenceTags[color] || confidenceTags.blue)[i % 4];
-            const cId = createShapeId();
+          // Helper: create a section title label
+          const createSectionLabel = (text: string, y: number, size: "s" | "m" | "l" = "m", x: number = pad): ReturnType<typeof createShapeId> => {
+            const labelId = createShapeId();
             editor.createShape({
-              id: cId,
-              type: "taskcard" as any,
-              x,
-              y,
-              parentId: frameId,
+              id: labelId, type: "text", x, y, parentId: frameId,
+              props: { richText: toRichText(text), size, font: "sans", color: "black" },
+              meta: { createdBy: "ai" },
+            });
+            return labelId;
+          };
+
+          // Helper: create a sticky note
+          const createSticky = (text: string, color: string, x: number, y: number, w: number = 200, h: number = 120): ReturnType<typeof createShapeId> => {
+            const sId = createShapeId();
+            editor.createShape({
+              id: sId, type: "note",
+              x, y, parentId: frameId,
               props: {
-                w: cardW,
-                h: cardH,
-                title: insight.text.length > 80 ? insight.text.slice(0, 77) + "..." : insight.text,
-                description: `<p>${insight.text}</p>`,
-                status: "in_progress",
-                priority: signalStrengths[i % 4],
-                assignee: sources,
-                dueDate: "",
-                tags: [researchTypes[i % 4], personas[i % 4], confidence],
-                subtasks: [],
+                richText: toRichText(text),
+                color: colorMap[color] || "yellow",
+                font: "sans", size: "s",
               },
               meta: { createdBy: "ai" },
             });
-            createdCardIds.push(cId);
-          }
-          zoneItems.push({ id: createdCardIds[0], kind: "cards", cardIds: createdCardIds, cardW, cardGapH, cardH });
-          const cardRows = Math.ceil(maxCards / 2);
-          cursorY += cardRows * cardH + (cardRows - 1) * gap + gap;
-        }
-
-        // ── 5. Sticker — hardcoded per option, generic fallback ──
-        let stickerId: ReturnType<typeof createShapeId> | null = null;
-        {
-          const optionStickerMap: Record<number, string> = {
-            1: "https://mirostatic.com/stickers/asset-sync/cosmo-reactions__5/icon_15.svg",
-            2: "https://mirostatic.com/stickers/asset-sync/cosmo-reactions__5/icon_16.svg",
-            3: "https://mirostatic.com/stickers/asset-sync/cosmo-reactions__5/icon_17.svg",
+            return sId;
           };
-          const stickerUrl = optionNum > 0 ? optionStickerMap[optionNum] : null;
-          const stickersToPlace = stickerUrl
-            ? [{ url: stickerUrl, stickerId: `cosmo-opt${optionNum}`, width: 200, height: 200 }]
-            : (resolvedStickers || []);
 
-          if (stickersToPlace.length > 0) {
-            const stk = stickersToPlace[0];
-            const displayW = 160;
-            const displayH = 160;
+          // ── 1. Scenario Title ──
+          const titleLabelId = createSectionLabel(title || "Scenario", cursorY, "l");
+          zoneItems.push({ id: titleLabelId, kind: "label" });
+          cursorY += scenarioTitleH + 20;
+
+          // ── 2. Summary → document ──
+          if (summary) {
+            const summaryLabelId = createSectionLabel("Summary", cursorY);
+            zoneItems.push({ id: summaryLabelId, kind: "label" });
+            cursorY += sectionLabelH + 20;
+
+            const docH = estimateDocumentHeight(summary.content, contentWidth, 250);
+            const docId = createShapeId();
+            editor.createShape({
+              id: docId, type: "document",
+              x: pad, y: cursorY, parentId: frameId,
+              props: { docId: generateId(), title: summary.title, w: contentWidth, h: docH },
+              meta: { createdBy: "ai", initialContent: summary.content },
+            });
+            zoneItems.push({ id: docId, kind: "format" });
+            cursorY += docH + gap;
+          }
+
+          // ── 3. Detailed Roadmap → Gantt chart ──
+          if (gantt) {
+            const ganttLabelId = createSectionLabel("Detailed Roadmap", cursorY);
+            zoneItems.push({ id: ganttLabelId, kind: "label" });
+            cursorY += sectionLabelH + 20;
+
+            const ganttH = Math.max(350, 120 + (gantt.tasks?.length || 0) * 40);
+            const ganttId = createShapeId();
+            editor.createShape({
+              id: ganttId, type: "ganttchart" as any,
+              x: pad, y: cursorY, parentId: frameId,
+              props: {
+                w: contentWidth, h: ganttH, title: gantt.title,
+                tasks: gantt.tasks || [], links: gantt.links || [],
+                scales: [{ unit: "month", step: 1, format: "%F %Y" }, { unit: "week", step: 1, format: "%j" }],
+                columns: [{ id: "text", header: "Task name", width: 180 }, { id: "start", header: "Start", width: 90, align: "center" }, { id: "add-task", header: "", width: 40, align: "center" }],
+              },
+              meta: { createdBy: "ai" },
+            });
+            zoneItems.push({ id: ganttId, kind: "format" });
+            cursorY += ganttH + gap;
+          }
+
+          // ── 4. Key Teams Involved → row of stickies (max 3, shared team = red) ──
+          if (teams && teams.length > 0) {
+            const teamsLabelId = createSectionLabel("Key teams involved", cursorY);
+            zoneItems.push({ id: teamsLabelId, kind: "label" });
+            cursorY += sectionLabelH + 20;
+
+            const teamCount = Math.min(teams.length, 3);
+            const teamGap = 16;
+            const teamStickyW = 200;  // fixed width, left-aligned
+            const teamStickyH = 140;  // generous — notes auto-size, text often wraps
+            const teamStickyIds: ReturnType<typeof createShapeId>[] = [];
+            for (let i = 0; i < teamCount; i++) {
+              const team = teams[i];
+              // teams is now Array<{name, color}> — extract name and color
+              const teamName = typeof team === "string" ? team : (team as any).name || "";
+              const teamColor = typeof team === "string" ? "yellow" : ((team as any).color || "yellow");
+              const sId = createSticky(teamName, teamColor, pad + i * (teamStickyW + teamGap), cursorY, teamStickyW, teamStickyH);
+              teamStickyIds.push(sId);
+            }
+            zoneItems.push({ id: teamStickyIds[0], kind: "stickyRow", stickyIds: teamStickyIds, stickyW: teamStickyW, stickyH: teamStickyH, stickyCols: teamCount });
+            cursorY += teamStickyH + gap;
+          }
+
+          // ── 5. User Insight → 3-column section ──
+          if (userInsight) {
+            const insightLabelId = createSectionLabel("User insight", cursorY);
+            zoneItems.push({ id: insightLabelId, kind: "label" });
+            cursorY += sectionLabelH + 20;
+
+            const colStartY = cursorY;
+            let maxColH = 0;
+
+            // Column 1: "Existing Feedback" → task cards
+            const feedbackLabelId = createSectionLabel("Existing Feedback", colStartY, "s", pad);
+            const feedbackCardIds: ReturnType<typeof createShapeId>[] = [];
+            const cardH = 140;
+            const cardGap = 14;
+            let fbY = colStartY + sectionLabelH + 14;
+            for (const fb of (userInsight.feedback || []).slice(0, 5)) {
+              const cId = createShapeId();
+              editor.createShape({
+                id: cId, type: "taskcard" as any,
+                x: pad, y: fbY, parentId: frameId,
+                props: {
+                  w: col3W, h: cardH,
+                  title: fb.title,
+                  description: fb.description || "",
+                  status: fb.status || "in_progress",
+                  priority: "medium",
+                  assignee: fb.assignee || "",
+                  dueDate: "",
+                  tags: fb.tags || [],
+                  subtasks: [],
+                },
+                meta: { createdBy: "ai" },
+              });
+              feedbackCardIds.push(cId);
+              fbY += cardH + cardGap;
+            }
+            const col1H = fbY - colStartY;
+            maxColH = Math.max(maxColH, col1H);
+
+            // Column 2: "Metrics" → stickies stacked vertically (max 4)
+            const col2X = pad + col3W + colGap;
+            const metricsLabelId = createSectionLabel("Metrics", colStartY, "s", col2X);
+            const metricStickyIds: ReturnType<typeof createShapeId>[] = [];
+            const metricStickyW = col3W - 8;
+            const metricStickyH = 110;
+            const metricGap = 12;
+            const metricsSlice = (userInsight.metrics || []).slice(0, 4);
+            for (let i = 0; i < metricsSlice.length; i++) {
+              const m = metricsSlice[i];
+              const sId = createSticky(m.text, m.color, col2X, colStartY + sectionLabelH + 14 + i * (metricStickyH + metricGap), metricStickyW, metricStickyH);
+              metricStickyIds.push(sId);
+            }
+            const col2H = sectionLabelH + 14 + metricsSlice.length * (metricStickyH + metricGap);
+            maxColH = Math.max(maxColH, col2H);
+
+            // Column 3: "Requests" → stickies stacked vertically (max 4)
+            const col3X = pad + (col3W + colGap) * 2;
+            const requestsLabelId = createSectionLabel("Requests", colStartY, "s", col3X);
+            const requestStickyIds: ReturnType<typeof createShapeId>[] = [];
+            const requestsSlice = (userInsight.requests || []).slice(0, 4);
+            for (let i = 0; i < requestsSlice.length; i++) {
+              const r = requestsSlice[i];
+              const sId = createSticky(r.text, r.color, col3X, colStartY + sectionLabelH + 14 + i * (metricStickyH + metricGap), metricStickyW, metricStickyH);
+              requestStickyIds.push(sId);
+            }
+            const col3H = sectionLabelH + 14 + requestsSlice.length * (metricStickyH + metricGap);
+            maxColH = Math.max(maxColH, col3H);
+
+            // Store column data for reposition
+            zoneItems.push({
+              id: feedbackLabelId, kind: "threeCol",
+              colData: [
+                { labelId: feedbackLabelId, itemIds: feedbackCardIds, colWidth: col3W },
+                { labelId: metricsLabelId, itemIds: metricStickyIds, colWidth: col3W },
+                { labelId: requestsLabelId, itemIds: requestStickyIds, colWidth: col3W },
+              ],
+            });
+
+            cursorY += maxColH + gap;
+          }
+
+          // ── 6. Evaluation → 3-column section (no overall label) ──
+          if (evaluation) {
+            const evalStartY = cursorY;
+            let maxEvalColH = 0;
+            const evalStickyW = col3W - 16;
+            const evalStickyH = 120;
+            const evalGap = 12;
+
+            // Column 1: "Opportunity"
+            const oppLabelId = createSectionLabel("Opportunity", evalStartY, "s", pad);
+            const oppStickyIds: ReturnType<typeof createShapeId>[] = [];
+            for (let i = 0; i < (evaluation.opportunity || []).length; i++) {
+              const item = evaluation.opportunity[i];
+              const sId = createSticky(item.text, item.color, pad, evalStartY + sectionLabelH + 12 + i * (evalStickyH + evalGap), evalStickyW, evalStickyH);
+              oppStickyIds.push(sId);
+            }
+            const oppH = sectionLabelH + 12 + (evaluation.opportunity || []).length * (evalStickyH + evalGap);
+            maxEvalColH = Math.max(maxEvalColH, oppH);
+
+            // Column 2: "Risks"
+            const risksX = pad + col3W + colGap;
+            const risksLabelId = createSectionLabel("Risks", evalStartY, "s", risksX);
+            const riskStickyIds: ReturnType<typeof createShapeId>[] = [];
+            for (let i = 0; i < (evaluation.risks || []).length; i++) {
+              const item = evaluation.risks[i];
+              const sId = createSticky(item.text, item.color, risksX, evalStartY + sectionLabelH + 12 + i * (evalStickyH + evalGap), evalStickyW, evalStickyH);
+              riskStickyIds.push(sId);
+            }
+            const risksH = sectionLabelH + 12 + (evaluation.risks || []).length * (evalStickyH + evalGap);
+            maxEvalColH = Math.max(maxEvalColH, risksH);
+
+            // Column 3: "Potential"
+            const potentialX = pad + (col3W + colGap) * 2;
+            const potentialLabelId = createSectionLabel("Potential", evalStartY, "s", potentialX);
+            const potStickyIds: ReturnType<typeof createShapeId>[] = [];
+            for (let i = 0; i < (evaluation.potential || []).length; i++) {
+              const item = evaluation.potential[i];
+              const sId = createSticky(item.text, item.color, potentialX, evalStartY + sectionLabelH + 12 + i * (evalStickyH + evalGap), evalStickyW, evalStickyH);
+              potStickyIds.push(sId);
+            }
+            const potH = sectionLabelH + 12 + (evaluation.potential || []).length * (evalStickyH + evalGap);
+            maxEvalColH = Math.max(maxEvalColH, potH);
+
+            zoneItems.push({
+              id: oppLabelId, kind: "threeCol",
+              colData: [
+                { labelId: oppLabelId, itemIds: oppStickyIds, colWidth: col3W },
+                { labelId: risksLabelId, itemIds: riskStickyIds, colWidth: col3W },
+                { labelId: potentialLabelId, itemIds: potStickyIds, colWidth: col3W },
+              ],
+            });
+
+            cursorY += maxEvalColH + gap;
+          }
+
+          // ── 7. Recommended sticker (Scenario C only) ──
+          let stickerId: ReturnType<typeof createShapeId> | null = null;
+          if (isScenarioC) {
+            const stickerUrl = "https://mirostatic.com/stickers/general-task-tacklers__2/task_tacklers_recommended.svg";
+            const displayW = 120;
+            const displayH = 120;
+            const assetId = `asset:sticker-recommended-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
+            editor.createAssets([{
+              id: assetId, type: "image", typeName: "asset",
+              props: { name: "recommended", src: stickerUrl, w: 200, h: 200, mimeType: "image/svg+xml", isAnimated: false },
+              meta: {},
+            }]);
+            stickerId = createShapeId();
+            // Place at top-right corner, slightly overlapping
+            editor.createShape({
+              id: stickerId, type: "image",
+              x: framePos.x + frameWidth - displayW / 2,
+              y: framePos.y - displayH / 2,
+              props: { assetId, w: displayW, h: displayH },
+              meta: { createdBy: "ai" },
+            });
+          } else if (resolvedStickers && resolvedStickers.length > 0) {
+            // Generic sticker fallback
+            const stk = resolvedStickers[0];
+            const displayW = 120;
+            const displayH = 120;
             const assetId = `asset:sticker-${stk.stickerId}-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
             editor.createAssets([{
-              id: assetId,
-              type: "image",
-              typeName: "asset",
-              props: {
-                name: stk.stickerId,
-                src: stk.url,
-                w: stk.width,
-                h: stk.height,
-                mimeType: stk.url.endsWith(".svg") ? "image/svg+xml" : "image/png",
-                isAnimated: false,
-              },
+              id: assetId, type: "image", typeName: "asset",
+              props: { name: stk.stickerId, src: stk.url, w: stk.width, h: stk.height, mimeType: stk.url.endsWith(".svg") ? "image/svg+xml" : "image/png", isAnimated: false },
               meta: {},
             }]);
             stickerId = createShapeId();
             editor.createShape({
-              id: stickerId,
-              type: "image",
-              x: frameWidth - displayW - pad + 20,
-              y: pad,
-              parentId: frameId,
+              id: stickerId, type: "image",
+              x: framePos.x + frameWidth - displayW / 2,
+              y: framePos.y - displayH / 2,
               props: { assetId, w: displayW, h: displayH },
+              meta: { createdBy: "ai" },
             });
           }
-        }
 
-        // ── 6. Initial frame height ──
-        const initialH = cursorY + pad;
-        editor.updateShape({ id: frameId, type: "frame", props: { h: initialH } });
+          // ── 8. Set initial frame height ──
+          const initialH = cursorY + pad;
+          editor.updateShape({ id: frameId, type: "frame", props: { h: initialH } });
 
-        // ── 7. Delayed reposition — reads ACTUAL rendered heights, re-stacks with even gaps ──
-        // AutoSizeWrapper fires at 300ms, 800ms, 1500ms. We run multiple passes
-        // to catch late-sizing shapes (especially in Options 2/3 created after Option 1).
-        let lastTotalH = 0;
-        const reposition = () => {
-          let y = pad + titleSpace;
-          for (const item of zoneItems) {
-            if (item.kind === "label") {
-              // Section label — reposition and advance by label height + gap to artifact
-              const shape = editor.getShape(item.id);
-              if (!shape) continue;
-              // Read actual rendered height from tldraw bounds (more reliable than constant)
-              const bounds = editor.getShapeGeometry(item.id)?.bounds;
-              const labelH = bounds ? Math.ceil(bounds.height) : sectionLabelH;
-              if (Math.abs((shape as any).y - y) > 2) {
-                editor.updateShape({ id: item.id, type: "text" as any, x: pad, y });
-              }
-              y += labelH + 16;
-            } else if (item.kind === "format") {
-              const shape = editor.getShape(item.id);
-              if (!shape) continue;
-              if (Math.abs((shape as any).y - y) > 2) {
-                editor.updateShape({ id: item.id, type: shape.type as any, x: pad, y });
-              }
-              // Use geometry bounds (actual rendered size) with props.h as fallback
-              const geoBounds = editor.getShapeGeometry(item.id)?.bounds;
-              const propsH = (shape.props as any).h || 200;
-              const actualH = geoBounds ? Math.max(Math.ceil(geoBounds.height), propsH) : propsH;
-              y += actualH + gap;
-            } else if (item.kind === "cards" && item.cardIds) {
-              for (let i = 0; i < item.cardIds.length; i++) {
-                const col = i % 2;
-                const row = Math.floor(i / 2);
-                const cx = pad + col * ((item.cardW || cardW) + (item.cardGapH || cardGapH));
-                const cy = y + row * ((item.cardH || cardH) + gap);
-                const cShape = editor.getShape(item.cardIds[i]);
-                if (cShape && Math.abs((cShape as any).y - cy) > 2) {
-                  editor.updateShape({ id: item.cardIds[i], type: "taskcard" as any, x: cx, y: cy });
+          // ── 9. Reactive reposition — re-reads props.h (updated by AutoSizeWrapper) ──
+          // AutoSizeWrapper observes rendered content and updates shape h props asynchronously.
+          // We poll until the layout is stable (all shapes have their final sizes).
+          // Helper: get actual rendered height of any shape (notes auto-size, custom shapes use props.h)
+          const getShapeH = (shapeId: ReturnType<typeof createShapeId>, fallback: number): number => {
+            const geo = editor.getShapeGeometry(shapeId)?.bounds;
+            if (geo) return Math.ceil(geo.height);
+            const s = editor.getShape(shapeId);
+            return s ? ((s.props as any).h || fallback) : fallback;
+          };
+
+          let lastTotalH = 0;
+          const reposition = () => {
+            try {
+              let y = pad;
+              for (const item of zoneItems) {
+                if (item.kind === "label") {
+                  const shape = editor.getShape(item.id);
+                  if (!shape) continue;
+                  const labelH = getShapeH(item.id, sectionLabelH);
+                  const x = item.xOffset ?? pad;
+                  if (Math.abs((shape as any).y - y) > 2 || Math.abs((shape as any).x - x) > 2) {
+                    editor.updateShape({ id: item.id, type: "text" as any, x, y });
+                  }
+                  y += labelH + 20;
+                } else if (item.kind === "format") {
+                  const shape = editor.getShape(item.id);
+                  if (!shape) continue;
+                  const x = item.xOffset ?? pad;
+                  if (Math.abs((shape as any).y - y) > 2) {
+                    editor.updateShape({ id: item.id, type: shape.type as any, x, y });
+                  }
+                  // Read props.h — AutoSizeWrapper keeps this in sync with actual content
+                  const propsH = (shape.props as any).h || 200;
+                  y += propsH + gap;
+                } else if (item.kind === "stickyRow" && item.stickyIds) {
+                  // Measure tallest sticky (tldraw notes auto-size based on text)
+                  let tallest = item.stickyH || 100;
+                  const sw = item.stickyW || 200;
+                  for (let i = 0; i < item.stickyIds.length; i++) {
+                    const sx = pad + i * (sw + 16);
+                    const s = editor.getShape(item.stickyIds[i]);
+                    if (s && Math.abs((s as any).y - y) > 2) {
+                      editor.updateShape({ id: item.stickyIds[i], type: "note" as any, x: sx, y });
+                    }
+                    const actualH = getShapeH(item.stickyIds[i], tallest);
+                    tallest = Math.max(tallest, actualH);
+                  }
+                  y += tallest + gap;
+                } else if (item.kind === "stickyGrid" && item.stickyIds) {
+                  const cols = item.stickyCols || 2;
+                  const sw = item.stickyW || 160;
+                  const sGap = 12;
+                  const baseX = item.xOffset ?? pad;
+                  // Measure actual heights per row
+                  let totalGridH = 0;
+                  const rowCount = Math.ceil(item.stickyIds.length / cols);
+                  for (let row = 0; row < rowCount; row++) {
+                    let rowH = item.stickyH || 160;
+                    for (let col = 0; col < cols; col++) {
+                      const idx = row * cols + col;
+                      if (idx >= item.stickyIds.length) break;
+                      const sid = item.stickyIds[idx];
+                      const sx = baseX + col * (sw + sGap);
+                      const sy = y + totalGridH;
+                      const s = editor.getShape(sid);
+                      if (s && Math.abs((s as any).y - sy) > 2) {
+                        editor.updateShape({ id: sid, type: "note" as any, x: sx, y: sy });
+                      }
+                      rowH = Math.max(rowH, getShapeH(sid, rowH));
+                    }
+                    totalGridH += rowH + sGap;
+                  }
+                  y += totalGridH + gap;
+                } else if (item.kind === "threeCol" && item.colData) {
+                  let maxColH = 0;
+                  for (let ci = 0; ci < item.colData.length; ci++) {
+                    const col = item.colData[ci];
+                    const colX = pad + ci * (col.colWidth + colGap);
+                    const labelShape = editor.getShape(col.labelId);
+                    if (labelShape && Math.abs((labelShape as any).y - y) > 2) {
+                      editor.updateShape({ id: col.labelId, type: "text" as any, x: colX, y });
+                    }
+                    let itemY = y + sectionLabelH + 12;
+                    for (const itemId of col.itemIds) {
+                      const s = editor.getShape(itemId);
+                      if (!s) continue;
+                      if (Math.abs((s as any).y - itemY) > 2) {
+                        editor.updateShape({ id: itemId, type: s.type as any, x: colX, y: itemY });
+                      }
+                      // Measure actual height (notes auto-size, cards use props.h via AutoSizeWrapper)
+                      const actualH = getShapeH(itemId, 120);
+                      itemY += actualH + 12;
+                    }
+                    maxColH = Math.max(maxColH, itemY - y);
+                  }
+                  y += maxColH + gap;
                 }
               }
-              const rows = Math.ceil(item.cardIds.length / 2);
-              y += rows * (item.cardH || cardH) + (rows - 1) * gap + gap;
+              const newH = y + pad;
+              editor.updateShape({ id: frameId, type: "frame", props: { h: newH } });
+              lastTotalH = newH;
+            } catch {
+              // Silently recover — shape may have been deleted
             }
-          }
-          // Update sticker position (stays top-right of doc)
-          if (stickerId) {
-            const sShape = editor.getShape(stickerId);
-            if (sShape) {
-              editor.updateShape({ id: stickerId, type: "image", x: frameWidth - 160 - pad + 20, y: pad });
-            }
-          }
-          // Resize frame to fit
-          const newH = y + pad;
-          editor.updateShape({ id: frameId, type: "frame", props: { h: newH } });
-          lastTotalH = newH;
-        };
-        // Run passes spread across the AutoSizeWrapper window.
-        // Options 2/3 are created after Option 1, so their shapes take longer to render.
-        // Passes stop early if total height has stabilized (no change since last pass).
-        let passCount = 0;
-        let stableCount = 0;
-        const repositionIfChanged = () => {
-          const prevH = lastTotalH;
-          reposition();
-          passCount++;
-          if (lastTotalH === prevH) {
-            stableCount++;
-          } else {
-            stableCount = 0; // Reset — height still changing
-          }
-          // Stop after 3 consecutive stable passes (shapes have settled)
-          if (stableCount < 3 && passCount < 12) {
-            setTimeout(repositionIfChanged, 400);
-          }
-        };
-        // Stagger initial passes to give shapes time to render
-        setTimeout(repositionIfChanged, 400);
-        setTimeout(repositionIfChanged, 1000);
-        setTimeout(repositionIfChanged, 2000);
-        setTimeout(repositionIfChanged, 3500);
-        setTimeout(repositionIfChanged, 6000);
-        setTimeout(repositionIfChanged, 9000);
+          };
 
-        shapeId = frameId;
+          // Run reposition every 500ms for 20 seconds unconditionally.
+          // No stability detection — Zone 2+ content loads slower (browser busy
+          // rendering Zone 1) so "stable" might be reached before content renders.
+          let passCount = 0;
+          const repositionLoop = () => {
+            reposition();
+            passCount++;
+            if (passCount < 40) {
+              setTimeout(repositionLoop, 500);
+            }
+          };
+          // First pass at 600ms (after AutoSizeWrapper's first 300ms sync)
+          setTimeout(repositionLoop, 600);
+
+          shapeId = frameId;
+        }
       }
 
       // ─── createWorkshopBoard: decision workshop for team dot-voting ────────────
@@ -2824,9 +3045,9 @@ export function Canvas() {
         // Option colors: [title sticky color, detail sticky color, button border color]
         type WsColor = "blue" | "light-blue" | "red" | "light-red" | "orange" | "yellow";
         const optionColors: Array<[WsColor, WsColor, WsColor]> = [
-          ["blue", "light-blue", "blue"],
-          ["red", "light-red", "red"],
-          ["orange", "yellow", "orange"],
+          ["light-blue", "light-blue", "blue"],
+          ["red", "red", "red"],
+          ["yellow", "yellow", "orange"],
         ];
 
         // ── Estimate frame height ──

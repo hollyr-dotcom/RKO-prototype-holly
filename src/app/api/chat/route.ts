@@ -595,18 +595,16 @@ const createKanbanBoardTool = tool({
 
 const createZoneTool = tool({
   name: "createZone",
-  description: "Create a composed frame with mixed content — one call = one complete zone. Use for deep dives, exec summaries, recommendations, or any section that needs multiple content types (doc + table + gantt + insights + stickers) in a single frame. Much better than calling createFrame + 5-6 nested tools separately.",
+  description: "Create a composed frame with mixed content — one call = one complete zone. Two layout modes: 'overview' (conflict summary with stickies + shared Gantt) and 'scenario' (full analysis zone with summary doc, roadmap Gantt, teams, user insight grid, evaluation grid). Much better than calling createFrame + 5-6 nested tools separately.",
   parameters: z.object({
-    title: z.string().describe("Frame title (e.g. 'Executive Summary', 'Option A: PayGrid First', 'Recommendation')"),
-    description: z.object({
+    title: z.string().describe("Frame title (e.g. 'Overview: The Conflict', 'Scenario A: PayGrid First')"),
+    layout: z.enum(["overview", "scenario"]).describe("Layout mode: 'overview' for conflict summary, 'scenario' for full analysis zone"),
+
+    // ── Shared fields ──
+    summary: z.object({
       title: z.string().describe("Document title inside the zone"),
-      content: z.string().describe("Document body as HTML. Use <h2>, <p>, <ul>/<li>, <strong>, <em>."),
-    }).nullable().describe("Rich text document section. Use for exec summaries, briefs, recommendations. Pass null to skip."),
-    teamTable: z.object({
-      title: z.string().describe("Table title"),
-      columns: z.array(z.string()).describe("Column headers"),
-      rows: z.array(z.array(z.string())).describe("Row data — each inner array must match column count"),
-    }).nullable().describe("Data table for stakeholders, metrics, comparisons. Pass null to skip."),
+      content: z.string().describe("Document body as HTML. Overview: describe the conflict. Scenario: 2-4 punchy sentences."),
+    }).nullable().describe("Rich text document. Used by BOTH overview and scenario layouts. Pass null to skip."),
     gantt: z.object({
       title: z.string().describe("Chart title"),
       tasks: z.array(z.object({
@@ -619,6 +617,7 @@ const createZoneTool = tool({
         parent: z.number().describe("Parent task ID, 0 = root"),
         type: z.enum(["task", "summary", "milestone"]),
         open: z.boolean(),
+        color: z.string().nullable().describe("Color override — use 'red' for shared/conflicting squad tasks, null for default"),
       })),
       links: z.array(z.object({
         id: z.number(),
@@ -627,13 +626,48 @@ const createZoneTool = tool({
         type: z.enum(["e2s", "s2s", "e2e", "s2e"]),
       })),
     }).nullable().describe("Gantt chart / timeline. Pass null to skip."),
-    insights: z.array(z.object({
-      text: z.string().describe("1-2 sentence insight a VP can understand without extra context"),
-      color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
-    })).describe("Insight sticky notes. Use [] for none."),
-    stickers: z.array(z.string()).describe("Sticker intents (e.g. 'rocket', 'target', 'thumbs up'). Use [] for none."),
+
+    // ── Scenario layout fields ──
+    teams: z.array(z.object({
+      name: z.string().describe("Team/squad name"),
+      color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet", "red"]).describe("Sticky color — use 'red' for the shared/conflicting squad"),
+    })).nullable().describe("Scenario mode: max 3 team stickies. Shared squad = red. Pass null if layout='overview'."),
+    userInsight: z.object({
+      feedback: z.array(z.object({
+        title: z.string().describe("Task card title"),
+        description: z.string().describe("Task card description as HTML"),
+        status: z.string().nullable().describe("not_started, in_progress, or complete. Null for default."),
+        assignee: z.string().nullable().describe("Data source (e.g. 'Gong · Productboard'). Null if none."),
+        tags: z.array(z.string()).nullable().describe("Tags for categorization. Null for none."),
+      })).describe("3-5 task cards with real feedback data"),
+      metrics: z.array(z.object({
+        text: z.string().describe("Metric sticky text — include specific numbers"),
+        color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
+      })).describe("2-4 stickies with specific metric numbers"),
+      requests: z.array(z.object({
+        text: z.string().describe("Feature request sticky text"),
+        color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
+      })).describe("2-4 stickies with real feature requests"),
+    }).nullable().describe("Scenario mode: user insight 3-column section. Pass null if layout='overview'."),
+    evaluation: z.object({
+      opportunity: z.array(z.object({
+        text: z.string().describe("What this scenario unlocks"),
+        color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
+      })).describe("2-3 opportunity stickies"),
+      risks: z.array(z.object({
+        text: z.string().describe("What could go wrong — team, timeline, business"),
+        color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
+      })).describe("2-3 risk stickies"),
+      potential: z.array(z.object({
+        text: z.string().describe("Market potential, ARR projections, etc."),
+        color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
+      })).describe("1-2 potential stickies (can include large metric numbers like '$74B ARR')"),
+    }).nullable().describe("Scenario mode: evaluation 3-column section. Pass null if layout='overview'."),
+
+    // ── Kept from old ──
+    stickers: z.array(z.string()).describe("Sticker intents (e.g. 'rocket', 'recommended'). Use [] for none."),
   }),
-  execute: async ({ title, description, teamTable, gantt, insights, stickers }) => {
+  execute: async ({ title, layout, gantt, summary, teams, userInsight, evaluation, stickers }) => {
     // Resolve sticker intents to URLs server-side
     const resolvedStickers = stickers
       .map(intent => findBestSticker(intent))
@@ -653,10 +687,12 @@ const createZoneTool = tool({
     return JSON.stringify({
       created: "zone",
       title,
-      description,
-      teamTable,
+      layout,
       gantt: normalizedGantt,
-      insights,
+      summary,
+      teams,
+      userInsight,
+      evaluation,
       resolvedStickers,
     });
   },
@@ -906,23 +942,21 @@ FIRST: DECIDE HOW TO RESPOND based on what the user asked:
    - Constraints: "Are there team or budget constraints I should factor in?"
    NEVER ask users to name projects, describe initiatives, or provide data you can look up from connectors.
 
-   The plan MUST follow this exact 6-step arc:
+   The plan MUST follow this exact 5-step arc:
    1. Gather internal data ← queryConnectors (no canvas output, just data collection)
-   2. Executive summary ← createDocument (one doc summarizing the tension, what's competing, what's at stake)
-   3. Option 1: [Name] ← createZone (description + teamTable + gantt + insights + stickers — ALL in one call)
-   4. Option 2: [Name] ← createZone (same recipe, placed beside Option 1 automatically)
-   5. Option 3: Hybrid approach ← createZone (a sequenced/combined approach that takes the best of both options)
-   6. Recommendation ← createDocument (SHORT and punchy — 3-4 sentences max recommending one path with 2-3 bullet points)
+   2. Overview: [Challenge title] ← createZone(layout:"overview") — conflict summary doc + shared timeline Gantt with red conflict highlight
+   3. Scenario A: [Name] ← createZone(layout:"scenario") — ALL sections in one call (summary + gantt + teams + userInsight + evaluation)
+   4. Scenario B: [Name] ← createZone(layout:"scenario") — ALL sections in one call
+   5. Scenario C: Hybrid approach ← createZone(layout:"scenario") — ALL sections + recommended sticker
 
    STEP NAMING RULES (the executor matches these exact patterns):
-   - Step 2 MUST be titled "Executive summary" (triggers createDocument)
-   - Steps 3-5 MUST be titled "Option 1: [Name]", "Option 2: [Name]", "Option 3: Hybrid approach" (triggers createZone)
-   - Step 6 MUST be titled "Recommendation" (triggers createDocument)
+   - Step 2 MUST be titled "Overview: [Challenge title]" (triggers createZone with layout:"overview")
+   - Steps 3-5 MUST be titled "Scenario A: [Name]", "Scenario B: [Name]", "Scenario C: Hybrid approach" (triggers createZone with layout:"scenario")
 
    ⚠️ Do NOT include timeline/roadmap as a separate step. Timelines go INSIDE the createZone gantt field.
-   ⚠️ Do NOT include diagram steps. Diagrams can go inside createZone if needed.
-   ⚠️ Exactly 6 steps. No more, no less.
-   ⚠️ Option 3 MUST always be a hybrid/sequenced approach that combines elements of Options 1 and 2.
+   ⚠️ Do NOT include diagram steps or recommendation steps. The recommended sticker on Scenario C IS the recommendation.
+   ⚠️ Exactly 5 steps. No more, no less.
+   ⚠️ Scenario C MUST always be a hybrid/sequenced approach that combines elements of Scenarios A and B.
 
    🚨 CRITICAL — ALL PLANS WITH COMPANY DATA:
    → Plan steps MUST include a connector data-gathering step
@@ -1109,12 +1143,11 @@ PLAN EXAMPLES:
 
 "Help me prioritize / resolve a strategic tension" (PRIORITISATION):
   Step 1: Gather internal data ← queryConnectors broadly
-  Step 2: Executive summary ← createDocument (the tension, what's at stake)
-  Step 3: Option 1: [Name] ← createZone (doc + table + gantt + insights + stickers)
-  Step 4: Option 2: [Name] ← createZone (same)
-  Step 5: Option 3: Hybrid approach ← createZone (sequenced/combined best of both)
-  Step 6: Recommendation ← createDocument (SHORT: 3-4 sentences + 2-3 bullets, recommends a path)
-  🚨 Steps 3-5 MUST use createZone. Steps 2 and 6 MUST use createDocument. Exactly 6 steps.
+  Step 2: Overview: [Challenge] ← createZone(layout:"overview") — conflict summary doc + shared timeline
+  Step 3: Scenario A: [Name] ← createZone(layout:"scenario") — full analysis zone
+  Step 4: Scenario B: [Name] ← createZone(layout:"scenario") — full analysis zone
+  Step 5: Scenario C: Hybrid approach ← createZone(layout:"scenario") — full analysis zone + recommended sticker
+  🚨 ALL steps use createZone. Steps 2-5 use different layout modes. Exactly 5 steps.
 
 FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
 - Multiple sections/frames with dependencies
@@ -1163,18 +1196,22 @@ const executionAgent = new Agent({
 Match the step title to the EXACT tool:
 
 Step title starts with "Gather" → queryConnectors (no canvas output)
-Step title starts with "Executive summary" → createDocument (one rich doc)
-Step title starts with "Option 1", "Option 2", or "Option 3" → createZone (ONE call with description + teamTable + gantt + insights + stickers)
-Step title starts with "Recommendation" → createDocument (SHORT: 3-4 sentences + 2-3 bullets only)
+Step title starts with "Overview" → createZone(layout:"overview") — summary doc + gantt with red conflict tasks
+Step title starts with "Scenario A", "Scenario B", or "Scenario C" → createZone(layout:"scenario") — ONE call with ALL sections
 
-For "Option" steps: You MUST call createZone(). Put ALL content into the SINGLE createZone() call.
-🚨 gantt and insights are REQUIRED for every Option step — NEVER pass null for gantt or [] for insights.
-🚨 Each Option MUST have exactly 4 insights (no more, no less).
-🚨 Insight colors by option: Option 1 = "blue", Option 2 = "green", Option 3 = "violet" — ALL insights within one zone use the SAME color.
-You MUST NOT call createDocument, createDataTable, createFrame, createLayout, createSticky, or createGanttChart individually for Option steps.
+For "Overview" steps: You MUST call createZone(layout:"overview"). Provide:
+- summary: Rich document describing the conflict (what's competing, why it matters)
+- gantt: shared timeline showing both projects, with color:"red" on shared/conflicting squad tasks
+- teams/userInsight/evaluation: null (not used for overview)
 
-For "Executive summary" and "Recommendation" steps: You MUST call createDocument(). Do NOT use createZone for these.
-🚨 Recommendation MUST be SHORT and punchy: 3-4 sentences of analysis + 2-3 bullet point takeaways. NOT a long essay.
+For "Scenario" steps: You MUST call createZone(layout:"scenario"). Put ALL content into the SINGLE createZone() call:
+🚨 gantt is REQUIRED for every Scenario step — NEVER pass null for gantt.
+🚨 summary is REQUIRED — 2-4 punchy sentences. VP-readable.
+🚨 teams: 3-5 actual squad names.
+🚨 userInsight: feedback (3-5 task cards), metrics (6-9 stickies), requests (6-9 stickies)
+🚨 evaluation: opportunity (2-3 stickies), risks (2-3 stickies), potential (1-2 stickies)
+🚨 Scenario C: include stickers: ["recommended"] to get the recommended badge.
+You MUST NOT call createDocument, createDataTable, createFrame, createLayout, createSticky, or createGanttChart individually for Scenario steps.
 
 🚨 CRITICAL RULE #1: EDIT EXISTING CONTENT, DON'T RECREATE! 🚨
 When user asks to "rearrange", "reorganize", "move", "edit", "change layout", "adjust", "reposition", "put in a frame", "organize":
@@ -1218,9 +1255,8 @@ Work through steps in sequence. For each step:
 1. Call showProgress(stepNumber, "step title", "starting")
 2. CHECK RULE ZERO — match the step title to the correct tool:
    - "Gather..." → queryConnectors
-   - "Executive summary" → createDocument
-   - "Option 1/2/3: ..." → createZone (ONE call, all content inside — gantt + insights REQUIRED)
-   - "Recommendation" → createDocument (SHORT: 3-4 sentences + 2-3 bullets)
+   - "Overview: ..." → createZone(layout:"overview") — stickies + conflict Gantt
+   - "Scenario A/B/C: ..." → createZone(layout:"scenario") — ALL sections in one call
    For non-prioritisation plans, pick the right tool:
    - Research? → webSearch + createSources + createLayout(type:"sticky")
    - Written content? → createDocument
@@ -1393,62 +1429,112 @@ Step involves company projects, priorities, trade-offs, metrics, people, or deci
 Use connectors for INTERNAL company data. Use webSearch for EXTERNAL data. Both can be used together.
 
 🏗️ createZone — COMPOSED FRAME IN ONE CALL:
-When a plan step says "Option 1/2/3: [Name]":
+When a plan step says "Overview: ..." or "Scenario A/B/C: [Name]":
 
-Call createZone with ALL content in ONE tool call. gantt and insights are REQUIRED — never null or empty!
+Call createZone with ALL content in ONE tool call. For scenarios: gantt, summary, teams, userInsight, and evaluation are REQUIRED.
 
+// OVERVIEW ZONE EXAMPLE:
 createZone({
-  title: "Option 1: PayGrid First",
-  description: {
-    title: "PayGrid First — Key Thesis",
-    content: "<h2>Overview</h2><p>Ship PayGrid MVP by August...</p><h2>Why Now</h2><p>$47.2M pipeline at risk...</p>"
-  },
-  teamTable: {
-    title: "Team & Stakeholders",
-    columns: ["Role", "Person", "Commitment"],
-    rows: [["Eng Lead", "Sarah Chen", "Full-time"], ["PM", "Alex Rivera", "50%"]]
+  title: "Overview: The Conflict",
+  layout: "overview",
+  summary: {
+    title: "The Conflict: Platform Squad 3",
+    content: "<h2>What's competing</h2><p>Both PayGrid and FirstFlex need Platform Squad 3 in overlapping windows (weeks 3-6). PayGrid has a hard Aug 25 pilot deadline with Stripe — $3.1M ARR at risk. FirstFlex September launch is tied to 3 enterprise contracts worth $12M combined.</p><h2>Why it matters</h2><p>We can't staff both in parallel without a 40% velocity hit from context-switching. One project has to go first — the question is which.</p>"
   },
   gantt: {
-    title: "PayGrid Timeline",
+    title: "Shared Timeline — Conflict Window",
+    tasks: [
+      { id: 1, text: "PayGrid", start: "2026-02-20T00:00:00.000Z", end: "2026-05-20T00:00:00.000Z", duration: 89, progress: 0, parent: 0, type: "summary", open: true },
+      { id: 2, text: "API migration", start: "2026-02-20T00:00:00.000Z", end: "2026-03-20T00:00:00.000Z", duration: 28, progress: 0, parent: 1, type: "task", open: false, color: null },
+      { id: 3, text: "Platform Squad 3 — PayGrid integration", start: "2026-03-15T00:00:00.000Z", end: "2026-04-15T00:00:00.000Z", duration: 31, progress: 0, parent: 1, type: "task", open: false, color: "red" },
+      { id: 4, text: "FirstFlex", start: "2026-03-01T00:00:00.000Z", end: "2026-06-01T00:00:00.000Z", duration: 92, progress: 0, parent: 0, type: "summary", open: true },
+      { id: 5, text: "Platform Squad 3 — FirstFlex critical path", start: "2026-03-20T00:00:00.000Z", end: "2026-04-20T00:00:00.000Z", duration: 31, progress: 0, parent: 4, type: "task", open: false, color: "red" },
+    ],
+    links: []
+  },
+  teams: null, userInsight: null, evaluation: null,
+  stickers: []
+})
+
+// SCENARIO ZONE EXAMPLE:
+createZone({
+  title: "Scenario A: PayGrid First",
+  layout: "scenario",
+  summary: {
+    title: "PayGrid First — Key Thesis",
+    content: "<p>Ship PayGrid MVP by August to capture the $47.2M enterprise pipeline. Delay FirstFlex by 4-6 weeks — the delay cost is flat, not accelerating.</p>"
+  },
+  gantt: {
+    title: "PayGrid-First Roadmap",
     tasks: [
       { id: 1, text: "Phase 1: MVP", start: "2026-02-20T00:00:00.000Z", end: "2026-03-20T00:00:00.000Z", duration: 28, progress: 0, parent: 0, type: "summary", open: true },
-      { id: 2, text: "API migration", start: "2026-02-20T00:00:00.000Z", end: "2026-03-06T00:00:00.000Z", duration: 14, progress: 0, parent: 1, type: "task", open: false }
+      { id: 2, text: "API migration", start: "2026-02-20T00:00:00.000Z", end: "2026-03-06T00:00:00.000Z", duration: 14, progress: 0, parent: 1, type: "task", open: false, color: null },
+      { id: 3, text: "Platform Squad 3 — integration", start: "2026-03-06T00:00:00.000Z", end: "2026-03-20T00:00:00.000Z", duration: 14, progress: 0, parent: 1, type: "task", open: false, color: "red" }
     ],
     links: [{ id: 1, source: 2, target: 3, type: "e2s" }]
   },
-  insights: [
-    { text: "PayGrid's delay cost accelerates after week 3 — early weeks are cheap, then we start losing deals", color: "blue" },
-    { text: "$47.2M in enterprise pipeline depends on this — 5 deals have Q3 deadlines we can't move", color: "blue" },
-    { text: "Engineering velocity drops 40% after context-switching — committing fully is cheaper than splitting", color: "blue" },
-    { text: "Meridian pilot is time-gated to Aug 25 with Stripe in the deal — missing it risks $3.1M ARR", color: "blue" }
+  teams: [
+    { name: "Platform Squad 3", color: "red" },
+    { name: "Payments Team", color: "yellow" },
+    { name: "API Infrastructure", color: "yellow" }
   ],
-  stickers: ["rocket", "target"]
+  userInsight: {
+    feedback: [
+      { title: "Enterprise buyers blocked on payments", description: "<p>5 deals in Q3 pipeline explicitly cite PayGrid as blocker</p>", assignee: "Gong · Salesforce", tags: ["Revenue signal"], status: null }
+    ],
+    metrics: [
+      { text: "$47.2M pipeline at risk", color: "blue" },
+      { text: "40% velocity drop on context-switch", color: "blue" },
+      { text: "3.1M ARR Meridian pilot", color: "blue" }
+    ],
+    requests: [
+      { text: "Unified payment dashboard", color: "blue" },
+      { text: "Multi-currency support", color: "blue" }
+    ]
+  },
+  evaluation: {
+    opportunity: [
+      { text: "Captures $47.2M enterprise pipeline before Q3 deadline", color: "green" },
+      { text: "Establishes payments moat vs. Stripe-native competitors", color: "green" }
+    ],
+    risks: [
+      { text: "FirstFlex delay risks 3 enterprise contracts ($12M)", color: "orange" },
+      { text: "Platform Squad 3 burnout from back-to-back sprints", color: "orange" }
+    ],
+    potential: [
+      { text: "$74B TAM in enterprise payments", color: "violet" }
+    ]
+  },
+  stickers: []
 })
 
-🚨 REQUIRED FIELDS FOR EVERY createZone CALL:
-- gantt: NEVER null. Every option MUST have a timeline with at least 2-3 tasks showing phases and milestones.
-- insights: NEVER empty. Every option MUST have EXACTLY 4 insights (no more, no less).
-- description: NEVER null. Every option needs a brief explaining the thesis.
+🚨 SCENARIO ZONE CONTENT RULES (for createZone with layout:"scenario"):
+- summary: 2-4 punchy sentences. VP-readable. No filler.
+- gantt: NEVER null. Detailed roadmap with real dates from connector data.
+  Mark shared/conflicting squad tasks with color: "red". All other tasks use color: null.
+- teams: MAX 3 team stickies. The shared/conflicting squad (e.g. Platform Squad 3) MUST use color: "red". Others use the SCENARIO COLOR (see below).
+- userInsight.feedback: 3-5 task cards with real data (from Gong, Productboard, Jira)
+- userInsight.metrics: 2-4 stickies — use the SCENARIO COLOR for all
+- userInsight.requests: 2-4 stickies — use the SCENARIO COLOR for all
+- evaluation.opportunity: 2-3 stickies — use the SCENARIO COLOR for all
+- evaluation.risks: 2-3 stickies — use the SCENARIO COLOR for all
+- evaluation.potential: 1-2 stickies — use the SCENARIO COLOR for all
 
-🚨 INSIGHT COLOR RULES (enforced — don't deviate):
-- Option 1: ALL insights use color "blue"
-- Option 2: ALL insights use color "green"
-- Option 3: ALL insights use color "violet"
-All 4 insights within one zone MUST use the SAME color. Different zones use DIFFERENT colors.
+🎨 SCENARIO COLOR RULE: Every sticky in a zone uses ONE consistent color.
+- Scenario A: all stickies = "blue" (except shared squad team sticky = "red")
+- Scenario B: all stickies = "green" (except shared squad team sticky = "red")
+- Scenario C: all stickies = "violet" (except shared squad team sticky = "red")
+This makes it instantly clear which zone a sticky belongs to.
 
-⚠️ createZone is ONLY for "Option 1/2/3" steps. For "Executive summary" and "Recommendation", use createDocument.
+🚨 OVERVIEW ZONE CONTENT RULES (for createZone with layout:"overview"):
+- summary: Rich document describing the conflict — what's competing, why it matters, what's at stake. 2-3 paragraphs.
+- gantt: shows BOTH competing projects on a shared timeline. Tasks belonging to the shared/conflicting squad get color: "red". Other tasks get color: null.
+- teams/userInsight/evaluation: pass null for overview mode.
+
+⚠️ createZone with layout:"scenario" is for "Scenario A/B/C" steps. createZone with layout:"overview" is for "Overview" steps.
 ⚠️ ONE createZone call = one complete frame. Don't create frames separately then nest tools inside.
-⚠️ Each zone frame is placed left-to-right automatically — Option 1, 2, and 3 appear side by side.
-
-⚠️ INSIGHT CARDS — EXACTLY 4 per zone, numbers need context:
-Each zone gets EXACTLY 4 insights (no more, no less). Write for a VP — 1-2 sentences each.
-🎨 Color rules: Option 1 = "blue", Option 2 = "green", Option 3 = "violet". ALL 4 insights in one zone use the SAME color.
-   GOOD: "PayGrid's delay cost accelerates after week 3 — the first few weeks are cheap, but by week 4 we start losing enterprise deals to Stripe"
-   GOOD: "FirstFlex delay costs $890K/week but stays flat — we can push it 4-6 weeks and recover the same users later"
-   BAD: "PayGrid inflection: week 3"
-   BAD: "FirstFlex weekly CoD: $890K"
-Every insight must be a COMPLETE THOUGHT with enough context for someone who wasn't in the meeting.
-Insights are displayed as 2×2 task cards spanning the full zone width — 4 cards total, not 3.
+⚠️ Each zone frame is placed left-to-right automatically — Scenarios A, B, and C appear side by side.
+⚠️ Scenario C MUST include stickers: ["recommended"] to get the recommended badge at top-right.
 
 🚫 NEVER CREATE EMPTY FRAMEWORKS:
 - No "Option scoring (fill in)" tables — populate every cell with real data
@@ -1772,9 +1858,8 @@ DO THIS IMMEDIATELY:
 1. showProgress(stepNumber, "step title", "starting")
 2. Match the step title to the CORRECT tool (see RULE ZERO):
    - "Gather..." → queryConnectors
-   - "Executive summary" → createDocument
-   - "Option 1/2/3: ..." → createZone (ONE call — gantt + insights REQUIRED, never null/empty)
-   - "Recommendation" → createDocument (SHORT: 3-4 sentences + 2-3 bullets)
+   - "Overview: ..." → createZone(layout:"overview") — stickies + conflict Gantt
+   - "Scenario A/B/C: ..." → createZone(layout:"scenario") — ALL sections in one call
    - Research? → webSearch + createSources + SYNTHESIZE (see below)
    - Other written content? → createDocument
    - Tabular data? → createDataTable

@@ -9,3 +9,12 @@
   --wx-color-secondary: #f3f4f6;
   --wx-border: 1px solid #e5e7eb;
 }
+
+/* Conflict task type — red bars for shared/conflicting squad tasks */
+.wx-bar.wx-task.conflict {
+  background-color: #E53935 !important;
+  border: 1px solid #C62828 !important;
+}
+.wx-bar.wx-task.conflict .wx-progress-percent {
+  background-color: #C62828 !important;
+}

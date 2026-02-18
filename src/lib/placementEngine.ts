@@ -264,7 +264,7 @@ export class PlacementEngine {
   private currentRowBottom = 100;
 
   // Max row width before wrapping
-  private maxRowWidth = 4500;
+  private maxRowWidth = 7500;
   private formatGapX = 80;
   private formatGapY = 100;
 

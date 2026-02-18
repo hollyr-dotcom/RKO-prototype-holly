@@ -27,6 +27,7 @@ export interface GanttTask {
   parent: number; // 0 = root
   type: string; // "task" | "summary" | "milestone"
   open: boolean;
+  color?: string; // optional override (e.g. "red" for conflict tasks)
 }
 
 export interface GanttLink {
