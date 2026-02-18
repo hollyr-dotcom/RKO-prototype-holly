@@ -160,6 +160,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
           </div>
         )}
 
+
         {/* Reactions — only on certain types */}
         {showReactions && (
           <div>
