@@ -8,8 +8,8 @@
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p 5000",
     "lint": "next lint",
-    "deploy:vercel": "vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod --scope miro-web --force",
-    "deploy:vercel:preview": "vercel pull --yes --environment=preview && vercel build && vercel deploy --prebuilt --scope miro-web --force",
+    "deploy:vercel": "vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod",
+    "deploy:vercel:preview": "vercel pull --yes --environment=preview && vercel build && vercel deploy --prebuilt",
     "ship": "bash scripts/ship.sh"
   },
   "dependencies": {

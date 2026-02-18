@@ -3858,7 +3858,8 @@ export function Canvas() {
           pointerEvents: isFullscreenChat ? 'none' : 'auto'
         }}
       >
-        <Tldraw store={storeWithStatus} shapeUtils={customShapeUtils} onMount={handleMount} hideUi />
+        <Tldraw store={storeWithStatus} shapeUtils={customShapeUtils} onMount={handleMount} hideUi licenseKey="tldraw-2026-05-29/WyJUSDZHa19hTSIsWyIqIl0sMTYsIjIwMjYtMDUtMjkiXQ.x1OZFc02qzrd9Y3dHgJtRiMOOU/vh1CX0Bg0zy7LeOwe+/52qJLI9TITddUgkcFbohe+B4hOs06eVcfT4L3ADw
+"/>
 
         {/* Canvas comments overlay */}
         <CanvasComments
