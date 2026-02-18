@@ -122,7 +122,7 @@ export default function HomePage() {
           <div className="bg-white pt-4 pb-2 flex flex-col items-center px-6">
             <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} onInputChange={(v) => setIsTyping(v.length > 0)} />
 
-            <div className={`mt-5 transition-opacity duration-200 ${isTyping ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+            <div className={`mt-5 transition-all duration-300 ${isTyping ? "opacity-0 pointer-events-none" : "opacity-100"} ${notesVisible ? "" : "-mb-[220px]"}`}>
               <PromptStickyNotes onSelect={handleSubmit} visible={notesVisible} />
             </div>
           </div>
