@@ -39,7 +39,7 @@ function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
   const hasTriggeredRef = useRef(false);
   const isHoldingRef = useRef(false);
 
-  // Initialize Lottie animation
+  // Initialize Lottie animation and listen for complete
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -53,17 +53,6 @@ function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
 
     animRef.current = anim;
     anim.goToAndStop(0, true);
-
-    return () => {
-      anim.destroy();
-      animRef.current = null;
-    };
-  }, []);
-
-  // Listen for animation complete — only trigger if still holding
-  useEffect(() => {
-    const anim = animRef.current;
-    if (!anim) return;
 
     const onComplete = () => {
       if (!isHoldingRef.current || hasTriggeredRef.current) return;
@@ -85,7 +74,12 @@ function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
     };
 
     anim.addEventListener("complete", onComplete);
-    return () => anim.removeEventListener("complete", onComplete);
+
+    return () => {
+      anim.removeEventListener("complete", onComplete);
+      anim.destroy();
+      animRef.current = null;
+    };
   }, [shape.id]);
 
   const handlePointerDown = useCallback(
