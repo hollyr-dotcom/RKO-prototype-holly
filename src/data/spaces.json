@@ -2,57 +2,57 @@
   {
     "id": "space-1",
     "name": "Product Launch Q3",
-    "description": "Planning and strategy for the Q3 product launch",
-    "createdAt": "2026-01-15T10:00:00Z",
-    "updatedAt": "2026-02-10T14:30:00Z",
-    "order": 3
-  },
-  {
-    "id": "space-2",
-    "name": "Brand Refresh",
-    "description": "Visual identity exploration and design system updates",
-    "createdAt": "2026-01-22T09:00:00Z",
-    "updatedAt": "2026-02-08T11:15:00Z",
-    "order": 2
-  },
-  {
-    "id": "space-3",
-    "name": "User Research",
-    "description": "Interview synthesis and journey mapping",
-    "createdAt": "2026-02-01T13:00:00Z",
-    "updatedAt": "2026-02-11T09:00:00Z",
-    "order": 4
-  },
-  {
-    "id": "space-1770806640263",
-    "name": "Test",
-    "description": "",
-    "createdAt": "2026-02-11T10:44:00.263Z",
-    "updatedAt": "2026-02-11T10:44:00.263Z",
-    "order": 5
-  },
-  {
-    "id": "space-1770991294920",
-    "name": "Untitled Space",
-    "description": "",
-    "createdAt": "2026-02-13T14:01:34.920Z",
-    "updatedAt": "2026-02-13T14:01:34.920Z",
+    "description": "PayGrid launch strategy, GTM planning, and competitive positioning for Q3 2026",
+    "createdAt": "2026-01-10T10:00:00Z",
+    "updatedAt": "2026-02-18T08:00:00Z",
     "order": 0
   },
   {
-    "id": "space-1770991577464",
-    "name": "sdfsdfkj sdfjb",
-    "description": "",
-    "createdAt": "2026-02-13T14:06:17.464Z",
-    "updatedAt": "2026-02-17T08:57:20.039Z",
+    "id": "space-2",
+    "name": "EU KYC Onboarding Optimisation",
+    "description": "Reducing onboarding time and improving compliance across EU jurisdictions",
+    "createdAt": "2025-11-15T09:00:00Z",
+    "updatedAt": "2026-02-18T08:14:00Z",
     "order": 1
+  },
+  {
+    "id": "space-3",
+    "name": "FirstFlex Youth Banking",
+    "description": "Teen banking product for 13-17 year olds across UK, DE, NL, FR markets",
+    "createdAt": "2026-01-05T13:00:00Z",
+    "updatedAt": "2026-02-16T11:00:00Z",
+    "order": 2
   },
   {
     "id": "space-4",
     "name": "FlexForward 26",
-    "description": "Annual company conference planning and logistics",
-    "createdAt": "2026-01-20T14:00:00Z",
-    "updatedAt": "2026-02-16T10:00:00Z",
+    "description": "Annual company conference planning — RAI Amsterdam, June 12-13 2026",
+    "createdAt": "2025-12-01T14:00:00Z",
+    "updatedAt": "2026-02-15T13:00:00Z",
+    "order": 3
+  },
+  {
+    "id": "space-5",
+    "name": "AI Claims Automation",
+    "description": "AI-powered claims processing automation and model governance",
+    "createdAt": "2025-10-01T10:00:00Z",
+    "updatedAt": "2026-02-17T09:00:00Z",
+    "order": 4
+  },
+  {
+    "id": "space-6",
+    "name": "Embedded Finance Platform",
+    "description": "White-label financial services API platform for enterprise partners",
+    "createdAt": "2025-11-01T10:00:00Z",
+    "updatedAt": "2026-02-16T08:30:00Z",
+    "order": 5
+  },
+  {
+    "id": "space-7",
+    "name": "Core Banking Migration",
+    "description": "Legacy core banking system migration to new platform",
+    "createdAt": "2025-09-15T10:00:00Z",
+    "updatedAt": "2026-02-17T10:00:00Z",
     "order": 6
   }
 ]
