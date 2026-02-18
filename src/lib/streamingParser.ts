@@ -17,6 +17,7 @@ export const STREAMING_TOOLS: Record<string, { arrayField: string; contentField?
   createLayout: { arrayField: "items" },
   createDocument: { arrayField: "", contentField: "content" },
   createDataTable: { arrayField: "rows" },
+  createZone: { arrayField: "insights" },
 };
 
 export type ExtractedScalars = Record<string, unknown>;

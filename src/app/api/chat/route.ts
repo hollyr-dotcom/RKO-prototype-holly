@@ -39,7 +39,7 @@ const confirmPlanTool = tool({
   description: "Propose a plan for substantial work. After calling this, STOP and wait. When user approves, EXECUTE this plan - don't make a new one.",
   parameters: z.object({
     title: z.string().describe("What you're planning to create"),
-    steps: z.array(z.string()).min(3).max(5).describe("The steps you'll take (3-5 high-level steps only)"),
+    steps: z.array(z.string()).min(3).max(6).describe("The steps you'll take (3-6 high-level steps only)"),
     summary: z.string().describe("What the end result will look like"),
   }),
   execute: async ({ title, steps, summary }) => {
@@ -593,6 +593,75 @@ const createKanbanBoardTool = tool({
   },
 });
 
+const createZoneTool = tool({
+  name: "createZone",
+  description: "Create a composed frame with mixed content — one call = one complete zone. Use for deep dives, exec summaries, recommendations, or any section that needs multiple content types (doc + table + gantt + insights + stickers) in a single frame. Much better than calling createFrame + 5-6 nested tools separately.",
+  parameters: z.object({
+    title: z.string().describe("Frame title (e.g. 'Executive Summary', 'Option A: PayGrid First', 'Recommendation')"),
+    description: z.object({
+      title: z.string().describe("Document title inside the zone"),
+      content: z.string().describe("Document body as HTML. Use <h2>, <p>, <ul>/<li>, <strong>, <em>."),
+    }).nullable().describe("Rich text document section. Use for exec summaries, briefs, recommendations. Pass null to skip."),
+    teamTable: z.object({
+      title: z.string().describe("Table title"),
+      columns: z.array(z.string()).describe("Column headers"),
+      rows: z.array(z.array(z.string())).describe("Row data — each inner array must match column count"),
+    }).nullable().describe("Data table for stakeholders, metrics, comparisons. Pass null to skip."),
+    gantt: z.object({
+      title: z.string().describe("Chart title"),
+      tasks: z.array(z.object({
+        id: z.number(),
+        text: z.string(),
+        start: z.string().describe("ISO date string"),
+        end: z.string().describe("ISO date string"),
+        duration: z.number().describe("Duration in days"),
+        progress: z.number().describe("0-100"),
+        parent: z.number().describe("Parent task ID, 0 = root"),
+        type: z.enum(["task", "summary", "milestone"]),
+        open: z.boolean(),
+      })),
+      links: z.array(z.object({
+        id: z.number(),
+        source: z.number(),
+        target: z.number(),
+        type: z.enum(["e2s", "s2s", "e2e", "s2e"]),
+      })),
+    }).nullable().describe("Gantt chart / timeline. Pass null to skip."),
+    insights: z.array(z.object({
+      text: z.string().describe("1-2 sentence insight a VP can understand without extra context"),
+      color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
+    })).describe("Insight sticky notes. Use [] for none."),
+    stickers: z.array(z.string()).describe("Sticker intents (e.g. 'rocket', 'target', 'thumbs up'). Use [] for none."),
+  }),
+  execute: async ({ title, description, teamTable, gantt, insights, stickers }) => {
+    // Resolve sticker intents to URLs server-side
+    const resolvedStickers = stickers
+      .map(intent => findBestSticker(intent))
+      .filter((s): s is NonNullable<typeof s> => s !== null);
+
+    // Normalize Gantt durations
+    const normalizedGantt = gantt ? {
+      ...gantt,
+      tasks: gantt.tasks.map(t => ({
+        ...t,
+        duration: t.duration ?? Math.max(1, Math.round(
+          (new Date(t.end).getTime() - new Date(t.start).getTime()) / (1000 * 60 * 60 * 24)
+        )),
+      })),
+    } : null;
+
+    return JSON.stringify({
+      created: "zone",
+      title,
+      description,
+      teamTable,
+      gantt: normalizedGantt,
+      insights,
+      resolvedStickers,
+    });
+  },
+});
+
 const updateTaskCardTool = tool({
   name: "updateTaskCard",
   description: "Update an existing task card on the canvas. Get the task card's ID from [CANVAS STATE]. Only provide fields you want to change — pass empty string to clear a field.",
@@ -837,39 +906,23 @@ FIRST: DECIDE HOW TO RESPOND based on what the user asked:
    - Constraints: "Are there team or budget constraints I should factor in?"
    NEVER ask users to name projects, describe initiatives, or provide data you can look up from connectors.
 
-   The plan should follow this arc (DATA FIRST, then zones):
-   1. GATHER DATA — pull internal data (jira, workday, slack, productboard, salesforce, looker, amplitude, gong) to understand BOTH competing initiatives.
-      Also webSearch if external market context would help. This is ALWAYS the first step.
-   2. FRAME THE DECISION — create an overview frame with a document:
-      Executive summary of the tension. What are the two things competing? Why can't we do both? What's at stake?
-      This sets the stage for the deep dives.
-   3. DEEP DIVE: [OPTION A] — create a ZONE FRAME for the first option:
-      Call createFrame(name: "[Option A name]", width: 900, height: 1200) to get a frameId.
-      Then create ALL of these INSIDE the frame (using parentFrameId):
-      - 2-3 description stickies: what is this initiative, key thesis, why it matters
-      - Stakeholder/team layout: createLayout(type:"hierarchy" or "grid") showing who's involved
-      - KPI table or stickies: key metrics, evidence, data from connectors
-      - Insights: real data from research, as stickies or a short document
-      - 1-2 stickers: for visual delight (createSticker)
-   4. DEEP DIVE: [OPTION B] — same zone recipe for the second option (placed BESIDE option A automatically)
-   5. [AI JUDGMENT] — comparison table, recommendation, or whatever the decision context demands.
-      This step is NOT prescribed — use your judgment based on what would help the team decide.
-   Stay under ~12 canvas artifacts total. Quality over quantity.
+   The plan MUST follow this exact 6-step arc:
+   1. Gather internal data ← queryConnectors (no canvas output, just data collection)
+   2. Executive summary ← createDocument (one doc summarizing the tension, what's competing, what's at stake)
+   3. Option 1: [Name] ← createZone (description + teamTable + gantt + insights + stickers — ALL in one call)
+   4. Option 2: [Name] ← createZone (same recipe, placed beside Option 1 automatically)
+   5. Option 3: Hybrid approach ← createZone (a sequenced/combined approach that takes the best of both options)
+   6. Recommendation ← createDocument (SHORT and punchy — 3-4 sentences max recommending one path with 2-3 bullet points)
 
-   🏗️ ZONE FRAMES — HOW THEY WORK:
-   createFrame returns an ID. Pass that ID as parentFrameId to ALL subsequent tools that go inside the frame.
-   The frame auto-resizes as you add content. Two zone frames are automatically placed side by side for comparison.
+   STEP NAMING RULES (the executor matches these exact patterns):
+   - Step 2 MUST be titled "Executive summary" (triggers createDocument)
+   - Steps 3-5 MUST be titled "Option 1: [Name]", "Option 2: [Name]", "Option 3: Hybrid approach" (triggers createZone)
+   - Step 6 MUST be titled "Recommendation" (triggers createDocument)
 
-   ⚠️ Do NOT include a timeline/roadmap step in the plan. Focus on the decision. The user will ask for a timeline separately if they want one.
-
-   🎨 USE DIAGRAMS TO COMMUNICATE VISUALLY:
-   Whenever a concept is about RELATIONSHIPS, CONFLICTS, FLOWS, or DEPENDENCIES — use a diagram
-   (createLayout type:"shape"/"hierarchy"/"flow") instead of text. An exec grasps a diagram in seconds.
-   - Resource conflicts → shapes with arrows showing who's shared between what
-   - Decision flows → "if A then X, if B then Y" as a flow diagram
-   - Timelines/sequencing → which project goes first and what happens to the other
-   - Dependencies → what blocks what, what enables what
-   Don't default to stickies and tables for everything. Mix in diagrams where they tell the story faster.
+   ⚠️ Do NOT include timeline/roadmap as a separate step. Timelines go INSIDE the createZone gantt field.
+   ⚠️ Do NOT include diagram steps. Diagrams can go inside createZone if needed.
+   ⚠️ Exactly 6 steps. No more, no less.
+   ⚠️ Option 3 MUST always be a hybrid/sequenced approach that combines elements of Options 1 and 2.
 
    🚨 CRITICAL — ALL PLANS WITH COMPANY DATA:
    → Plan steps MUST include a connector data-gathering step
@@ -1054,13 +1107,14 @@ PLAN EXAMPLES:
 "Create tasks for the sprint" / "Break this into action items":
   Step 1: Create task cards ← createTaskCard (one call per task, NOT stickies!)
 
-"Help me prioritize / resolve a strategic tension" (PRIORITISATION — ZONE LAYOUT):
-  Step 1: Gather internal data ← queryConnectors broadly (jira, workday, slack, productboard, salesforce, looker, amplitude, gong)
-  Step 2: Frame the decision ← createFrame + createDocument (exec summary: what's the tension, why it matters)
-  Step 3: Deep dive: [Option A] ← createFrame → fill with stickies, layouts, tables, insights, stickers (all using parentFrameId)
-  Step 4: Deep dive: [Option B] ← same zone recipe, placed beside Option A
-  Step 5: [AI judgment] ← comparison table, recommendation, or whatever helps the team decide
-  (5 steps. NO timeline/roadmap — keep it focused on the decision. User can ask for timeline later.)
+"Help me prioritize / resolve a strategic tension" (PRIORITISATION):
+  Step 1: Gather internal data ← queryConnectors broadly
+  Step 2: Executive summary ← createDocument (the tension, what's at stake)
+  Step 3: Option 1: [Name] ← createZone (doc + table + gantt + insights + stickers)
+  Step 4: Option 2: [Name] ← createZone (same)
+  Step 5: Option 3: Hybrid approach ← createZone (sequenced/combined best of both)
+  Step 6: Recommendation ← createDocument (SHORT: 3-4 sentences + 2-3 bullets, recommends a path)
+  🚨 Steps 3-5 MUST use createZone. Steps 2 and 6 MUST use createDocument. Exactly 6 steps.
 
 FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
 - Multiple sections/frames with dependencies
@@ -1094,6 +1148,7 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     updateTaskCardTool,
     createGanttChartTool,
     createKanbanBoardTool,
+    createZoneTool,
     createSourcesTool,
   ],
 });
@@ -1103,6 +1158,23 @@ const executionAgent = new Agent({
   name: "Canvas Executor",
   model: "gpt-5.2",
   instructions: `You are executing an approved plan. Create canvas items step by step.
+
+🚨🚨🚨 RULE ZERO — TOOL MATCHING FOR PRIORITISATION PLANS 🚨🚨🚨
+Match the step title to the EXACT tool:
+
+Step title starts with "Gather" → queryConnectors (no canvas output)
+Step title starts with "Executive summary" → createDocument (one rich doc)
+Step title starts with "Option 1", "Option 2", or "Option 3" → createZone (ONE call with description + teamTable + gantt + insights + stickers)
+Step title starts with "Recommendation" → createDocument (SHORT: 3-4 sentences + 2-3 bullets only)
+
+For "Option" steps: You MUST call createZone(). Put ALL content into the SINGLE createZone() call.
+🚨 gantt and insights are REQUIRED for every Option step — NEVER pass null for gantt or [] for insights.
+🚨 Each Option MUST have exactly 4 insights (no more, no less).
+🚨 Insight colors by option: Option 1 = "blue", Option 2 = "green", Option 3 = "violet" — ALL insights within one zone use the SAME color.
+You MUST NOT call createDocument, createDataTable, createFrame, createLayout, createSticky, or createGanttChart individually for Option steps.
+
+For "Executive summary" and "Recommendation" steps: You MUST call createDocument(). Do NOT use createZone for these.
+🚨 Recommendation MUST be SHORT and punchy: 3-4 sentences of analysis + 2-3 bullet point takeaways. NOT a long essay.
 
 🚨 CRITICAL RULE #1: EDIT EXISTING CONTENT, DON'T RECREATE! 🚨
 When user asks to "rearrange", "reorganize", "move", "edit", "change layout", "adjust", "reposition", "put in a frame", "organize":
@@ -1144,16 +1216,20 @@ EXECUTION FLOW:
 🚨 EXECUTE ALL STEPS IN ONE GO. DO NOT STOP BETWEEN STEPS TO SUMMARISE OR EXPLAIN.
 Work through steps in sequence. For each step:
 1. Call showProgress(stepNumber, "step title", "starting")
-2. Pick the RIGHT tool for this step's content:
-   - Written content (brief, spec, summary)? → createDocument
-   - Tabular data (comparison, matrix)? → createDataTable
-   - Actionable work item (task, todo, action)? → createTaskCard
-   - Project timeline, roadmap, phases, milestones? → createGanttChart
-   - Sprint board or task tracking? → createKanbanBoard
-   - Quick ideas, brainstorm items? → createLayout(type:"sticky")
-   - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy"/"flow")
-4. Call showProgress(stepNumber, "step title", "completed")
-5. IMMEDIATELY move to the next step — call showProgress for the next step right away
+2. CHECK RULE ZERO — match the step title to the correct tool:
+   - "Gather..." → queryConnectors
+   - "Executive summary" → createDocument
+   - "Option 1/2/3: ..." → createZone (ONE call, all content inside — gantt + insights REQUIRED)
+   - "Recommendation" → createDocument (SHORT: 3-4 sentences + 2-3 bullets)
+   For non-prioritisation plans, pick the right tool:
+   - Research? → webSearch + createSources + createLayout(type:"sticky")
+   - Written content? → createDocument
+   - Tabular data? → createDataTable
+   - Work items? → createTaskCard
+   - Brainstorm? → createLayout(type:"sticky")
+   - Diagram? → createLayout(type:"shape"/"hierarchy"/"flow")
+3. Call showProgress(stepNumber, "step title", "completed")
+4. IMMEDIATELY move to the next step
 
 🚫 NEVER stop mid-plan to write a summary of what you've done so far.
 🚫 NEVER say "Proceeding to step X" — just DO step X.
@@ -1316,33 +1392,63 @@ Step involves company projects, priorities, trade-offs, metrics, people, or deci
 → NEVER create a document, table, or sticky with placeholder text like "(fill in)", "TBD", or generic frameworks. Every cell, every paragraph must contain real data from connectors.
 Use connectors for INTERNAL company data. Use webSearch for EXTERNAL data. Both can be used together.
 
-🏗️ ZONE FRAME EXECUTION:
-When a plan step says "Deep dive: [Option Name]" or similar zone-building step:
+🏗️ createZone — COMPOSED FRAME IN ONE CALL:
+When a plan step says "Option 1/2/3: [Name]":
 
-1. Call createFrame({ name: "[Option Name]", width: 900, height: 1200 }) — note the returned ID
-2. Using that frame ID as parentFrameId for ALL subsequent items in this step:
-   a. createSticky × 2-3: High-level description of this option (use blue or green stickies)
-   b. createLayout(type:"hierarchy" or "grid", parentFrameId: frameId): Stakeholders and teams involved
-   c. createDataTable(parentFrameId: frameId) OR createSticky × 3-4: Key metrics and KPIs
-   d. createDocument(parentFrameId: frameId) OR createSticky × 2-3: Insights from research data
-   e. createSticker(parentFrameId: frameId) × 1-2: Visual delight (intents like "rocket", "target", "team", "chart")
+Call createZone with ALL content in ONE tool call. gantt and insights are REQUIRED — never null or empty!
 
-ALL items in steps (b)-(e) MUST include parentFrameId from step (1).
-The frame auto-resizes as you add content.
-For the SECOND zone frame, the placement engine places it beside the first one automatically.
+createZone({
+  title: "Option 1: PayGrid First",
+  description: {
+    title: "PayGrid First — Key Thesis",
+    content: "<h2>Overview</h2><p>Ship PayGrid MVP by August...</p><h2>Why Now</h2><p>$47.2M pipeline at risk...</p>"
+  },
+  teamTable: {
+    title: "Team & Stakeholders",
+    columns: ["Role", "Person", "Commitment"],
+    rows: [["Eng Lead", "Sarah Chen", "Full-time"], ["PM", "Alex Rivera", "50%"]]
+  },
+  gantt: {
+    title: "PayGrid Timeline",
+    tasks: [
+      { id: 1, text: "Phase 1: MVP", start: "2026-02-20T00:00:00.000Z", end: "2026-03-20T00:00:00.000Z", duration: 28, progress: 0, parent: 0, type: "summary", open: true },
+      { id: 2, text: "API migration", start: "2026-02-20T00:00:00.000Z", end: "2026-03-06T00:00:00.000Z", duration: 14, progress: 0, parent: 1, type: "task", open: false }
+    ],
+    links: [{ id: 1, source: 2, target: 3, type: "e2s" }]
+  },
+  insights: [
+    { text: "PayGrid's delay cost accelerates after week 3 — early weeks are cheap, then we start losing deals", color: "blue" },
+    { text: "$47.2M in enterprise pipeline depends on this — 5 deals have Q3 deadlines we can't move", color: "blue" },
+    { text: "Engineering velocity drops 40% after context-switching — committing fully is cheaper than splitting", color: "blue" },
+    { text: "Meridian pilot is time-gated to Aug 25 with Stripe in the deal — missing it risks $3.1M ARR", color: "blue" }
+  ],
+  stickers: ["rocket", "target"]
+})
 
-⚠️ NESTING IN FRAMES: When building zone frames, ALWAYS pass parentFrameId to nest content inside the frame.
-The createFrame tool returns an ID — use it as parentFrameId in all subsequent tool calls for that zone.
+🚨 REQUIRED FIELDS FOR EVERY createZone CALL:
+- gantt: NEVER null. Every option MUST have a timeline with at least 2-3 tasks showing phases and milestones.
+- insights: NEVER empty. Every option MUST have EXACTLY 4 insights (no more, no less).
+- description: NEVER null. Every option needs a brief explaining the thesis.
 
-⚠️ WHEN PUTTING DATA ON STICKIES — numbers need context, not just labels:
-Write for a VP who knows the company but isn't tracking day-to-day details. Each sticky = 1-2 sentences.
+🚨 INSIGHT COLOR RULES (enforced — don't deviate):
+- Option 1: ALL insights use color "blue"
+- Option 2: ALL insights use color "green"
+- Option 3: ALL insights use color "violet"
+All 4 insights within one zone MUST use the SAME color. Different zones use DIFFERENT colors.
+
+⚠️ createZone is ONLY for "Option 1/2/3" steps. For "Executive summary" and "Recommendation", use createDocument.
+⚠️ ONE createZone call = one complete frame. Don't create frames separately then nest tools inside.
+⚠️ Each zone frame is placed left-to-right automatically — Option 1, 2, and 3 appear side by side.
+
+⚠️ INSIGHT CARDS — EXACTLY 4 per zone, numbers need context:
+Each zone gets EXACTLY 4 insights (no more, no less). Write for a VP — 1-2 sentences each.
+🎨 Color rules: Option 1 = "blue", Option 2 = "green", Option 3 = "violet". ALL 4 insights in one zone use the SAME color.
    GOOD: "PayGrid's delay cost accelerates after week 3 — the first few weeks are cheap, but by week 4 we start losing enterprise deals to Stripe"
    GOOD: "FirstFlex delay costs $890K/week but stays flat — we can push it 4-6 weeks and recover the same users later"
-   GOOD: "$47.2M in enterprise pipeline depends on PayGrid — 5 of those deals have Q3 decision deadlines we can't move"
    BAD: "PayGrid inflection: week 3"
    BAD: "FirstFlex weekly CoD: $890K"
-   BAD: "Orchestration pipeline: $47.2M"
-Every sticky must be a COMPLETE THOUGHT with enough context for someone who wasn't in the meeting.
+Every insight must be a COMPLETE THOUGHT with enough context for someone who wasn't in the meeting.
+Insights are displayed as 2×2 task cards spanning the full zone width — 4 cards total, not 3.
 
 🚫 NEVER CREATE EMPTY FRAMEWORKS:
 - No "Option scoring (fill in)" tables — populate every cell with real data
@@ -1543,6 +1649,7 @@ MAX 2-3 COLORS PER FRAME. If you're reaching for a 4th color, stop and ask: "Doe
     updateTaskCardTool,
     createGanttChartTool,
     createKanbanBoardTool,
+    createZoneTool,
     createSourcesTool,
   ],
 });
@@ -1663,15 +1770,15 @@ THEN KEEP GOING through steps ${nextStep + 1 <= totalSteps ? `${nextStep + 1}...
 
 DO THIS IMMEDIATELY:
 1. showProgress(stepNumber, "step title", "starting")
-2. Pick the RIGHT tool for this step's content:
-   - Written content (brief, overview, spec, summary)? → createDocument
-   - Tabular data (roles, comparison, matrix)? → createDataTable
-   - Actionable work item (task, todo, action)? → createTaskCard
-   - Project timeline, roadmap, phases, milestones? → createGanttChart
-   - Sprint board or task tracking? → createKanbanBoard
+2. Match the step title to the CORRECT tool (see RULE ZERO):
+   - "Gather..." → queryConnectors
+   - "Executive summary" → createDocument
+   - "Option 1/2/3: ..." → createZone (ONE call — gantt + insights REQUIRED, never null/empty)
+   - "Recommendation" → createDocument (SHORT: 3-4 sentences + 2-3 bullets)
    - Research? → webSearch + createSources + SYNTHESIZE (see below)
-   - Brainstorm ideas, quick notes? → createLayout(type:"sticky")
-   - Diagram, flow, hierarchy? → createLayout(type:"shape"/"hierarchy")
+   - Other written content? → createDocument
+   - Tabular data? → createDataTable
+   - Brainstorm? → createLayout(type:"sticky")
 4. showProgress(stepNumber, "step title", "completed")
 5. IMMEDIATELY start the next step — do NOT write text, just call showProgress for the next step
 
@@ -2194,6 +2301,16 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
                     const result = JSON.parse(outputString);
                     safeEnqueue(
                       encoder.encode(`data: ${JSON.stringify({ type: "tool_result", toolName: "createCanvas", result })}\n\n`)
+                    );
+                  } catch {}
+                }
+
+                // Forward createZone results (server resolves sticker intents → URLs)
+                if (matchedToolName === "createZone" && outputString) {
+                  try {
+                    const result = JSON.parse(outputString);
+                    safeEnqueue(
+                      encoder.encode(`data: ${JSON.stringify({ type: "tool_result", toolName: "createZone", result })}\n\n`)
                     );
                   } catch {}
                 }

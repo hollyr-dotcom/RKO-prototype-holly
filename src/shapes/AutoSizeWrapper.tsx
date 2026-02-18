@@ -15,6 +15,7 @@ export function AutoSizeWrapper({
   shapeW,
   editor,
   syncWidth = false,
+  growOnly = false,
   children,
 }: {
   shapeId: TLShapeId;
@@ -23,6 +24,8 @@ export function AutoSizeWrapper({
   shapeW?: number;
   editor: Editor;
   syncWidth?: boolean;
+  /** When true, only grow — never shrink below initial size (use for shapes that don't render reliably inside frames) */
+  growOnly?: boolean;
   children: React.ReactNode;
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
@@ -35,18 +38,22 @@ export function AutoSizeWrapper({
     const contentHeight = el.scrollHeight;
     const contentWidth = el.scrollWidth;
 
-    const hChanged = Math.abs(contentHeight - lastHeightRef.current) > 4;
-    const wChanged = syncWidth && Math.abs(contentWidth - lastWidthRef.current) > 8;
+    // When growOnly, never shrink below initial size (prevents gantt from
+    // collapsing to 0 when content hasn't rendered inside frames)
+    const effectiveHeight = growOnly ? Math.max(contentHeight, shapeH) : contentHeight;
+    const effectiveWidth = growOnly ? Math.max(contentWidth, shapeW ?? 0) : contentWidth;
+    const hChanged = Math.abs(effectiveHeight - lastHeightRef.current) > 4;
+    const wChanged = syncWidth && Math.abs(effectiveWidth - lastWidthRef.current) > 8;
 
     if (hChanged || wChanged) {
       const props: Record<string, number> = {};
       if (hChanged) {
-        lastHeightRef.current = contentHeight;
-        props.h = contentHeight;
+        lastHeightRef.current = effectiveHeight;
+        props.h = effectiveHeight;
       }
       if (wChanged) {
-        lastWidthRef.current = contentWidth;
-        props.w = contentWidth;
+        lastWidthRef.current = effectiveWidth;
+        props.w = effectiveWidth;
       }
       editor.updateShape({
         id: shapeId,
@@ -54,7 +61,7 @@ export function AutoSizeWrapper({
         props,
       });
     }
-  }, [shapeId, shapeType, editor, syncWidth]);
+  }, [shapeId, shapeType, shapeH, shapeW, editor, syncWidth, growOnly]);
 
   useEffect(() => {
     const el = contentRef.current;

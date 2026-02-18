@@ -1072,5 +1072,29 @@
     "createdAt": "2026-02-17T17:00:37.748Z",
     "updatedAt": "2026-02-17T17:00:37.748Z",
     "order": 4
+  },
+  {
+    "id": "canvas-1771355479887",
+    "spaceId": "",
+    "name": "Untitled",
+    "createdAt": "2026-02-17T19:11:19.887Z",
+    "updatedAt": "2026-02-17T19:11:19.887Z",
+    "order": 113
+  },
+  {
+    "id": "canvas-1771355529991",
+    "spaceId": "",
+    "name": "Untitled",
+    "createdAt": "2026-02-17T19:12:09.991Z",
+    "updatedAt": "2026-02-17T19:12:09.991Z",
+    "order": 114
+  },
+  {
+    "id": "canvas-1771406693675",
+    "spaceId": "",
+    "name": "Untitled",
+    "createdAt": "2026-02-18T09:24:53.675Z",
+    "updatedAt": "2026-02-18T09:24:53.675Z",
+    "order": 115
   }
 ]

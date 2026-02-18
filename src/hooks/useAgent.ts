@@ -186,7 +186,7 @@ export function useAgent(
                   // - showProgress: step tracking
                   // - checkpoint: feedback pause points
                   // - webSearch: show "Searching..." indicator
-                  const immediateTools = ["askUser", "confirmPlan", "showProgress", "checkpoint", "webSearch", "createCanvas", "navigateToCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources"];
+                  const immediateTools = ["askUser", "confirmPlan", "showProgress", "checkpoint", "webSearch", "createCanvas", "navigateToCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "createZone"];
                   if (immediateTools.includes(data.toolName)) {
                     setMessages((prev) =>
                       prev.map((m) =>
@@ -220,8 +220,8 @@ export function useAgent(
                   const resultToolName = `${data.toolName}_result`;
                   bufferedTools.push({ toolName: resultToolName, args: result || {} });
 
-                  // Update UI immediately for navigation-critical results
-                  if (data.toolName === "createCanvas") {
+                  // Update UI immediately for navigation-critical and canvas-creation results
+                  if (data.toolName === "createCanvas" || data.toolName === "createZone") {
                     setMessages((prev) =>
                       prev.map((m) =>
                         m.id === assistantId
@@ -247,6 +247,18 @@ export function useAgent(
                   if (toolTextSplit === undefined) {
                     toolTextSplit = bufferedText.length;
                   }
+                  // Add preliminary entry so ArtifactCard shows "Creating..." immediately
+                  bufferedTools.push({
+                    toolName: data.toolName,
+                    args: { _streamingCallId: data.callId },
+                  });
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantId
+                        ? { ...m, content: bufferedText, toolInvocations: [...bufferedTools], toolTextSplit }
+                        : m
+                    )
+                  );
                   if (onToolCall) {
                     onToolCall("_streaming_start", {
                       toolName: data.toolName,
@@ -258,6 +270,23 @@ export function useAgent(
 
                 if (data.type === "tool_streaming_scalars") {
                   // Updated scalar fields (title, frameName, columns, etc.)
+                  // Update the preliminary entry's args so card label shows the title
+                  const idx = bufferedTools.findIndex(
+                    (t) => (t.args as Record<string, unknown>)?._streamingCallId === data.callId
+                  );
+                  if (idx !== -1) {
+                    bufferedTools[idx] = {
+                      ...bufferedTools[idx],
+                      args: { ...bufferedTools[idx].args, ...data.scalars },
+                    };
+                    setMessages((prev) =>
+                      prev.map((m) =>
+                        m.id === assistantId
+                          ? { ...m, content: bufferedText, toolInvocations: [...bufferedTools], toolTextSplit }
+                          : m
+                      )
+                    );
+                  }
                   if (onToolCall) {
                     onToolCall("_streaming_scalars", {
                       callId: data.callId,
@@ -288,8 +317,22 @@ export function useAgent(
                 }
 
                 if (data.type === "tool_streaming_done") {
-                  // Streamed tool call is complete — finalize and skip normal tool event
-                  bufferedTools.push({ toolName: data.toolName, args: data.args });
+                  // Streamed tool call is complete — replace preliminary entry with final args
+                  const idx = bufferedTools.findIndex(
+                    (t) => (t.args as Record<string, unknown>)?._streamingCallId === data.callId
+                  );
+                  if (idx !== -1) {
+                    bufferedTools[idx] = { toolName: data.toolName, args: data.args };
+                  } else {
+                    bufferedTools.push({ toolName: data.toolName, args: data.args });
+                  }
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantId
+                        ? { ...m, content: bufferedText, toolInvocations: [...bufferedTools], toolTextSplit }
+                        : m
+                    )
+                  );
                   if (onToolCall) {
                     onToolCall("_streaming_done", {
                       callId: data.callId,

@@ -366,7 +366,7 @@ function ArtifactCard({
   const lastToolIndex = toolInvocations.length - 1;
 
   // Pair webSearch calls with the next canvas tool that follows them
-  const canvasToolNames = ["createSources", "createLayout", "createFrame", "createDocument", "createDataTable"];
+  const canvasToolNames = ["createSources", "createLayout", "createFrame", "createDocument", "createDataTable", "createZone"];
   const pairedToolIndices = new Set<number>();
   const webSearchInvocations = indexedInvocations.filter(t => t.toolName === "webSearch");
 
@@ -475,6 +475,19 @@ function ArtifactCard({
       loadingLabel: `Creating table "${title}"...`,
       onClick: () => onNavigateToFrames?.([title]),
       toolIndex: tt.index,
+    });
+  });
+
+  // Zones (createZone)
+  const indexedZones = indexedInvocations.filter(t => t.toolName === "createZone");
+  indexedZones.forEach(zt => {
+    if (pairedToolIndices.has(zt.index)) return;
+    const title = (zt.args as { title?: string }).title || "Untitled zone";
+    contentLines.push({
+      label: `Created zone "${title}"`,
+      loadingLabel: `Creating zone "${title}"...`,
+      onClick: () => onNavigateToFrames?.([title]),
+      toolIndex: zt.index,
     });
   });
 
@@ -992,7 +1005,7 @@ export function ChatPanel({
                     {(() => {
                       const hasText = message.content && !message.content.trim().startsWith('{');
                       const hasArtifactTools = message.toolInvocations?.some(t =>
-                        ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "webSearch"].includes(t.toolName)
+                        ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "createZone", "webSearch"].includes(t.toolName)
                       );
 
                       const mdComponents = {
@@ -1301,7 +1314,7 @@ export function ChatPanel({
             // During plan execution with artifact tools, the ArtifactCard shows progress
             // But we still want to show web searches and other non-canvas activities
             const hasArtifactTools = recentTools.some(t =>
-              ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "webSearch"].includes(t.toolName)
+              ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "createZone", "webSearch"].includes(t.toolName)
             );
 
             // ArtifactCard handles all progress display (including web search)

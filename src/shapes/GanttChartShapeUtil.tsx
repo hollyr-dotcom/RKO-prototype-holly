@@ -299,6 +299,7 @@ export class GanttChartShapeUtil extends ShapeUtil<IGanttChartShape> {
           shapeW={shape.props.w}
           editor={this.editor}
           syncWidth
+          growOnly
         >
           {/* Title bar */}
           <div

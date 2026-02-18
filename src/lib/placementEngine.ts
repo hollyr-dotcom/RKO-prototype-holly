@@ -42,9 +42,9 @@ export class ZonePlacementEngine {
   private frameHeight: number;
 
   // Layout constants
-  private padding = 40;
-  private titleSpace = 50;
-  private gap = 30;
+  private padding = 24;
+  private titleSpace = 40;
+  private gap = 20;
 
   // Cursor for format row-based flow (relative to frame origin)
   private cursorX: number;
@@ -209,45 +209,34 @@ export class ZonePlacementEngine {
     return result;
   }
 
-  // ─── Decorative placement: corners/edges of frame ───────────────
+  // ─── Decorative placement: inside frame corners ─────────────────
 
   private placeDecorative(request: PlacementRequest): PlacementResult {
     const { width, height } = request;
 
-    // Place stickers on corners and edges of the frame
-    const overlap = 0.3;
-    const overlapX = width * overlap;
-    const overlapY = height * overlap;
-
     const fw = this.frameWidth;
     const fh = this.frameHeight;
+    const margin = 12;
 
+    // Keep stickers INSIDE frame bounds — tldraw clips children outside
     const positions = [
-      // Corners (weighted 2x)
-      { x: -width + overlapX, y: -height + overlapY }, // top-left
-      { x: -width + overlapX, y: -height + overlapY }, // top-left (2x)
-      { x: fw - overlapX, y: -height + overlapY }, // top-right
-      { x: fw - overlapX, y: -height + overlapY }, // top-right (2x)
-      { x: -width + overlapX, y: fh - overlapY }, // bottom-left
-      { x: -width + overlapX, y: fh - overlapY }, // bottom-left (2x)
-      { x: fw - overlapX, y: fh - overlapY }, // bottom-right
-      { x: fw - overlapX, y: fh - overlapY }, // bottom-right (2x)
-      // Edge midpoints
-      { x: fw / 2 - width / 2, y: -height + overlapY }, // top-center
-      { x: fw / 2 - width / 2, y: fh - overlapY }, // bottom-center
-      { x: -width + overlapX, y: fh / 2 - height / 2 }, // left-center
-      { x: fw - overlapX, y: fh / 2 - height / 2 }, // right-center
+      { x: fw - width - margin, y: fh - height - margin },       // bottom-right (most natural)
+      { x: fw - width - margin, y: this.titleSpace + margin },   // top-right
+      { x: margin, y: fh - height - margin },                     // bottom-left
+      { x: fw - width - margin, y: fh / 2 - height / 2 },       // right-center
     ];
 
-    const pick = positions[Math.floor(Math.random() * positions.length)];
+    // Pick based on how many decoratives have been placed (deterministic spread)
+    const decoCount = this.placedItems.filter(i => i.category === "decorative").length;
+    const pick = positions[decoCount % positions.length];
 
-    // Add jitter for organic feel (±15–30px)
-    const jitterX = (Math.random() - 0.5) * 2 * (15 + Math.random() * 15);
-    const jitterY = (Math.random() - 0.5) * 2 * (15 + Math.random() * 15);
+    // Small jitter for organic feel (±8px)
+    const jitterX = (Math.random() - 0.5) * 16;
+    const jitterY = (Math.random() - 0.5) * 16;
 
     return {
-      x: pick.x + jitterX,
-      y: pick.y + jitterY,
+      x: Math.max(margin, Math.min(fw - width - margin, pick.x + jitterX)),
+      y: Math.max(this.titleSpace + margin, Math.min(fh - height - margin, pick.y + jitterY)),
     };
   }
 }
@@ -275,7 +264,7 @@ export class PlacementEngine {
   private currentRowBottom = 100;
 
   // Max row width before wrapping
-  private maxRowWidth = 3000;
+  private maxRowWidth = 4500;
   private formatGapX = 80;
   private formatGapY = 100;
 
@@ -585,6 +574,7 @@ const CATEGORY_MAP: Record<string, PlacementCategory> = {
   organizeIntoFrame: "format",
   createGanttChart: "format",
   createKanbanBoard: "format",
+  createZone: "format",
 
   createSticky: "widget",
   createShape: "widget",

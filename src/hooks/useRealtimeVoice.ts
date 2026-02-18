@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { IncrementalItemExtractor, STREAMING_TOOLS } from "@/lib/streamingParser";
 
 type VoiceState = "idle" | "connecting" | "listening" | "speaking" | "error";
@@ -12,7 +12,13 @@ type ToolCall = {
 };
 
 export function useRealtimeVoice() {
-  const [state, setState] = useState<VoiceState>("idle");
+  const [state, _setState] = useState<VoiceState>("idle");
+  const stateRef = useRef<VoiceState>("idle");
+  const setState = useCallback((newState: VoiceState) => {
+    if (stateRef.current === newState) return; // Skip if already in this state
+    stateRef.current = newState;
+    _setState(newState);
+  }, []);
   const [error, setError] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string>("");
   const [isMuted, setIsMuted] = useState<boolean>(false);
@@ -25,6 +31,7 @@ export function useRealtimeVoice() {
   const onMessageToolCallRef = useRef<((toolCall: ToolCall) => void) | null>(null);
   const getCanvasStateRef = useRef<(() => unknown) | null>(null);
   const captureScreenshotRef = useRef<(() => Promise<string | null>) | null>(null);
+  const chatMessagesRef = useRef<Array<{ role: string; content: string; toolInvocations?: Array<{ toolName: string; args: Record<string, unknown> }> }>>([]);
   // Track pending tool call for sending responses back to OpenAI
   const pendingToolCallRef = useRef<{ name: string; call_id: string; arguments: string; addedToMessages: boolean } | null>(null);
   // Track streaming state for incremental tool call parsing
@@ -41,7 +48,8 @@ export function useRealtimeVoice() {
     onTranscript?: (text: string, role: "user" | "assistant") => void,
     onMessageToolCall?: (toolCall: ToolCall) => void,
     getCanvasState?: () => unknown,
-    captureScreenshot?: () => Promise<string | null>
+    captureScreenshot?: () => Promise<string | null>,
+    chatMessages?: Array<{ role: string; content: string; toolInvocations?: Array<{ toolName: string; args: Record<string, unknown> }> }>
   ) => {
     try {
       setState("connecting");
@@ -63,6 +71,9 @@ export function useRealtimeVoice() {
       }
       if (captureScreenshot) {
         captureScreenshotRef.current = captureScreenshot;
+      }
+      if (chatMessages) {
+        chatMessagesRef.current = chatMessages;
       }
 
       // 1. Get ephemeral token from our server
@@ -115,10 +126,10 @@ export function useRealtimeVoice() {
             return;
           }
 
-          // Debug: log all message types
-          if (message.type.includes("function") || message.type.includes("transcript") || message.type.includes("output_item")) {
-            console.log("[VOICE EVENT]", message.type, message);
-          }
+          // Debug: uncomment to log voice events (causes perf issues when enabled)
+          // if (message.type.includes("function") || message.type.includes("transcript") || message.type.includes("output_item")) {
+          //   console.log("[VOICE EVENT]", message.type, message);
+          // }
 
           // Handle errors
           if (message.type === "error") {
@@ -303,7 +314,7 @@ export function useRealtimeVoice() {
             // Canvas-modifying tools - send fresh canvas state with the response
             const canvasTools = ["createSticky", "createShape", "createText", "createFrame",
               "createArrow", "createWorkingNote", "createLayout", "createSources",
-              "deleteItem", "deleteFrame", "updateSticky", "moveItem"];
+              "deleteItem", "deleteFrame", "updateSticky", "moveItem", "createWorkshopBoard"];
             const isCanvasTool = canvasTools.includes(toolName);
 
             if (isCanvasTool && getCanvasStateRef.current) {
@@ -319,11 +330,11 @@ export function useRealtimeVoice() {
                 const escapeText = (text: string) => text.replace(/"/g, '\\"').replace(/\n/g, ' ');
                 const summary = freshState.frames.map(f =>
                   `Frame "${escapeText(f.name || 'Untitled')}": ${f.children.map(c =>
-                    `[ID: ${c.id}] ${escapeText(c.text?.slice(0, 30) || 'no text')} (${c.type})`
+                    `[ID: ${c.id}] ${escapeText(c.text?.slice(0, 200) || 'no text')} (${c.type})`
                   ).join(', ')}`
                 ).join('; ');
                 const orphanSummary = freshState.orphans.length > 0
-                  ? `; Loose: ${freshState.orphans.map(s => `[ID: ${s.id}] ${escapeText(s.text?.slice(0, 30) || 'no text')} (${s.type})`).join(', ')}`
+                  ? `; Loose: ${freshState.orphans.map(s => `[ID: ${s.id}] ${escapeText(s.text?.slice(0, 200) || 'no text')} (${s.type})`).join(', ')}`
                   : '';
 
                 const outputData = { success: true, canvasUpdate: (summary + orphanSummary) || "Canvas updated" };
@@ -351,14 +362,12 @@ export function useRealtimeVoice() {
             }
           }
 
-          // Track AI speaking state
+          // Track AI speaking state (setState deduplicates — no re-render if already in that state)
           if (message.type === "response.audio.delta") {
-            console.log("[VOICE STATE] Changing to 'speaking' (audio delta)");
             setState("speaking");
           }
 
           if (message.type === "response.audio.done" || message.type === "response.done") {
-            console.log("[VOICE STATE] Changing to 'listening' (audio/response done)");
             setState("listening");
           }
 
@@ -372,6 +381,41 @@ export function useRealtimeVoice() {
         console.log("[VOICE STATE] Changing to 'listening' (data channel opened)");
         setState("listening");
 
+        // Inject chat history so voice AI knows what was discussed in chat
+        const recentMessages = chatMessagesRef.current.slice(-20);
+        if (recentMessages.length > 0) {
+          const historyLines: string[] = [];
+          for (const msg of recentMessages) {
+            const role = msg.role === "user" ? "User" : "AI";
+            const toolSuffix = msg.toolInvocations?.length
+              ? ` [used tools: ${msg.toolInvocations.map(t => t.toolName).join(", ")}]`
+              : "";
+            // Truncate long messages to keep context manageable
+            const content = msg.content.length > 300
+              ? msg.content.slice(0, 300) + "..."
+              : msg.content;
+            if (content || toolSuffix) {
+              historyLines.push(`${role}: ${content}${toolSuffix}`);
+            }
+          }
+          if (historyLines.length > 0) {
+            const historyText = [
+              "[CONVERSATION HISTORY — the user discussed the following in chat before switching to voice]",
+              ...historyLines,
+              "[END HISTORY — continue naturally, don't repeat what was discussed]"
+            ].join("\n");
+            console.log("[VOICE] Injecting chat history:", historyLines.length, "messages");
+            dc.send(JSON.stringify({
+              type: "conversation.item.create",
+              item: {
+                type: "message",
+                role: "user",
+                content: [{ type: "input_text", text: historyText }]
+              }
+            }));
+          }
+        }
+
         // Send fresh canvas state as context
         if (getCanvasState) {
           const state = getCanvasState() as {
@@ -383,11 +427,11 @@ export function useRealtimeVoice() {
             const escapeText = (text: string) => text.replace(/"/g, '\\"').replace(/\n/g, ' ');
             const parts: string[] = [];
             state.frames.forEach(f => {
-              const items = f.children.map(c => `[ID: ${c.id}] ${escapeText(c.text?.slice(0, 30) || 'no text')} (${c.type})`).join(', ');
+              const items = f.children.map(c => `[ID: ${c.id}] ${escapeText(c.text?.slice(0, 200) || 'no text')} (${c.type})`).join(', ');
               parts.push(`Frame "${escapeText(f.name || 'Untitled')}": ${items}`);
             });
             if (state.orphans.length > 0) {
-              parts.push(`Loose: ${state.orphans.map(s => `[ID: ${s.id}] ${escapeText(s.text?.slice(0, 30) || 'no text')} (${s.type})`).join(', ')}`);
+              parts.push(`Loose: ${state.orphans.map(s => `[ID: ${s.id}] ${escapeText(s.text?.slice(0, 200) || 'no text')} (${s.type})`).join(', ')}`);
             }
             dc.send(JSON.stringify({
               type: "conversation.item.create",
@@ -553,13 +597,13 @@ export function useRealtimeVoice() {
       const parts: string[] = [];
       state.frames.forEach(f => {
         const items = f.children.map(c =>
-          `[ID: ${c.id}] ${escapeText(c.text?.slice(0, 30) || 'no text')} (${c.type})`
+          `[ID: ${c.id}] ${escapeText(c.text?.slice(0, 200) || 'no text')} (${c.type})`
         ).join(', ');
         parts.push(`Frame "${escapeText(f.name || 'Untitled')}": ${items}`);
       });
       if (state.orphans.length > 0) {
         parts.push(`Loose: ${state.orphans.map(s =>
-          `[ID: ${s.id}] ${escapeText(s.text?.slice(0, 30) || 'no text')} (${s.type})`
+          `[ID: ${s.id}] ${escapeText(s.text?.slice(0, 200) || 'no text')} (${s.type})`
         ).join(', ')}`);
       }
 
@@ -629,7 +673,9 @@ export function useRealtimeVoice() {
     };
   }, [disconnect]);
 
-  return {
+  const isConnected = state === "listening" || state === "speaking";
+
+  return useMemo(() => ({
     state,
     error,
     transcript,
@@ -640,6 +686,6 @@ export function useRealtimeVoice() {
     sendMessage,
     sendCanvasUpdate,
     sendScreenshot,
-    isConnected: state === "listening" || state === "speaking",
-  };
+    isConnected,
+  }), [state, error, transcript, connect, disconnect, toggleMute, isMuted, sendMessage, sendCanvasUpdate, sendScreenshot, isConnected]);
 }

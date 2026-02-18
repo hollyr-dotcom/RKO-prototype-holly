@@ -91,7 +91,7 @@ export class DataTableShapeUtil extends ShapeUtil<IDataTableShape> {
           width: shape.props.w,
           height: shape.props.h,
           overflow: "hidden",
-          borderRadius: 24,
+          borderRadius: 16,
           border: "1px solid #d0d5dd",
           background: "#ffffff",
           pointerEvents: "all",
@@ -164,8 +164,8 @@ export class DataTableShapeUtil extends ShapeUtil<IDataTableShape> {
       <rect
         width={shape.props.w}
         height={shape.props.h}
-        rx={24}
-        ry={24}
+        rx={16}
+        ry={16}
       />
     );
   }

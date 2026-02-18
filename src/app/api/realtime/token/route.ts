@@ -42,7 +42,7 @@ export async function POST() {
           },
           instructions: `You help users create visual artifacts on a whiteboard canvas.
 
-The user's name is Tilo (pronounced "Tea-Low"). Use their name naturally when it fits — like greeting them, confirming something, or getting their attention — but don't force it into every sentence.
+The user's name is Jeff. Use their name naturally when it fits — like greeting them, confirming something, or getting their attention — but don't force it into every sentence.
 
 VISUAL CONTEXT:
 You can see the canvas! You receive screenshots on connect and after user edits.
@@ -320,6 +320,34 @@ REMEMBER: Every response should sound like a real person talking, not a script.`
                   newColor: { type: "string", description: "New color (yellow/green/orange/violet/pink)" }
                 },
                 required: ["itemId"]
+              }
+            },
+            {
+              type: "function",
+              name: "createWorkshopBoard",
+              description: "Create a decision workshop board for team dot-voting. Use when the user wants to facilitate a team decision between options. Summarize each option into exactly 3 short, punchy decision-aiding bullet points from what you see on the canvas.",
+              parameters: {
+                type: "object",
+                properties: {
+                  title: { type: "string", description: "Workshop title, e.g. 'Decision Time'" },
+                  options: {
+                    type: "array",
+                    description: "The 3 options to vote on",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string", description: "Option title, e.g. 'Option 1: Time to market'" },
+                        points: {
+                          type: "array",
+                          description: "Exactly 3 short, punchy decision-aiding bullet points (8-15 words each)",
+                          items: { type: "string" }
+                        }
+                      },
+                      required: ["title", "points"]
+                    }
+                  }
+                },
+                required: ["title", "options"]
               }
             },
             {
