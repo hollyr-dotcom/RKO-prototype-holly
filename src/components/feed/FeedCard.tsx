@@ -7,11 +7,22 @@ import { formatTimeAgo } from "@/lib/formatTimeAgo";
 import { FeedSourceIndicator } from "./FeedSourceIndicator";
 import { FeedActions } from "./FeedActions";
 import { FeedReactions } from "./FeedReactions";
+import { GenericVisualPreview } from "./visuals/GenericVisualPreview";
 import { AgentOpportunityContent } from "./content/AgentOpportunity";
 import { AgentCompletedContent } from "./content/AgentCompleted";
 import { CollaborationRequestContent } from "./content/CollaborationRequest";
 import { WorkflowChangeContent } from "./content/WorkflowChange";
 import { AlertFYIContent } from "./content/AlertFYI";
+import { KeyMetricContent } from "./content/KeyMetric";
+import { ChartContent } from "./content/Chart";
+import { DecisionContent } from "./content/Decision";
+import { ApprovalContent } from "./content/Approval";
+import { TeamAnnouncementContent } from "./content/TeamAnnouncement";
+import { LiveSessionContent } from "./content/LiveSession";
+import { CompetitorThreatContent } from "./content/CompetitorThreat";
+import { FeedbackRequestContent } from "./content/FeedbackRequest";
+import { BudgetRequestContent } from "./content/BudgetRequest";
+import { BudgetNotificationContent } from "./content/BudgetNotification";
 
 interface FeedCardProps {
   item: FeedItem;
@@ -39,12 +50,40 @@ function FeedContentRenderer({ item }: { item: FeedItem }) {
       return <WorkflowChangeContent item={item} />;
     case "alert-fyi":
       return <AlertFYIContent item={item} />;
+    case "key-metric":
+      return <KeyMetricContent item={item} />;
+    case "chart":
+      return <ChartContent item={item} />;
+    case "decision":
+      return <DecisionContent item={item} />;
+    case "approval":
+      return <ApprovalContent item={item} />;
+    case "team-announcement":
+      return <TeamAnnouncementContent item={item} />;
+    case "live-session":
+      return <LiveSessionContent item={item} />;
+    case "competitor-threat":
+      return <CompetitorThreatContent item={item} />;
+    case "feedback-request":
+      return <FeedbackRequestContent item={item} />;
+    case "budget-request":
+      return <BudgetRequestContent item={item} />;
+    case "budget-notification":
+      return <BudgetNotificationContent item={item} />;
     default:
       return null;
   }
 }
 
-const REACTABLE_TYPES = new Set(["workflow-change", "agent-completed"]);
+const REACTABLE_TYPES = new Set([
+  "workflow-change",
+  "agent-completed",
+  "key-metric",
+  "approval",
+  "team-announcement",
+  "decision",
+  "budget-notification",
+]);
 
 export function FeedCard({ item, spaceName }: FeedCardProps) {
   const user = getUser(item.source.userId);
@@ -97,6 +136,13 @@ export function FeedCard({ item, spaceName }: FeedCardProps) {
         {/* Type-specific content - renderers control their own padding */}
         <FeedContentRenderer item={item} />
 
+        {/* Visual preview fallback — show if item has visualPreview and type-specific renderer didn't handle it */}
+        {item.visualPreview && (
+          <div className="px-6 pb-4">
+            <GenericVisualPreview type={item.visualPreview.type} data={item.visualPreview.data} />
+          </div>
+        )}
+
         {/* Actions */}
         {item.actions.length > 0 && (
           <div className="px-6 pb-8">
@@ -104,7 +150,7 @@ export function FeedCard({ item, spaceName }: FeedCardProps) {
           </div>
         )}
 
-        {/* Reactions — only on workflow-change and agent-completed */}
+        {/* Reactions — only on certain types */}
         {showReactions && (
           <div>
             <div className="px-6">
