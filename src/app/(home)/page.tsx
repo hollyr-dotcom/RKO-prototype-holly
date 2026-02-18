@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { HomePromptInput } from "@/components/HomePromptInput";
 import { HomeFeed } from "@/components/feed/HomeFeed";
 import { PromptStickyNotes } from "@/components/PromptStickyNotes";
 import { useChat } from "@/hooks/useChat";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function HomePage() {
   const router = useRouter();
@@ -14,6 +16,8 @@ export default function HomePage() {
   const [isTyping, setIsTyping] = useState(false);
   const [notesVisible, setNotesVisible] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const firstName = user?.displayName?.split(" ")[0] || "Andy";
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
@@ -112,20 +116,33 @@ export default function HomePage() {
 
         {/* Welcome heading — scrolls with page */}
         <div className="flex flex-col items-center px-6">
-          <h1 className="text-4xl font-bold text-gray-900 mb-8">
-            Welcome back, Andy
+          <h1 className="text-3xl font-semibold text-gray-900 mb-3">
+            Welcome back, {firstName}
           </h1>
         </div>
 
         {/* Sticky search: prompt + suggestions */}
         <div className="sticky top-0 z-20">
-          <div className="bg-white pt-4 pb-2 flex flex-col items-center px-6">
+          <motion.div
+            className="bg-white pb-2 flex flex-col items-center px-6"
+            animate={{ paddingTop: notesVisible ? 16 : 80 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30, mass: 1 }}
+          >
             <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} onInputChange={(v) => setIsTyping(v.length > 0)} />
 
-            <div className={`mt-5 transition-opacity duration-200 ${isTyping ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+            <motion.div
+              className={isTyping ? "pointer-events-none" : ""}
+              animate={{
+                height: notesVisible && !isTyping ? 200 : 0,
+                opacity: isTyping ? 0 : 1,
+                marginTop: notesVisible && !isTyping ? 20 : 0,
+              }}
+              transition={{ type: "spring", stiffness: 400, damping: 30, mass: 1 }}
+              style={{ overflow: "visible" }}
+            >
               <PromptStickyNotes onSelect={handleSubmit} visible={notesVisible} />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Fade overlay — white fading to transparent so content disappears under search */}
           <div className="h-24 -mb-24 pointer-events-none bg-gradient-to-b from-white to-transparent" />

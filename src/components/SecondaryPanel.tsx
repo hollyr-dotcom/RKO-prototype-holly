@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { IconChevronDown, IconPlus, IconViewSideLeft } from "@mirohq/design-system-icons";
+import { IconPlus, IconViewSideLeft } from "@mirohq/design-system-icons";
 import { useSidebar } from "@/hooks/useSidebar";
 import { SECONDARY_WIDTH } from "@/providers/SidebarProvider";
 import { NavList, NavListItem } from "@/components/NavList";
@@ -22,30 +22,13 @@ type Space = {
   id: string;
   name: string;
   description: string;
+  emoji?: string;
+  color?: string;
 };
 
-// Static capabilities/pages for a space
-const defaultCapabilities = [
+// Fixed pages for a space — only Overview
+const capabilities = [
   { id: "overview", label: "Overview" },
-  { id: "agenda", label: "Agenda" },
-  { id: "attendees", label: "Attendees" },
-  { id: "expenses", label: "Expenses" },
-];
-
-// Expandable capability groups
-const expandableCapabilities = [
-  {
-    id: "venue",
-    label: "Venue & Logistic",
-    // children: [
-    //   { id: "floorplan", label: "Floorplan" },
-    //   { id: "registration", label: "Registration" },
-    // ],
-  },
-];
-
-const trailingCapabilities = [
-  { id: "speaker-program", label: "Speaker Program" },
 ];
 
 // Motion: stagger container + items (spring.snappy: stiffness 400, damping 30)
@@ -74,8 +57,7 @@ export function SecondaryPanel() {
 
   const [space, setSpace] = useState<Space | null>(null);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
-
+  const [loading, setLoading] = useState(true);
   // Derive which capability is active from the route.
   // On a canvas route, no capability is selected. On the space root, default to "overview".
   const isOnCanvas = pathname.includes("/canvas/");
@@ -94,6 +76,7 @@ export function SecondaryPanel() {
   useEffect(() => {
     if (!params.spaceId) return;
     let cancelled = false;
+    setLoading(true);
 
     fetch(`/api/spaces/${params.spaceId}`)
       .then((res) => {
@@ -106,24 +89,15 @@ export function SecondaryPanel() {
           setCanvases(data.canvases || []);
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
     return () => {
       cancelled = true;
     };
   }, [params.spaceId]);
-
-  const toggleGroup = (groupId: string) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(groupId)) {
-        next.delete(groupId);
-      } else {
-        next.add(groupId);
-      }
-      return next;
-    });
-  };
 
   // ── Board rename state (used by NavList icons below) ──
   const [generatingEmojiForCanvas, setGeneratingEmojiForCanvas] = useState<string | null>(null);
@@ -223,6 +197,32 @@ export function SecondaryPanel() {
     []
   );
 
+  // ── Delete a board ──
+  const handleDeleteCanvas = useCallback(
+    async (canvasId: string) => {
+      try {
+        const res = await fetch(`/api/canvases/${canvasId}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to delete board");
+
+        // Optimistic: remove from local state
+        setCanvases((prev) => prev.filter((c) => c.id !== canvasId));
+
+        // Notify other components
+        window.dispatchEvent(
+          new CustomEvent("canvas-updated", { detail: { canvasId, deleted: true } })
+        );
+
+        // If we're currently viewing the deleted board, navigate to space overview
+        if (params.canvasId === canvasId) {
+          router.push(`/space/${params.spaceId}`);
+        }
+      } catch (err) {
+        console.error("Failed to delete board:", err);
+      }
+    },
+    [params.canvasId, params.spaceId, router]
+  );
+
   // ── Space title rename (single-click on header) ──
   const [isEditingSpaceName, setIsEditingSpaceName] = useState(false);
   const [spaceNameEditValue, setSpaceNameEditValue] = useState(space?.name || "");
@@ -278,8 +278,30 @@ export function SecondaryPanel() {
 
   // Listen for canvas-updated events from masthead
   useEffect(() => {
-    const handler = () => {
+    const handler = (e: Event) => {
       if (!params.spaceId) return;
+      const detail = (e as CustomEvent).detail;
+
+      // Optimistic local update from event detail
+      if (detail?.canvasId) {
+        if (detail.deleted) {
+          setCanvases((prev) => prev.filter((c) => c.id !== detail.canvasId));
+        } else if (detail.name || detail.emoji) {
+          setCanvases((prev) =>
+            prev.map((c) =>
+              c.id === detail.canvasId
+                ? {
+                    ...c,
+                    ...(detail.name ? { name: detail.name } : {}),
+                    ...(detail.emoji ? { emoji: detail.emoji } : {}),
+                  }
+                : c
+            )
+          );
+        }
+      }
+
+      // Also refetch to stay fully in sync
       fetch(`/api/spaces/${params.spaceId}`)
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
@@ -323,7 +345,9 @@ export function SecondaryPanel() {
       <div className="h-full flex flex-col">
         {/* Space header — single click to edit */}
         <div className="flex items-center px-6 pt-6 pb-5">
-          {isEditingSpaceName ? (
+          {loading ? (
+            <div className="h-5 w-3/5 bg-gray-100 rounded animate-pulse" />
+          ) : isEditingSpaceName ? (
             <input
               ref={spaceNameInputRef}
               value={spaceNameEditValue}
@@ -353,93 +377,84 @@ export function SecondaryPanel() {
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-4 pt-2">
-          {/* Capabilities list */}
-          <motion.div
-            className="flex flex-col gap-0.5"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-          >
-            {defaultCapabilities.map((cap) => (
-              <motion.div key={cap.id} variants={staggerItem}>
-                <CapabilityItem
-                  label={cap.label}
-                  isSelected={selectedCapability === cap.id}
-                  onClick={() => setSelectedCapability(cap.id)}
-                  href={cap.id === "overview" ? `/space/${params.spaceId}` : undefined}
-                />
-              </motion.div>
-            ))}
+          {loading ? (
+            /* Skeleton UI */
+            <div className="flex flex-col">
+              {/* Capability skeleton */}
+              <div className="h-8 w-2/5 bg-gray-100 rounded-lg animate-pulse mx-1" />
 
-            {/* Expandable groups */}
-            {/* {expandableCapabilities.map((group) => {
-              const isExpanded = expandedGroups.has(group.id);
-              return (
-                <motion.div key={group.id} variants={staggerItem}>
-                  <button
-                    onClick={() => toggleGroup(group.id)}
-                    className="w-full flex items-center gap-2 h-8 px-4 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors duration-200"
-                  >
-                    <IconChevronDown
-                      css={{
-                        width: 16,
-                        height: 16,
-                        transform: isExpanded ? "rotate(0deg)" : "rotate(-90deg)",
-                        transition: "transform 0.2s ease",
-                      }}
+              {/* Divider */}
+              <div className="my-8 border-gray-200" />
+
+              {/* Boards header — label only, no + button */}
+              <div className="flex items-center h-8 px-3">
+                <span className="flex-1 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Boards
+                </span>
+              </div>
+
+              {/* Board skeleton rows */}
+              <div className="flex flex-col gap-1 mt-1 px-1">
+                {[0.65, 0.45, 0.75].map((width, i) => (
+                  <div key={i} className="flex items-center gap-3 h-8 px-2">
+                    <div className="w-5 h-5 bg-gray-100 rounded animate-pulse flex-shrink-0" />
+                    <div
+                      className="h-4 bg-gray-100 rounded animate-pulse"
+                      style={{ width: `${width * 100}%` }}
                     />
-                    <span className="flex-1 text-left truncate">{group.label}</span>
-                  </button>
-                  {isExpanded &&
-                    group.children.map((child) => (
-                      <CapabilityItem
-                        key={child.id}
-                        label={child.label}
-                        isSelected={selectedCapability === child.id}
-                        onClick={() => setSelectedCapability(child.id)}
-                        indented
-                      />
-                    ))}
-                </motion.div>
-              );
-            })} */}
-
-            {trailingCapabilities.map((cap) => (
-              <motion.div key={cap.id} variants={staggerItem}>
-                <CapabilityItem
-                  label={cap.label}
-                  isSelected={selectedCapability === cap.id}
-                  onClick={() => setSelectedCapability(cap.id)}
-                />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Capabilities list */}
+              <motion.div
+                className="flex flex-col gap-0.5"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
+                {capabilities.map((cap) => (
+                  <motion.div key={cap.id} variants={staggerItem}>
+                    <CapabilityItem
+                      label={cap.label}
+                      isSelected={selectedCapability === cap.id}
+                      onClick={() => setSelectedCapability(cap.id)}
+                      href={cap.id === "overview" ? `/space/${params.spaceId}` : undefined}
+                    />
+                  </motion.div>
+                ))}
               </motion.div>
-            ))}
-          </motion.div>
 
-          {/* Divider */}
-          <div className="my-8  border-gray-200" />
+              {/* Divider */}
+              <div className="my-8  border-gray-200" />
 
-          {/* Boards section */}
-          <div className="flex items-center h-8 px-3">
-            <span className="flex-1 text-xs font-medium text-gray-400 uppercase tracking-wider">
-              Boards
-            </span>
-            <button
-              onClick={handleCreateBoard}
-              className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200/60 transition-colors duration-200"
-              title="Add board"
-            >
-              <IconPlus css={{ width: 16, height: 16 }} />
-            </button>
-          </div>
+              {/* Boards section */}
+              <div className="flex items-center h-8 px-3">
+                <span className="flex-1 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Boards
+                </span>
+                <button
+                  onClick={handleCreateBoard}
+                  className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200/60 transition-colors duration-200"
+                  title="Add board"
+                >
+                  <IconPlus css={{ width: 16, height: 16 }} />
+                </button>
+              </div>
 
-          {/* Board items — double-click to rename */}
-          <NavList
-            items={canvasNavItems}
-            isActive={(item) => pathname === item.href}
-            onReorder={handleReorderCanvases}
-            onRename={handleRenameCanvas}
-            emptyMessage="No boards yet"
-          />
+              {/* Board items — double-click to rename */}
+              <NavList
+                items={canvasNavItems}
+                isActive={(item) => pathname === item.href}
+                onReorder={handleReorderCanvases}
+                onRename={handleRenameCanvas}
+                onDelete={handleDeleteCanvas}
+                emptyMessage="No boards yet"
+              />
+            </>
+          )}
         </div>
       </div>
     </aside>
@@ -450,18 +465,14 @@ function CapabilityItem({
   label,
   isSelected,
   onClick,
-  indented = false,
   href,
 }: {
   label: string;
   isSelected: boolean;
   onClick: () => void;
-  indented?: boolean;
   href?: string;
 }) {
-  const className = `w-full flex items-center h-8 rounded-lg text-sm transition-colors duration-200 ${
-    indented ? "pl-12 pr-3" : "px-4"
-  } ${
+  const className = `w-full flex items-center h-8 rounded-lg text-sm transition-colors duration-200 px-4 ${
     isSelected
       ? "bg-gray-100 text-gray-900 font-medium"
       : "text-gray-600 hover:bg-gray-100"

@@ -254,7 +254,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       fetch('/api/canvases', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'AI Canvas' }),
+        body: JSON.stringify({ name: 'AI Canvas', prompt: latestUserPromptRef.current }),
       })
         .then(r => r.json())
         .then(canvas => {
@@ -274,14 +274,23 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
   }, [router]);
 
+  // Track the latest user prompt so the safety net can generate an intelligent canvas name
+  const latestUserPromptRef = useRef<string>('');
+
   // useAgent with workspace-aware tool handler
-  const { messages, append, isLoading, setMessages } = useAgent(
+  const { messages, append: rawAppend, isLoading, setMessages } = useAgent(
     handleToolCallWithWorkspace,
     () => toolHandlersRef.current.getCanvasState(),
     () => toolHandlersRef.current.getUserEdits(),
     undefined, // onTitleGenerated
     getWorkspaceContext
   );
+
+  // Wrap append to capture the latest user prompt
+  const append = useCallback(async (message: { role: "user"; content: string }, generateTitle?: boolean) => {
+    latestUserPromptRef.current = message.content;
+    return rawAppend(message, generateTitle);
+  }, [rawAppend]);
 
   // Extract active plan details for progress panel
   const activePlanDetails = useMemo(() => {

@@ -2,7 +2,8 @@
 
 import React from "react";
 import { Editor } from "tldraw";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Markdown from "react-markdown";
 import {
   IconPlus,
@@ -11,7 +12,6 @@ import {
   IconPen,
   IconShapes,
   IconStickyNote,
-  IconPlusSquare,
   IconShapesLinesStacked,
   IconSingleSparksFilled,
   IconArrowUp,
@@ -21,15 +21,16 @@ import {
   IconCard,
   IconCross,
   IconSmileySticker,
-  IconKanban,
   IconTimelineFormat,
+  IconDotsThreeVertical,
+  IconMagnifyingGlass,
 } from "@mirohq/design-system-icons";
 import { PromptSuggestions } from "./PromptSuggestions";
 import { StickerPicker } from "./StickerPicker";
 
 
 // Custom approve button icon - checkmark circle
-function ApproveButtonIcon() {
+function ApproveButtonIcon({ size: _size }: { size?: string } = {}) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
       <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
@@ -50,6 +51,22 @@ function VoiceWaveIcon() {
   );
 }
 
+
+const overflowPopoverVariants = {
+  hidden: { opacity: 0, y: 8, scale: 0.97 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.15, ease: [0.2, 0, 0, 1] as [number, number, number, number] },
+  },
+  exit: {
+    opacity: 0,
+    y: 8,
+    scale: 0.97,
+    transition: { duration: 0.1, ease: [0.3, 0, 1, 1] as [number, number, number, number] },
+  },
+};
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -116,9 +133,65 @@ export function Toolbar({
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isStickerPickerOpen, setIsStickerPickerOpen] = useState(false);
+  const [isOverflowOpen, setIsOverflowOpen] = useState(false);
+  const [overflowSearch, setOverflowSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const stickerButtonRef = useRef<HTMLButtonElement>(null);
+  const overflowButtonRef = useRef<HTMLButtonElement>(null);
+  const overflowPanelRef = useRef<HTMLDivElement>(null);
+  const overflowSearchRef = useRef<HTMLInputElement>(null);
+
+  const overflowItems = useMemo(() => [
+    { id: 'task-card', label: 'Task card', icon: IconCard, action: onCreateTaskCard },
+    { id: 'approve', label: 'Approve', icon: ApproveButtonIcon, action: onCreateApproveButton },
+    { id: 'document', label: 'Docs', icon: IconArticle, action: onCreateDocument },
+    { id: 'data-table', label: 'Data table', icon: IconTable, action: onCreateDataTable },
+    { id: 'timeline', label: 'Timeline', icon: IconTimelineFormat, action: onCreateGanttChart },
+  ], [onCreateTaskCard, onCreateApproveButton, onCreateDocument, onCreateDataTable, onCreateGanttChart]);
+
+  const filteredOverflowItems = useMemo(() => {
+    const query = overflowSearch.toLowerCase().trim();
+    if (!query) return overflowItems;
+    return overflowItems.filter((item) => item.label.toLowerCase().includes(query));
+  }, [overflowItems, overflowSearch]);
+
+  // Focus search when overflow opens
+  useEffect(() => {
+    if (isOverflowOpen) {
+      setTimeout(() => overflowSearchRef.current?.focus(), 100);
+    } else {
+      setOverflowSearch("");
+    }
+  }, [isOverflowOpen]);
+
+  // Click outside to close overflow menu
+  useEffect(() => {
+    if (!isOverflowOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        overflowPanelRef.current &&
+        !overflowPanelRef.current.contains(target) &&
+        overflowButtonRef.current &&
+        !overflowButtonRef.current.contains(target)
+      ) {
+        setIsOverflowOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [isOverflowOpen]);
+
+  // Escape to close overflow menu
+  useEffect(() => {
+    if (!isOverflowOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOverflowOpen(false);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOverflowOpen]);
 
   const selectTool = (tool: string) => {
     if (!editor) return;
@@ -315,16 +388,6 @@ export function Toolbar({
             <IconStickyNote size="medium" />
           </ToolButton>
 
-          {/* Document */}
-          <ToolButton active={false} onClick={() => onCreateDocument?.()} title="Document">
-            <IconArticle size="medium" />
-          </ToolButton>
-
-          {/* DataTable */}
-          <ToolButton active={false} onClick={() => onCreateDataTable?.()} title="Table">
-            <IconTable size="medium" />
-          </ToolButton>
-
           {/* Sticker */}
           <div className="relative">
             <ToolButton
@@ -343,25 +406,86 @@ export function Toolbar({
             />
           </div>
 
-          {/* Task Card */}
-          <ToolButton active={false} onClick={() => onCreateTaskCard?.()} title="Task card">
-            <IconCard size="medium" />
-          </ToolButton>
+          {/* More (overflow menu) */}
+          <div className="relative">
+            <ToolButton
+              ref={overflowButtonRef}
+              active={isOverflowOpen}
+              onClick={() => setIsOverflowOpen((v) => !v)}
+              title="More tools"
+            >
+              <IconPlus size="medium" />
+            </ToolButton>
+            <AnimatePresence>
+              {isOverflowOpen && (
+                <motion.div
+                  ref={overflowPanelRef}
+                  variants={overflowPopoverVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="absolute bottom-full mb-3 right-0 w-[220px] bg-white border border-gray-200 overflow-hidden flex flex-col"
+                  style={{
+                    borderRadius: 20,
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
+                  }}
+                >
+                  {/* Search bar */}
+                  <div className="px-3 pt-2.5 pb-1.5 shrink-0">
+                    <div className="flex items-center gap-2 bg-gray-100 rounded-full px-3 py-2">
+                      <IconMagnifyingGlass
+                        css={{ width: 16, height: 16, flexShrink: 0, color: "var(--color-gray-400)" }}
+                      />
+                      <input
+                        ref={overflowSearchRef}
+                        type="text"
+                        value={overflowSearch}
+                        onChange={(e) => setOverflowSearch(e.target.value)}
+                        placeholder="Search tools..."
+                        className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+                      />
+                      {overflowSearch && (
+                        <button
+                          onClick={() => setOverflowSearch("")}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <IconCross css={{ width: 14, height: 14 }} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
 
-          {/* Kanban Board */}
-          <ToolButton active={false} onClick={() => onCreateKanbanBoard?.()} title="Kanban board">
-            <IconKanban size="medium" />
-          </ToolButton>
-
-          {/* Gantt Chart */}
-          <ToolButton active={false} onClick={() => onCreateGanttChart?.()} title="Gantt chart">
-            <IconTimelineFormat size="medium" />
-          </ToolButton>
-
-          {/* Approve Button */}
-          <ToolButton active={false} onClick={() => onCreateApproveButton?.()} title="Approve button">
-            <ApproveButtonIcon />
-          </ToolButton>
+                  {/* Items list */}
+                  <div className="px-1.5 pb-1.5 pt-0.5">
+                    {filteredOverflowItems.length === 0 ? (
+                      <div className="text-center text-sm text-gray-400 py-4">
+                        No tools found
+                      </div>
+                    ) : (
+                      filteredOverflowItems.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              item.action?.();
+                              setIsOverflowOpen(false);
+                            }}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
+                            <span className="flex items-center justify-center w-5 h-5 shrink-0 text-gray-500">
+                              <Icon size="medium" />
+                            </span>
+                            <span>{item.label}</span>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Separator line - hidden when expanded, chat open, or floating UI showing */}
@@ -442,14 +566,16 @@ export function Toolbar({
             <form onSubmit={handleSubmit} className="flex items-center w-full">
               {/* Input pill with light gray bg */}
               <div className="flex items-center bg-gray-100 rounded-full flex-1">
-              {/* Plus button */}
-              <button
-                type="button"
-                className="p-3 text-black hover:text-black transition-colors duration-200 flex-shrink-0"
-                title="Add"
-              >
-                <IconPlus size="medium" />
-              </button>
+              {/* Plus button - only visible when input is expanded/focused */}
+              {isExpanded && (
+                <button
+                  type="button"
+                  className="p-3 text-black hover:text-black transition-colors duration-200 flex-shrink-0"
+                  title="Add"
+                >
+                  <IconPlus size="medium" />
+                </button>
+              )}
 
               {/* Input area */}
               {isExpanded ? (
@@ -485,7 +611,7 @@ export function Toolbar({
                 <button
                   type="button"
                   onClick={handleExpand}
-                  className="flex-1 py-2 text-lg text-gray-400 text-left hover:text-gray-500 transition-colors duration-200 whitespace-nowrap font-normal"
+                  className="flex-1 py-2 pl-4 text-lg text-gray-400 text-left hover:text-gray-500 transition-colors duration-200 whitespace-nowrap font-normal"
                 >
                   {isLoading || hasMessages ? "Reply..." : "Ask me anything"}
                 </button>

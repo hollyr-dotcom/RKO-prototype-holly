@@ -1294,5 +1294,857 @@
         "icon": "cfo"
       }
     }
+  },
+  {
+    "id": "feed-br-1",
+    "type": "agent-opportunity",
+    "spaceId": "space-2",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Colour palette inconsistency",
+    "body": "The proposed primary palette uses 4 shades of blue that fail WCAG contrast against the new background tokens. Accessibility audit flagged 12 component combinations that would need rework if the current direction ships.",
+    "timestamp": "2026-02-16T10:45:00Z",
+    "isRead": false,
+    "priority": "high",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "unpack",
+        "label": "Unpack together",
+        "variant": "primary"
+      },
+      {
+        "id": "delegate",
+        "label": "Assign",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "accessibilityIssue": {
+        "failingCombinations": 12,
+        "standard": "WCAG AA"
+      }
+    }
+  },
+  {
+    "id": "feed-br-2",
+    "type": "collaboration-request",
+    "spaceId": "space-2",
+    "canvasId": "canvas-br-1",
+    "source": {
+      "userId": "user-amara",
+      "isAgent": false
+    },
+    "title": "Amara Okafor needs review: typography scale before engineering handoff",
+    "body": "New type ramp ready — need sign-off before tokens are published.",
+    "timestamp": "2026-02-16T08:30:00Z",
+    "isRead": false,
+    "priority": "high",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review",
+        "label": "Open board",
+        "variant": "primary"
+      },
+      {
+        "id": "comment",
+        "label": "Add comment",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "review",
+      "dueDate": "2026-02-19T17:00:00Z",
+      "mentionedUsers": [
+        "user-kyra",
+        "user-raj"
+      ],
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-br-1",
+        "name": "Typography Scale v2"
+      },
+      "reviewChecklist": {
+        "sections": [
+          {
+            "label": "Headings",
+            "status": "reviewed"
+          },
+          {
+            "label": "Body text",
+            "status": "reviewed"
+          },
+          {
+            "label": "Responsive scaling",
+            "status": "pending"
+          },
+          {
+            "label": "Accessibility",
+            "status": "flagged"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "feed-br-3",
+    "type": "agent-completed",
+    "spaceId": "space-2",
+    "canvasId": "canvas-br-2",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Brand audit comparison board ready",
+    "body": "",
+    "timestamp": "2026-02-15T21:00:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [
+      {
+        "emoji": "🎨",
+        "count": 3,
+        "users": [
+          "user-amara",
+          "user-raj",
+          "user-kyra"
+        ]
+      }
+    ],
+    "viewCount": 9,
+    "actions": [
+      {
+        "id": "approve",
+        "label": "Approve",
+        "variant": "primary"
+      },
+      {
+        "id": "feedback",
+        "label": "Request changes",
+        "variant": "secondary"
+      },
+      {
+        "id": "dismiss",
+        "label": "Dismiss",
+        "variant": "ghost"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-br-2",
+        "name": "Brand Audit — Before & After"
+      },
+      "completionSummary": "42 screens compared, 8 component families mapped, 3 inconsistency themes identified",
+      "timeSpent": "14 min",
+      "changesCount": 36,
+      "matrixGrid": {
+        "rows": 8,
+        "cols": 5,
+        "label": "Component Audit"
+      }
+    }
+  },
+  {
+    "id": "feed-br-4",
+    "type": "workflow-change",
+    "spaceId": "space-2",
+    "canvasId": "canvas-br-3",
+    "source": {
+      "userId": "user-raj",
+      "isAgent": false
+    },
+    "title": "Raj Patel moved icon set redesign to In Review",
+    "body": "",
+    "timestamp": "2026-02-15T16:00:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [
+      {
+        "emoji": "✨",
+        "count": 3,
+        "users": [
+          "user-amara",
+          "user-marcus",
+          "user-elena"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review",
+        "label": "Review board",
+        "variant": "primary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "Draft",
+      "toStatus": "In Review",
+      "implication": "Engineering needs approved icons to update the component library before the next sprint.",
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-br-3",
+        "name": "Icon Set Redesign"
+      },
+      "reviewPipeline": {
+        "stages": [
+          {
+            "label": "Draft",
+            "active": false
+          },
+          {
+            "label": "In Review",
+            "active": true
+          },
+          {
+            "label": "Approved",
+            "active": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "feed-br-5",
+    "type": "collaboration-request",
+    "spaceId": "space-2",
+    "source": {
+      "userId": "user-elena",
+      "isAgent": false
+    },
+    "title": "Elena Vasquez needs a decision on dark mode approach",
+    "body": "Invert existing tokens or create a parallel palette from scratch?",
+    "timestamp": "2026-02-15T10:30:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "decide",
+        "label": "Make decision",
+        "variant": "primary"
+      },
+      {
+        "id": "discuss",
+        "label": "Open discussion",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "decision",
+      "dueDate": "2026-02-20T17:00:00Z",
+      "mentionedUsers": [
+        "user-amara",
+        "user-raj",
+        "user-kyra"
+      ],
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-br-5",
+        "name": "Dark Mode Strategy"
+      },
+      "decisionFork": {
+        "optionA": "Invert existing tokens",
+        "optionB": "Parallel palette from scratch"
+      }
+    }
+  },
+  {
+    "id": "feed-br-6",
+    "type": "agent-opportunity",
+    "spaceId": "space-2",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Logo usage drift across products",
+    "body": "Scanned 14 product surfaces and found 6 different logo lockup variations in production. The new brand guidelines specify a single lockup — migration plan needed before the refresh goes live.",
+    "timestamp": "2026-02-14T18:00:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "unpack",
+        "label": "Unpack together",
+        "variant": "primary"
+      },
+      {
+        "id": "delegate",
+        "label": "Assign",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "drift": {
+        "surfaces": 14,
+        "variations": 6
+      }
+    }
+  },
+  {
+    "id": "feed-br-7",
+    "type": "workflow-change",
+    "spaceId": "space-2",
+    "canvasId": "canvas-br-6",
+    "source": {
+      "userId": "user-nina",
+      "isAgent": false
+    },
+    "title": "Nina Johansson approved colour palette — tokens can be published",
+    "body": "",
+    "timestamp": "2026-02-14T14:00:00Z",
+    "isRead": true,
+    "priority": "high",
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 5,
+        "users": [
+          "user-amara",
+          "user-raj",
+          "user-elena",
+          "user-marcus",
+          "user-kyra"
+        ]
+      },
+      {
+        "emoji": "🎨",
+        "count": 2,
+        "users": [
+          "user-priya",
+          "user-sofia"
+        ]
+      }
+    ],
+    "viewCount": 16,
+    "actions": [
+      {
+        "id": "view",
+        "label": "View palette",
+        "variant": "primary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "Pending Approval",
+      "toStatus": "Approved",
+      "implication": "Design tokens can be published to Figma and npm. Engineering can begin component migration.",
+      "approvalStamp": {
+        "icon": "palette"
+      }
+    }
+  },
+  {
+    "id": "feed-br-8",
+    "type": "agent-completed",
+    "spaceId": "space-2",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Design system migration impact report ready",
+    "body": "",
+    "timestamp": "2026-02-13T20:00:00Z",
+    "isRead": true,
+    "priority": "low",
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 2,
+        "users": [
+          "user-kyra",
+          "user-elena"
+        ]
+      }
+    ],
+    "viewCount": 7,
+    "actions": [
+      {
+        "id": "approve",
+        "label": "Approve & share",
+        "variant": "primary"
+      },
+      {
+        "id": "edit",
+        "label": "Edit first",
+        "variant": "secondary"
+      },
+      {
+        "id": "dismiss",
+        "label": "Dismiss",
+        "variant": "ghost"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "document",
+        "id": "canvas-br-7",
+        "name": "Migration Impact Report"
+      },
+      "completionSummary": "156 components audited, 34 breaking changes identified, 3 migration phases proposed",
+      "timeSpent": "12 min",
+      "changesCount": 22,
+      "workstreamBars": {
+        "streams": [
+          {
+            "label": "Colour tokens",
+            "progress": 0.95
+          },
+          {
+            "label": "Typography",
+            "progress": 0.8
+          },
+          {
+            "label": "Icons",
+            "progress": 0.55
+          },
+          {
+            "label": "Components",
+            "progress": 0.3
+          }
+        ],
+        "blockers": 2
+      }
+    }
+  },
+  {
+    "id": "feed-ur-1",
+    "type": "agent-opportunity",
+    "spaceId": "space-3",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Emerging theme across interviews",
+    "body": "Interviews 4, 7, and 9 all describe the same pain point: users abandon the setup flow when asked to connect external accounts. This wasn't in the original research questions but appears in 60% of sessions so far.",
+    "timestamp": "2026-02-16T11:30:00Z",
+    "isRead": false,
+    "priority": "high",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "unpack",
+        "label": "Unpack together",
+        "variant": "primary"
+      },
+      {
+        "id": "delegate",
+        "label": "Assign",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "convergence": {
+        "sources": [
+          {
+            "label": "Interview 4",
+            "color": "#3b82f6"
+          },
+          {
+            "label": "Interview 7",
+            "color": "#6366f1"
+          },
+          {
+            "label": "Interview 9",
+            "color": "#8b5cf6"
+          }
+        ],
+        "target": {
+          "label": "Setup Abandonment",
+          "color": "#ef4444"
+        }
+      }
+    }
+  },
+  {
+    "id": "feed-ur-2",
+    "type": "collaboration-request",
+    "spaceId": "space-3",
+    "canvasId": "canvas-ur-1",
+    "source": {
+      "userId": "user-priya",
+      "isAgent": false
+    },
+    "title": "Priya Sharma needs review: journey map before design sprint",
+    "body": "End-to-end journey mapped from 12 interviews — need alignment before Monday's sprint.",
+    "timestamp": "2026-02-16T09:15:00Z",
+    "isRead": false,
+    "priority": "high",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review",
+        "label": "Open board",
+        "variant": "primary"
+      },
+      {
+        "id": "comment",
+        "label": "Add comment",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "review",
+      "dueDate": "2026-02-17T17:00:00Z",
+      "mentionedUsers": [
+        "user-kyra",
+        "user-marcus"
+      ],
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-ur-1",
+        "name": "Customer Journey Map — Onboarding"
+      },
+      "reviewChecklist": {
+        "sections": [
+          {
+            "label": "Discovery",
+            "status": "reviewed"
+          },
+          {
+            "label": "Sign-up",
+            "status": "reviewed"
+          },
+          {
+            "label": "Setup",
+            "status": "flagged"
+          },
+          {
+            "label": "First value",
+            "status": "pending"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "feed-ur-3",
+    "type": "agent-completed",
+    "spaceId": "space-3",
+    "canvasId": "canvas-ur-2",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Interview synthesis board ready",
+    "body": "",
+    "timestamp": "2026-02-15T22:30:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [
+      {
+        "emoji": "🙌",
+        "count": 2,
+        "users": [
+          "user-priya",
+          "user-kyra"
+        ]
+      },
+      {
+        "emoji": "💡",
+        "count": 3,
+        "users": [
+          "user-marcus",
+          "user-raj",
+          "user-elena"
+        ]
+      }
+    ],
+    "viewCount": 10,
+    "actions": [
+      {
+        "id": "approve",
+        "label": "Approve",
+        "variant": "primary"
+      },
+      {
+        "id": "feedback",
+        "label": "Request changes",
+        "variant": "secondary"
+      },
+      {
+        "id": "dismiss",
+        "label": "Dismiss",
+        "variant": "ghost"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-ur-2",
+        "name": "Interview Synthesis — Round 1"
+      },
+      "completionSummary": "12 interviews coded, 47 insights extracted, 5 theme clusters identified",
+      "timeSpent": "20 min",
+      "changesCount": 54,
+      "matrixGrid": {
+        "rows": 5,
+        "cols": 12,
+        "label": "Insight Matrix"
+      }
+    }
+  },
+  {
+    "id": "feed-ur-4",
+    "type": "workflow-change",
+    "spaceId": "space-3",
+    "canvasId": "canvas-ur-3",
+    "source": {
+      "userId": "user-marcus",
+      "isAgent": false
+    },
+    "title": "Marcus Chen moved persona definitions to In Review",
+    "body": "",
+    "timestamp": "2026-02-15T17:00:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [
+      {
+        "emoji": "🎯",
+        "count": 3,
+        "users": [
+          "user-priya",
+          "user-raj",
+          "user-amara"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review",
+        "label": "Review board",
+        "variant": "primary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "Draft",
+      "toStatus": "In Review",
+      "implication": "Design team needs approved personas to begin the next sprint's feature work.",
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-ur-3",
+        "name": "Persona Definitions v2"
+      },
+      "reviewPipeline": {
+        "stages": [
+          {
+            "label": "Draft",
+            "active": false
+          },
+          {
+            "label": "In Review",
+            "active": true
+          },
+          {
+            "label": "Approved",
+            "active": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "feed-ur-5",
+    "type": "agent-opportunity",
+    "spaceId": "space-3",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Participant recruitment gap",
+    "body": "Round 2 interviews need 8 participants from the enterprise segment but only 2 have confirmed. Recruitment has been open for 6 days — at the current rate, the research timeline will slip by 2 weeks.",
+    "timestamp": "2026-02-15T14:00:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "unpack",
+        "label": "Unpack together",
+        "variant": "primary"
+      },
+      {
+        "id": "delegate",
+        "label": "Assign",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "recruitmentGap": {
+        "needed": 8,
+        "confirmed": 2,
+        "daysOpen": 6
+      }
+    }
+  },
+  {
+    "id": "feed-ur-6",
+    "type": "collaboration-request",
+    "spaceId": "space-3",
+    "source": {
+      "userId": "user-raj",
+      "isAgent": false
+    },
+    "title": "Raj Patel needs input on usability test script",
+    "body": "Task scenarios drafted for the new setup flow — need product perspective on priority tasks.",
+    "timestamp": "2026-02-14T11:00:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review",
+        "label": "View script",
+        "variant": "primary"
+      },
+      {
+        "id": "comment",
+        "label": "Add comment",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "input",
+      "mentionedUsers": [
+        "user-kyra",
+        "user-priya"
+      ],
+      "artifact": {
+        "type": "document",
+        "id": "canvas-ur-5",
+        "name": "Usability Test Script — Setup Flow"
+      },
+      "feedbackSteps": {
+        "steps": [
+          {
+            "label": "Intro & consent",
+            "complete": true
+          },
+          {
+            "label": "Account creation",
+            "complete": true
+          },
+          {
+            "label": "External connect",
+            "complete": false
+          },
+          {
+            "label": "First task",
+            "complete": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "feed-ur-7",
+    "type": "agent-completed",
+    "spaceId": "space-3",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Competitive UX teardown compiled",
+    "body": "",
+    "timestamp": "2026-02-14T07:30:00Z",
+    "isRead": true,
+    "priority": "low",
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 2,
+        "users": [
+          "user-priya",
+          "user-kyra"
+        ]
+      }
+    ],
+    "viewCount": 6,
+    "actions": [
+      {
+        "id": "approve",
+        "label": "Approve & share",
+        "variant": "primary"
+      },
+      {
+        "id": "edit",
+        "label": "Edit first",
+        "variant": "secondary"
+      },
+      {
+        "id": "dismiss",
+        "label": "Dismiss",
+        "variant": "ghost"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "canvas",
+        "id": "canvas-ur-6",
+        "name": "Competitive UX Teardown"
+      },
+      "completionSummary": "5 competitors analysed, 18 onboarding flows recorded, 7 UX patterns catalogued",
+      "timeSpent": "16 min",
+      "changesCount": 29,
+      "matrixGrid": {
+        "rows": 5,
+        "cols": 7,
+        "label": "UX Pattern Matrix"
+      }
+    }
+  },
+  {
+    "id": "feed-ur-8",
+    "type": "workflow-change",
+    "spaceId": "space-3",
+    "canvasId": "canvas-ur-7",
+    "source": {
+      "userId": "user-priya",
+      "isAgent": false
+    },
+    "title": "Priya Sharma approved research plan — recruitment can begin",
+    "body": "",
+    "timestamp": "2026-02-13T16:00:00Z",
+    "isRead": true,
+    "priority": "high",
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 4,
+        "users": [
+          "user-kyra",
+          "user-marcus",
+          "user-raj",
+          "user-amara"
+        ]
+      },
+      {
+        "emoji": "🔬",
+        "count": 2,
+        "users": [
+          "user-elena",
+          "user-nina"
+        ]
+      }
+    ],
+    "viewCount": 12,
+    "actions": [
+      {
+        "id": "view",
+        "label": "View plan",
+        "variant": "primary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "Pending Approval",
+      "toStatus": "Approved",
+      "implication": "Participant recruitment can begin. Interview scheduling can proceed. Incentive budget is unlocked.",
+      "approvalStamp": {
+        "icon": "research"
+      }
+    }
   }
 ]

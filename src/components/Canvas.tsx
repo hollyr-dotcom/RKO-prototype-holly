@@ -787,6 +787,19 @@ const colorMap: Record<string, TLColor> = {
   white: "white",
 };
 
+// Sticky note color palette — matches home page sticky colors (PromptStickyNotes)
+const STICKY_COLOR_PALETTE: TLColor[] = [
+  "yellow",       // home: #F5D550
+  "light-red",    // home: #F08080 (coral)
+  "light-violet", // home: #E07BE0 (pink)
+  "violet",       // home: #B0A0D8 (lavender)
+  "light-blue",   // home: #88A8E0 (blue)
+];
+
+function randomStickyColor(): TLColor {
+  return STICKY_COLOR_PALETTE[Math.floor(Math.random() * STICKY_COLOR_PALETTE.length)];
+}
+
 type CreationToastInfo = {
   id: string; // unique key per tool call
   name: string;
@@ -1459,7 +1472,7 @@ export function Canvas() {
             parentId: frameId,
             props: {
               richText: toRichText(text),
-              color: colorMap[(item.color as string) || "yellow"] || "yellow",
+              color: randomStickyColor(),
               font: "sans",
               size: "s",
             },
@@ -1714,7 +1727,7 @@ export function Canvas() {
               parentId: parentFrameId as any,
               props: {
                 richText: toRichText(text),
-                color: colorMap[color] || "yellow",
+                color: randomStickyColor(),
                 font: "sans",
                 size: "s",
               },
@@ -1735,7 +1748,7 @@ export function Canvas() {
             y: pos.y,
             props: {
               richText: toRichText(text),
-              color: colorMap[color] || "yellow",
+              color: randomStickyColor(),
               font: "sans",
               size: "s",
             },
@@ -3701,7 +3714,7 @@ export function Canvas() {
               parentId: frameId,
               props: {
                 richText: toRichText(item.text || ""),
-                color: colorMap[item.color || "yellow"] || "yellow",
+                color: randomStickyColor(),
                 font: "sans",
                 size: "s",
               },
@@ -3914,7 +3927,7 @@ export function Canvas() {
             type: "note",
             props: {
               richText: toRichText(newText),
-              color: colorMap[newColor] || "yellow",
+              color: randomStickyColor(),
             },
           });
         }

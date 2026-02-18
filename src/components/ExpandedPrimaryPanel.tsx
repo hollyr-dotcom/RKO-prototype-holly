@@ -9,14 +9,15 @@ import {
   IconChat,
   IconCheckBoxLines,
   IconMagnifyingGlass,
-  IconMiroMark,
   IconPlus,
   IconChevronUpDown,
   IconCheckMark,
+  IconTrash,
 } from "@mirohq/design-system-icons";
 import { useSidebar } from "@/hooks/useSidebar";
 import { EXPANDED_PRIMARY_WIDTH } from "@/providers/SidebarProvider";
-import { NavList, NavListItem } from "@/components/NavList";
+import { NavList, NavListItem, NavMenuAction } from "@/components/NavList";
+import { BoardEmoji } from "@/components/BoardEmoji";
 
 // Same nav items as PrimaryRail — identical icons, IDs, hrefs
 const navItems = [
@@ -37,15 +38,26 @@ type Space = {
   id: string;
   name: string;
   description: string;
+  emoji?: string;
+  color?: string;
 };
 
 // Hardcoded workspace + teams for prototype
-const WORKSPACE_NAME = "Acme Inc.";
+const WORKSPACE_NAME = "FlexFund";
 const teams = [
-  { id: "team-1", name: "Design" },
+  { id: "team-1", name: "Flex Tech" },
   { id: "team-2", name: "Engineering" },
   { id: "team-3", name: "Product" },
   { id: "team-4", name: "Marketing" },
+];
+
+// Sticky note color palette for space colors
+const STICKY_COLORS = [
+  { bg: "#F5D550", text: "#5D4E00" },
+  { bg: "#F08080", text: "#5C1A1A" },
+  { bg: "#E07BE0", text: "#5C1060" },
+  { bg: "#B0A0D8", text: "#2E1A5E" },
+  { bg: "#88A8E0", text: "#1A2E5C" },
 ];
 
 // Popover animation
@@ -147,16 +159,18 @@ export function ExpandedPrimaryPanel() {
     }
   }, [router]);
 
-  // Map spaces to NavListItems with initial-letter icons
+  // Map spaces to NavListItems with emoji or initial-letter icons
   const spaceNavItems: NavListItem[] = spaces.map((space) => ({
     id: space.id,
     label: space.name,
     href: `/space/${space.id}`,
-    icon: (
+    icon: space.emoji ? (
+      <BoardEmoji emoji={space.emoji} size={20} />
+    ) : (
       <span
         className="w-5 h-5 text-xs leading-5 text-center flex-shrink-0 rounded flex items-center justify-center"
         style={{
-          backgroundColor: navPalette.logoContainer,
+          backgroundColor: space.color || navPalette.logoContainer,
           color: navPalette.textPrimary,
         }}
       >
@@ -229,6 +243,78 @@ export function ExpandedPrimaryPanel() {
     [spaces]
   );
 
+  // Delete a space and its canvases
+  const handleDeleteSpace = useCallback(
+    async (spaceId: string) => {
+      setSpaces((prev) => prev.filter((s) => s.id !== spaceId));
+
+      try {
+        await fetch(`/api/spaces/${spaceId}`, { method: "DELETE" });
+      } catch (err) {
+        console.error("Failed to delete space:", err);
+      }
+
+      if (pathname.startsWith(`/space/${spaceId}`)) {
+        router.push("/");
+      }
+    },
+    [pathname, router]
+  );
+
+  // Randomize space color from sticky palette
+  const handleRandomizeColor = useCallback(
+    async (spaceId: string) => {
+      const space = spaces.find((s) => s.id === spaceId);
+      const available = STICKY_COLORS.filter((c) => c.bg !== space?.color);
+      const picked =
+        available[Math.floor(Math.random() * available.length)] ||
+        STICKY_COLORS[0];
+
+      setSpaces((prev) =>
+        prev.map((s) =>
+          s.id === spaceId ? { ...s, color: picked.bg } : s
+        )
+      );
+
+      try {
+        await fetch(`/api/spaces/${spaceId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ color: picked.bg }),
+        });
+        window.dispatchEvent(
+          new CustomEvent("space-updated", { detail: { spaceId } })
+        );
+      } catch (err) {
+        console.error("Failed to update space color:", err);
+      }
+    },
+    [spaces]
+  );
+
+  // Menu actions for space overflow
+  const spaceMenuActions: NavMenuAction[] = [
+    {
+      label: "Space color",
+      icon: (
+        <span
+          className="w-3.5 h-3.5 rounded-full"
+          style={{
+            background:
+              "linear-gradient(135deg, #F5D550, #F08080, #E07BE0, #B0A0D8, #88A8E0)",
+          }}
+        />
+      ),
+      onClick: handleRandomizeColor,
+    },
+    {
+      label: "Delete space",
+      icon: <IconTrash css={{ width: 14, height: 14, flexShrink: 0 }} />,
+      onClick: handleDeleteSpace,
+      danger: true,
+    },
+  ];
+
   // Active nav item based on current route
   const activeNavId =
     navItems.find((item) =>
@@ -251,9 +337,9 @@ export function ExpandedPrimaryPanel() {
           <Link href="/" className="flex-shrink-0">
             <div
               className="w-10 h-10 flex items-center justify-center rounded-lg shadow-sm"
-              style={{ backgroundColor: navPalette.logoContainer }}
+              style={{ backgroundColor: "#7A2CDD" }}
             >
-              <IconMiroMark css={{ width: 24, height: 24, color: "#000000" }} />
+              <img src="/flexfund.svg" alt="FlexFund" width={24} height={24} />
             </div>
           </Link>
 
@@ -288,7 +374,7 @@ export function ExpandedPrimaryPanel() {
               exit="exit"
               className="absolute left-0 right-0 mt-2 z-50 rounded-lg overflow-hidden"
               style={{
-                backgroundColor: navPalette.logoContainer,
+                backgroundColor: "#ffffff",
                 boxShadow: "0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06)",
               }}
             >
@@ -304,13 +390,11 @@ export function ExpandedPrimaryPanel() {
                       }}
                       className="w-full flex items-center gap-2 px-3 h-8 text-sm transition-colors duration-150"
                       style={{
-                        color: isSelected
-                          ? navPalette.textPrimary
-                          : navPalette.textSecondary,
+                        color: isSelected ? "#050038" : "#6B6B6B",
                         fontWeight: isSelected ? 500 : 400,
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = navPalette.hoverBg;
+                        e.currentTarget.style.backgroundColor = "#F5F5F5";
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = "transparent";
@@ -318,7 +402,7 @@ export function ExpandedPrimaryPanel() {
                     >
                       <span className="flex-1 text-left truncate">{team.name}</span>
                       {isSelected && (
-                        <IconCheckMark css={{ width: 14, height: 14, flexShrink: 0, color: navPalette.iconActive }} />
+                        <IconCheckMark css={{ width: 14, height: 14, flexShrink: 0, color: "#050038" }} />
                       )}
                     </button>
                   );
@@ -413,6 +497,7 @@ export function ExpandedPrimaryPanel() {
           isActive={(item) => pathname.startsWith(item.href)}
           onReorder={handleReorderSpaces}
           onRename={handleRenameSpace}
+          menuActions={spaceMenuActions}
           emptyMessage="No spaces yet"
         />
       </div>

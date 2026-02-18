@@ -9,7 +9,7 @@ import {
   T,
   TLShape,
 } from "tldraw";
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import lottie, { AnimationItem } from "lottie-web";
 import approveButtonData from "@/data/approve-button-lottie.json";
 
@@ -28,23 +28,16 @@ type IApproveButtonShape = TLShape<typeof APPROVE_BUTTON_SHAPE_TYPE>;
 
 const DEFAULT_W = 450;
 const DEFAULT_H = 278;
-const HOLD_DURATION_MS = 2000;
 
 // Lottie animation frame markers (ip=120, op=360 at 60fps)
-// First half = charge-up (2s), second half = celebration (2s)
 const FRAME_START = 120;
-const FRAME_MID = 240;
 const FRAME_END = 360;
 
 function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<AnimationItem | null>(null);
-  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasTriggeredRef = useRef(false);
-  const [isTriggered, setIsTriggered] = useState(false);
-  const [isHolding, setIsHolding] = useState(false);
-  const [holdProgress, setHoldProgress] = useState(0);
+  const isHoldingRef = useRef(false);
 
   // Initialize Lottie animation
   useEffect(() => {
@@ -67,99 +60,62 @@ function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
     };
   }, []);
 
-  const clearHold = useCallback(() => {
-    if (holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-      progressIntervalRef.current = null;
-    }
-    setIsHolding(false);
-    setHoldProgress(0);
+  // Listen for animation complete — only trigger if still holding
+  useEffect(() => {
+    const anim = animRef.current;
+    if (!anim) return;
 
-    // Reset animation if hold wasn't completed
-    if (!hasTriggeredRef.current && animRef.current) {
-      animRef.current.goToAndStop(0, true);
-    }
-  }, []);
+    const onComplete = () => {
+      if (!isHoldingRef.current || hasTriggeredRef.current) return;
+      hasTriggeredRef.current = true;
+
+      // Hold on last frame
+      const totalFrames = FRAME_END - FRAME_START;
+      anim.goToAndStop(totalFrames - 1, true);
+
+      // Dispatch event for Canvas.tsx to send the AI prompt
+      window.dispatchEvent(
+        new CustomEvent("shape:approve-trigger", {
+          detail: {
+            shapeId: shape.id,
+            prompt: "Create a plan to distribute the decision that was just approved. Step 1: Produce a summary of the decision and a talk track. Step 2: Notify the relevant teams.",
+          },
+        })
+      );
+    };
+
+    anim.addEventListener("complete", onComplete);
+    return () => anim.removeEventListener("complete", onComplete);
+  }, [shape.id]);
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
       e.stopPropagation();
-      hasTriggeredRef.current = false;
-      setIsHolding(true);
-      setHoldProgress(0);
+      if (hasTriggeredRef.current) return;
+      isHoldingRef.current = true;
 
-      // Play charge-up phase (first half of animation, 2s at 60fps speed 1)
+      // Play the full animation from the start
       if (animRef.current) {
-        animRef.current.playSegments([0, FRAME_MID - FRAME_START], true);
-        animRef.current.setSpeed(1);
+        const totalFrames = FRAME_END - FRAME_START;
+        animRef.current.playSegments([0, totalFrames], true);
       }
-
-      // Update progress ring every 50ms
-      const startTime = Date.now();
-      progressIntervalRef.current = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        setHoldProgress(Math.min(elapsed / HOLD_DURATION_MS, 1));
-      }, 50);
-
-      // Trigger after 2 seconds
-      holdTimerRef.current = setTimeout(() => {
-        hasTriggeredRef.current = true;
-        setHoldProgress(1);
-
-        if (progressIntervalRef.current) {
-          clearInterval(progressIntervalRef.current);
-          progressIntervalRef.current = null;
-        }
-
-        // Play celebration phase (second half), then hold last frame
-        if (animRef.current) {
-          const totalFrames = FRAME_END - FRAME_START;
-          const midFrame = FRAME_MID - FRAME_START;
-          animRef.current.playSegments([midFrame, totalFrames], true);
-          animRef.current.addEventListener("complete", () => {
-            animRef.current?.goToAndStop(totalFrames - 1, true);
-          });
-        }
-
-        setIsTriggered(true);
-
-        // Dispatch event for Canvas.tsx to send the AI prompt
-        window.dispatchEvent(
-          new CustomEvent("shape:approve-trigger", {
-            detail: {
-              shapeId: shape.id,
-              prompt: "Say happy birthday",
-            },
-          })
-        );
-
-        setIsHolding(false);
-      }, HOLD_DURATION_MS);
     },
-    [shape.id]
+    []
   );
 
-  const handlePointerUp = useCallback(
+  const handleRelease = useCallback(
     (e: React.PointerEvent) => {
       e.stopPropagation();
-      clearHold();
-    },
-    [clearHold]
-  );
+      isHoldingRef.current = false;
 
-  const handlePointerLeave = useCallback(
-    (e: React.PointerEvent) => {
-      e.stopPropagation();
-      clearHold();
+      // If not yet triggered, stop and reset the animation
+      if (!hasTriggeredRef.current && animRef.current) {
+        animRef.current.stop();
+        animRef.current.goToAndStop(0, true);
+      }
     },
-    [clearHold]
+    []
   );
-
-  const circumference = 2 * Math.PI * 28;
 
   return (
     <HTMLContainer
@@ -177,8 +133,8 @@ function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
       <div
         ref={containerRef}
         onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerLeave}
+        onPointerUp={handleRelease}
+        onPointerLeave={handleRelease}
         style={{
           width: "100%",
           height: "100%",
@@ -187,46 +143,6 @@ function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
           justifyContent: "center",
         }}
       />
-
-      {/* Circular progress ring during hold */}
-      {isHolding && (
-        <svg
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 64,
-            height: 64,
-            pointerEvents: "none",
-          }}
-          viewBox="0 0 64 64"
-        >
-          <circle
-            cx="32"
-            cy="32"
-            r="28"
-            fill="none"
-            stroke="rgba(255,255,255,0.3)"
-            strokeWidth="3"
-          />
-          <circle
-            cx="32"
-            cy="32"
-            r="28"
-            fill="none"
-            stroke="white"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference * (1 - holdProgress)}
-            style={{
-              transform: "rotate(-90deg)",
-              transformOrigin: "center",
-            }}
-          />
-        </svg>
-      )}
     </HTMLContainer>
   );
 }

@@ -3,6 +3,8 @@
     "id": "space-1",
     "name": "Product Launch Q3",
     "description": "Planning and strategy for the Q3 product launch",
+    "emoji": null,
+    "color": "#F5D550",
     "createdAt": "2026-01-15T10:00:00Z",
     "updatedAt": "2026-02-10T14:30:00Z",
     "order": 3
@@ -11,6 +13,8 @@
     "id": "space-2",
     "name": "Brand Refresh",
     "description": "Visual identity exploration and design system updates",
+    "emoji": null,
+    "color": "#F08080",
     "createdAt": "2026-01-22T09:00:00Z",
     "updatedAt": "2026-02-08T11:15:00Z",
     "order": 2
@@ -19,6 +23,8 @@
     "id": "space-3",
     "name": "User Research",
     "description": "Interview synthesis and journey mapping",
+    "emoji": null,
+    "color": "#E07BE0",
     "createdAt": "2026-02-01T13:00:00Z",
     "updatedAt": "2026-02-11T09:00:00Z",
     "order": 4
@@ -27,6 +33,8 @@
     "id": "space-1770806640263",
     "name": "Test",
     "description": "",
+    "emoji": null,
+    "color": "#B0A0D8",
     "createdAt": "2026-02-11T10:44:00.263Z",
     "updatedAt": "2026-02-11T10:44:00.263Z",
     "order": 5
@@ -35,6 +43,8 @@
     "id": "space-1770991294920",
     "name": "Untitled Space",
     "description": "",
+    "emoji": null,
+    "color": "#88A8E0",
     "createdAt": "2026-02-13T14:01:34.920Z",
     "updatedAt": "2026-02-13T14:01:34.920Z",
     "order": 0
@@ -43,6 +53,8 @@
     "id": "space-1770991577464",
     "name": "sdfsdfkj sdfjb",
     "description": "",
+    "emoji": null,
+    "color": "#F5D550",
     "createdAt": "2026-02-13T14:06:17.464Z",
     "updatedAt": "2026-02-17T08:57:20.039Z",
     "order": 1
@@ -51,6 +63,8 @@
     "id": "space-4",
     "name": "FlexForward 26",
     "description": "Annual company conference planning and logistics",
+    "emoji": null,
+    "color": "#F08080",
     "createdAt": "2026-01-20T14:00:00Z",
     "updatedAt": "2026-02-16T10:00:00Z",
     "order": 6

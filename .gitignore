@@ -42,3 +42,5 @@ package-lock.json
 bun.lock
 yarn.lock
 .env*.local
+
+.vscode

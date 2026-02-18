@@ -1,6 +1,6 @@
 "use client";
 
-import { IconLinesThreeHorizontal, IconMiroMark } from "@mirohq/design-system-icons";
+import { IconLinesThreeHorizontal } from "@mirohq/design-system-icons";
 import { useSidebar } from "@/hooks/useSidebar";
 
 export function CollapsedBar() {
@@ -24,12 +24,12 @@ export function CollapsedBar() {
 
         {/* Brand icon */}
         <div className="w-8 h-8 flex items-center justify-center">
-          <IconMiroMark css={{ width: 24, height: 24 }} />
+          <img src="/flexfund.svg" alt="FlexFund" width={24} height={24} />
         </div>
 
         {/* Logotype */}
         <span className="text-xl font-semibold text-gray-900 ml-1">
-          miro
+          FlexFund
         </span>
       </button>
     </div>

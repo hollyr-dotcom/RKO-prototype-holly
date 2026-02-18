@@ -32,6 +32,36 @@ export async function GET(
   }
 }
 
+/** DELETE /api/canvases/[canvasId] — remove a canvas */
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ canvasId: string }> }
+) {
+  try {
+    await requireAuth();
+
+    const { canvasId } = await params;
+
+    const { data, error } = await supabase
+      .from('canvases')
+      .delete()
+      .eq('id', canvasId)
+      .select()
+      .single();
+
+    if (error || !data) {
+      return NextResponse.json({ error: "Canvas not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    if (msg === 'Unauthorized') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.error('API /api/canvases/[canvasId] DELETE error:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
+
 /** PATCH /api/canvases/[canvasId] — update canvas fields (e.g. emoji) */
 export async function PATCH(
   req: Request,

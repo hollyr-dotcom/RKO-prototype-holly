@@ -2,6 +2,8 @@ export type SpaceRow = {
   id: string;
   name: string;
   description: string;
+  emoji: string | null;
+  color: string | null;
   created_at: string;
   updated_at: string;
   order: number;
@@ -22,6 +24,8 @@ export function spaceRowToApi(row: SpaceRow) {
     id: row.id,
     name: row.name,
     description: row.description,
+    emoji: row.emoji ?? undefined,
+    color: row.color ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     order: row.order,

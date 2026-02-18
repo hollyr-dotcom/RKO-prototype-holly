@@ -61,6 +61,12 @@ export async function PATCH(
     if (body.name !== undefined && typeof body.name === "string" && body.name.trim()) {
       updates.name = body.name.trim();
     }
+    if (body.emoji !== undefined) {
+      updates.emoji = body.emoji;
+    }
+    if (body.color !== undefined) {
+      updates.color = body.color;
+    }
 
     const { data, error } = await supabase
       .from('spaces')
@@ -78,6 +84,33 @@ export async function PATCH(
     const msg = error instanceof Error ? error.message : 'Unknown error';
     if (msg === 'Unauthorized') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     console.error('API /api/spaces/[spaceId] error:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
+
+/** DELETE /api/spaces/[spaceId] — delete a space and its canvases */
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ spaceId: string }> }
+) {
+  try {
+    await requireAuth();
+
+    const { spaceId } = await params;
+
+    // Delete all canvases in the space first
+    await supabase.from('canvases').delete().eq('space_id', spaceId);
+
+    // Delete the space
+    const { error } = await supabase.from('spaces').delete().eq('id', spaceId);
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    if (msg === 'Unauthorized') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    console.error('API DELETE /api/spaces/[spaceId] error:', msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

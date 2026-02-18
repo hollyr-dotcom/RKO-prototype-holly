@@ -22,7 +22,7 @@
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@liveblocks/client": "^3.13.4",
-    "@liveblocks/node": "3.13.4",
+    "@liveblocks/node": "^3.13.5",
     "@liveblocks/react": "^3.13.4",
     "@liveblocks/react-tiptap": "^3.13.4",
     "@liveblocks/react-ui": "^3.13.4",
