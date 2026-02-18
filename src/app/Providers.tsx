@@ -2,23 +2,18 @@
 
 import { LiveblocksProvider } from "@liveblocks/react";
 import { useAuth } from "@/hooks/useAuth";
-import { getSessionUser } from "@/lib/userIdentity";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, isConfigured } = useAuth();
 
-  // During auth loading or when not authenticated, render children without Liveblocks
-  // (AuthGate will handle showing login screen)
-  if (!user) {
+  // Skip LiveblocksProvider only when auth is configured but user hasn't signed in yet.
+  // In local dev (auth not configured), always render it — the auth endpoint returns a mock user.
+  if (isConfigured && !user) {
     return <>{children}</>;
   }
 
-  const sessionUser = getSessionUser(user);
-
   return (
-    <LiveblocksProvider
-      publicApiKey={process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY!}
-    >
+    <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
       {children}
     </LiveblocksProvider>
   );

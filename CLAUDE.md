@@ -178,7 +178,7 @@ GitHub secrets required: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, p
 
 - `OPENAI_API_KEY`
 - `TAVILY_API_KEY`
-- `NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY`
+- `LIVEBLOCKS_SECRET_KEY` — Liveblocks secret key (server-only, no `NEXT_PUBLIC_` prefix)
 - `AUTH_SECRET` — Auth.js session secret (generate with `openssl rand -base64 32`)
 - `GOOGLE_CLIENT_ID` — Google OAuth client ID
 - `GOOGLE_CLIENT_SECRET` — Google OAuth client secret
