@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Masonry from "react-masonry-css";
 import type { FeedItem } from "@/types/feed";
 import { FeedCard } from "./FeedCard";
+import { BoardEmoji } from "@/components/BoardEmoji";
 
 interface SpaceFeedProps {
   spaceId: string;
@@ -37,6 +38,17 @@ const staggerContainer = {
 export function SpaceFeed({ spaceId }: SpaceFeedProps) {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [space, setSpace] = useState<{ name: string; emoji?: string; color?: string } | null>(null);
+
+  // Fetch space data for banner emoji
+  useEffect(() => {
+    fetch(`/api/spaces/${spaceId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setSpace(data);
+      })
+      .catch(() => {});
+  }, [spaceId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,6 +83,11 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
       <div className="max-w-[900px] mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-6">
+          {space?.emoji && (
+            <div className="mb-3">
+              <BoardEmoji emoji={space.emoji} size={48} />
+            </div>
+          )}
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-semibold text-gray-900">Overview</h1>
             {unreadCount > 0 && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useChat } from "@/hooks/useChat";
@@ -17,6 +17,7 @@ import {
   IconVideoCamera,
   IconPlay,
   IconLinesThreeHorizontal,
+  IconTrash,
 } from "@mirohq/design-system-icons";
 
 // ─── CanvasMasthead ────────────────────────────────────────────
@@ -30,8 +31,48 @@ type CanvasData = {
 
 export function CanvasMasthead() {
   const params = useParams<{ spaceId: string; canvasId: string }>();
+  const router = useRouter();
   const { isCollapsed, toggleSidebar } = useSidebar();
   const { chatMode } = useChat();
+
+  // ── Actions menu (three-dot overflow) ──
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+
+  const handleMenuClickOutside = useCallback((e: MouseEvent) => {
+    if (
+      menuRef.current &&
+      !menuRef.current.contains(e.target as Node) &&
+      menuTriggerRef.current &&
+      !menuTriggerRef.current.contains(e.target as Node)
+    ) {
+      setMenuOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleMenuClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleMenuClickOutside);
+  }, [menuOpen, handleMenuClickOutside]);
+
+  const handleDeleteBoard = useCallback(async () => {
+    setMenuOpen(false);
+    try {
+      const res = await fetch(`/api/canvases/${params.canvasId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete board");
+
+      window.dispatchEvent(
+        new CustomEvent("canvas-updated", { detail: { canvasId: params.canvasId, deleted: true } })
+      );
+
+      router.push(`/space/${params.spaceId}`);
+    } catch (err) {
+      console.error("Failed to delete board:", err);
+    }
+  }, [params.canvasId, params.spaceId, router]);
 
   // ── Canvas data from API (replaces static JSON import) ──
   const [canvasData, setCanvasData] = useState<CanvasData | null>(null);
@@ -109,18 +150,22 @@ export function CanvasMasthead() {
         body: JSON.stringify({ name: trimmed }),
       });
 
+      // Notify other components immediately with new name
+      window.dispatchEvent(
+        new CustomEvent("canvas-updated", { detail: { canvasId: params.canvasId, name: trimmed } })
+      );
+
       // Auto-generate emoji from new title
       setIsGeneratingEmoji(true);
       const imageUrl = await generateAndSetEmoji(params.canvasId, trimmed);
       if (imageUrl) {
         setEmoji(imageUrl);
+        // Notify with updated emoji
+        window.dispatchEvent(
+          new CustomEvent("canvas-updated", { detail: { canvasId: params.canvasId, emoji: imageUrl } })
+        );
       }
       setIsGeneratingEmoji(false);
-
-      // Notify other components
-      window.dispatchEvent(
-        new CustomEvent("canvas-updated", { detail: { canvasId: params.canvasId } })
-      );
     } catch (err) {
       console.error("Failed to rename canvas:", err);
       setIsGeneratingEmoji(false);
@@ -169,9 +214,9 @@ export function CanvasMasthead() {
         body: JSON.stringify({ emoji: emojiData.native }),
       });
 
-      // Notify other components
+      // Notify other components with updated emoji
       window.dispatchEvent(
-        new CustomEvent("canvas-updated", { detail: { canvasId: params.canvasId } })
+        new CustomEvent("canvas-updated", { detail: { canvasId: params.canvasId, emoji: emojiData.native } })
       );
     } catch (err) {
       console.error("Failed to persist emoji:", err);
@@ -260,9 +305,43 @@ export function CanvasMasthead() {
             </AnimatePresence>
           </div>
 
-          <IconButton variant="ghost" size="medium" aria-label="More options">
-            <IconDotsThreeVertical />
-          </IconButton>
+          <div className="relative">
+            <IconButton
+              ref={menuTriggerRef}
+              variant="ghost"
+              size="medium"
+              aria-label="More options"
+              onPress={() => setMenuOpen((prev) => !prev)}
+            >
+              <IconDotsThreeVertical />
+            </IconButton>
+
+            <AnimatePresence>
+              {menuOpen && (
+                <motion.div
+                  ref={menuRef}
+                  className="absolute top-full right-0 mt-2 z-[600] min-w-[180px] rounded-lg overflow-hidden bg-white border border-gray-200"
+                  style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06)" }}
+                  initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1, transition: { duration: 0.15, ease: [0.2, 0, 0, 1] } }}
+                  exit={{ opacity: 0, y: -4, scale: 0.97, transition: { duration: 0.1, ease: [0.3, 0, 1, 1] } }}
+                >
+                  <div className="py-1">
+                    <button
+                      onClick={handleDeleteBoard}
+                      className="w-full flex items-center gap-2 text-left cursor-pointer border-none bg-transparent"
+                      style={{ padding: "7px 12px", fontSize: 13, color: "#dc2626" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "#fef2f2")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <IconTrash css={{ width: 14, height: 14, flexShrink: 0 }} />
+                      Delete board
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 

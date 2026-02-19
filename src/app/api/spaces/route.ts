@@ -47,7 +47,7 @@ export async function POST(req: Request) {
   try {
     await requireAuth();
 
-    const { name, description } = await req.json();
+    const { name, description, emoji, color } = await req.json();
 
     if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
@@ -69,6 +69,8 @@ export async function POST(req: Request) {
         id: `space-${Date.now()}`,
         name,
         description: description || '',
+        emoji: emoji || null,
+        color: color || null,
         created_at: now,
         updated_at: now,
         order: maxOrder + 1,
@@ -79,12 +81,12 @@ export async function POST(req: Request) {
     if (error) throw error;
 
     return NextResponse.json(spaceRowToApi(data), { status: 201 });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : (error as { message?: string })?.message || 'Unknown error';
     if (message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    console.error('POST /api/spaces error:', message);
+    console.error('POST /api/spaces error:', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

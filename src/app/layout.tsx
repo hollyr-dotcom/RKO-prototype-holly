@@ -17,6 +17,9 @@ const notoSans = Noto_Sans({
 export const metadata: Metadata = {
   title: "AI Canvas",
   description: "Visual collaboration with AI agents",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

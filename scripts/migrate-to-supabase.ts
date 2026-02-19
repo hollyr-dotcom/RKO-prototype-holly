@@ -32,6 +32,8 @@ async function migrate() {
     id: s.id,
     name: s.name,
     description: (s.description as string) || '',
+    emoji: (s.emoji as string) || null,
+    color: (s.color as string) || null,
     created_at: s.createdAt,
     updated_at: s.updatedAt,
     order: (s.order as number) ?? 0,

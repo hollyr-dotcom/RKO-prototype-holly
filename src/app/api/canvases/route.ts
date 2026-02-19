@@ -18,13 +18,49 @@ export async function POST(req: Request) {
   try {
     await requireAuth();
 
-    const { name, spaceId } = await req.json();
+    const { name, spaceId, prompt } = await req.json();
 
     if (!name) {
       return NextResponse.json(
         { error: "Name is required" },
         { status: 400 }
       );
+    }
+
+    // If a user prompt was provided, generate an intelligent board title via GPT-4o-mini
+    let canvasName = name;
+    if (prompt && process.env.OPENAI_API_KEY) {
+      try {
+        const titleResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [
+              {
+                role: "system",
+                content: "Generate a concise, descriptive board title (max 40 chars) based on the user's message. Return ONLY the title, no quotes or explanation.",
+              },
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
+            max_tokens: 20,
+          }),
+        });
+
+        if (titleResponse.ok) {
+          const titleData = await titleResponse.json();
+          const generated = titleData.choices?.[0]?.message?.content?.trim();
+          if (generated) canvasName = generated;
+        }
+      } catch {
+        // Fall back to the provided name
+      }
     }
 
     const targetSpaceId = spaceId || "";
@@ -45,7 +81,7 @@ export async function POST(req: Request) {
       .insert({
         id: `canvas-${Date.now()}`,
         space_id: targetSpaceId,
-        name,
+        name: canvasName,
         created_at: now,
         updated_at: now,
         order: maxOrder + 1,

@@ -9,7 +9,6 @@ import {
   IconChat,
   IconCheckBoxLines,
   IconMagnifyingGlass,
-  IconMiroMark,
 } from "@mirohq/design-system-icons";
 import { useSidebar } from "@/hooks/useSidebar";
 import { RAIL_WIDTH } from "@/providers/SidebarProvider";
@@ -45,9 +44,9 @@ export function PrimaryRail() {
       <Link href="/" className="flex-shrink-0">
         <div
           className="w-10 h-10 flex items-center justify-center shadow-sm rounded-lg"
-          style={{ backgroundColor: navPalette.logoContainer }}
+          style={{ backgroundColor: "#7A2CDD" }}
         >
-          <IconMiroMark css={{ width: 24, height: 24, color: "#000000" }} />
+          <img src="/flexfund.svg" alt="FlexFund" width={24} height={24} />
         </div>
       </Link>
 
