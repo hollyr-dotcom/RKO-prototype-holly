@@ -18,7 +18,7 @@ import { GanttChartShapeUtil } from "@/shapes/GanttChartShapeUtil";
 import { KanbanBoardShapeUtil } from "@/shapes/KanbanBoardShapeUtil";
 import { PeopleListShapeUtil } from "@/shapes/PeopleListShapeUtil";
 import { ApproveButtonShapeUtil } from "@/shapes/ApproveButtonShapeUtil";
-import { Toolbar } from "./Toolbar";
+import { Toolbar } from "./toolbar/Toolbar";
 import { StartingPromptCards } from "./StartingPromptCards";
 import { CanvasComments } from "./CanvasComments";
 import { CanvasMasthead } from "./CanvasMasthead";
@@ -27,8 +27,6 @@ import {
   IconViewSideRight,
   IconArrowLeft,
   IconCross,
-  IconMicrophoneSlash,
-  IconMicrophone,
   IconArrowRight,
   IconSquarePencil,
   IconCheckMark,
@@ -77,46 +75,7 @@ const smoothTransition = { type: "tween" as const, ease: [0.25, 0.1, 0.25, 1.0] 
 const floatingTransition = { type: "tween" as const, ease: [0.25, 0.1, 0.25, 1.0] as [number, number, number, number], duration: 0.22 };
 
 // Audio chimes for voice mode
-function playChime(type: 'start' | 'end') {
-  try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const now = audioContext.currentTime;
 
-    // Gentle chime parameters
-    const gainNode = audioContext.createGain();
-    gainNode.connect(audioContext.destination);
-    gainNode.gain.value = 0.1; // Very subtle volume
-
-    const playNote = (frequency: number, startTime: number, duration: number) => {
-      const oscillator = audioContext.createOscillator();
-      oscillator.type = 'sine';
-      oscillator.frequency.value = frequency;
-      oscillator.connect(gainNode);
-
-      // Gentle envelope
-      gainNode.gain.setValueAtTime(0, startTime);
-      gainNode.gain.linearRampToValueAtTime(0.08, startTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
-
-      oscillator.start(startTime);
-      oscillator.stop(startTime + duration);
-    };
-
-    if (type === 'start') {
-      // Ascending chime: C5 -> E5 -> G5 (welcoming)
-      playNote(523.25, now, 0.15);           // C5
-      playNote(659.25, now + 0.08, 0.15);    // E5
-      playNote(783.99, now + 0.16, 0.2);     // G5
-    } else {
-      // Descending chime: G5 -> E5 -> C5 (gentle closing)
-      playNote(783.99, now, 0.15);           // G5
-      playNote(659.25, now + 0.08, 0.15);    // E5
-      playNote(523.25, now + 0.16, 0.2);     // C5
-    }
-  } catch (err) {
-    console.warn('[AUDIO] Failed to play chime:', err);
-  }
-}
 
 // Floating thinking indicator
 function FloatingThinkingIndicator({ status = "Thinking..." }: { status?: string }) {
@@ -135,53 +94,6 @@ function FloatingThinkingIndicator({ status = "Thinking..." }: { status?: string
 }
 
 // Floating voice indicator
-function FloatingVoiceIndicator({
-  state,
-  onEnd,
-  isMuted,
-  onToggleMute
-}: {
-  state: "listening" | "speaking";
-  onEnd: () => void;
-  isMuted: boolean;
-  onToggleMute: () => void;
-}) {
-  return (
-    <div>
-      <div className="flex items-center gap-3 bg-white rounded-full pl-5 pr-3 py-3 shadow-lg border border-gray-200">
-        <div className="flex gap-1">
-          <span className={`w-2 h-2 rounded-full ${state === "listening" ? "bg-green-500" : "bg-blue-500"} animate-pulse`} />
-          <span className={`w-2 h-2 rounded-full ${state === "listening" ? "bg-green-500" : "bg-blue-500"} animate-pulse`} style={{ animationDelay: "0.2s" }} />
-          <span className={`w-2 h-2 rounded-full ${state === "listening" ? "bg-green-500" : "bg-blue-500"} animate-pulse`} style={{ animationDelay: "0.4s" }} />
-        </div>
-        <span className="text-sm text-gray-600 w-24 text-left">
-          {isMuted ? "Muted" : state === "listening" ? "Listening..." : "Speaking..."}
-        </span>
-        {/* Mute/Unmute button */}
-        <button
-          onClick={onToggleMute}
-          className={`ml-1 p-1.5 rounded-full transition-colors ${isMuted ? 'text-red-500 hover:text-red-600 hover:bg-red-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
-          title={isMuted ? "Unmute microphone" : "Mute microphone"}
-        >
-          {isMuted ? (
-            <IconMicrophoneSlash css={{ width: 16, height: 16 }} />
-          ) : (
-            <IconMicrophone css={{ width: 16, height: 16 }} />
-          )}
-        </button>
-        {/* End voice mode button */}
-        <button
-          onClick={onEnd}
-          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-          title="End voice mode"
-        >
-          <IconCross css={{ width: 16, height: 16 }} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // Floating question card (Claude Cowork style)
 function FloatingQuestionCard({
   question,
@@ -4330,7 +4242,6 @@ export function Canvas() {
 
   // Wrapper for disconnect that plays end chime
   const handleVoiceDisconnect = useCallback(() => {
-    playChime('end');
     voice.disconnect();
     // Reset session flags
     hasPlayedStartChimeRef.current = false;
@@ -4397,22 +4308,18 @@ export function Canvas() {
 
   // Handle voice mode toggle
   const handleVoiceToggle = useCallback(() => {
-    if (voice.isConnected) {
-      playChime('end');
-      voice.disconnect();
+    if (voice.isConnected || voice.state === "connecting") {
+      handleVoiceDisconnect();
     } else {
       // Don't play chime here - wait until voice is actually listening
       voice.connect(handleToolCall, handleVoiceTranscript, handleVoiceMessageToolCall, getCanvasState, captureScreenshot, messagesRef.current);
     }
-  }, [voice, handleToolCall, handleVoiceTranscript, handleVoiceMessageToolCall, getCanvasState, captureScreenshot]);
+  }, [voice, handleToolCall, handleVoiceTranscript, handleVoiceMessageToolCall, getCanvasState, captureScreenshot, handleVoiceDisconnect]);
 
   // Handle voice state transitions and auto-close
   useEffect(() => {
     if (voice.state === "listening") {
-      // Initial connection: play start chime once
       if (!hasPlayedStartChimeRef.current && !waitingForGoodbyeRef.current) {
-        console.log('[VOICE] Initial connection ready, playing start chime');
-        playChime('start');
         hasPlayedStartChimeRef.current = true;
       }
       // AI said goodbye and finished speaking: auto-close
@@ -5105,28 +5012,6 @@ export function Canvas() {
             )}
           </AnimatePresence>
 
-          {/* Floating voice indicator */}
-          <AnimatePresence>
-            {!isChatOpen && (voice.state === "listening" || voice.state === "speaking") && (
-              <motion.div
-                key="voice"
-                className="pointer-events-auto absolute bottom-24 left-1/2"
-                style={{ x: "-50%" }}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-                transition={floatingTransition}
-              >
-                <FloatingVoiceIndicator
-                  state={voice.state}
-                  onEnd={handleVoiceDisconnect}
-                  isMuted={voice.isMuted}
-                  onToggleMute={voice.toggleMute}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           {/* Stacked toasts — response text + creation status lines */}
           <AnimatePresence>
             {!showFloatingQuestion && !isChatOpen && !shouldHideToastRef.current && !areSuggestionsVisible && (
@@ -5262,6 +5147,8 @@ export function Canvas() {
               isLoading={isLoading}
               voiceState={voice.state}
               onVoiceToggle={handleVoiceToggle}
+              isMuted={voice.isMuted}
+              onToggleMute={voice.toggleMute}
               onExpandedChange={setIsToolbarExpanded}
               onMultiLineChange={setIsToolbarMultiLine}
               responseToast={isChatOpen || toastCentered || showFloatingQuestion || shouldHideToastRef.current || areSuggestionsVisible ? null : responseToast}

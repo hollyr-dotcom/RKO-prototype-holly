@@ -16,6 +16,7 @@ export function useRealtimeVoice() {
   const stateRef = useRef<VoiceState>("idle");
   const setState = useCallback((newState: VoiceState) => {
     if (stateRef.current === newState) return; // Skip if already in this state
+    console.log(`[VOICE STATE] ${stateRef.current} → ${newState}`);
     stateRef.current = newState;
     _setState(newState);
   }, []);
@@ -362,12 +363,12 @@ export function useRealtimeVoice() {
             }
           }
 
-          // Track AI speaking state (setState deduplicates — no re-render if already in that state)
-          if (message.type === "response.audio.delta") {
+          // Track AI speaking state — use transcript events (audio.delta doesn't fire over WebRTC)
+          if (message.type === "response.audio_transcript.delta") {
             setState("speaking");
           }
 
-          if (message.type === "response.audio.done" || message.type === "response.done") {
+          if (message.type === "response.audio_transcript.done" || message.type === "response.done") {
             setState("listening");
           }
 
@@ -505,6 +506,10 @@ export function useRealtimeVoice() {
       }
 
       const answerSdp = await sdpResponse.text();
+      if (pc.signalingState === "closed") {
+        console.warn("[VOICE] Connection closed during SDP exchange, aborting");
+        return;
+      }
       await pc.setRemoteDescription({
         type: "answer",
         sdp: answerSdp,
