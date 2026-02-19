@@ -10,9 +10,10 @@ import type { FeedItem } from "@/types/feed";
  */
 export function selectDeskPile(items: FeedItem[]): FeedItem[] {
   return items
-    .filter((item) => item.priority === "high" && item.type === "agent-opportunity")
+    .filter((item) => item.priority === "high" && (item.type === "agent-opportunity" || item.type === "collaboration-request" || item.type === "talktrack" || item.type === "decision"))
     .sort((a, b) => {
       if (a.isRead !== b.isRead) return a.isRead ? 1 : -1;
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-    });
+    })
+    .slice(0, 6);
 }

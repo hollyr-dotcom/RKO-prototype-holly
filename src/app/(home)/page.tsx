@@ -123,7 +123,7 @@ export default function HomePage() {
       {/* Main content */}
       <div className="absolute inset-0 flex flex-col pt-[8vh] pb-28">
         {/* Heading */}
-        <div className="mb-8 pt-20 text-center px-6">
+        <div className="mb-4 pt-20 text-center px-6">
           <h1 className="text-4xl leading-none font-bold tracking-tight text-gray-900">Welcome back, {firstName}</h1>
           <p className="text-4xl leading-none text-gray-500 mt-1">Here&apos;s what you need to know</p>
         </div>

@@ -1,5 +1,70 @@
 [
   {
+    "id": "feed-decision-jeff-01",
+    "type": "decision",
+    "spaceId": "space-1",
+    "spaceName": "Q2 Roadmap",
+    "title": "Jeff Chow and team just untangled some roadmap questions",
+    "body": "Jeff's team resolved three open roadmap questions around prioritisation, timing, and scope. The decisions are now locked in.",
+    "timestamp": "2026-02-19T08:45:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-jeff",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [],
+    "actions": [],
+    "payload": {
+      "status": "made",
+      "options": [
+        "PayGrid partner expansion first",
+        "FirstFlex DE launch in Q2",
+        "Core Banking Phase 3 deferred to Q3"
+      ],
+      "chosenOption": "FirstFlex DE launch in Q2",
+      "decidedBy": "Jeff Chow",
+      "videoSrc": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+      "participants": ["user-marcus", "user-priya", "user-james", "agent-product-leader"]
+    }
+  },
+  {
+    "id": "feed-roadmap-talktrack-01",
+    "type": "talktrack",
+    "spaceId": "space-1",
+    "spaceName": "FirstFlex",
+    "title": "Marcus shared his Q2 roadmap Talktrack for your sign-off",
+    "body": "Marcus has prepared a talk track walking through the Q2 roadmap priorities. He's requesting your sign-off before the all-hands on Friday.",
+    "timestamp": "2026-02-17T11:30:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-marcus",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [],
+    "actions": [
+      {
+        "id": "approve-talktrack",
+        "label": "Approve",
+        "variant": "primary"
+      },
+      {
+        "id": "comment-talktrack",
+        "label": "Comment",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "videoSrc": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      "artifact": {
+        "type": "slides",
+        "id": "talktrack-q2",
+        "name": "Q2 Roadmap Talk Track"
+      }
+    }
+  },
+  {
     "id": "feed-kyc-01",
     "type": "alert-fyi",
     "spaceId": "space-2",
@@ -987,7 +1052,7 @@
     "id": "feed-kyc-13",
     "type": "agent-opportunity",
     "spaceId": "space-2",
-    "title": "$4.7M ARR at risk \u2014 onboarding speed cited by 3 lost enterprise prospects",
+    "title": "$4.7M ARR at risk \u2014 onboarding speed cited by 3 lost prospects",
     "body": "Three enterprise prospects cited onboarding speed as the primary reason for going elsewhere \u2014 combined ARR of $4.7M. Average onboarding has gone from 15 to 24 business days over 6 months. EDD cases averaging 31 days.",
     "timestamp": "2025-12-15T09:00:00Z",
     "priority": "high",
@@ -1009,7 +1074,7 @@
     "actions": [
       {
         "id": "view-win/loss-data",
-        "label": "View win/loss data",
+        "label": "View win/loss",
         "variant": "primary"
       },
       {
@@ -1355,7 +1420,7 @@
     "id": "feed-kyc-18",
     "type": "agent-opportunity",
     "spaceId": "space-2",
-    "title": "Document completion rates down 18% \u2014 correlates with 30% volume increase",
+    "title": "Document completion down 18% \u2014 linked to 30% volume increase",
     "body": "Two near-misses with Dutch and German regulators this quarter \u2014 both caused by incomplete UBO documentation. Completion rates have dropped 18% over 6 months, directly correlating with a 30% increase in case volume per analyst.",
     "timestamp": "2025-12-10T09:00:00Z",
     "priority": "high",
@@ -1377,7 +1442,7 @@
     "actions": [
       {
         "id": "view-compliance-brief",
-        "label": "View compliance brief",
+        "label": "View brief",
         "variant": "primary"
       },
       {
@@ -1721,7 +1786,7 @@
     "id": "feed-pq3-01",
     "type": "agent-opportunity",
     "spaceId": "space-1",
-    "title": "Timeline conflict: PayGrid API and mobile release share engineering resources",
+    "title": "Timeline conflict \u2014 PayGrid API and mobile release share engineering",
     "body": "PayGrid API integration and the mobile release sprint both require full engineering capacity in the same 2.5-week window. Current team of 5 can't cover both at peak simultaneously.",
     "timestamp": "2026-02-17T08:00:00Z",
     "priority": "high",
@@ -2826,7 +2891,7 @@
     "id": "feed-ff-youth-01",
     "type": "agent-opportunity",
     "spaceId": "space-3",
-    "title": "FirstFlex activation rate 12% below target \u2014 drop-off at parental consent step",
+    "title": "FirstFlex activation 12% below target \u2014 drop-off at parental consent",
     "body": "FirstFlex activation rate is 61% lower than benchmarks for the 13\u201317 segment. The parental consent step has a 47% drop-off \u2014 parents are not completing the ID verification flow. Consent flow redesign or alternative verification method recommended.",
     "timestamp": "2026-02-16T11:00:00Z",
     "priority": "high",
@@ -2848,7 +2913,7 @@
     "actions": [
       {
         "id": "redesign-consent-flow",
-        "label": "Redesign consent flow",
+        "label": "Redesign consent",
         "variant": "primary"
       },
       {
@@ -3294,7 +3359,7 @@
     "id": "feed-embed-01",
     "type": "agent-opportunity",
     "spaceId": "space-6",
-    "title": "Embedded Finance API usage 3x in 60 days \u2014 infrastructure scaling needed",
+    "title": "Embedded Finance API usage 3x in 60 days \u2014 scaling needed",
     "body": "Embedded Finance API request volume has tripled in 60 days driven by 3 new partner integrations. Current infrastructure is at 85% capacity. At current growth rate, ceiling hit in ~18 days. Recommend immediate scaling review.",
     "timestamp": "2026-02-16T08:30:00Z",
     "priority": "high",
@@ -3316,12 +3381,12 @@
     "actions": [
       {
         "id": "trigger-scaling-review",
-        "label": "Trigger scaling review",
+        "label": "Trigger review",
         "variant": "primary"
       },
       {
         "id": "view-capacity-plan",
-        "label": "View capacity plan",
+        "label": "View capacity",
         "variant": "secondary"
       }
     ],
@@ -3603,7 +3668,7 @@
     "id": "feed-core-01",
     "type": "agent-opportunity",
     "spaceId": "space-7",
-    "title": "Core banking migration 3 weeks behind schedule \u2014 data validation failing on legacy accounts",
+    "title": "Core banking migration 3 weeks behind \u2014 data validation failing on legacy accounts",
     "body": "Phase 1 data migration ran 3 weeks over schedule due to unexpected validation failures in legacy account structures. 2,847 accounts with non-standard field formats. Phase 2 start has been pushed and Phase 3 cutover now at risk.",
     "timestamp": "2026-02-17T10:00:00Z",
     "priority": "high",
@@ -3626,7 +3691,7 @@
     "actions": [
       {
         "id": "view-mitigation-plan",
-        "label": "View mitigation plan",
+        "label": "View plan",
         "variant": "primary"
       },
       {
@@ -3920,7 +3985,7 @@
       },
       {
         "id": "schedule-intervention",
-        "label": "Schedule intervention",
+        "label": "Schedule review",
         "variant": "secondary"
       }
     ],
@@ -4214,7 +4279,7 @@
     "id": "feed-cross-05",
     "type": "agent-opportunity",
     "spaceId": "space-7",
-    "title": "Engineering capacity at 94% \u2014 cross-initiative resourcing conflict emerging",
+    "title": "Engineering capacity at 94% \u2014 resourcing conflict emerging",
     "body": "Engineering team is at 94% allocation. Payroll processing for new hires (4 engineers in Feb) won't free capacity until March. PayGrid and Core Banking share 3 engineers across their critical path in weeks 4\u20136.",
     "timestamp": "2026-02-15T09:00:00Z",
     "priority": "high",
@@ -4237,7 +4302,7 @@
     "actions": [
       {
         "id": "view-capacity-plan",
-        "label": "View capacity plan",
+        "label": "View capacity",
         "variant": "primary"
       },
       {
