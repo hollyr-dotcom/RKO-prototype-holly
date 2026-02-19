@@ -10,13 +10,12 @@ import { BoardEmoji } from "@/components/BoardEmoji";
 import { generateAndSetEmoji } from "@/lib/canvasUtils";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
-import { Button, IconButton } from "@mirohq/design-system";
+import { IconButton } from "@mirohq/design-system";
 import {
   IconDotsThreeVertical,
-  IconTimer,
-  IconVideoCamera,
-  IconPlay,
-  IconLinesThreeHorizontal,
+  IconSidebarGlobalClosed,
+  IconSidebarGlobalOpen,
+  IconOffice,
   IconTrash,
 } from "@mirohq/design-system-icons";
 
@@ -33,7 +32,7 @@ export function CanvasMasthead() {
   const params = useParams<{ spaceId: string; canvasId: string }>();
   const router = useRouter();
   const { isCollapsed, toggleSidebar } = useSidebar();
-  const { chatMode } = useChat();
+  const { chatMode, setChatMode } = useChat();
 
   // ── Actions menu (three-dot overflow) ──
   const [menuOpen, setMenuOpen] = useState(false);
@@ -227,11 +226,11 @@ export function CanvasMasthead() {
   const isChatMinimized = chatMode === "minimized";
 
   return (
-    <div className={`absolute top-3 left-3 z-[500] flex items-center justify-between pointer-events-none ${isChatMinimized ? 'right-16' : 'right-3'}`} onWheel={(e) => e.stopPropagation()}>
+    <div className={`absolute top-3 left-3 z-[500] flex items-center justify-between pointer-events-none right-3`} onWheel={(e) => e.stopPropagation()}>
       {/* ── Left bar: Board identity ── */}
       <div
-        className="h-12 bg-white rounded-full border border-gray-200 flex items-center pointer-events-auto p-1.5"
-        style={{ boxShadow: barShadow }}
+        className="h-12 bg-white border border-gray-200 flex items-center pointer-events-auto p-1.5"
+        style={{ borderRadius: 16, boxShadow: barShadow }}
       >
         <div className="flex items-center gap-2 px-2 min-w-0">
           <IconButton
@@ -240,7 +239,7 @@ export function CanvasMasthead() {
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             onPress={() => toggleSidebar()}
           >
-            <IconLinesThreeHorizontal />
+            {isCollapsed ? <IconSidebarGlobalClosed /> : <IconSidebarGlobalOpen />}
           </IconButton>
 
           <div className="relative flex items-center gap-1.5 min-w-0">
@@ -347,41 +346,27 @@ export function CanvasMasthead() {
 
       {/* ── Right bar: Actions & presence ── */}
       <div
-        className="h-12 bg-white rounded-full border border-gray-200 flex items-center pointer-events-auto p-1.5"
-        style={{ boxShadow: barShadow }}
+        className="h-12 bg-white border border-gray-200 flex items-center pointer-events-auto p-1.5"
+        style={{ borderRadius: 16, boxShadow: barShadow }}
       >
-        <div className="flex items-center gap-1 px-2">
-          {/* Action icons */}
-          <div className="flex items-center gap-0.5 mr-1">
-            <IconButton variant="ghost" size="medium" aria-label="Timer">
-              <IconTimer />
-            </IconButton>
-            <IconButton variant="ghost" size="medium" aria-label="Video chat">
-              <IconVideoCamera />
-            </IconButton>
-          </div>
+        <div className="flex items-center gap-2 pl-1.5 pr-0">
+          {/* More options */}
+          <IconButton variant="ghost" size="medium" aria-label="More options">
+            <IconDotsThreeVertical />
+          </IconButton>
 
-          {/* Separator */}
-          <div className="w-px h-5 bg-gray-200 mx-1" />
-
-          {/* Avatars + count */}
+          {/* Avatars */}
           <MastheadAvatars />
 
-          {/* Separator */}
-          <div className="w-px h-5 bg-gray-200 mx-1" />
-
-          {/* Present button */}
-          <Button variant="ghost" size="medium">
-            <Button.IconSlot>
-              <IconPlay />
-            </Button.IconSlot>
-            <Button.Label>Present</Button.Label>
-          </Button>
-
-          {/* Share button */}
-          <Button variant="primary" size="medium" rounded>
-            <Button.Label>Share</Button.Label>
-          </Button>
+          {/* Share button — opens chat sidepanel */}
+          <button
+            onClick={() => setChatMode(chatMode === "sidepanel" ? "minimized" : "sidepanel")}
+            className="h-8 px-4 flex items-center gap-1.5 bg-[#4262ff] hover:bg-[#3b58e0] text-white text-sm font-medium transition-colors cursor-pointer border-none"
+            style={{ borderRadius: 8, marginRight: 1 }}
+          >
+            <IconOffice css={{ width: 16, height: 16 }} />
+            Share
+          </button>
         </div>
       </div>
     </div>

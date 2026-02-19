@@ -129,16 +129,6 @@ export function ChatShell() {
 
   return (
     <>
-      {/* Floating spark button — visible only when chat is minimized and not on home page */}
-      {isMinimized && !isHomePage && (
-        <button
-          onClick={() => setChatMode("sidepanel")}
-          className="fixed top-4 right-4 z-[9900] w-10 h-10 bg-gray-900 rounded-full shadow-md flex items-center justify-center text-white hover:bg-gray-700 hover:shadow-lg transition-all"
-          title="Open AI chat"
-        >
-          <IconSingleSparksFilled css={{ width: 20, height: 20 }} />
-        </button>
-      )}
 
       {/* Flex spacer — empty div that pushes <main> content left in sidepanel mode */}
       <div
