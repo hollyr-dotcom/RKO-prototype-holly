@@ -595,16 +595,16 @@ const createKanbanBoardTool = tool({
 
 const createZoneTool = tool({
   name: "createZone",
-  description: "Create a composed frame with mixed content — one call = one complete zone. Two layout modes: 'overview' (conflict summary with stickies + shared Gantt) and 'scenario' (full analysis zone with summary doc, roadmap Gantt, teams, user insight grid, evaluation grid). Much better than calling createFrame + 5-6 nested tools separately.",
+  description: "Create a composed frame with mixed content — one call = one complete zone. Three layout modes: 'project' (full project overview with summary, roadmap, people, user insight, evaluation), 'synthesis' (narrow doc-only zone about the tension/takeaways), 'solution' (compact card with punchy title, short description, and confidence level). Much better than calling createFrame + 5-6 nested tools separately.",
   parameters: z.object({
-    title: z.string().describe("Frame title (e.g. 'Overview: The Conflict', 'Scenario A: PayGrid First')"),
-    layout: z.enum(["overview", "scenario"]).describe("Layout mode: 'overview' for conflict summary, 'scenario' for full analysis zone"),
+    title: z.string().describe("Frame title (e.g. 'Priority: PayGrid', 'Synthesis: Competing Priorities', 'Solution A: Speed First')"),
+    layout: z.enum(["project", "synthesis", "solution"]).describe("Layout mode: 'project' for profiling a competing project, 'synthesis' for tension/takeaways doc, 'solution' for compact decision card"),
 
     // ── Shared fields ──
     summary: z.object({
       title: z.string().describe("Document title inside the zone"),
-      content: z.string().describe("Document body as HTML. Overview: describe the conflict. Scenario: 2-4 punchy sentences."),
-    }).nullable().describe("Rich text document. Used by BOTH overview and scenario layouts. Pass null to skip."),
+      content: z.string().describe("Document body as HTML. Project: 2-3 paragraphs about current state. Synthesis: 3-5 paragraphs about tension/takeaways. Solution: 2-3 punchy sentences only."),
+    }).nullable().describe("Rich text document. Used by ALL layout modes. Pass null to skip."),
     gantt: z.object({
       title: z.string().describe("Chart title"),
       tasks: z.array(z.object({
@@ -625,13 +625,16 @@ const createZoneTool = tool({
         target: z.number(),
         type: z.enum(["e2s", "s2s", "e2e", "s2e"]),
       })),
-    }).nullable().describe("Gantt chart / timeline. Pass null to skip."),
+    }).nullable().describe("Gantt chart / timeline. Used by project layout only. Pass null for synthesis and solution."),
 
-    // ── Scenario layout fields ──
-    teams: z.array(z.object({
-      name: z.string().describe("Team/squad name"),
-      color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet", "red"]).describe("Sticky color — use 'red' for the shared/conflicting squad"),
-    })).nullable().describe("Scenario mode: max 3 team stickies. Shared squad = red. Pass null if layout='overview'."),
+    // ── Project layout fields ──
+    people: z.array(z.object({
+      name: z.string().describe("Person's full name"),
+      role: z.string().describe("Person's role or title"),
+    })).nullable().describe("Key people list (3-8 people). Used by project layout only. Pass null for synthesis and solution."),
+    isRecommended: z.boolean().describe("Whether this solution is the AI's recommended pick. Only true for one solution zone. Always false for project/synthesis."),
+    confidence: z.string().nullable().describe("Confidence level for solution zones (e.g. '85%', '60%'). Shows as a sticky on the solution card. Pass null for project/synthesis."),
+    headerColor: z.enum(["blue", "yellow", "green", "violet", "orange", "red"]).nullable().describe("Color for section header stickies in the zone. Priority A = 'green', Priority B = 'violet'. Pass null for synthesis/solution."),
     userInsight: z.object({
       feedback: z.array(z.object({
         title: z.string().describe("Task card title"),
@@ -648,10 +651,10 @@ const createZoneTool = tool({
         text: z.string().describe("Feature request sticky text"),
         color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
       })).describe("2-4 stickies with real feature requests"),
-    }).nullable().describe("Scenario mode: user insight 3-column section. Pass null if layout='overview'."),
+    }).nullable().describe("User insight 3-column section. Used by project layout only. Pass null for synthesis and solution."),
     evaluation: z.object({
       opportunity: z.array(z.object({
-        text: z.string().describe("What this scenario unlocks"),
+        text: z.string().describe("What this path unlocks"),
         color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
       })).describe("2-3 opportunity stickies"),
       risks: z.array(z.object({
@@ -662,12 +665,23 @@ const createZoneTool = tool({
         text: z.string().describe("Market potential, ARR projections, etc."),
         color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
       })).describe("1-2 potential stickies (can include large metric numbers like '$74B ARR')"),
-    }).nullable().describe("Scenario mode: evaluation 3-column section. Pass null if layout='overview'."),
+    }).nullable().describe("Evaluation 3-column section. Used by project layout only. Pass null for synthesis and solution."),
+
+    // ── Solution layout: both solutions in one call ──
+    solutions: z.array(z.object({
+      title: z.string().describe("Solution title e.g. 'Solution A: Speed First'"),
+      summary: z.object({
+        title: z.string(),
+        content: z.string().describe("2-3 punchy sentences. VP-scannable in 5 seconds."),
+      }),
+      confidence: z.string().describe("e.g. '85%'"),
+      isRecommended: z.boolean().describe("true on AI's preferred solution, only ONE"),
+    })).nullable().describe("Two solutions for the solution layout. Pass null for project/synthesis."),
 
     // ── Kept from old ──
     stickers: z.array(z.string()).describe("Sticker intents (e.g. 'rocket', 'recommended'). Use [] for none."),
   }),
-  execute: async ({ title, layout, gantt, summary, teams, userInsight, evaluation, stickers }) => {
+  execute: async ({ title, layout, gantt, summary, people, isRecommended, confidence, headerColor, userInsight, evaluation, solutions, stickers }) => {
     // Resolve sticker intents to URLs server-side
     const resolvedStickers = stickers
       .map(intent => findBestSticker(intent))
@@ -690,9 +704,13 @@ const createZoneTool = tool({
       layout,
       gantt: normalizedGantt,
       summary,
-      teams,
+      people,
+      isRecommended,
+      confidence,
+      headerColor,
       userInsight,
       evaluation,
+      solutions,
       resolvedStickers,
     });
   },
@@ -942,21 +960,22 @@ FIRST: DECIDE HOW TO RESPOND based on what the user asked:
    - Constraints: "Are there team or budget constraints I should factor in?"
    NEVER ask users to name projects, describe initiatives, or provide data you can look up from connectors.
 
-   The plan MUST follow this exact 5-step arc:
-   1. Gather internal data ← queryConnectors (no canvas output, just data collection)
-   2. Overview: [Challenge title] ← createZone(layout:"overview") — conflict summary doc + shared timeline Gantt with red conflict highlight
-   3. Scenario A: [Name] ← createZone(layout:"scenario") — ALL sections in one call (summary + gantt + teams + userInsight + evaluation)
-   4. Scenario B: [Name] ← createZone(layout:"scenario") — ALL sections in one call
-   5. Scenario C: Hybrid approach ← createZone(layout:"scenario") — ALL sections + recommended sticker
+   The plan MUST follow this exact 4-step arc:
+   1. Map out [Project A] and [Project B] ← createZone(layout:"project") x2 — one zone per project
+   2. Analyze competing priorities ← queryConnectors (broad data gathering, no canvas output)
+   3. Synthesize the tension ← createZone(layout:"synthesis") — tension/takeaways doc
+   4. Explore solutions ← createZone(layout:"solution") with solutions array (SINGLE call, both paths)
 
-   STEP NAMING RULES (the executor matches these exact patterns):
-   - Step 2 MUST be titled "Overview: [Challenge title]" (triggers createZone with layout:"overview")
-   - Steps 3-5 MUST be titled "Scenario A: [Name]", "Scenario B: [Name]", "Scenario C: Hybrid approach" (triggers createZone with layout:"scenario")
+   STEP NAMING RULES (the executor matches these patterns):
+   - Step 1 MUST start with "Map out" (triggers TWO createZone calls with layout:"project", one per project)
+   - Step 2 MUST start with "Analyze" (triggers queryConnectors + showProgress, no canvas output)
+   - Step 3 MUST start with "Synthesize" (triggers createZone with layout:"synthesis")
+   - Step 4 MUST start with "Explore solutions" (triggers ONE createZone call with solutions array)
 
    ⚠️ Do NOT include timeline/roadmap as a separate step. Timelines go INSIDE the createZone gantt field.
-   ⚠️ Do NOT include diagram steps or recommendation steps. The recommended sticker on Scenario C IS the recommendation.
-   ⚠️ Exactly 5 steps. No more, no less.
-   ⚠️ Scenario C MUST always be a hybrid/sequenced approach that combines elements of Scenarios A and B.
+   ⚠️ Do NOT include diagram steps or recommendation steps. The isRecommended flag on the AI's preferred solution IS the recommendation.
+   ⚠️ Exactly 4 steps. No more, no less.
+   ⚠️ One of the two solutions MUST have isRecommended: true — the AI picks its preferred path.
 
    🚨 CRITICAL — ALL PLANS WITH COMPANY DATA:
    → Plan steps MUST include a connector data-gathering step
@@ -984,13 +1003,13 @@ USE YOUR JUDGMENT. Ask yourself two questions:
 The more artifacts needed, the more a plan helps. A status update = just respond. A strategic analysis = definitely plan.
 Simple internal lookup (one query, one answer) → 2b. Deep analysis (multiple sources, multiple outputs) → 3.
 
-FOLLOW-UP REQUESTS — "map out scenarios" / "show the options" / "prepare a summary for the meeting":
+FOLLOW-UP REQUESTS — "map out solutions" / "show the options" / "prepare a summary for the meeting":
 If you've ALREADY done the analysis and the user asks you to package it — this is a SINGLE ARTIFACT, not a new plan.
 Pick the right tool based on the content:
-- "Scenarios" / "Options" / "Map out" → createLayout(type:"hierarchy") — scenario titles as ROOT shapes, 2-3 key trade-offs as CHILDREN. Keep it crunchy (one line per child). See ⭐ SCENARIO COMPARISON example.
+- "Solutions" / "Options" / "Map out" → createLayout(type:"hierarchy") — solution titles as ROOT shapes, 2-3 key trade-offs as CHILDREN. Keep it crunchy (one line per child). See ⭐ SOLUTION COMPARISON example.
 - "Summary" / "Brief" → createDocument
 - "Quick brainstorm" → createLayout with stickies
-⚠️ NEVER cram everything about a scenario onto one sticky. Split into hierarchy: title shape → child shapes with one key point each.
+⚠️ NEVER cram everything about a solution onto one sticky. Split into hierarchy: title shape → child shapes with one key point each.
 
 WHEN ASKING QUESTIONS (only for complex canvas tasks):
 - Call askUser() ONCE with ALL your questions (1-2 questions) in the questions array
@@ -1142,12 +1161,11 @@ PLAN EXAMPLES:
   Step 1: Create task cards ← createTaskCard (one call per task, NOT stickies!)
 
 "Help me prioritize / resolve a strategic tension" (PRIORITISATION):
-  Step 1: Gather internal data ← queryConnectors broadly
-  Step 2: Overview: [Challenge] ← createZone(layout:"overview") — conflict summary doc + shared timeline
-  Step 3: Scenario A: [Name] ← createZone(layout:"scenario") — full analysis zone
-  Step 4: Scenario B: [Name] ← createZone(layout:"scenario") — full analysis zone
-  Step 5: Scenario C: Hybrid approach ← createZone(layout:"scenario") — full analysis zone + recommended sticker
-  🚨 ALL steps use createZone. Steps 2-5 use different layout modes. Exactly 5 steps.
+  Step 1: Map out [Project A] and [Project B] ← createZone(layout:"project") x2
+  Step 2: Analyze competing priorities ← queryConnectors (no canvas output)
+  Step 3: Synthesize the tension ← createZone(layout:"synthesis") — tension/takeaways doc
+  Step 4: Explore solutions ← createZone(layout:"solution") x1 with solutions array + recommended on AI's pick
+  🚨 Exactly 4 steps. Step 1 maps both projects, step 2 analyzes, step 3 synthesizes, step 4 proposes solutions in one call.
 
 FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
 - Multiple sections/frames with dependencies
@@ -1193,25 +1211,38 @@ const executionAgent = new Agent({
   instructions: `You are executing an approved plan. Create canvas items step by step.
 
 🚨🚨🚨 RULE ZERO — TOOL MATCHING FOR PRIORITISATION PLANS 🚨🚨🚨
-Match the step title to the EXACT tool:
+Match the step title to the EXACT tool(s):
 
-Step title starts with "Gather" → queryConnectors (no canvas output)
-Step title starts with "Overview" → createZone(layout:"overview") — summary doc + gantt with red conflict tasks
-Step title starts with "Scenario A", "Scenario B", or "Scenario C" → createZone(layout:"scenario") — ONE call with ALL sections
+Step title starts with "Map out" → TWO createZone(layout:"project") calls — one per project, back-to-back
+Step title starts with "Analyze" → queryConnectors (broad) + showProgress (NO canvas output — analysis only)
+Step title starts with "Synthesize" → createZone(layout:"synthesis") — summary doc only, everything else null
+Step title starts with "Explore solutions" → ONE createZone(layout:"solution") call with solutions array containing BOTH proposed paths
 
-For "Overview" steps: You MUST call createZone(layout:"overview"). Provide:
-- summary: Rich document describing the conflict (what's competing, why it matters)
-- gantt: shared timeline showing both projects, with color:"red" on shared/conflicting squad tasks
-- teams/userInsight/evaluation: null (not used for overview)
+For "Map out" steps: You MUST call createZone(layout:"project") TWICE — once for each project. For EACH zone provide:
+- title: "Priority: [Project Name]"
+- summary: 2-3 paragraphs about the project's current state, goals, and timeline
+- gantt: project roadmap with real dates from connector data. Mark shared/conflicting squad tasks with color: "red"
+- people: 3-8 key people involved (name + role)
+- userInsight: feedback (3-5 task cards), metrics (2-4 stickies), requests (2-4 stickies)
+- evaluation: opportunity (2-3 stickies), risks (2-3 stickies), potential (1-2 stickies)
+- isRecommended: false
 
-For "Scenario" steps: You MUST call createZone(layout:"scenario"). Put ALL content into the SINGLE createZone() call:
-🚨 gantt is REQUIRED for every Scenario step — NEVER pass null for gantt.
-🚨 summary is REQUIRED — 2-4 punchy sentences. VP-readable.
-🚨 teams: 3-5 actual squad names.
-🚨 userInsight: feedback (3-5 task cards), metrics (6-9 stickies), requests (6-9 stickies)
-🚨 evaluation: opportunity (2-3 stickies), risks (2-3 stickies), potential (1-2 stickies)
-🚨 Scenario C: include stickers: ["recommended"] to get the recommended badge.
-You MUST NOT call createDocument, createDataTable, createFrame, createLayout, createSticky, or createGanttChart individually for Scenario steps.
+For "Analyze" steps: Call queryConnectors broadly + showProgress. NO canvas output.
+
+For "Synthesize" steps: You MUST call createZone(layout:"synthesis"). Provide:
+- title: "Synthesis: Competing Priorities"
+- summary: 3-5 paragraphs about the tension, trade-offs, and key takeaways
+- gantt: null, people: null, userInsight: null, evaluation: null
+- isRecommended: false
+
+For "Explore solutions" steps: You MUST call createZone(layout:"solution") ONCE with both solutions in the solutions array. Provide:
+- title: "Possible Solutions"
+- solutions: Array of 2 objects, each with { title, summary: { title, content }, confidence, isRecommended }
+  - Each summary.content: 2-3 punchy sentences ONLY. VP-scannable in 5 seconds.
+  - Each confidence: A percentage string like "85%" or "60%"
+  - isRecommended: true on the AI's preferred solution. Only ONE gets this.
+- summary: null, gantt: null, people: null, userInsight: null, evaluation: null
+You MUST NOT call createDocument, createDataTable, createFrame, createLayout, createSticky, or createGanttChart individually for these steps.
 
 🚨 CRITICAL RULE #1: EDIT EXISTING CONTENT, DON'T RECREATE! 🚨
 When user asks to "rearrange", "reorganize", "move", "edit", "change layout", "adjust", "reposition", "put in a frame", "organize":
@@ -1255,8 +1286,10 @@ Work through steps in sequence. For each step:
 1. Call showProgress(stepNumber, "step title", "starting")
 2. CHECK RULE ZERO — match the step title to the correct tool:
    - "Gather..." → queryConnectors
-   - "Overview: ..." → createZone(layout:"overview") — stickies + conflict Gantt
-   - "Scenario A/B/C: ..." → createZone(layout:"scenario") — ALL sections in one call
+   - "Map out..." → createZone(layout:"project") x2 — one per project
+   - "Analyze..." → queryConnectors + showProgress (no canvas output)
+   - "Synthesize..." → createZone(layout:"synthesis") — doc only
+   - "Explore solutions..." → createZone(layout:"solution") x1 — with solutions array
    For non-prioritisation plans, pick the right tool:
    - Research? → webSearch + createSources + createLayout(type:"sticky")
    - Written content? → createDocument
@@ -1370,14 +1403,14 @@ Step says "brainstorm", "ideate", "risks", "ideas", "feedback"?
   "PayGrid's delay cost accelerates after week 3 — early weeks are cheap, then we start losing deals"
 - Stickies auto-size to fit text. Longer text = taller sticky, and the layout handles spacing.
 
-📌 createLayout(type:"shape"/"hierarchy"/"flow") — DIAGRAMS (conflicts, flows, dependencies, scenarios):
-Step says "map", "chart", "flow", "diagram", "hierarchy", "conflict", "resource", "scenarios", "options"?
+📌 createLayout(type:"shape"/"hierarchy"/"flow") — DIAGRAMS (conflicts, flows, dependencies, solutions):
+Step says "map", "chart", "flow", "diagram", "hierarchy", "conflict", "resource", "solutions", "options"?
 → Use shapes with arrows — diagrams communicate relationships FASTER than text.
 
 🎨 PREFER HIERARCHY DIAGRAMS for these patterns:
 - Resource conflicts → createLayout(type:"hierarchy", direction:"right") — 3-5 shapes MAX. See ⭐ RESOURCE CONFLICT DIAGRAM example.
   The diagram shows the SHAPE of the tension (who's pulling on what). Put detailed evidence in a createDocument instead.
-- Scenarios / options → createLayout(type:"hierarchy", direction:"down") — scenario titles as ROOTs, 2-3 key trade-offs as CHILDREN. See ⭐ SCENARIO COMPARISON example. One punchy line per child — NOT a paragraph.
+- Solutions / options → createLayout(type:"hierarchy", direction:"down") — solution titles as ROOTs, 2-3 key trade-offs as CHILDREN. See ⭐ SOLUTION COMPARISON example. One punchy line per child — NOT a paragraph.
 - Decision flows → "If X then Y" with arrows showing paths and outcomes
 - Dependencies → What blocks what, what enables what
 
@@ -1390,7 +1423,7 @@ Step says "roadmap", "timeline", "phases", "milestones", "quarters"?
 → Use createGanttChart with summary tasks for phases and regular tasks for deliverables
 → Tasks must be SPECIFIC deliverables, not vague labels. "Migrate checkout to PayGrid API" not "PayGrid setup"
 → Add e2s links for dependencies between tasks
-→ If asked for MULTIPLE timelines (e.g. "timeline for each scenario"), create SEPARATE createGanttChart calls — one chart per scenario.
+→ If asked for MULTIPLE timelines (e.g. "timeline for each solution"), create SEPARATE createGanttChart calls — one chart per solution.
 → ⚠️ NEVER use createLayout(type:"timeline") — always use createGanttChart instead.
 
 🔍 webSearch + createSources + SYNTHESIS — RESEARCH (competitive analysis, best practices, trends):
@@ -1407,13 +1440,13 @@ A research step has THREE MANDATORY parts — you MUST do all three, NEVER just 
    GOOD stickies (complete thoughts, self-explanatory, actionable):
    - "Simple scoring doesn't work for big bets — Reforge found it misses the asymmetry between competing priorities"
    - "The key question isn't 'which scores higher' but 'which delay is harder to recover from later?'"
-   - "Spotify, Stripe, and Figma all model 3 scenarios (A-first, B-first, parallel) before choosing — not just one score"
+   - "Spotify, Stripe, and Figma all model multiple solutions (A-first, B-first, parallel) before choosing — not just one score"
    - "Plot delay cost over time for each option — the one that accelerates fastest should usually go first"
 
    BAD stickies (too short, jargon, no context):
    - "Scoring fits backlog, not big bets"
    - "Delay cost changes over time"
-   - "Use 3 scenarios, not 1 score"
+   - "Use 2 solutions, not 1 score"
    - "Make assumptions explicit up front"
 
 If you skip synthesis, the research step is INCOMPLETE. Sources without the "so what" are useless.
@@ -1429,55 +1462,33 @@ Step involves company projects, priorities, trade-offs, metrics, people, or deci
 Use connectors for INTERNAL company data. Use webSearch for EXTERNAL data. Both can be used together.
 
 🏗️ createZone — COMPOSED FRAME IN ONE CALL:
-When a plan step says "Overview: ..." or "Scenario A/B/C: [Name]":
+When a plan step says "Map out..." (projects), "Synthesize..." (tension), or "Explore solutions..." (proposed paths):
 
-Call createZone with ALL content in ONE tool call. For scenarios: gantt, summary, teams, userInsight, and evaluation are REQUIRED.
+Call createZone with ALL content in ONE tool call per zone. "Map out" steps require TWO createZone calls (one per project). "Explore solutions" requires ONE createZone call with both solutions in the solutions array. For project zones: gantt, summary, people, userInsight, and evaluation are REQUIRED.
 
-// OVERVIEW ZONE EXAMPLE:
+// PROJECT ZONE EXAMPLE (Priority step):
 createZone({
-  title: "Overview: The Conflict",
-  layout: "overview",
+  title: "Priority: PayGrid",
+  layout: "project",
   summary: {
-    title: "The Conflict: Platform Squad 3",
-    content: "<h2>What's competing</h2><p>Both PayGrid and FirstFlex need Platform Squad 3 in overlapping windows (weeks 3-6). PayGrid has a hard Aug 25 pilot deadline with Stripe — $3.1M ARR at risk. FirstFlex September launch is tied to 3 enterprise contracts worth $12M combined.</p><h2>Why it matters</h2><p>We can't staff both in parallel without a 40% velocity hit from context-switching. One project has to go first — the question is which.</p>"
+    title: "PayGrid — Current State",
+    content: "<h2>Overview</h2><p>PayGrid is our enterprise payment infrastructure migration, targeting an Aug 25 pilot deadline with Stripe. The project has a $47.2M enterprise pipeline at stake and requires Platform Squad 3 for integration work in weeks 3-6.</p><h2>Current Progress</h2><p>API migration is 60% complete. The critical dependency is Platform Squad 3's availability for the integration phase starting mid-March.</p>"
   },
   gantt: {
-    title: "Shared Timeline — Conflict Window",
+    title: "PayGrid Roadmap",
     tasks: [
       { id: 1, text: "PayGrid", start: "2026-02-20T00:00:00.000Z", end: "2026-05-20T00:00:00.000Z", duration: 89, progress: 0, parent: 0, type: "summary", open: true },
       { id: 2, text: "API migration", start: "2026-02-20T00:00:00.000Z", end: "2026-03-20T00:00:00.000Z", duration: 28, progress: 0, parent: 1, type: "task", open: false, color: null },
       { id: 3, text: "Platform Squad 3 — PayGrid integration", start: "2026-03-15T00:00:00.000Z", end: "2026-04-15T00:00:00.000Z", duration: 31, progress: 0, parent: 1, type: "task", open: false, color: "red" },
-      { id: 4, text: "FirstFlex", start: "2026-03-01T00:00:00.000Z", end: "2026-06-01T00:00:00.000Z", duration: 92, progress: 0, parent: 0, type: "summary", open: true },
-      { id: 5, text: "Platform Squad 3 — FirstFlex critical path", start: "2026-03-20T00:00:00.000Z", end: "2026-04-20T00:00:00.000Z", duration: 31, progress: 0, parent: 4, type: "task", open: false, color: "red" },
-    ],
-    links: []
-  },
-  teams: null, userInsight: null, evaluation: null,
-  stickers: []
-})
-
-// SCENARIO ZONE EXAMPLE:
-createZone({
-  title: "Scenario A: PayGrid First",
-  layout: "scenario",
-  summary: {
-    title: "PayGrid First — Key Thesis",
-    content: "<p>Ship PayGrid MVP by August to capture the $47.2M enterprise pipeline. Delay FirstFlex by 4-6 weeks — the delay cost is flat, not accelerating.</p>"
-  },
-  gantt: {
-    title: "PayGrid-First Roadmap",
-    tasks: [
-      { id: 1, text: "Phase 1: MVP", start: "2026-02-20T00:00:00.000Z", end: "2026-03-20T00:00:00.000Z", duration: 28, progress: 0, parent: 0, type: "summary", open: true },
-      { id: 2, text: "API migration", start: "2026-02-20T00:00:00.000Z", end: "2026-03-06T00:00:00.000Z", duration: 14, progress: 0, parent: 1, type: "task", open: false, color: null },
-      { id: 3, text: "Platform Squad 3 — integration", start: "2026-03-06T00:00:00.000Z", end: "2026-03-20T00:00:00.000Z", duration: 14, progress: 0, parent: 1, type: "task", open: false, color: "red" }
     ],
     links: [{ id: 1, source: 2, target: 3, type: "e2s" }]
   },
-  teams: [
-    { name: "Platform Squad 3", color: "red" },
-    { name: "Payments Team", color: "yellow" },
-    { name: "API Infrastructure", color: "yellow" }
+  people: [
+    { name: "Sarah Chen", role: "Engineering Lead" },
+    { name: "Marcus Rivera", role: "Product Manager" },
+    { name: "Alex Kim", role: "Platform Squad 3 Lead" }
   ],
+  isRecommended: false,
   userInsight: {
     feedback: [
       { title: "Enterprise buyers blocked on payments", description: "<p>5 deals in Q3 pipeline explicitly cite PayGrid as blocker</p>", assignee: "Gong · Salesforce", tags: ["Revenue signal"], status: null }
@@ -1494,47 +1505,88 @@ createZone({
   },
   evaluation: {
     opportunity: [
-      { text: "Captures $47.2M enterprise pipeline before Q3 deadline", color: "green" },
-      { text: "Establishes payments moat vs. Stripe-native competitors", color: "green" }
+      { text: "Captures $47.2M enterprise pipeline before Q3 deadline", color: "blue" },
+      { text: "Establishes payments moat vs. Stripe-native competitors", color: "blue" }
     ],
     risks: [
-      { text: "FirstFlex delay risks 3 enterprise contracts ($12M)", color: "orange" },
-      { text: "Platform Squad 3 burnout from back-to-back sprints", color: "orange" }
+      { text: "Platform Squad 3 bottleneck in weeks 3-6", color: "blue" },
+      { text: "Hard Aug 25 pilot deadline — no slip room", color: "blue" }
     ],
     potential: [
-      { text: "$74B TAM in enterprise payments", color: "violet" }
+      { text: "$74B TAM in enterprise payments", color: "blue" }
     ]
   },
   stickers: []
 })
 
-🚨 SCENARIO ZONE CONTENT RULES (for createZone with layout:"scenario"):
-- summary: 2-4 punchy sentences. VP-readable. No filler.
-- gantt: NEVER null. Detailed roadmap with real dates from connector data.
+// SYNTHESIS ZONE EXAMPLE:
+createZone({
+  title: "Synthesis: Competing Priorities",
+  layout: "synthesis",
+  summary: {
+    title: "The Tension: Platform Squad 3",
+    content: "<h2>What's competing</h2><p>Both PayGrid and FirstFlex need Platform Squad 3 in overlapping windows (weeks 3-6). PayGrid has a hard Aug 25 pilot deadline with Stripe — $3.1M ARR at risk. FirstFlex September launch is tied to 3 enterprise contracts worth $12M combined.</p><h2>Why it matters</h2><p>We can't staff both in parallel without a 40% velocity hit from context-switching. One project has to go first — the question is which.</p><h2>Key takeaway</h2><p>The delay cost for PayGrid accelerates after week 3, while FirstFlex delay cost is flatter. This asymmetry suggests sequencing PayGrid first is lower risk.</p>"
+  },
+  gantt: null, people: null, userInsight: null, evaluation: null,
+  isRecommended: false,
+  stickers: []
+})
+
+// SOLUTION ZONE EXAMPLE (compact card):
+createZone({
+  title: "Solution A: PayGrid First",
+  layout: "solution",
+  summary: {
+    title: "PayGrid First",
+    content: "<p>Ship PayGrid MVP by August to capture the $47.2M enterprise pipeline. Delay FirstFlex by 4-6 weeks — the delay cost is flat, not accelerating.</p>"
+  },
+  confidence: "85%",
+  isRecommended: true,
+  gantt: null, people: null, userInsight: null, evaluation: null,
+  stickers: []
+})
+
+🚨 PROJECT ZONE CONTENT RULES (for createZone with layout:"project"):
+- summary: 2-3 paragraphs about the project's current state, goals, and progress. VP-readable.
+- gantt: NEVER null. Project roadmap with real dates from connector data.
   Mark shared/conflicting squad tasks with color: "red". All other tasks use color: null.
-- teams: MAX 3 team stickies. The shared/conflicting squad (e.g. Platform Squad 3) MUST use color: "red". Others use the SCENARIO COLOR (see below).
+- people: 3-8 key people involved (name + role). Real people from connector data.
 - userInsight.feedback: 3-5 task cards with real data (from Gong, Productboard, Jira)
-- userInsight.metrics: 2-4 stickies — use the SCENARIO COLOR for all
-- userInsight.requests: 2-4 stickies — use the SCENARIO COLOR for all
-- evaluation.opportunity: 2-3 stickies — use the SCENARIO COLOR for all
-- evaluation.risks: 2-3 stickies — use the SCENARIO COLOR for all
-- evaluation.potential: 1-2 stickies — use the SCENARIO COLOR for all
+- userInsight.metrics: 2-4 stickies — use the PRIORITY COLOR (see below)
+- userInsight.requests: 2-4 stickies — use the PRIORITY COLOR
+- evaluation.opportunity: 2-3 stickies — use the PRIORITY COLOR
+- evaluation.risks: 2-3 stickies — use the PRIORITY COLOR
+- evaluation.potential: 1-2 stickies — use the PRIORITY COLOR
+- isRecommended: false
 
-🎨 SCENARIO COLOR RULE: Every sticky in a zone uses ONE consistent color.
-- Scenario A: all stickies = "blue" (except shared squad team sticky = "red")
-- Scenario B: all stickies = "green" (except shared squad team sticky = "red")
-- Scenario C: all stickies = "violet" (except shared squad team sticky = "red")
+🚨 SYNTHESIS ZONE CONTENT RULES (for createZone with layout:"synthesis"):
+- summary: 3-5 paragraphs about the tension between competing priorities, key trade-offs, and takeaways.
+- gantt: null, people: null, userInsight: null, evaluation: null
+- isRecommended: false
+
+🚨 SOLUTION ZONE CONTENT RULES (for createZone with layout:"solution"):
+ONE call with both solutions in the solutions array. Each solution is a COMPACT DECISION CARD.
+- title: "Possible Solutions"
+- solutions: Array of 2 objects, each with:
+  - title: "Solution A: [Name]" / "Solution B: [Name]"
+  - summary: { title, content } — 2-3 punchy sentences ONLY. VP-scannable in 5 seconds.
+  - confidence: A percentage string (e.g. "85%", "60%") — AI's confidence in this path.
+  - isRecommended: true on the AI's preferred solution. Only ONE gets this.
+- summary: null, gantt: null, people: null, userInsight: null, evaluation: null (all null for solutions)
+
+🎨 COLOR RULES: Every sticky in a zone uses ONE consistent color.
+- Priority A (first project): all content stickies = "green", headerColor = "green"
+- Priority B (second project): all content stickies = "violet", headerColor = "violet"
+- Solution A: all stickies = "orange"
+- Solution B: all stickies = "violet"
+- Shared/conflicting squad: always "red" (in gantt color field)
 This makes it instantly clear which zone a sticky belongs to.
+headerColor controls the section header sticky colors. The Key Metrics section automatically uses the light variant.
 
-🚨 OVERVIEW ZONE CONTENT RULES (for createZone with layout:"overview"):
-- summary: Rich document describing the conflict — what's competing, why it matters, what's at stake. 2-3 paragraphs.
-- gantt: shows BOTH competing projects on a shared timeline. Tasks belonging to the shared/conflicting squad get color: "red". Other tasks get color: null.
-- teams/userInsight/evaluation: pass null for overview mode.
-
-⚠️ createZone with layout:"scenario" is for "Scenario A/B/C" steps. createZone with layout:"overview" is for "Overview" steps.
+⚠️ createZone with layout:"project" is for "Priority:" steps. layout:"synthesis" is for "Synthesis:" steps. layout:"solution" is for "Solution A/B:" steps.
 ⚠️ ONE createZone call = one complete frame. Don't create frames separately then nest tools inside.
-⚠️ Each zone frame is placed left-to-right automatically — Scenarios A, B, and C appear side by side.
-⚠️ Scenario C MUST include stickers: ["recommended"] to get the recommended badge at top-right.
+⚠️ Each zone frame is placed left-to-right automatically.
+⚠️ The AI's preferred solution MUST have isRecommended: true to get the recommended badge at top-right.
 
 🚫 NEVER CREATE EMPTY FRAMEWORKS:
 - No "Option scoring (fill in)" tables — populate every cell with real data
@@ -1584,32 +1636,28 @@ The shared resource is the ROOT, competing projects are CHILDREN. That's IT.
 - If you're putting "conflict window", "operational risk", "bridging candidates", "sequencing facts" as extra shapes — STOP. Those belong in the document, not the diagram.
 - Think of it as: "If an exec glances at this for 3 seconds, do they get the conflict?" If it takes more than 3 seconds, you have too many shapes.
 
-⭐ SCENARIO COMPARISON — use this pattern for "map out options / scenarios":
+⭐ SOLUTION COMPARISON — use this pattern for "map out options / solutions":
 createLayout({
   type: "hierarchy",
-  frameName: "Three scenarios (pick one)",
+  frameName: "Two solutions (pick one)",
   direction: "down",
   items: [
-    { type: "shape", text: "Scenario A — Speed first", color: "blue", parentIndex: -1 },
-    { type: "shape", text: "Ship PayGrid MVP by Aug, protect Meridian deadline", color: "blue", parentIndex: 0 },
-    { type: "shape", text: "Upside: earliest revenue + deadline safe", color: "blue", parentIndex: 0 },
-    { type: "shape", text: "Risk: lower peak ARR, more follow-on work", color: "blue", parentIndex: 0 },
-    { type: "shape", text: "Scenario B — Impact first", color: "green", parentIndex: -1 },
-    { type: "shape", text: "Full-scope FirstFlex, capture Q4 signup surge", color: "green", parentIndex: 4 },
-    { type: "shape", text: "Upside: 180K signups Y1, strongest retention lift", color: "green", parentIndex: 4 },
-    { type: "shape", text: "Risk: PayGrid slips, Meridian window at risk", color: "green", parentIndex: 4 },
-    { type: "shape", text: "Scenario C — Sequenced hybrid", color: "violet", parentIndex: -1 },
-    { type: "shape", text: "Time-box PayGrid MVP (wks 1-3), then full FirstFlex", color: "violet", parentIndex: 8 },
-    { type: "shape", text: "Upside: covers both commitments", color: "violet", parentIndex: 8 },
-    { type: "shape", text: "Risk: needs tight scope control, context-switch cost", color: "violet", parentIndex: 8 },
+    { type: "shape", text: "Solution A — Speed first", color: "orange", parentIndex: -1 },
+    { type: "shape", text: "Ship PayGrid MVP by Aug, protect Meridian deadline", color: "orange", parentIndex: 0 },
+    { type: "shape", text: "Upside: earliest revenue + deadline safe", color: "orange", parentIndex: 0 },
+    { type: "shape", text: "Risk: lower peak ARR, more follow-on work", color: "orange", parentIndex: 0 },
+    { type: "shape", text: "Solution B — Impact first", color: "violet", parentIndex: -1 },
+    { type: "shape", text: "Full-scope FirstFlex, capture Q4 signup surge", color: "violet", parentIndex: 4 },
+    { type: "shape", text: "Upside: 180K signups Y1, strongest retention lift", color: "violet", parentIndex: 4 },
+    { type: "shape", text: "Risk: PayGrid slips, Meridian window at risk", color: "violet", parentIndex: 4 },
   ]
 })
-↑ 3 root shapes + 3 children each. Each child is ONE punchy line.
+↑ 2 root shapes + 3 children each. Each child is ONE punchy line.
 
-🎨 COLOR RULE FOR SCENARIOS: One scenario = one color. Parent AND all its children use the SAME color.
-- Scenario A: all blue. Scenario B: all green. Scenario C: all violet.
-- This makes each group instantly recognizable at a glance. DON'T mix colors within a scenario.
-- The layout engine adds large gaps between root groups, so they read as 3 distinct columns.
+🎨 COLOR RULE FOR SOLUTIONS: One solution = one color. Parent AND all its children use the SAME color.
+- Solution A: all orange. Solution B: all violet.
+- This makes each group instantly recognizable at a glance. DON'T mix colors within a solution.
+- The layout engine adds large gaps between root groups, so they read as distinct columns.
 
 FLOW example (processes, journeys):
 createLayout({
@@ -1626,7 +1674,7 @@ createLayout({
 ⭐ TIMELINE example — items are SPECIFIC deliverables, not vague labels:
 createLayout({
   type: "timeline",
-  frameName: "Scenario A: PayGrid-First",
+  frameName: "Solution A: PayGrid-First",
   timeLabels: ["Weeks 1–3", "Weeks 4–6", "Weeks 7–9", "Weeks 10–12"],
   items: [
     { type: "shape", text: "Migrate checkout flow to PayGrid API", color: "blue", column: 0 },
@@ -1642,7 +1690,7 @@ createLayout({
 })
 ⚠️ Notice: each item says WHAT specifically happens — not just "setup" or "launch".
 ⚠️ Color = workstream: ALL PayGrid items = blue, ALL FirstFlex items = orange, milestones = green.
-⚠️ If asked for 3 scenario timelines → call createLayout 3 TIMES, one per scenario frame.
+⚠️ If asked for solution timelines → call createLayout separately, one per solution frame.
 
 GRID + STICKIES example (brainstorms, ideas):
 createLayout({
@@ -1682,10 +1730,10 @@ CONFLICT / RESOURCE DIAGRAMS:
 - GOOD: [Squad 3 blue] → [FirstFlex orange] + [PayGrid orange]
 - BAD: [Squad 3 blue] → [FirstFlex orange] + [PayGrid green] ← implies they're different categories, they're NOT
 
-SCENARIO COMPARISONS:
-- One scenario = one color. Parent AND all children = same color.
-- Scenario A: all blue. Scenario B: all green. Scenario C: all violet.
-- NEVER mix colors within a single scenario's tree.
+SOLUTION COMPARISONS:
+- One solution = one color. Parent AND all children = same color.
+- Solution A: all orange. Solution B: all violet.
+- NEVER mix colors within a single solution's tree.
 
 TIMELINES:
 - Color by WORKSTREAM/INITIATIVE — all items for one project = same color.
@@ -1858,8 +1906,10 @@ DO THIS IMMEDIATELY:
 1. showProgress(stepNumber, "step title", "starting")
 2. Match the step title to the CORRECT tool (see RULE ZERO):
    - "Gather..." → queryConnectors
-   - "Overview: ..." → createZone(layout:"overview") — stickies + conflict Gantt
-   - "Scenario A/B/C: ..." → createZone(layout:"scenario") — ALL sections in one call
+   - "Map out..." → createZone(layout:"project") x2 — one per project
+   - "Analyze..." → queryConnectors + showProgress (no canvas output)
+   - "Synthesize..." → createZone(layout:"synthesis") — doc only
+   - "Explore solutions..." → createZone(layout:"solution") x1 — with solutions array
    - Research? → webSearch + createSources + SYNTHESIZE (see below)
    - Other written content? → createDocument
    - Tabular data? → createDataTable

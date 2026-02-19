@@ -16,6 +16,7 @@ export function useRealtimeVoice() {
   const stateRef = useRef<VoiceState>("idle");
   const setState = useCallback((newState: VoiceState) => {
     if (stateRef.current === newState) return; // Skip if already in this state
+    console.log(`[VOICE STATE] ${stateRef.current} → ${newState}`);
     stateRef.current = newState;
     _setState(newState);
   }, []);
@@ -126,10 +127,10 @@ export function useRealtimeVoice() {
             return;
           }
 
-          // Debug: uncomment to log voice events (causes perf issues when enabled)
-          // if (message.type.includes("function") || message.type.includes("transcript") || message.type.includes("output_item")) {
-          //   console.log("[VOICE EVENT]", message.type, message);
-          // }
+          // Debug: log ALL event types
+          if (message.type) {
+            console.log("[VOICE EVENT]", message.type);
+          }
 
           // Handle errors
           if (message.type === "error") {
@@ -362,12 +363,14 @@ export function useRealtimeVoice() {
             }
           }
 
-          // Track AI speaking state (setState deduplicates — no re-render if already in that state)
-          if (message.type === "response.audio.delta") {
+          // Track AI speaking state
+          // Enter "speaking" when user finishes talking (AI is now processing + responding)
+          // Exit "speaking" when output audio buffer stops (audio finished playing)
+          if (message.type === "conversation.item.input_audio_transcription.completed") {
             setState("speaking");
           }
 
-          if (message.type === "response.audio.done" || message.type === "response.done") {
+          if (message.type === "output_audio_buffer.stopped") {
             setState("listening");
           }
 
@@ -466,13 +469,14 @@ export function useRealtimeVoice() {
         }
       });
 
-      // Handle incoming audio from AI
+      // Handle incoming audio from AI — also set up silence detection
       pc.addEventListener("track", (event) => {
         const audioElement = new Audio();
         audioElement.srcObject = event.streams[0];
         audioElement.play().catch((err) => {
           console.error("Failed to play audio:", err);
         });
+
       });
 
       // Monitor connection state
@@ -505,6 +509,10 @@ export function useRealtimeVoice() {
       }
 
       const answerSdp = await sdpResponse.text();
+      if (pc.signalingState === "closed") {
+        console.warn("[VOICE] Connection closed during SDP exchange, aborting");
+        return;
+      }
       await pc.setRemoteDescription({
         type: "answer",
         sdp: answerSdp,

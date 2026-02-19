@@ -111,11 +111,17 @@ export function PromptSuggestions({
   const query = inputValue.trim();
 
   return (
-    <div className="absolute bottom-full left-0 right-0 mb-2 animate-suggestions-in">
+    <div
+      className="absolute bottom-full mb-6 animate-suggestions-in"
+      style={{
+        right: -8,
+        width: "calc(100% + 16px)",
+      }}
+    >
       <div
         className="bg-white border border-gray-200 py-1.5 overflow-hidden"
         style={{
-          borderRadius: '32px',
+          borderRadius: 24,
           boxShadow: "0 4px 24px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.06)",
         }}
       >
