@@ -848,10 +848,9 @@ export function ChatPanel({
   return (
     <div className="w-full h-full bg-white flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-900">Chat</span>
-          <span className="text-xs text-gray-500">with AI</span>
+          <span className="text-sm font-medium text-gray-900">Sidekick</span>
         </div>
         <div className="flex items-center gap-1">
           {onNewChat && (
@@ -863,6 +862,15 @@ export function ChatPanel({
               <IconSquarePencil css={{ width: 18, height: 18 }} />
             </button>
           )}
+          {onCollapse && (
+            <button
+              onClick={onCollapse}
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+              title="Minimize to toast"
+            >
+              <IconMinus css={{ width: 18, height: 18 }} />
+            </button>
+          )}
           {isFullscreen && onExitFullscreen && (
             <button
               onClick={onExitFullscreen}
@@ -870,15 +878,6 @@ export function ChatPanel({
               title="Collapse to side panel"
             >
               <IconArrowsInSimple css={{ width: 18, height: 18 }} />
-            </button>
-          )}
-          {!isFullscreen && onCollapse && (
-            <button
-              onClick={onCollapse}
-              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-              title="Minimize to toast"
-            >
-              <IconMinus css={{ width: 18, height: 18 }} />
             </button>
           )}
           {!isFullscreen && onExpand && (
