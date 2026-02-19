@@ -121,16 +121,174 @@ function SlidesDeckShape() {
   );
 }
 
-function TimelineShape() {
+/* ---------- Timeline helpers ---------- */
+
+interface TimelineBarData {
+  start: string;
+  end: string;
+  label: string;
+}
+
+interface TimelineTrackData {
+  label: string;
+  color: string;
+  bars: TimelineBarData[];
+}
+
+interface TimelineData {
+  startDate: string;
+  endDate: string;
+  today?: string;
+  tracks: TimelineTrackData[];
+}
+
+function toLocalDate(s: string): Date {
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function diffDays(a: Date, b: Date): number {
+  return Math.round((b.getTime() - a.getTime()) / 86_400_000);
+}
+
+/** Map track colors to FormatPreview-style pastel palettes (light bg, colored border, dark text) */
+function getBarPalette(hex: string): { bg: string; border: string; text: string } {
+  const key = hex.toLowerCase();
+  const known: Record<string, { bg: string; border: string; text: string }> = {
+    "#4262ff": { bg: "#DBEAFE", border: "#4262FF", text: "#1E40AF" },
+    "#3b82f6": { bg: "#DBEAFE", border: "#3B82F6", text: "#1E40AF" },
+    "#10b981": { bg: "#BBF7D0", border: "#22C55E", text: "#166534" },
+    "#8b5cf6": { bg: "#EDE9FE", border: "#8b5cf6", text: "#4C1D95" },
+    "#6366f1": { bg: "#E0E7FF", border: "#6366f1", text: "#3730A3" },
+    "#f59e0b": { bg: "#FEF9C3", border: "#FACC15", text: "#854D0E" },
+    "#ef4444": { bg: "#FEE2E2", border: "#F87171", text: "#991B1B" },
+  };
+  if (known[key]) return known[key];
+  // Fallback: generate pastel palette from any hex
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const mix = 0.15;
+  return {
+    bg: `rgb(${Math.round(r * mix + 255 * (1 - mix))},${Math.round(g * mix + 255 * (1 - mix))},${Math.round(b * mix + 255 * (1 - mix))})`,
+    border: hex,
+    text: `rgb(${Math.round(r * 0.35)},${Math.round(g * 0.35)},${Math.round(b * 0.35)})`,
+  };
+}
+
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function TimelineShape({ data }: { data: Record<string, unknown> }) {
+  const td = data as unknown as TimelineData;
+
+  // Fallback: if data doesn't have the expected shape, render a static placeholder
+  if (!td.startDate || !td.endDate || !td.tracks?.length) {
+    return (
+      <div className="flex items-center">
+        <div className="flex-1 relative h-16">
+          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-300/80" />
+          {[10, 30, 55, 80].map((left, i) => (
+            <div key={i} className="absolute" style={{ left: `${left}%`, top: "50%", transform: "translate(-50%, -50%)" }}>
+              <div className="w-3 h-3 rounded-full bg-gray-300" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const rangeStart = toLocalDate(td.startDate);
+  const rangeEnd = toLocalDate(td.endDate);
+  const totalDays = diffDays(rangeStart, rangeEnd) + 1; // inclusive end
+  if (totalDays <= 0) return null;
+
+  const pct = (date: Date) => (diffDays(rangeStart, date) / totalDays) * 100;
+
+  // --- Month labels ---
+  const months: { label: string; pos: number }[] = [];
+  months.push({ label: MONTH_NAMES[rangeStart.getMonth()], pos: 0 });
+  let cursor = new Date(rangeStart.getFullYear(), rangeStart.getMonth() + 1, 1);
+  while (cursor <= rangeEnd) {
+    months.push({ label: MONTH_NAMES[cursor.getMonth()], pos: pct(cursor) });
+    cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+  }
+  // Thin out if many months
+  const displayMonths =
+    months.length > 7
+      ? months.filter((_, i) => i === 0 || i === months.length - 1 || i % 2 === 0)
+      : months;
+
+  // --- Today marker ---
+  const todayDate = td.today ? toLocalDate(td.today) : null;
+  const todayPos = todayDate ? pct(todayDate) : null;
+  const showToday = todayPos !== null && todayPos >= 0 && todayPos <= 100;
+
   return (
-    <div className="flex items-center">
-      <div className="flex-1 relative h-16">
-        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-300/80" />
-        {[10, 30, 55, 80].map((left, i) => (
-          <div key={i} className="absolute" style={{ left: `${left}%`, top: '50%', transform: 'translate(-50%, -50%)' }}>
-            <div className="w-3 h-3 rounded-full bg-gray-300" />
-          </div>
+    <div>
+      {/* Month labels */}
+      <div className="relative h-4 mb-2">
+        {displayMonths.map((m, i) => (
+          <span
+            key={i}
+            className="absolute text-gray-400"
+            style={{
+              left: `${m.pos}%`,
+              fontSize: "11px",
+              fontWeight: 500,
+              lineHeight: 1,
+              transform: i > 0 ? "translateX(-50%)" : undefined,
+            }}
+          >
+            {m.label}
+          </span>
         ))}
+      </div>
+
+      {/* Tracks + today line */}
+      <div className="relative" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+        {showToday && (
+          <div
+            className="absolute top-0 bottom-0 pointer-events-none"
+            style={{ left: `${todayPos}%`, width: "1px", backgroundColor: "rgba(0,0,0,0.12)", zIndex: 1 }}
+          />
+        )}
+
+        {td.tracks.map((track, ti) => {
+          const palette = getBarPalette(track.color);
+          return (
+            <div key={ti} className="relative" style={{ height: "28px" }}>
+              {track.bars.map((bar, bi) => {
+                const bStart = toLocalDate(bar.start);
+                const bEnd = toLocalDate(bar.end);
+                const left = pct(bStart);
+                const width = Math.max(((diffDays(bStart, bEnd) + 1) / totalDays) * 100, 3);
+
+                return (
+                  <div
+                    key={bi}
+                    className="absolute top-0 h-full overflow-hidden"
+                    style={{
+                      left: `${left}%`,
+                      width: `${width}%`,
+                      backgroundColor: palette.bg,
+                      border: `1px solid ${palette.border}`,
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {width >= 18 && (
+                      <span
+                        className="absolute inset-0 flex items-center px-2 truncate"
+                        style={{ fontSize: "11px", fontWeight: 500, color: palette.text }}
+                      >
+                        {bar.label}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -255,7 +413,7 @@ function CalendarShape() {
   );
 }
 
-function getShapeForType(type: string) {
+function getShapeForType(type: string, data: Record<string, unknown>) {
   switch (type) {
     case "LineChartPreview": return <LineChartShape />;
     case "BarChartPreview": return <BarChartShape />;
@@ -265,7 +423,7 @@ function getShapeForType(type: string) {
     case "CountdownPreview": return <CountdownShape />;
     case "ApprovalPreview": return <ApprovalShape />;
     case "SlidesDeckPreview": return <SlidesDeckShape />;
-    case "TimelinePreview": return <TimelineShape />;
+    case "TimelinePreview": return <TimelineShape data={data} />;
     case "BrainstormPreview": return <BrainstormShape />;
     case "TablePreview": return <TableShape />;
     case "DocPreview": return <DocShape />;
@@ -281,6 +439,22 @@ function getShapeForType(type: string) {
 
 export function GenericVisualPreview({ type, data }: GenericVisualPreviewProps) {
   const title = getTitle(data);
+  const isTimeline = type === "TimelinePreview";
+
+  // Timeline: no container chrome — sits directly on the card's white background.
+  // Other preview types still use the gray container (to be migrated per visual-system-home.md).
+  if (isTimeline) {
+    return (
+      <div className="mt-3 px-1">
+        {title && (
+          <div className="text-xs font-medium text-gray-500 mb-3">{title}</div>
+        )}
+        <div className="w-full">
+          {getShapeForType(type, data)}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-3 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden">
@@ -290,7 +464,7 @@ export function GenericVisualPreview({ type, data }: GenericVisualPreviewProps) 
         )}
         <div className="flex items-center justify-center">
           <div className="w-full max-w-sm">
-            {getShapeForType(type)}
+            {getShapeForType(type, data)}
           </div>
         </div>
       </div>
