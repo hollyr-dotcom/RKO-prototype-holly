@@ -2,6 +2,9 @@
 @import "@liveblocks/react-tiptap/styles.css";
 @import "@liveblocks/react-ui/styles.css";
 
+/* Hide scrollbar on horizontal feed carousel */
+.horizontal-feed::-webkit-scrollbar { display: none; }
+
 /* Prevent trackpad swipe-to-navigate (Chrome/Edge) */
 html, body {
   overscroll-behavior: none;

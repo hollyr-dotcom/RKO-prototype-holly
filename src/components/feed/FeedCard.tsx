@@ -27,6 +27,7 @@ import { BudgetNotificationContent } from "./content/BudgetNotification";
 interface FeedCardProps {
   item: FeedItem;
   spaceName?: string;
+  variant?: "default" | "stack";
 }
 
 const staggerItem = {
@@ -85,21 +86,30 @@ const REACTABLE_TYPES = new Set([
   "budget-notification",
 ]);
 
-export function FeedCard({ item, spaceName }: FeedCardProps) {
+export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps) {
   const user = getUser(item.source.userId);
   const isAgent = item.source.isAgent;
   const showReactions =
     REACTABLE_TYPES.has(item.type) &&
     (item.reactions.length > 0 || (item.viewCount != null && item.viewCount > 0));
 
+  const isStack = variant === "stack";
+  const px = isStack ? "px-8" : "px-6";
+  const pt = isStack ? "pt-8" : "pt-6";
+  const pbActions = isStack ? "pb-10" : "pb-8";
+
   return (
     <motion.div
       variants={staggerItem}
-      className="relative rounded-xl overflow-hidden transition-shadow duration-200 hover:shadow-md border border-gray-200 bg-white"
+      className={
+        isStack
+          ? "relative overflow-hidden bg-white h-full flex flex-col"
+          : "relative rounded-xl overflow-hidden transition-shadow duration-200 hover:shadow-md border border-gray-200 bg-white"
+      }
     >
-      <div className="relative">
+      <div className={isStack ? "relative flex flex-col flex-1" : "relative"}>
         {/* Avatar + timestamp */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-3">
+        <div className={`flex items-center justify-between ${px} ${pt} pb-3`}>
           <FeedSourceIndicator source={item.source} />
           <div className="flex items-center gap-2">
             {spaceName && (
@@ -120,7 +130,7 @@ export function FeedCard({ item, spaceName }: FeedCardProps) {
         </div>
 
         {/* Heading */}
-        <div className="px-6 pb-2">
+        <div className={`${px} pb-2`}>
           <h3 className="text-xl font-semibold text-gray-900">
             {item.title}
           </h3>
@@ -128,7 +138,7 @@ export function FeedCard({ item, spaceName }: FeedCardProps) {
 
         {/* Body text */}
         {item.body && (
-          <p className="px-6 text-sm text-gray-700 leading-relaxed pb-3">
+          <p className={`${px} text-sm text-gray-700 leading-relaxed pb-3`}>
             {item.body}
           </p>
         )}
@@ -145,18 +155,18 @@ export function FeedCard({ item, spaceName }: FeedCardProps) {
 
         {/* Actions */}
         {item.actions.length > 0 && (
-          <div className="px-6 pb-8">
-            <FeedActions actions={item.actions} />
+          <div className={`${px} ${pbActions}${isStack ? " mt-auto" : ""}`}>
+            <FeedActions actions={item.actions} size={isStack ? "large" : "default"} />
           </div>
         )}
 
         {/* Reactions — only on certain types */}
         {showReactions && (
           <div>
-            <div className="px-6">
+            <div className={px}>
               <div className="border-t border-gray-100" />
             </div>
-            <div className="px-6 pt-4 pb-6">
+            <div className={`${px} pt-4 pb-6`}>
               <FeedReactions
                 reactions={item.reactions}
                 viewCount={item.viewCount}

@@ -1,29 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { HomePromptInput } from "@/components/HomePromptInput";
-import { HomeFeed } from "@/components/feed/HomeFeed";
-import { PromptStickyNotes } from "@/components/PromptStickyNotes";
+import { HorizontalFeed } from "@/components/feed/HorizontalFeed";
 import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function HomePage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"foryou" | "recent">("foryou");
   const [isCreating, setIsCreating] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
-  const [notesVisible, setNotesVisible] = useState(true);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<"foryou" | "recent">("foryou");
   const { user } = useAuth();
   const firstName = user?.displayName?.split(" ")[0] || "Andy";
-
-  const handleScroll = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    setNotesVisible(el.scrollTop === 0);
-  }, []);
 
   // Pre-warm the canvas route so it's already compiled when user clicks "Create new"
   useEffect(() => {
@@ -42,13 +31,8 @@ export default function HomePage() {
     });
   }, [registerHandlers]);
 
-  // Navigation from home → canvas is handled by ChatProvider:
-  // - When AI calls createCanvas → ChatProvider intercepts and navigates
-  // - When AI uses canvas tools without createCanvas → ChatProvider's safety net auto-creates and navigates
-  // - Chat transitions from fullscreen → sidepanel via canvas-handoff in sessionStorage
-
   const handleSubmit = (text: string) => {
-    openFullscreen(true); // Set fromHome FIRST before append
+    openFullscreen(true);
     append({ role: "user", content: text });
   };
 
@@ -71,7 +55,6 @@ export default function HomePage() {
 
       const newCanvas = await response.json();
       const space = newCanvas.spaceId || "unassigned";
-      // Clear any stale chatMode so the canvas opens clean (no fullscreen overlay)
       localStorage.setItem("chatMode", "minimized");
       router.push(`/space/${space}/canvas/${newCanvas.id}`);
     } catch {
@@ -92,12 +75,40 @@ export default function HomePage() {
   }
 
   return (
-    <div ref={scrollRef} onScroll={handleScroll} className="relative h-full w-full overflow-y-auto bg-white">
-      {/* Create new button — fixed top-right, positioned next to spark button */}
+    <div className="relative h-full w-full bg-white overflow-hidden">
+      {/* Miro logo — top-left of content area */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/miro-logo.svg" alt="Miro" className="absolute top-7 left-7 z-10 w-[56px] h-[20px]" />
+
+      {/* For you / Recent toggle — centered, aligned with logo and create button */}
+      <div className="absolute top-5 left-1/2 -translate-x-1/2 z-10 flex items-center bg-gray-100 rounded-full p-1">
+        <button
+          onClick={() => setActiveTab("foryou")}
+          className={`px-5 py-1.5 rounded-full text-sm transition-all duration-150 ${
+            activeTab === "foryou"
+              ? "bg-white shadow-sm font-medium text-gray-900"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          For you
+        </button>
+        <button
+          onClick={() => setActiveTab("recent")}
+          className={`px-5 py-1.5 rounded-full text-sm transition-all duration-150 ${
+            activeTab === "recent"
+              ? "bg-white shadow-sm font-medium text-gray-900"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Recent
+        </button>
+      </div>
+
+      {/* Create new button — fixed top-right */}
       <button
         onClick={handleCreateEmptyCanvas}
         disabled={isCreating}
-        className="fixed top-4 right-4 z-[9900] px-4 py-2 bg-gray-100 text-gray-900 text-sm font-medium rounded-full hover:bg-gray-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
+        className="fixed top-5 right-6 z-[9900] px-4 py-2 bg-gray-100 text-gray-900 text-sm font-medium rounded-full hover:bg-gray-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
       >
         {isCreating ? (
           <span className="flex items-center gap-2">
@@ -109,71 +120,27 @@ export default function HomePage() {
         )}
       </button>
 
-      {/* Two-section layout: hero sticky, cards scroll underneath */}
-      <div className="w-full flex flex-col">
-        {/* Top spacer — positions hero at ~1/3 from top initially */}
-        <div className="h-[18vh] shrink-0" />
-
-        {/* Welcome heading — scrolls with page */}
-        <div className="flex flex-col items-center px-6">
-          <h1 className="text-3xl font-semibold text-gray-900 mb-3">
-            Welcome back, {firstName}
-          </h1>
+      {/* Main content */}
+      <div className="absolute inset-0 flex flex-col pt-[8vh] pb-28">
+        {/* Heading */}
+        <div className="mb-8 pt-20 text-center px-6">
+          <h1 className="text-4xl leading-none font-bold tracking-tight text-gray-900">Welcome back, {firstName}</h1>
+          <p className="text-4xl leading-none text-gray-500 mt-1">Here&apos;s what you need to know</p>
         </div>
 
-        {/* Sticky search: prompt + suggestions */}
-        <div className="sticky top-0 z-20">
-          <motion.div
-            className="bg-white pb-2 flex flex-col items-center px-6"
-            animate={{ paddingTop: notesVisible ? 16 : 80 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30, mass: 1 }}
-          >
-            <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} onInputChange={(v) => setIsTyping(v.length > 0)} />
-
-            <div className={`mt-5 transition-all duration-300 ${isTyping ? "opacity-0 pointer-events-none" : "opacity-100"} ${notesVisible ? "" : "-mb-[220px]"}`}>
-              <PromptStickyNotes onSelect={handleSubmit} visible={notesVisible} />
-            </div>
-          </motion.div>
-
-          {/* Fade overlay — white fading to transparent so content disappears under search */}
-          <div className="h-24 -mb-24 pointer-events-none bg-gradient-to-b from-white to-transparent" />
-        </div>
-
-        {/* Bottom section */}
-        <div className="flex flex-col items-center pt-20 pb-16">
-          {/* Tab toggle */}
-          <div className="z-10 bg-gray-100 rounded-full p-1 flex shrink-0">
-            <button
-              onClick={() => setActiveTab("foryou")}
-              className={`px-5 py-1.5 rounded-full text-sm transition-all ${
-                activeTab === "foryou"
-                  ? "bg-white shadow-sm font-medium text-gray-900"
-                  : "text-gray-500"
-              }`}
-            >
-              For you
-            </button>
-            <button
-              onClick={() => setActiveTab("recent")}
-              className={`px-5 py-1.5 rounded-full text-sm transition-all ${
-                activeTab === "recent"
-                  ? "bg-white shadow-sm font-medium text-gray-900"
-                  : "text-gray-500"
-              }`}
-            >
-              Recent
-            </button>
+        {/* Feed content */}
+        {activeTab === "foryou" ? (
+          <HorizontalFeed />
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-sm text-gray-400">Recent items coming soon</p>
           </div>
+        )}
+      </div>
 
-          {/* Feed content — clips at viewport edge */}
-          {activeTab === "foryou" ? (
-            <HomeFeed />
-          ) : (
-            <div className="text-center py-16 w-full max-w-[1200px] px-6">
-              <p className="text-sm text-gray-400">Recent items coming soon</p>
-            </div>
-          )}
-        </div>
+      {/* Prompt bar */}
+      <div className="absolute bottom-8 left-6 right-6">
+        <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} />
       </div>
     </div>
   );
