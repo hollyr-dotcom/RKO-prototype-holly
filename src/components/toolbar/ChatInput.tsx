@@ -6,9 +6,11 @@ import {
   IconSingleSparksFilled,
   IconCross,
 } from "@mirohq/design-system-icons";
+import Lottie, { type LottieRefCurrentProps } from "lottie-react";
 import Markdown from "react-markdown";
 import { PromptSuggestions } from "../PromptSuggestions";
 import { ICON_SIZE } from "./toolbar-constants";
+import aiListeningAnimation from "./lottie/ai-listening.json";
 
 function BlobIcon({ style }: { style?: React.CSSProperties }) {
   return (
@@ -24,6 +26,37 @@ function BlobIcon({ style }: { style?: React.CSSProperties }) {
       <ellipse cx="13.1158" cy="12.857" rx="3.53571" ry="12.2207" fill="currentColor" />
       <ellipse cx="19.6737" cy="12.8569" rx="3.53571" ry="10.1568" fill="currentColor" />
     </svg>
+  );
+}
+
+function VoiceHoverButton({ onClick }: { onClick?: () => void }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const lottieRef = useRef<LottieRefCurrentProps>(null);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onMouseEnter={() => {
+        setIsHovered(true);
+        lottieRef.current?.goToAndPlay(0);
+      }}
+      onMouseLeave={() => setIsHovered(false)}
+      className="flex shrink-0 items-center justify-center rounded-lg w-[36px] h-[36px] text-[#222428]"
+    >
+      {isHovered ? (
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={aiListeningAnimation}
+          loop={false}
+          autoplay
+          style={{ width: 20, height: 23 }}
+          onComplete={() => setIsHovered(false)}
+        />
+      ) : (
+        <BlobIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+      )}
+    </button>
   );
 }
 
@@ -271,13 +304,7 @@ export function ChatInput({
               <IconArrowUp size="small" />
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={onVoiceStart}
-              className="flex shrink-0 items-center justify-center rounded-lg w-[36px] h-[36px] text-[#222428]"
-            >
-              <BlobIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
-            </button>
+            <VoiceHoverButton onClick={onVoiceStart} />
           )}
         </div>
       </form>

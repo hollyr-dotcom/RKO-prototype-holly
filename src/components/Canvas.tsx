@@ -1,6 +1,6 @@
 "use client";
 
-import { Tldraw, Editor, createShapeId, toRichText, renderHtmlFromRichTextForMeasurement, TLShapeId, DefaultFontStyle, DefaultSizeStyle, DefaultDashStyle, DefaultFillStyle } from "tldraw";
+import { Tldraw, Editor, createShapeId, toRichText, renderHtmlFromRichTextForMeasurement, TLShapeId, DefaultFontStyle, DefaultSizeStyle, DefaultDashStyle, DefaultFillStyle, TLGridProps } from "tldraw";
 import "tldraw/tldraw.css";
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { Message } from "@/hooks/useAgent";
@@ -826,6 +826,37 @@ function measureDocumentHeight(html: string, shapeWidth: number = 780, minHeight
   // scrollHeight already includes the 74px top+bottom padding. No extra chrome needed.
   return Math.max(h, minHeight);
 }
+
+const BASE_SPACING = 25;
+const MIN_SCREEN_PX = 16;
+
+function CustomGrid({ x, y, z }: TLGridProps) {
+  // Scale the spacing so dots never get too dense on screen
+  let step = BASE_SPACING;
+  while (step * z < MIN_SCREEN_PX) step *= 2;
+
+  const s = step * z;
+  const xo = 0.5 + x * z;
+  const yo = 0.5 + y * z;
+  const gxo = xo > 0 ? xo % s : s + (xo % s);
+  const gyo = yo > 0 ? yo % s : s + (yo % s);
+  return (
+    <svg className="tl-grid" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <defs>
+        <pattern id="grid-dot" width={s} height={s} patternUnits="userSpaceOnUse">
+          <circle cx={gxo} cy={gyo} r={1} fill="rgba(0,0,0,0.15)" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid-dot)" />
+    </svg>
+  );
+}
+
+function CustomBackground() {
+  return <div style={{ position: 'absolute', inset: 0, backgroundColor: '#f8f8f8' }} />;
+}
+
+const tldrawComponents = { Grid: CustomGrid, Background: CustomBackground };
 
 export function Canvas() {
   // Get authenticated user
@@ -4158,6 +4189,9 @@ export function Canvas() {
   const handleMount = useCallback((editor: Editor) => {
     setEditor(editor);
 
+    // Enable dot grid that moves with the camera
+    editor.updateInstanceState({ isGridMode: true });
+
     // Set default styles for all new shapes
     editor.setStyleForNextShapes(DefaultFontStyle, 'sans');
     editor.setStyleForNextShapes(DefaultSizeStyle, 's');
@@ -4845,7 +4879,7 @@ export function Canvas() {
           pointerEvents: isFullscreenChat ? 'none' : 'auto'
         }}
       >
-        <Tldraw store={storeWithStatus} shapeUtils={customShapeUtils} onMount={handleMount} hideUi licenseKey="tldraw-2026-05-29/WyJUSDZHa19hTSIsWyIqIl0sMTYsIjIwMjYtMDUtMjkiXQ.x1OZFc02qzrd9Y3dHgJtRiMOOU/vh1CX0Bg0zy7LeOwe+/52qJLI9TITddUgkcFbohe+B4hOs06eVcfT4L3ADw
+        <Tldraw store={storeWithStatus} shapeUtils={customShapeUtils} components={tldrawComponents} onMount={handleMount} hideUi licenseKey="tldraw-2026-05-29/WyJUSDZHa19hTSIsWyIqIl0sMTYsIjIwMjYtMDUtMjkiXQ.x1OZFc02qzrd9Y3dHgJtRiMOOU/vh1CX0Bg0zy7LeOwe+/52qJLI9TITddUgkcFbohe+B4hOs06eVcfT4L3ADw
 "/>
 
         {/* Canvas comments overlay */}
