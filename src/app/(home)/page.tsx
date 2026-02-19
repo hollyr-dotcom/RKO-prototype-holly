@@ -2,16 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { HomePromptInput } from "@/components/HomePromptInput";
-import { CardStack } from "@/components/feed/CardStack";
+import { HorizontalFeed } from "@/components/feed/HorizontalFeed";
 import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function HomePage() {
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
-  const [allDone, setAllDone] = useState(false);
+  const [activeTab, setActiveTab] = useState<"foryou" | "recent">("foryou");
   const { user } = useAuth();
   const firstName = user?.displayName?.split(" ")[0] || "Andy";
 
@@ -77,11 +76,39 @@ export default function HomePage() {
 
   return (
     <div className="relative h-full w-full bg-white overflow-hidden">
+      {/* Miro logo — top-left of content area */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/miro-logo.svg" alt="Miro" className="absolute top-7 left-7 z-10 w-[56px] h-[20px]" />
+
+      {/* For you / Recent toggle — centered, aligned with logo and create button */}
+      <div className="absolute top-5 left-1/2 -translate-x-1/2 z-10 flex items-center bg-gray-100 rounded-full p-1">
+        <button
+          onClick={() => setActiveTab("foryou")}
+          className={`px-5 py-1.5 rounded-full text-sm transition-all duration-150 ${
+            activeTab === "foryou"
+              ? "bg-white shadow-sm font-medium text-gray-900"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          For you
+        </button>
+        <button
+          onClick={() => setActiveTab("recent")}
+          className={`px-5 py-1.5 rounded-full text-sm transition-all duration-150 ${
+            activeTab === "recent"
+              ? "bg-white shadow-sm font-medium text-gray-900"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Recent
+        </button>
+      </div>
+
       {/* Create new button — fixed top-right */}
       <button
         onClick={handleCreateEmptyCanvas}
         disabled={isCreating}
-        className="fixed top-4 right-4 z-[9900] px-4 py-2 bg-gray-100 text-gray-900 text-sm font-medium rounded-full hover:bg-gray-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
+        className="fixed top-5 right-6 z-[9900] px-4 py-2 bg-gray-100 text-gray-900 text-sm font-medium rounded-full hover:bg-gray-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
       >
         {isCreating ? (
           <span className="flex items-center gap-2">
@@ -93,46 +120,26 @@ export default function HomePage() {
         )}
       </button>
 
-      {/* Feed content — fades out when all cards are done */}
-      <motion.div
-        animate={{ opacity: allDone ? 0 : 1 }}
-        transition={{ duration: 0.4 }}
-        style={{ pointerEvents: allDone ? "none" : "auto" }}
-        className="absolute inset-0 overflow-y-auto flex flex-col items-center px-6 pt-[8vh] pb-28"
-      >
-        <div className="mb-10 text-center">
-          <h1 className="text-4xl font-bold text-gray-900">Welcome back, {firstName}</h1>
-          <p className="text-xl text-gray-500 mt-1">Here&apos;s what you need to know</p>
+      {/* Main content */}
+      <div className="absolute inset-0 flex flex-col pt-[8vh] pb-28">
+        {/* Heading */}
+        <div className="mb-8 pt-20 text-center px-6">
+          <h1 className="text-4xl leading-none font-bold tracking-tight text-gray-900">Welcome back, {firstName}</h1>
+          <p className="text-4xl leading-none text-gray-500 mt-1">Here&apos;s what you need to know</p>
         </div>
-        <CardStack onAllDone={() => setAllDone(true)} />
-      </motion.div>
 
-      {/* Centered heading shown after all cards are done */}
-      <AnimatePresence>
-        {allDone && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-x-6 text-center pointer-events-none"
-            style={{ bottom: "calc(50% + 48px)" }}
-          >
-            <h1 className="text-4xl font-bold text-gray-900">Nicely done!</h1>
-            <p className="text-xl text-gray-500 mt-2">How can I help next?</p>
-          </motion.div>
+        {/* Feed content */}
+        {activeTab === "foryou" ? (
+          <HorizontalFeed />
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-sm text-gray-400">Recent items coming soon</p>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
 
-      {/* Prompt bar — slides to vertical center when all cards are done */}
-      <div
-        className="absolute left-6 right-6"
-        style={{
-          bottom: allDone ? "50%" : "2rem",
-          transform: allDone ? "translateY(50%)" : "translateY(0)",
-          transition: "bottom 700ms, transform 700ms",
-          transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
-        }}
-      >
+      {/* Prompt bar */}
+      <div className="absolute bottom-8 left-6 right-6">
         <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} />
       </div>
     </div>
