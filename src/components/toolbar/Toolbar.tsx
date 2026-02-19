@@ -105,16 +105,18 @@ export function Toolbar({
   const isConnected = !isChatFocused && !isVoiceActive;
   const showRightSection = !isChatOpen;
 
-  // Play sound when entering voice mode
+  // Play sound when voice mode confirms listening (not on "connecting")
+  const prevVoiceStateRef = useRef(voiceState);
   useEffect(() => {
-    if (isVoiceActive) {
+    if (prevVoiceStateRef.current !== "listening" && voiceState === "listening") {
       if (!voiceActivateSoundRef.current) {
         voiceActivateSoundRef.current = new Audio("/voice-activate.mp3");
       }
       voiceActivateSoundRef.current.currentTime = 0;
       voiceActivateSoundRef.current.play();
     }
-  }, [isVoiceActive]);
+    prevVoiceStateRef.current = voiceState;
+  }, [voiceState]);
 
   // Play sound when exiting voice mode
   useEffect(() => {

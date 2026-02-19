@@ -350,11 +350,6 @@ export function CanvasMasthead() {
         style={{ borderRadius: 16, boxShadow: barShadow }}
       >
         <div className="flex items-center gap-2 pl-1.5 pr-0">
-          {/* More options */}
-          <IconButton variant="ghost" size="medium" aria-label="More options">
-            <IconDotsThreeVertical />
-          </IconButton>
-
           {/* Avatars */}
           <MastheadAvatars />
 

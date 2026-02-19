@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { useChat } from "@/hooks/useChat";
 import { useSidebar } from "@/hooks/useSidebar";
 import { ChatPanel } from "./ChatPanel";
@@ -146,26 +147,7 @@ export function ChatShell() {
     />
   );
 
-  // Sidepanel: normal flex item next to <main>
-  if (isSidePanel) {
-    return (
-      <div
-        className="h-full flex-shrink-0 bg-white overflow-hidden"
-        style={{
-          width: PANEL_WIDTH,
-          marginLeft: PANEL_GAP,
-          borderRadius: "1.5rem 0 0 1.5rem",
-          border: "1px solid #e5e7eb",
-          borderRight: "none",
-          transition: `width ${TRANSITION}, margin-left ${TRANSITION}`,
-        }}
-      >
-        {chatPanel}
-      </div>
-    );
-  }
-
-  // Fullscreen: fixed overlay
+  // Fullscreen: fixed overlay (no AnimatePresence needed — handled by CSS transition)
   if (isFullscreen) {
     return (
       <div
@@ -185,6 +167,37 @@ export function ChatShell() {
     );
   }
 
-  // Minimized: render nothing
-  return null;
+  // Sidepanel: outer container animates width so canvas reflows,
+  // inner panel has fixed width and translates in/out
+  return (
+    <AnimatePresence>
+      {isSidePanel && (
+        <motion.div
+          key="chat-sidepanel-container"
+          className="h-full flex-shrink-0 overflow-hidden"
+          initial={{ width: 0, marginLeft: 0 }}
+          animate={{ width: PANEL_WIDTH + PANEL_GAP, marginLeft: 0 }}
+          exit={{ width: 0, marginLeft: 0 }}
+          transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          <motion.div
+            className="h-full bg-white overflow-hidden"
+            initial={{ x: PANEL_WIDTH + PANEL_GAP }}
+            animate={{ x: 0 }}
+            exit={{ x: PANEL_WIDTH + PANEL_GAP }}
+            transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+            style={{
+              width: PANEL_WIDTH,
+              marginLeft: PANEL_GAP,
+              borderRadius: "1.5rem 0 0 1.5rem",
+              border: "1px solid #e5e7eb",
+              borderRight: "none",
+            }}
+          >
+            {chatPanel}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }

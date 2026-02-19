@@ -102,12 +102,6 @@ html, body {
   padding: 0;
 }
 
-/* Dotted canvas background */
-.tl-background {
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
 /* Custom animations for floating UI */
 @keyframes float-in {
   from {
