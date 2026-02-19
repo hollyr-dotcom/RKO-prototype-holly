@@ -6,6 +6,7 @@ export type FeedItemType =
   | "collaboration-request"
   | "workflow-change"
   | "alert-fyi"
+  | "talktrack"
   | "key-metric"
   | "chart"
   | "decision"
@@ -43,8 +44,9 @@ export interface ArtifactPreview {
     | "diagram"
     | "flow"
     | "activity";
-  id: string;
+  id?: string;
   name: string;
+  videoSrc?: string;
 }
 
 export interface FeedSource {
@@ -214,6 +216,8 @@ export interface DecisionPayload {
   chosenOption?: string;
   deadline?: string;
   decidedBy?: string;
+  videoSrc?: string;
+  participants?: string[];
 }
 
 export interface ApprovalPayload {
@@ -268,6 +272,11 @@ export interface BudgetNotificationPayload {
   alert?: string;
 }
 
+export interface TalktackPayload {
+  videoSrc: string;
+  artifact?: ArtifactPreview;
+}
+
 // Discriminated union
 export type FeedItem =
   | (FeedItemBase & { type: "agent-opportunity"; payload: AgentOpportunityPayload })
@@ -284,4 +293,5 @@ export type FeedItem =
   | (FeedItemBase & { type: "competitor-threat"; payload: CompetitorThreatPayload })
   | (FeedItemBase & { type: "feedback-request"; payload: FeedbackRequestPayload })
   | (FeedItemBase & { type: "budget-request"; payload: BudgetRequestPayload })
-  | (FeedItemBase & { type: "budget-notification"; payload: BudgetNotificationPayload });
+  | (FeedItemBase & { type: "budget-notification"; payload: BudgetNotificationPayload })
+  | (FeedItemBase & { type: "talktrack"; payload: TalktackPayload });

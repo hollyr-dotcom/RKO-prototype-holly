@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { FeedItem } from "@/types/feed";
 import { selectDeskPile } from "@/lib/selectDeskPile";
 import { ScrollFeedCard } from "./ScrollFeedCard";
@@ -12,6 +12,21 @@ const EDGE_PADDING = `calc(50% - ${CARD_WIDTH / 2}px)`;
 export function HorizontalFeed() {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Redirect vertical wheel scroll to horizontal
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +54,7 @@ export function HorizontalFeed() {
   if (isLoading) {
     return (
       <div
+        ref={scrollRef}
         className="flex gap-8 overflow-x-auto"
         style={{
           paddingLeft: EDGE_PADDING,
@@ -59,12 +75,13 @@ export function HorizontalFeed() {
 
   return (
     <div
+      ref={scrollRef}
       className="horizontal-feed flex gap-8 overflow-x-auto w-full"
       style={{
         paddingLeft: EDGE_PADDING,
         paddingRight: EDGE_PADDING,
-        paddingTop: 16,
-        paddingBottom: 16,
+        paddingTop: 24,
+        paddingBottom: 40,
         scrollSnapType: "x mandatory",
         scrollbarWidth: "none",
       }}
