@@ -199,6 +199,21 @@ html, body {
   100% { background-position: -200% 0; }
 }
 
+/* Horizontal feed card tilt — scroll-driven, tied to each card's position in the feed. */
+@keyframes card-tilt {
+  entry 0%   { opacity: 0.45; }
+  entry 100% { opacity: 1; }
+  exit  0%   { opacity: 1; }
+  exit  70%  { opacity: 1; }
+  exit  100% { opacity: 0.45; }
+}
+
+.card-tilt {
+  animation: card-tilt linear both;
+  animation-timeline: view(inline);
+  animation-range: entry exit;
+}
+
 /* Zone frames: dashed border, semi-transparent white background */
 .tl-frame__body {
   rx: 24px;
