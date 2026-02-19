@@ -1,55 +1,143 @@
 "use client";
 
 import { useState, useRef } from "react";
-import type { FeedItem, FeedSource } from "@/types/feed";
-import { formatTimeAgo } from "@/lib/formatTimeAgo";
+import type { FeedItem, FeedItemType } from "@/types/feed";
+import { getUser } from "@/lib/users";
 import { FeedActions } from "./FeedActions";
 import { AgentOpportunityContent } from "./content/AgentOpportunity";
 import { AgentCompletedContent } from "./content/AgentCompleted";
 import { CollaborationRequestContent } from "./content/CollaborationRequest";
 import { WorkflowChangeContent } from "./content/WorkflowChange";
 import { AlertFYIContent } from "./content/AlertFYI";
-import { IconSingleSparksFilled } from "@mirohq/design-system-icons";
-import { getUser, getInitials, getUserColor } from "@/lib/users";
 
-function CardAvatar({ source }: { source: FeedSource }) {
-  const [imgFailed, setImgFailed] = useState(false);
+/* ------------------------------------------------------------------ */
+/*  Card icon type system                                              */
+/*  Add new icon types here with a corresponding SVG component below. */
+/* ------------------------------------------------------------------ */
 
-  if (source.isAgent) {
-    return (
-      <div
-        className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-        style={{ backgroundColor: "#111827" }}
-      >
-        <IconSingleSparksFilled css={{ width: 24, height: 24, color: "white" }} />
-      </div>
-    );
-  }
+type CardIconType = "flag" | "sparkle" | "chart" | "people" | "lightning" | "megaphone" | "shield" | "calendar" | "timeline";
 
-  const user = getUser(source.userId);
-  const name = user?.name ?? "Unknown";
-  const color = getUserColor(source.userId);
+/** Map each feed item type to a header icon. Extend as needed. */
+const ICON_FOR_TYPE: Partial<Record<FeedItemType, CardIconType>> = {
+  "alert-fyi": "flag",
+  "agent-opportunity": "flag",
+  "agent-completed": "flag",
+  "key-metric": "chart",
+  "chart": "chart",
+  "competitor-threat": "shield",
+  "budget-notification": "flag",
+  "budget-request": "flag",
+  "collaboration-request": "people",
+  "workflow-change": "flag",
+  "approval": "flag",
+  "team-announcement": "megaphone",
+  "live-session": "people",
+  "feedback-request": "people",
+  "talktrack": "flag",
+};
 
-  if (user?.avatar && !imgFailed) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={user.avatar}
-        alt={name}
-        className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-        onError={() => setImgFailed(true)}
-      />
-    );
-  }
-
+function FlagSvg() {
   return (
-    <div
-      className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-      style={{ backgroundColor: color }}
-    >
-      <span className="text-white text-sm font-semibold">{getInitials(name)}</span>
-    </div>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <path d="M5 3v18M5 3h11l-3 5.5 3 5.5H5" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
+}
+
+function SparkleSvg() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2l2.09 6.26L20 10.27l-4.91 3.82L16.18 22 12 17.27 7.82 22l1.09-7.91L4 10.27l5.91-2.01L12 2z" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ChartSvg() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="12" width="4" height="9" rx="1" stroke="#222428" strokeWidth="1.5" />
+      <rect x="10" y="7" width="4" height="14" rx="1" stroke="#222428" strokeWidth="1.5" />
+      <rect x="17" y="3" width="4" height="18" rx="1" stroke="#222428" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function PeopleSvg() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <circle cx="9" cy="7" r="3.25" stroke="#222428" strokeWidth="1.5" />
+      <path d="M3 20c0-3.31 2.69-6 6-6s6 2.69 6 6" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="17" cy="9" r="2.25" stroke="#222428" strokeWidth="1.5" />
+      <path d="M17 14c2.76 0 5 2.24 5 5" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function LightningSvg() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function MegaphoneSvg() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <path d="M18 8a3 3 0 010 6M3 10.5v3a1 1 0 001 1h1l3 4.5h1v-5.5h1.5a8 8 0 007.5-5v-1a8 8 0 00-7.5-5H9v5.5H5l-1-4.5H4a1 1 0 00-1 1z" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ShieldSvg() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <path d="M12 3l7 3.5v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10v-5L12 3z" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CalendarSvg() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="4" width="18" height="17" rx="2" stroke="#222428" strokeWidth="1.5" />
+      <path d="M3 9h18M8 2v4M16 2v4" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function TimelineSvg() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 26 26" fill="none">
+      <path fillRule="evenodd" clipRule="evenodd" d="M11.917 17.3333C13.0389 17.3334 13.9612 18.1862 14.072 19.2789L14.0837 19.5V21.6667C14.0837 22.8633 13.1136 23.8333 11.917 23.8333H7.58366C6.4617 23.8333 5.53941 22.9805 5.42863 21.8878L5.41699 21.6667V19.5L5.42757 19.2789C5.53091 18.2591 6.34188 17.4488 7.36149 17.345L7.58366 17.3333H11.917ZM11.917 19.5H7.58366V21.6667H11.917V19.5Z" fill="#222428" />
+      <path fillRule="evenodd" clipRule="evenodd" d="M21.667 9.74999C22.7889 9.74999 23.7112 10.6028 23.822 11.6955L23.8337 11.9167V14.0833C23.8337 15.2799 22.8636 16.25 21.667 16.25H11.917C10.7204 16.25 9.75033 15.2799 9.75033 14.0833V11.9167L9.76196 11.6955C9.86538 10.6755 10.6759 9.86504 11.6959 9.76163L11.917 9.74999H21.667ZM21.667 11.9167H11.917V14.0833H21.667V11.9167Z" fill="#222428" />
+      <path fillRule="evenodd" clipRule="evenodd" d="M11.917 2.16666C13.0389 2.16672 13.9612 3.01952 14.072 4.11221L14.0837 4.33332V6.49999L14.072 6.7211C13.9612 7.81383 13.0389 8.66666 11.917 8.66666H4.33366L4.11255 8.65502C3.09254 8.55161 2.28204 7.74111 2.17863 6.7211L2.16699 6.49999V4.33332L2.17757 4.11221C2.28091 3.09246 3.09188 2.2821 4.11149 2.17829L4.33366 2.16666H11.917ZM11.917 4.33332H4.33366V6.49999H11.917V4.33332Z" fill="#222428" />
+    </svg>
+  );
+}
+
+const ICON_COMPONENTS: Record<CardIconType, React.FC> = {
+  flag: FlagSvg,
+  sparkle: SparkleSvg,
+  chart: ChartSvg,
+  people: PeopleSvg,
+  lightning: LightningSvg,
+  megaphone: MegaphoneSvg,
+  shield: ShieldSvg,
+  calendar: CalendarSvg,
+  timeline: TimelineSvg,
+};
+
+/** Per-item icon overrides (takes precedence over type-based mapping) */
+const ICON_FOR_ID: Record<string, CardIconType> = {
+  "feed-core-01": "timeline",
+  "feed-pq3-01": "timeline",
+};
+
+function CardTypeIcon({ itemType, itemId }: { itemType: FeedItemType; itemId?: string }) {
+  const iconType = (itemId && ICON_FOR_ID[itemId]) || ICON_FOR_TYPE[itemType] || "flag";
+  const Icon = ICON_COMPONENTS[iconType];
+  return <Icon />;
 }
 
 
@@ -168,7 +256,7 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
         }`}
         style={{ transitionTimingFunction: EASE, background: isDecision ? DECISION_BASE_BG : undefined }}
       >
-        {/* Avatar — sits above video overlay */}
+        {/* Header icon — typed SVG, avatar for human sources, sits above video overlay */}
         <div className="px-8 pt-8 relative z-10">
           {item.type === "decision" ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -181,9 +269,20 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
                 transition: "filter 300ms ease-out",
               }}
             />
-          ) : (
-            <CardAvatar source={item.source} />
-          )}
+          ) : (() => {
+            const sourceUser = !item.source.isAgent ? getUser(item.source.userId) : undefined;
+            if (sourceUser?.avatar) {
+              return (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={sourceUser.avatar}
+                  alt={sourceUser.name}
+                  className="w-12 h-12 rounded-full object-cover flex-shrink-0 overflow-hidden"
+                />
+              );
+            }
+            return <CardTypeIcon itemType={item.type} itemId={item.id} />;
+          })()}
         </div>
 
         {/* Title — fades out on hover when video is present */}
@@ -194,32 +293,18 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
             opacity: videoSrc && videoState === "playing" ? 0 : 1,
           }}
         >
-          <h3 className="text-xl font-semibold tracking-tight text-gray-900 leading-snug line-clamp-3 h-[5.25rem]">
+          <h3 className="text-xl font-semibold tracking-tight text-gray-900 leading-snug line-clamp-3 h-[5.25rem] whitespace-pre-line">
             {item.title}
           </h3>
         </div>
 
-        {/* Visual area */}
-        <div className="mx-8 mt-4 h-[180px] rounded-2xl bg-gray-100 flex-shrink-0 overflow-hidden">
+        {/* Visual area — fills remaining space, vertically centers content */}
+        <div className="mx-8 mt-4 flex-1 min-h-0 rounded-2xl overflow-hidden flex items-center justify-center">
           <CardVisual item={item} />
         </div>
 
-        {/* Footer — sits above video overlay */}
-        <div className="relative mt-6 mb-6 h-12 overflow-hidden z-10">
-          {/* Space + timestamp — slides up and out on hover */}
-          <div className="absolute inset-y-0 inset-x-8 flex items-center transition-[transform,opacity] duration-300 ease-out group-hover:-translate-y-full group-hover:opacity-0 pointer-events-none">
-            <p className={`text-sm ${isDecision ? "" : "text-gray-400"}`} style={isDecision ? { color: "rgba(0,0,0,0.6)" } : undefined}>
-              {item.spaceName && (
-                <>
-                  {item.spaceName}
-                  <span className="mx-1.5 opacity-40">·</span>
-                </>
-              )}
-              {formatTimeAgo(item.timestamp)}
-            </p>
-          </div>
-
-          {/* Hover reveal: emoji reactions (decision) or action buttons */}
+        {/* Footer — action buttons, 48px tall, 24px from card bottom */}
+        <div className="relative flex-shrink-0 mb-6 h-12 z-10">
           {item.type === "decision" ? (
             <div
               className="absolute inset-y-0 inset-x-8 flex items-center"
@@ -229,7 +314,7 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
                 className="flex items-center rounded-full px-2 w-full"
                 style={{ height: 44, backgroundColor: "white" }}
               >
-                {["❤️", "👍", "🔥", "👏", "🙌", "👀"].map((emoji) => (
+                {["\u2764\uFE0F", "\uD83D\uDC4D", "\uD83D\uDD25", "\uD83D\uDC4F", "\uD83D\uDE4C", "\uD83D\uDC40"].map((emoji) => (
                   <button
                     key={emoji}
                     className="flex-1 h-9 flex items-center justify-center text-xl hover:scale-110 transition-transform"
@@ -249,11 +334,12 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
                       item.type === "collaboration-request" || item.type === "talktrack"
                         ? a.label
                         : a.variant === "primary"
-                        ? "Unpack"
-                        : "Assign",
+                        ? "Resolve"
+                        : "Ignore",
                   }))}
                   size="large"
                   fill
+                  onDark={!!videoSrc && videoState === "playing"}
                 />
               </div>
             )

@@ -2479,7 +2479,7 @@
     "id": "feed-claims-01",
     "type": "agent-opportunity",
     "spaceId": "space-5",
-    "title": "Claims processing time up 34% \u2014 AI model retraining triggered",
+    "title": "Claims processing time up,\nAI model retraining triggered",
     "body": "Claims processing time has risen 34% over 12 weeks, breaching the 2.5-day SLA target. Correlated with a 42% volume increase following the new flood risk coverage launch. AI model confidence scores also declining \u2014 retraining cycle recommended.",
     "timestamp": "2026-02-17T09:00:00Z",
     "priority": "high",

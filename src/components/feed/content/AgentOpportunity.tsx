@@ -213,8 +213,95 @@ function InvitationStall({ invitations, days }: { invitations: number; days: num
   );
 }
 
+/** Stylised Gantt illustration — abstract timeline showing delay (Figma node 1124:3653) */
+function GanttIllustration() {
+  return (
+    <svg width="296" height="168" viewBox="0 0 296 168" preserveAspectRatio="xMidYMid meet">
+      {/* Phase 1 bar — light grey, short, left of today line */}
+      <rect x="35" y="37" width="113" height="22" rx="4" fill="#d1d5db" />
+      {/* Phase 2 bar — light grey, longer, crosses today line */}
+      <rect x="35" y="77" width="202" height="22" rx="4" fill="#d1d5db" />
+      {/* Today vertical line */}
+      <line x1="149" y1="20" x2="149" y2="168" stroke="#9ca3af" strokeWidth="1.5" />
+      {/* Delay marker — red */}
+      <rect x="115" y="116" width="28" height="22" rx="3" fill="#EF4444" />
+      {/* Active phase bar — cyan */}
+      <rect x="148" y="116" width="121" height="22" rx="4" fill="#22D3EE" />
+    </svg>
+  );
+}
+
+/** Stylised timeline conflict illustration — overlapping bars (Figma node 1126:3663) */
+function TimelineConflictIllustration() {
+  return (
+    <svg width="234" height="148" viewBox="0 0 234 148" fill="none">
+      {/* Pink bar — top, left-aligned with yellow */}
+      <rect x="10" y="30" width="95" height="22" rx="4" fill="#F9A8D4" />
+      {/* Yellow bar — middle, same left edge as pink, wider */}
+      <rect x="10" y="63" width="185" height="22" rx="4" fill="#FBBF24" />
+      {/* Cyan bar — bottom, starts near today line, extends to right edge */}
+      <rect x="90" y="96" width="140" height="22" rx="4" fill="#7DD3FC" />
+      {/* Today vertical line */}
+      <line x1="105" y1="16" x2="105" y2="132" stroke="#1E1E2E" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+/** Stylised OKR progress ring — 3/8 behind pace (Figma node 1108:5303) */
+function OkrRingIllustration() {
+  // Ring with a gap at the bottom (~270° arc total)
+  // 3/8 of the arc is gold (behind), rest is light gray
+  const cx = 97;
+  const cy = 97;
+  const r = 82;
+  const strokeW = 18;
+  // Arc starts at 135° (bottom-left) and sweeps 270° clockwise to 45° (bottom-right)
+  const totalArcDeg = 270;
+  const behindFraction = 3 / 8;
+  const behindDeg = totalArcDeg * behindFraction;
+  const onTrackDeg = totalArcDeg - behindDeg;
+  const startAngle = 135; // bottom-left
+
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const px = (angle: number) => cx + r * Math.cos(toRad(angle));
+  const py = (angle: number) => cy + r * Math.sin(toRad(angle));
+
+  // Gold arc: from startAngle, sweeping behindDeg
+  const goldEnd = startAngle + behindDeg;
+  const goldLargeArc = behindDeg > 180 ? 1 : 0;
+  const goldPath = `M ${px(startAngle)} ${py(startAngle)} A ${r} ${r} 0 ${goldLargeArc} 1 ${px(goldEnd)} ${py(goldEnd)}`;
+
+  // Gray arc: from goldEnd, sweeping onTrackDeg
+  const grayEnd = goldEnd + onTrackDeg;
+  const grayLargeArc = onTrackDeg > 180 ? 1 : 0;
+  const grayPath = `M ${px(goldEnd)} ${py(goldEnd)} A ${r} ${r} 0 ${grayLargeArc} 1 ${px(grayEnd)} ${py(grayEnd)}`;
+
+  return (
+    <svg width="194" height="194" viewBox="0 0 194 194" fill="none">
+      <path d={grayPath} stroke="#E5E7EB" strokeWidth={strokeW} strokeLinecap="round" fill="none" />
+      <path d={goldPath} stroke="#FBBF24" strokeWidth={strokeW} strokeLinecap="round" fill="none" />
+      <text x={cx} y={cy + 4} textAnchor="middle" dominantBaseline="middle" fontSize="28" fontWeight="700" fill="#374151">3/8</text>
+    </svg>
+  );
+}
+
 export function AgentOpportunityContent({ item }: AgentOpportunityProps) {
   const { forecast, capacity, capacityConflict, confidence, convergence, stalled, invitationStall } = item.payload;
+
+  const hasPayloadContent = forecast || capacity || capacityConflict || confidence != null || convergence || stalled || invitationStall;
+
+  if (!hasPayloadContent) {
+    if (item.id === "feed-core-01") {
+      return <GanttIllustration />;
+    }
+    if (item.id === "feed-pq3-01") {
+      return <TimelineConflictIllustration />;
+    }
+    if (item.id === "feed-cross-01") {
+      return <OkrRingIllustration />;
+    }
+    return null;
+  }
 
   return (
     <div className="w-full flex items-center justify-center">
