@@ -9,13 +9,14 @@ import { AgentCompletedContent } from "./content/AgentCompleted";
 import { CollaborationRequestContent } from "./content/CollaborationRequest";
 import { WorkflowChangeContent } from "./content/WorkflowChange";
 import { AlertFYIContent } from "./content/AlertFYI";
+import { GenericVisualPreview } from "./visuals/GenericVisualPreview";
 
 /* ------------------------------------------------------------------ */
 /*  Card icon type system                                              */
 /*  Add new icon types here with a corresponding SVG component below. */
 /* ------------------------------------------------------------------ */
 
-type CardIconType = "flag" | "sparkle" | "chart" | "people" | "lightning" | "megaphone" | "shield" | "calendar" | "timeline";
+type CardIconType = "flag" | "sparkle" | "chart" | "chart-line" | "people" | "lightning" | "megaphone" | "shield" | "calendar" | "timeline";
 
 /** Map each feed item type to a header icon. Extend as needed. */
 const ICON_FOR_TYPE: Partial<Record<FeedItemType, CardIconType>> = {
@@ -58,6 +59,15 @@ function ChartSvg() {
       <rect x="3" y="12" width="4" height="9" rx="1" stroke="#222428" strokeWidth="1.5" />
       <rect x="10" y="7" width="4" height="14" rx="1" stroke="#222428" strokeWidth="1.5" />
       <rect x="17" y="3" width="4" height="18" rx="1" stroke="#222428" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function ChartLineSvg() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+      <path d="M23.8327 23.8333H3.24935L2.16602 22.75V4.33334H4.33268V21.6667H23.8327V23.8333Z" fill="#222428" />
+      <path d="M12.5932 9.9871L17.0585 13.5607L21.8312 5.92578L23.6677 7.07408L18.2509 15.7406L16.656 16.0129L12.1616 12.4176L8.484 17.9339L6.68113 16.7325L11.0148 10.2325L12.5932 9.9871Z" fill="#222428" />
     </svg>
   );
 }
@@ -120,6 +130,7 @@ const ICON_COMPONENTS: Record<CardIconType, React.FC> = {
   flag: FlagSvg,
   sparkle: SparkleSvg,
   chart: ChartSvg,
+  "chart-line": ChartLineSvg,
   people: PeopleSvg,
   lightning: LightningSvg,
   megaphone: MegaphoneSvg,
@@ -132,6 +143,7 @@ const ICON_COMPONENTS: Record<CardIconType, React.FC> = {
 const ICON_FOR_ID: Record<string, CardIconType> = {
   "feed-core-01": "timeline",
   "feed-pq3-01": "timeline",
+  "feed-claims-01": "chart-line",
 };
 
 function CardTypeIcon({ itemType, itemId }: { itemType: FeedItemType; itemId?: string }) {
@@ -143,8 +155,16 @@ function CardTypeIcon({ itemType, itemId }: { itemType: FeedItemType; itemId?: s
 
 function CardVisual({ item }: { item: FeedItem }) {
   switch (item.type) {
-    case "agent-opportunity":
-      return <AgentOpportunityContent item={item} />;
+    case "agent-opportunity": {
+      const content = <AgentOpportunityContent item={item as Extract<FeedItem, { type: "agent-opportunity" }>} />;
+      // AgentOpportunityContent returns null for items without payload/illustration —
+      // fall through to GenericVisualPreview if visualPreview data exists
+      const p = (item as Extract<FeedItem, { type: "agent-opportunity" }>).payload;
+      const hasPayload = p.forecast || p.capacity || p.capacityConflict || p.confidence != null || p.convergence || p.stalled || p.invitationStall;
+      const hasIllustration = item.id === "feed-core-01" || item.id === "feed-pq3-01" || item.id === "feed-cross-01" || item.id === "feed-claims-01";
+      if (hasPayload || hasIllustration) return content;
+      break; // fall through to visualPreview
+    }
     case "agent-completed":
       return <AgentCompletedContent item={item} />;
     case "collaboration-request":
@@ -154,12 +174,13 @@ function CardVisual({ item }: { item: FeedItem }) {
     case "alert-fyi":
       return <AlertFYIContent item={item} />;
     case "talktrack":
-      return null; // video overlay covers this area
     case "decision":
-      return null; // video overlay covers this area
-    default:
       return null;
   }
+  if (item.visualPreview) {
+    return <GenericVisualPreview type={item.visualPreview.type} data={item.visualPreview.data} />;
+  }
+  return null;
 }
 
 const EASE = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";

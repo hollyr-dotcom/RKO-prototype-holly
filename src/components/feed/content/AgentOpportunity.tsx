@@ -247,6 +247,19 @@ function TimelineConflictIllustration() {
   );
 }
 
+/** Stylised claims spark illustration — 34% with upward red trend line (Figma node 1114:3599) */
+function ClaimsSparkIllustration() {
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="text-[40px] font-bold text-gray-800 tracking-tight leading-none">34%</div>
+      <svg width="242" height="90" viewBox="0 0 242 90" fill="none">
+        <path d="M242 82L0 82" stroke="black" />
+        <path d="M118.13 74L151.971 39.0432L184.131 59L233.205 12.2705" stroke="#FF0909" strokeWidth="6" strokeLinecap="round" />
+      </svg>
+    </div>
+  );
+}
+
 /** Stylised OKR progress ring — 3/8 behind pace (Figma node 1108:5303) */
 function OkrRingIllustration() {
   // Ring with a gap at the bottom (~270° arc total)
@@ -299,6 +312,9 @@ export function AgentOpportunityContent({ item }: AgentOpportunityProps) {
     }
     if (item.id === "feed-cross-01") {
       return <OkrRingIllustration />;
+    }
+    if (item.id === "feed-claims-01") {
+      return <ClaimsSparkIllustration />;
     }
     return null;
   }
