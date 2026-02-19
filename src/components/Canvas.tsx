@@ -16,6 +16,7 @@ import { CommentShapeUtil } from "@/shapes/CommentShapeUtil";
 import { TaskCardShapeUtil } from "@/shapes/TaskCardShapeUtil";
 import { GanttChartShapeUtil } from "@/shapes/GanttChartShapeUtil";
 import { KanbanBoardShapeUtil } from "@/shapes/KanbanBoardShapeUtil";
+import { PeopleListShapeUtil } from "@/shapes/PeopleListShapeUtil";
 import { ApproveButtonShapeUtil } from "@/shapes/ApproveButtonShapeUtil";
 import { Toolbar } from "./Toolbar";
 import { StartingPromptCards } from "./StartingPromptCards";
@@ -482,13 +483,67 @@ function FloatingProgressIndicator({
     return { activePlan: null, pendingCheckpoint: checkpoint };
   }, [messages, isLoading]);
 
+  // ── Connector cycling animation at start of execution ──
+  // Uses elapsed time from a stable start timestamp (not fragile setTimeout timers)
+  const connectorSources: { name: string; icon: React.ReactNode }[] = [
+    { name: "Jira", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21.202 2H12c0 1.107.437 2.169 1.217 2.954a5.16 5.16 0 003.937 1.224h1.695v1.646C18.85 10.13 20.708 12 23 12V2.803A.803.803 0 0021.202 2z" fill="#9ca3af"/><path d="M16.202 7H7c0 1.107.437 2.169 1.217 2.954a5.16 5.16 0 003.937 1.224h1.695v1.646C13.85 15.13 15.708 17 18 17V7.803A.803.803 0 0016.202 7z" fill="#9ca3af"/><path d="M11.202 12H2c0 1.107.437 2.169 1.217 2.954a5.16 5.16 0 003.937 1.224h1.695v1.646C8.85 20.13 10.708 22 13 22v-9.197A.803.803 0 0011.202 12z" fill="#9ca3af"/></svg> },
+    { name: "Miro Insights", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M15 2a3 3 0 013 3v1.618l2.105.371a3 3 0 012.434 3.476l-1.736 9.849a3 3 0 01-3.476 2.433L7.48 21.01A3 3 0 015.001 18 3 3 0 012 15V5a3 3 0 013-3h10zm3 13a3 3 0 01-3 3H7.003a1 1 0 00.824 1.041l9.848 1.736a1 1 0 001.158-.811l1.736-9.848a1 1 0 00-.81-1.159L18 8.649V15zM5 4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5z" fill="#9ca3af"/></svg> },
+    { name: "Salesforce", icon: <svg width="14" height="14" viewBox="0 0 512 512" fill="none"><path d="M481 239.1c0 61.6-56.3 108.6-116.3 95.9-12.9 23.2-49.7 49.7-93 29.3-28.9 67.5-125.1 64.8-150.3-3.6C37.3 377.5-4.3 263.4 68.5 220.6 44.1 164.7 84.4 98.5 148.9 98.5c27.2 0 52.8 12.7 69.3 34.2 14.6-15 34.7-24.5 57.1-24.5 29.8 0 55.5 16.5 69.5 41.2C410 120.8 481 169.3 481 239.1z" fill="#9ca3af"/></svg> },
+    { name: "Asana", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M17.65 12.62a4.35 4.35 0 100 8.7 4.35 4.35 0 000-8.7zm-11.3 0a4.35 4.35 0 100 8.7 4.35 4.35 0 000-8.7zM16.35 7.183a4.35 4.35 0 11-8.7 0 4.35 4.35 0 018.7 0z" fill="#9ca3af"/></svg> },
+    { name: "Google Drive", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6.835 21l3.08-6h12.072L18.656 21H6.835zM15.325 14h6.662L15.325 3H8.662l6.663 11zM2 15l3.331 6 5.663-11L7.662 4 2 15z" fill="#9ca3af"/></svg> },
+    { name: "Looker", icon: null },
+    { name: "Amplitude", icon: null },
+    { name: "GitHub", icon: null },
+  ];
+  const [animStart, setAnimStart] = useState(0);
+  const [, setTick] = useState(0);
+
+  const isExecuting = activePlan?.isExecuting ?? false;
+
+  // Record start time once when execution begins (persists through re-render flickers)
+  useEffect(() => {
+    if (isExecuting && animStart === 0) {
+      setAnimStart(Date.now());
+    }
+  }, [isExecuting, animStart]);
+
+  // Reset when plan disappears entirely
+  useEffect(() => {
+    if (!activePlan) setAnimStart(0);
+  }, [activePlan]);
+
+  // Tick every second during the 20s animation window to force re-renders
+  useEffect(() => {
+    if (animStart === 0) return;
+    const id = setInterval(() => {
+      if (Date.now() - animStart < 21000) {
+        setTick(t => t + 1);
+      } else {
+        clearInterval(id);
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [animStart]);
+
   // Don't show if no active plan
   if (!activePlan) return null;
 
   const stepNumber = activePlan.currentStep + 1;
   const totalSteps = activePlan.steps.length;
-  const currentStepText = activePlan.steps[activePlan.currentStep] || "";
+  const rawStepText = activePlan.steps[activePlan.currentStep] || "";
   const isComplete = stepNumber >= totalSteps && !isLoading;
+
+  // Derive displayed step text from elapsed animation time
+  const elapsed = animStart > 0 ? Date.now() - animStart : 0;
+  let currentStepText = rawStepText;
+  let connectorIcon: React.ReactNode = null;
+  if (elapsed > 0 && elapsed < 2000) {
+    currentStepText = "Finding relevant data…";
+  } else if (elapsed >= 2000 && elapsed < 20000) {
+    const idx = Math.floor((elapsed - 2000) / 4000) % connectorSources.length;
+    currentStepText = `Connecting to ${connectorSources[idx].name}…`;
+    connectorIcon = connectorSources[idx].icon;
+  }
 
   // If complete and dismissed, show nothing (don't fall through to checkpoint)
   if (isComplete && isCompletionDismissed) {
@@ -737,8 +792,18 @@ function FloatingProgressIndicator({
             </span>
           </div>
 
-          {/* Step text */}
-          <span className="text-sm font-medium truncate flex-1 min-w-0 text-left">
+          {/* Step text — shimmer animation while executing */}
+          <span
+            className="text-sm font-medium truncate flex-1 min-w-0 text-left flex items-center gap-1.5"
+            style={isLoading ? {
+              background: 'linear-gradient(90deg, #9ca3af 0%, #9ca3af 40%, #d1d5db 50%, #9ca3af 60%, #9ca3af 100%)',
+              backgroundSize: '200% 100%',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              animation: 'shimmer-text 2s ease-in-out infinite',
+            } : undefined}
+          >
+            {connectorIcon && <span className="flex-shrink-0 flex items-center" style={{ WebkitTextFillColor: 'initial' }}>{connectorIcon}</span>}
             {currentStepText}
           </span>
 
@@ -809,21 +874,45 @@ type CreationToastInfo = {
   frameName?: string;
 };
 
-// Estimate document height from HTML content so collision detection
-// uses a realistic size before the DOM-based auto-resize kicks in
-function estimateDocumentHeight(html: string, shapeWidth: number = 780, minHeight: number = 660): number {
-  const text = html.replace(/<[^>]+>/g, "");
-  const contentWidth = shapeWidth - 148; // 74px padding each side
-  const charsPerLine = Math.floor(contentWidth / 7.5); // ~7.5px per char at 13px
-  const textLines = Math.ceil(text.length / Math.max(charsPerLine, 1));
-  const textHeight = textLines * 24; // line-height 1.55 at ~15px ≈ 24px per line
+// Measure document height by rendering HTML in a hidden DOM element.
+// Random slight rotation for sticky notes (-3° to 3°)
+function noteRotation(): number {
+  return (Math.random() * 6 - 3) * (Math.PI / 180);
+}
 
-  // Headings have large top margins (1.4em ≈ 28px) + bottom (0.5em ≈ 10px)
-  const headings = (html.match(/<h[1-6][^>]*>/gi) || []).length;
-  const paragraphs = (html.match(/<(p|li|ul|ol|blockquote)[^>]*>/gi) || []).length;
-  const marginHeight = headings * 38 + paragraphs * 12;
+// Uses the exact same styles as the document component (74px padding, 13px font, 1.6 line-height).
+// This is synchronous and pixel-accurate — no estimation.
+function measureDocumentHeight(html: string, shapeWidth: number = 780, minHeight: number = 200): number {
+  if (typeof document === "undefined") {
+    // SSR fallback — rough estimate
+    const text = html.replace(/<[^>]+>/g, "");
+    return Math.max(minHeight, Math.ceil(text.length / 50) * 21 + 200);
+  }
 
-  return Math.max(minHeight, textHeight + marginHeight + 148 + 60);
+  const el = document.createElement("div");
+  el.style.cssText = `
+    position:absolute; left:-9999px; top:0;
+    width:${shapeWidth}px; box-sizing:border-box;
+    padding:74px; font-size:13px; line-height:1.6; color:#1f2937;
+    word-wrap:break-word; overflow-wrap:break-word;
+  `;
+  // Inject Tiptap-matching heading/paragraph styles so measurement is pixel-accurate
+  el.innerHTML = `<style>
+    h1 { font-size:1.4em; font-weight:700; margin:1.2em 0 0.5em; line-height:1.3; }
+    h2 { font-size:1.2em; font-weight:600; margin:1.4em 0 0.5em; line-height:1.3; }
+    h3 { font-size:1.05em; font-weight:600; margin:1em 0 0.4em; line-height:1.3; }
+    h1:first-child, h2:first-child, h3:first-child { margin-top:0; }
+    p { margin:0 0 0.6em; line-height:1.55; }
+    ul, ol { margin:0 0 0.6em; padding-left:1.5em; }
+    li { margin:0 0 0.2em; }
+    blockquote { margin:0.5em 0; padding-left:1em; border-left:3px solid #ddd; }
+  </style>${html}`;
+  document.body.appendChild(el);
+  const h = el.scrollHeight;
+  document.body.removeChild(el);
+
+  // scrollHeight already includes the 74px top+bottom padding. No extra chrome needed.
+  return Math.max(h, minHeight);
 }
 
 export function Canvas() {
@@ -832,7 +921,7 @@ export function Canvas() {
 
   // LiveBlocks multiplayer store -- syncs tldraw state across users
   const [sessionUser] = useState(() => authUser ? getSessionUser(authUser) : getLocalDevUser());
-  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil, ApproveButtonShapeUtil], []);
+  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil, PeopleListShapeUtil, ApproveButtonShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 
   // Prevent browser back/forward navigation from trackpad gestures (Safari + fallback)
@@ -1469,6 +1558,7 @@ export function Canvas() {
             id: itemId,
             type: "note",
             x, y,
+            rotation: noteRotation(),
             parentId: frameId,
             props: {
               richText: toRichText(text),
@@ -1724,6 +1814,7 @@ export function Canvas() {
               type: "note",
               x: pos.x,
               y: pos.y,
+              rotation: noteRotation(),
               parentId: parentFrameId as any,
               props: {
                 richText: toRichText(text),
@@ -1746,6 +1837,7 @@ export function Canvas() {
             type: "note",
             x: pos.x,
             y: pos.y,
+            rotation: noteRotation(),
             props: {
               richText: toRichText(text),
               color: randomStickyColor(),
@@ -1925,7 +2017,7 @@ export function Canvas() {
 
         const validWidth = Math.max(width || 780, 200);
         // Estimate height from content so collision detection uses realistic size
-        const estimatedH = content ? estimateDocumentHeight(content, validWidth) : 660;
+        const estimatedH = content ? measureDocumentHeight(content, validWidth) : 660;
         const validHeight = Math.max(height || estimatedH, 200);
 
         if (parentFrameId) {
@@ -2413,18 +2505,21 @@ export function Canvas() {
       // ─── createZone_result: composed frame with mixed content ────────────
       if (toolName === "createZone_result") {
         const {
-          title, layout, gantt, summary, teams,
-          userInsight, evaluation, resolvedStickers,
+          title, layout, gantt, summary, people,
+          isRecommended, confidence, headerColor, userInsight, evaluation, solutions, resolvedStickers,
         } = args as {
           title?: string;
-          layout?: "overview" | "scenario";
+          layout?: "project" | "synthesis" | "solution";
           gantt?: {
             title: string;
             tasks: Array<{ id: number; text: string; start: string; end: string; duration: number; progress: number; parent: number; type: string; open: boolean; color?: string }>;
             links: Array<{ id: number; source: number; target: number; type: string }>;
           } | null;
           summary?: { title: string; content: string } | null;
-          teams?: Array<{ name: string; color: string }> | null;
+          people?: Array<{ name: string; role: string }> | null;
+          isRecommended?: boolean;
+          confidence?: string | null;
+          headerColor?: string | null;
           userInsight?: {
             feedback: Array<{ title: string; description: string; status?: string; assignee?: string; tags?: string[] }>;
             metrics: Array<{ text: string; color: string }>;
@@ -2435,6 +2530,12 @@ export function Canvas() {
             risks: Array<{ text: string; color: string }>;
             potential: Array<{ text: string; color: string }>;
           } | null;
+          solutions?: Array<{
+            title: string;
+            summary: { title: string; content: string };
+            confidence: string;
+            isRecommended: boolean;
+          }> | null;
           resolvedStickers?: Array<{ url: string; width: number; height: number; stickerId: string }>;
         };
 
@@ -2457,571 +2558,343 @@ export function Canvas() {
         const zoneItems: ZoneItem[] = [];
 
         // ════════════════════════════════════════════════════════
-        // OVERVIEW LAYOUT — vertical: doc on top, then Gantt below
+        // SYNTHESIS LAYOUT — narrow frame, doc only (synchronous)
         // ════════════════════════════════════════════════════════
-        if (layout === "overview") {
-          const frameWidth = 1100;
-          const contentWidth = frameWidth - pad * 2;
-          const titleSpace = 40;
+        if (layout === "synthesis") {
+          const FW = 750;
+          const PAD = 72;
+          const TITLE_H = 80;
+          const contentWidth = FW - PAD * 2;
 
-          // Estimate height: doc + Gantt stacked vertically
-          let estH = pad + titleSpace;
-          if (summary) estH += estimateDocumentHeight(summary.content, contentWidth, 300) + gap;
-          const ganttH = gantt ? Math.max(400, 120 + (gantt.tasks?.length || 0) * 40) : 400;
-          if (gantt) estH += sectionLabelH + 20 + ganttH + gap;
-          estH += pad;
-          const frameHeight = Math.max(estH, 400);
+          // Pre-calculate total height
+          const docH = summary ? measureDocumentHeight(summary.content, contentWidth, 300) : 0;
+          const totalH = PAD + TITLE_H + docH + PAD;
+          const frameHeight = Math.max(totalH, 300);
 
-          // Create frame
+          // Create frame at full calculated size
           const engine = getPlacementEngine();
-          const framePos = engine.place({ category: "format", width: frameWidth, height: frameHeight });
+          const framePos = engine.place({ category: "format", width: FW, height: frameHeight });
           const frameId = createShapeId();
           editor.createShape({
             id: frameId, type: "frame",
             x: framePos.x, y: framePos.y,
-            props: { name: "", w: frameWidth, h: frameHeight },
+            props: { name: "", w: FW, h: frameHeight },
             meta: { createdBy: "ai" },
           });
-          engine.recordPlacement(frameId as unknown as string, { category: "format", width: frameWidth, height: frameHeight }, framePos);
+          engine.recordPlacement(frameId as unknown as string, { category: "format", width: FW, height: frameHeight }, framePos);
 
-          let cursorY = pad;
+          let cy = PAD;
 
-          // Helper: create a section title label
-          const createSectionLabel = (text: string, y: number, size: "s" | "m" | "l" = "m"): ReturnType<typeof createShapeId> => {
-            const labelId = createShapeId();
-            editor.createShape({
-              id: labelId, type: "text", x: pad, y, parentId: frameId,
-              props: { richText: toRichText(text), size, font: "sans", color: "black" },
-              meta: { createdBy: "ai" },
-            });
-            return labelId;
-          };
+          // Title text
+          editor.createShape({
+            id: createShapeId(), type: "text",
+            x: PAD, y: cy, parentId: frameId,
+            props: { richText: toRichText(title || "Synthesis"), size: "l", font: "sans", color: "black" },
+            meta: { createdBy: "ai" },
+          });
+          cy += TITLE_H;
 
-          // 0. Overview title label (large, like scenario titles)
-          const overviewTitleId = createSectionLabel("Overview", cursorY, "l");
-          zoneItems.push({ id: overviewTitleId, kind: "label" });
-          cursorY += titleSpace + 20;
-
-          // 1. Summary document
+          // Summary document
           if (summary) {
-            const docH = estimateDocumentHeight(summary.content, contentWidth, 300);
-            const docId = createShapeId();
             editor.createShape({
-              id: docId, type: "document",
-              x: pad, y: cursorY, parentId: frameId,
+              id: createShapeId(), type: "document",
+              x: PAD, y: cy, parentId: frameId,
               props: { docId: generateId(), title: summary.title, w: contentWidth, h: docH },
               meta: { createdBy: "ai", initialContent: summary.content },
             });
-            zoneItems.push({ id: docId, kind: "format" });
-            cursorY += docH + gap;
           }
-
-          // 2. Conflict timeline → Gantt
-          if (gantt) {
-            const conflictLabelId = createSectionLabel("Conflict Timeline", cursorY);
-            zoneItems.push({ id: conflictLabelId, kind: "label" });
-            cursorY += sectionLabelH + 20;
-
-            const gH = Math.max(400, 120 + (gantt.tasks?.length || 0) * 40);
-            const ganttId = createShapeId();
-            editor.createShape({
-              id: ganttId, type: "ganttchart" as any,
-              x: pad, y: cursorY, parentId: frameId,
-              props: {
-                w: contentWidth, h: gH, title: gantt.title,
-                tasks: gantt.tasks || [], links: gantt.links || [],
-                scales: [{ unit: "month", step: 1, format: "%F %Y" }, { unit: "week", step: 1, format: "%j" }],
-                columns: [{ id: "text", header: "Task name", width: 200 }, { id: "start", header: "Start", width: 90, align: "center" }, { id: "add-task", header: "", width: 40, align: "center" }],
-              },
-              meta: { createdBy: "ai" },
-            });
-            zoneItems.push({ id: ganttId, kind: "format" });
-            cursorY += gH + gap;
-          }
-
-          // Set initial frame height + reposition
-          const initialH = cursorY + pad;
-          editor.updateShape({ id: frameId, type: "frame", props: { h: initialH } });
-
-          let lastTotalH = 0;
-          const reposition = () => {
-            try {
-              let y = pad;
-              for (const item of zoneItems) {
-                if (item.kind === "label") {
-                  const shape = editor.getShape(item.id);
-                  if (!shape) continue;
-                  const bounds = editor.getShapeGeometry(item.id)?.bounds;
-                  const labelH = bounds ? Math.ceil(bounds.height) : sectionLabelH;
-                  if (Math.abs((shape as any).y - y) > 2) {
-                    editor.updateShape({ id: item.id, type: "text" as any, x: pad, y });
-                  }
-                  y += labelH + 20;
-                } else if (item.kind === "format") {
-                  const shape = editor.getShape(item.id);
-                  if (!shape) continue;
-                  if (Math.abs((shape as any).y - y) > 2) {
-                    editor.updateShape({ id: item.id, type: shape.type as any, x: pad, y });
-                  }
-                  const propsH = (shape.props as any).h || 200;
-                  y += propsH + gap;
-                }
-              }
-              const newH = y + pad;
-              editor.updateShape({ id: frameId, type: "frame", props: { h: newH } });
-              lastTotalH = newH;
-            } catch {
-              // Silently recover
-            }
-          };
-          let passCount = 0;
-          const repositionLoop = () => {
-            reposition();
-            passCount++;
-            if (passCount < 40) setTimeout(repositionLoop, 500);
-          };
-          setTimeout(repositionLoop, 600);
 
           shapeId = frameId;
 
         // ════════════════════════════════════════════════════════
-        // SCENARIO LAYOUT
+        // SOLUTION LAYOUT — shared frame with 2 side-by-side cards
         // ════════════════════════════════════════════════════════
-        } else {
-          const frameWidth = 1100;
-          const contentWidth = frameWidth - pad * 2;
-          const scenarioTitleH = 36;
-          const colGap = 15;
-          const col3W = Math.floor((contentWidth - colGap * 2) / 3);
+        } else if (layout === "solution") {
+          const FW = 1200;
+          const PAD = 72;
+          const CARD_GAP = 48;
+          const CARD_W = Math.floor((FW - PAD * 2 - CARD_GAP) / 2); // ~504px each
+          const TITLE_H = 80;
+          const CONF_STICKY = 200;       // "s" note size
+          const CONF_OVERLAP = 60;       // how far the sticky overlaps the doc bottom
 
-          // Detect scenario letter (A/B/C)
-          const scenarioMatch = (title || "").match(/Scenario\s+([A-C])/i);
-          const scenarioLetter = scenarioMatch ? scenarioMatch[1].toUpperCase() : "";
-          const isScenarioC = scenarioLetter === "C";
+          const solArr = solutions || [];
 
-          // ── Estimate height ──
-          let estH = pad;
-          estH += scenarioTitleH + 16; // title
-          if (summary) estH += sectionLabelH + 20 + estimateDocumentHeight(summary.content, contentWidth, 250) + gap;
-          if (gantt) estH += sectionLabelH + 20 + Math.max(350, 120 + (gantt.tasks?.length || 0) * 40) + gap;
-          if (teams && teams.length > 0) estH += sectionLabelH + 20 + 160 + gap;
-          if (userInsight) estH += sectionLabelH + 16 + 500 + gap; // approximate
-          if (evaluation) estH += 400 + gap;
-          estH += pad;
-          const frameHeight = Math.max(estH, 400);
+          // Pre-calculate card heights from data
+          // Doc gets an h1 with the solution title prepended, so measure with that
+          const cardHeights = solArr.map(sol => {
+            const docContent = `<h1>${sol.title}</h1>${sol.summary.content}`;
+            const docH = measureDocumentHeight(docContent, CARD_W, 150);
+            // Sticky overlaps the doc by CONF_OVERLAP, so net addition is less
+            return docH + (CONF_STICKY - CONF_OVERLAP) + 24;
+          });
+          const maxCardH = cardHeights.length > 0 ? Math.max(...cardHeights) : 400;
+          const totalH = PAD + TITLE_H + maxCardH + PAD;
 
-          // Create frame (no title bar text for scenario zones — the big label is inside)
+          // Create frame at full calculated size
           const engine = getPlacementEngine();
-          const framePos = engine.place({ category: "format", width: frameWidth, height: frameHeight });
+          const framePos = engine.place({ category: "format", width: FW, height: totalH });
           const frameId = createShapeId();
           editor.createShape({
             id: frameId, type: "frame",
             x: framePos.x, y: framePos.y,
-            props: { name: "", w: frameWidth, h: frameHeight },
+            props: { name: "", w: FW, h: totalH },
             meta: { createdBy: "ai" },
           });
-          engine.recordPlacement(frameId as unknown as string, { category: "format", width: frameWidth, height: frameHeight }, framePos);
+          engine.recordPlacement(frameId as unknown as string, { category: "format", width: FW, height: totalH }, framePos);
 
-          let cursorY = pad;
+          // Frame title
+          editor.createShape({
+            id: createShapeId(), type: "text",
+            x: PAD, y: PAD, parentId: frameId,
+            props: { richText: toRichText(title || "Possible Solutions"), size: "l", font: "sans", color: "black" },
+            meta: { createdBy: "ai" },
+          });
 
-          // Helper: create a section title label
-          const createSectionLabel = (text: string, y: number, size: "s" | "m" | "l" = "m", x: number = pad): ReturnType<typeof createShapeId> => {
-            const labelId = createShapeId();
+          // Place each solution card side-by-side
+          let recommendedCardX = 0;
+          for (let i = 0; i < solArr.length; i++) {
+            const sol = solArr[i];
+            const cardX = PAD + i * (CARD_W + CARD_GAP);
+            let cy = PAD + TITLE_H;
+
+            // Document card — solution title as h1 inside the doc itself
+            const docContent = `<h1>${sol.title}</h1>${sol.summary.content}`;
+            const docH = measureDocumentHeight(docContent, CARD_W, 150);
             editor.createShape({
-              id: labelId, type: "text", x, y, parentId: frameId,
-              props: { richText: toRichText(text), size, font: "sans", color: "black" },
-              meta: { createdBy: "ai" },
+              id: createShapeId(), type: "document",
+              x: cardX, y: cy, parentId: frameId,
+              props: { docId: generateId(), title: sol.summary.title, w: CARD_W, h: docH },
+              meta: { createdBy: "ai", initialContent: docContent },
             });
-            return labelId;
-          };
 
-          // Helper: create a sticky note
-          const createSticky = (text: string, color: string, x: number, y: number, w: number = 200, h: number = 120): ReturnType<typeof createShapeId> => {
-            const sId = createShapeId();
+            // Confidence sticky — overlaps bottom of doc, centered horizontally on the card
+            const confText = `${sol.confidence} confidence`;
+            const confX = cardX + Math.floor((CARD_W - CONF_STICKY) / 2); // center on card
+            const confY = cy + docH - CONF_OVERLAP; // overlap bottom of doc
+            const confId = createShapeId();
             editor.createShape({
-              id: sId, type: "note",
-              x, y, parentId: frameId,
+              id: confId, type: "note",
+              x: confX, y: confY, rotation: noteRotation(), parentId: frameId,
               props: {
-                richText: toRichText(text),
-                color: colorMap[color] || "yellow",
-                font: "sans", size: "s",
-              },
+                richText: toRichText(confText),
+                color: sol.isRecommended ? (colorMap["green"] || "green") : (colorMap["yellow"] || "yellow"),
+                font: "sans", size: "s", fontSizeAdjustment: 14,
+              } as any,
               meta: { createdBy: "ai" },
             });
-            return sId;
-          };
 
-          // ── 1. Scenario Title ──
-          const titleLabelId = createSectionLabel(title || "Scenario", cursorY, "l");
-          zoneItems.push({ id: titleLabelId, kind: "label" });
-          cursorY += scenarioTitleH + 20;
-
-          // ── 2. Summary → document ──
-          if (summary) {
-            const summaryLabelId = createSectionLabel("Summary", cursorY);
-            zoneItems.push({ id: summaryLabelId, kind: "label" });
-            cursorY += sectionLabelH + 20;
-
-            const docH = estimateDocumentHeight(summary.content, contentWidth, 250);
-            const docId = createShapeId();
-            editor.createShape({
-              id: docId, type: "document",
-              x: pad, y: cursorY, parentId: frameId,
-              props: { docId: generateId(), title: summary.title, w: contentWidth, h: docH },
-              meta: { createdBy: "ai", initialContent: summary.content },
-            });
-            zoneItems.push({ id: docId, kind: "format" });
-            cursorY += docH + gap;
+            if (sol.isRecommended) {
+              recommendedCardX = cardX;
+            }
           }
 
-          // ── 3. Detailed Roadmap → Gantt chart ──
-          if (gantt) {
-            const ganttLabelId = createSectionLabel("Detailed Roadmap", cursorY);
-            zoneItems.push({ id: ganttLabelId, kind: "label" });
-            cursorY += sectionLabelH + 20;
-
-            const ganttH = Math.max(350, 120 + (gantt.tasks?.length || 0) * 40);
-            const ganttId = createShapeId();
-            editor.createShape({
-              id: ganttId, type: "ganttchart" as any,
-              x: pad, y: cursorY, parentId: frameId,
-              props: {
-                w: contentWidth, h: ganttH, title: gantt.title,
-                tasks: gantt.tasks || [], links: gantt.links || [],
-                scales: [{ unit: "month", step: 1, format: "%F %Y" }, { unit: "week", step: 1, format: "%j" }],
-                columns: [{ id: "text", header: "Task name", width: 180 }, { id: "start", header: "Start", width: 90, align: "center" }, { id: "add-task", header: "", width: 40, align: "center" }],
-              },
-              meta: { createdBy: "ai" },
-            });
-            zoneItems.push({ id: ganttId, kind: "format" });
-            cursorY += ganttH + gap;
-          }
-
-          // ── 4. Key Teams Involved → row of stickies (max 3, shared team = red) ──
-          if (teams && teams.length > 0) {
-            const teamsLabelId = createSectionLabel("Key teams involved", cursorY);
-            zoneItems.push({ id: teamsLabelId, kind: "label" });
-            cursorY += sectionLabelH + 20;
-
-            const teamCount = Math.min(teams.length, 3);
-            const teamGap = 16;
-            const teamStickyW = 200;  // fixed width, left-aligned
-            const teamStickyH = 140;  // generous — notes auto-size, text often wraps
-            const teamStickyIds: ReturnType<typeof createShapeId>[] = [];
-            for (let i = 0; i < teamCount; i++) {
-              const team = teams[i];
-              // teams is now Array<{name, color}> — extract name and color
-              const teamName = typeof team === "string" ? team : (team as any).name || "";
-              const teamColor = typeof team === "string" ? "yellow" : ((team as any).color || "yellow");
-              const sId = createSticky(teamName, teamColor, pad + i * (teamStickyW + teamGap), cursorY, teamStickyW, teamStickyH);
-              teamStickyIds.push(sId);
-            }
-            zoneItems.push({ id: teamStickyIds[0], kind: "stickyRow", stickyIds: teamStickyIds, stickyW: teamStickyW, stickyH: teamStickyH, stickyCols: teamCount });
-            cursorY += teamStickyH + gap;
-          }
-
-          // ── 5. User Insight → 3-column section ──
-          if (userInsight) {
-            const insightLabelId = createSectionLabel("User insight", cursorY);
-            zoneItems.push({ id: insightLabelId, kind: "label" });
-            cursorY += sectionLabelH + 20;
-
-            const colStartY = cursorY;
-            let maxColH = 0;
-
-            // Column 1: "Existing Feedback" → task cards
-            const feedbackLabelId = createSectionLabel("Existing Feedback", colStartY, "s", pad);
-            const feedbackCardIds: ReturnType<typeof createShapeId>[] = [];
-            const cardH = 140;
-            const cardGap = 14;
-            let fbY = colStartY + sectionLabelH + 14;
-            for (const fb of (userInsight.feedback || []).slice(0, 5)) {
-              const cId = createShapeId();
-              editor.createShape({
-                id: cId, type: "taskcard" as any,
-                x: pad, y: fbY, parentId: frameId,
-                props: {
-                  w: col3W, h: cardH,
-                  title: fb.title,
-                  description: fb.description || "",
-                  status: fb.status || "in_progress",
-                  priority: "medium",
-                  assignee: fb.assignee || "",
-                  dueDate: "",
-                  tags: fb.tags || [],
-                  subtasks: [],
-                },
-                meta: { createdBy: "ai" },
-              });
-              feedbackCardIds.push(cId);
-              fbY += cardH + cardGap;
-            }
-            const col1H = fbY - colStartY;
-            maxColH = Math.max(maxColH, col1H);
-
-            // Column 2: "Metrics" → stickies stacked vertically (max 4)
-            const col2X = pad + col3W + colGap;
-            const metricsLabelId = createSectionLabel("Metrics", colStartY, "s", col2X);
-            const metricStickyIds: ReturnType<typeof createShapeId>[] = [];
-            const metricStickyW = col3W - 8;
-            const metricStickyH = 110;
-            const metricGap = 12;
-            const metricsSlice = (userInsight.metrics || []).slice(0, 4);
-            for (let i = 0; i < metricsSlice.length; i++) {
-              const m = metricsSlice[i];
-              const sId = createSticky(m.text, m.color, col2X, colStartY + sectionLabelH + 14 + i * (metricStickyH + metricGap), metricStickyW, metricStickyH);
-              metricStickyIds.push(sId);
-            }
-            const col2H = sectionLabelH + 14 + metricsSlice.length * (metricStickyH + metricGap);
-            maxColH = Math.max(maxColH, col2H);
-
-            // Column 3: "Requests" → stickies stacked vertically (max 4)
-            const col3X = pad + (col3W + colGap) * 2;
-            const requestsLabelId = createSectionLabel("Requests", colStartY, "s", col3X);
-            const requestStickyIds: ReturnType<typeof createShapeId>[] = [];
-            const requestsSlice = (userInsight.requests || []).slice(0, 4);
-            for (let i = 0; i < requestsSlice.length; i++) {
-              const r = requestsSlice[i];
-              const sId = createSticky(r.text, r.color, col3X, colStartY + sectionLabelH + 14 + i * (metricStickyH + metricGap), metricStickyW, metricStickyH);
-              requestStickyIds.push(sId);
-            }
-            const col3H = sectionLabelH + 14 + requestsSlice.length * (metricStickyH + metricGap);
-            maxColH = Math.max(maxColH, col3H);
-
-            // Store column data for reposition
-            zoneItems.push({
-              id: feedbackLabelId, kind: "threeCol",
-              colData: [
-                { labelId: feedbackLabelId, itemIds: feedbackCardIds, colWidth: col3W },
-                { labelId: metricsLabelId, itemIds: metricStickyIds, colWidth: col3W },
-                { labelId: requestsLabelId, itemIds: requestStickyIds, colWidth: col3W },
-              ],
-            });
-
-            cursorY += maxColH + gap;
-          }
-
-          // ── 6. Evaluation → 3-column section (no overall label) ──
-          if (evaluation) {
-            const evalStartY = cursorY;
-            let maxEvalColH = 0;
-            const evalStickyW = col3W - 16;
-            const evalStickyH = 120;
-            const evalGap = 12;
-
-            // Column 1: "Opportunity"
-            const oppLabelId = createSectionLabel("Opportunity", evalStartY, "s", pad);
-            const oppStickyIds: ReturnType<typeof createShapeId>[] = [];
-            for (let i = 0; i < (evaluation.opportunity || []).length; i++) {
-              const item = evaluation.opportunity[i];
-              const sId = createSticky(item.text, item.color, pad, evalStartY + sectionLabelH + 12 + i * (evalStickyH + evalGap), evalStickyW, evalStickyH);
-              oppStickyIds.push(sId);
-            }
-            const oppH = sectionLabelH + 12 + (evaluation.opportunity || []).length * (evalStickyH + evalGap);
-            maxEvalColH = Math.max(maxEvalColH, oppH);
-
-            // Column 2: "Risks"
-            const risksX = pad + col3W + colGap;
-            const risksLabelId = createSectionLabel("Risks", evalStartY, "s", risksX);
-            const riskStickyIds: ReturnType<typeof createShapeId>[] = [];
-            for (let i = 0; i < (evaluation.risks || []).length; i++) {
-              const item = evaluation.risks[i];
-              const sId = createSticky(item.text, item.color, risksX, evalStartY + sectionLabelH + 12 + i * (evalStickyH + evalGap), evalStickyW, evalStickyH);
-              riskStickyIds.push(sId);
-            }
-            const risksH = sectionLabelH + 12 + (evaluation.risks || []).length * (evalStickyH + evalGap);
-            maxEvalColH = Math.max(maxEvalColH, risksH);
-
-            // Column 3: "Potential"
-            const potentialX = pad + (col3W + colGap) * 2;
-            const potentialLabelId = createSectionLabel("Potential", evalStartY, "s", potentialX);
-            const potStickyIds: ReturnType<typeof createShapeId>[] = [];
-            for (let i = 0; i < (evaluation.potential || []).length; i++) {
-              const item = evaluation.potential[i];
-              const sId = createSticky(item.text, item.color, potentialX, evalStartY + sectionLabelH + 12 + i * (evalStickyH + evalGap), evalStickyW, evalStickyH);
-              potStickyIds.push(sId);
-            }
-            const potH = sectionLabelH + 12 + (evaluation.potential || []).length * (evalStickyH + evalGap);
-            maxEvalColH = Math.max(maxEvalColH, potH);
-
-            zoneItems.push({
-              id: oppLabelId, kind: "threeCol",
-              colData: [
-                { labelId: oppLabelId, itemIds: oppStickyIds, colWidth: col3W },
-                { labelId: risksLabelId, itemIds: riskStickyIds, colWidth: col3W },
-                { labelId: potentialLabelId, itemIds: potStickyIds, colWidth: col3W },
-              ],
-            });
-
-            cursorY += maxEvalColH + gap;
-          }
-
-          // ── 7. Recommended sticker (Scenario C only) ──
-          let stickerId: ReturnType<typeof createShapeId> | null = null;
-          if (isScenarioC) {
+          // Recommended sticker on preferred card — left+down, larger
+          const recSol = solArr.find(s => s.isRecommended);
+          if (recSol) {
             const stickerUrl = "https://mirostatic.com/stickers/general-task-tacklers__2/task_tacklers_recommended.svg";
-            const displayW = 120;
-            const displayH = 120;
+            const dW = 180, dH = 180;
             const assetId = `asset:sticker-recommended-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
             editor.createAssets([{
               id: assetId, type: "image", typeName: "asset",
               props: { name: "recommended", src: stickerUrl, w: 200, h: 200, mimeType: "image/svg+xml", isAnimated: false },
               meta: {},
             }]);
-            stickerId = createShapeId();
-            // Place at top-right corner, slightly overlapping
             editor.createShape({
-              id: stickerId, type: "image",
-              x: framePos.x + frameWidth - displayW / 2,
-              y: framePos.y - displayH / 2,
-              props: { assetId, w: displayW, h: displayH },
-              meta: { createdBy: "ai" },
-            });
-          } else if (resolvedStickers && resolvedStickers.length > 0) {
-            // Generic sticker fallback
-            const stk = resolvedStickers[0];
-            const displayW = 120;
-            const displayH = 120;
-            const assetId = `asset:sticker-${stk.stickerId}-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
-            editor.createAssets([{
-              id: assetId, type: "image", typeName: "asset",
-              props: { name: stk.stickerId, src: stk.url, w: stk.width, h: stk.height, mimeType: stk.url.endsWith(".svg") ? "image/svg+xml" : "image/png", isAnimated: false },
-              meta: {},
-            }]);
-            stickerId = createShapeId();
-            editor.createShape({
-              id: stickerId, type: "image",
-              x: framePos.x + frameWidth - displayW / 2,
-              y: framePos.y - displayH / 2,
-              props: { assetId, w: displayW, h: displayH },
+              id: createShapeId(), type: "image",
+              x: framePos.x + recommendedCardX + CARD_W - dW + 10,
+              y: framePos.y + PAD + TITLE_H - 30,
+              props: { assetId, w: dW, h: dH },
               meta: { createdBy: "ai" },
             });
           }
 
-          // ── 8. Set initial frame height ──
-          const initialH = cursorY + pad;
-          editor.updateShape({ id: frameId, type: "frame", props: { h: initialH } });
+          shapeId = frameId;
 
-          // ── 9. Reactive reposition — re-reads props.h (updated by AutoSizeWrapper) ──
-          // AutoSizeWrapper observes rendered content and updates shape h props asynchronously.
-          // We poll until the layout is stable (all shapes have their final sizes).
-          // Helper: get actual rendered height of any shape (notes auto-size, custom shapes use props.h)
-          const getShapeH = (shapeId: ReturnType<typeof createShapeId>, fallback: number): number => {
-            const geo = editor.getShapeGeometry(shapeId)?.bounds;
-            if (geo) return Math.ceil(geo.height);
-            const s = editor.getShape(shapeId);
-            return s ? ((s.props as any).h || fallback) : fallback;
+        // ════════════════════════════════════════════════════════
+        // PROJECT LAYOUT — fully synchronous, no delays, no polling
+        // ════════════════════════════════════════════════════════
+        } else {
+          // ── Layout constants ──
+          const FW = 1500;
+          const PAD = 72;                       // generous frame inner padding
+          const STICKY_H = 200;                // tldraw "s" note height
+          const HGAP = 24;                     // gap: header sticky → content
+          const SGAP = 72;                     // gap between sections
+          const CARD_GAP = 14;
+          const METRIC_GAP = 16;
+          const METRIC_W = 200;                // matches "s" note width
+          const TITLE_H = 80;                  // zone title text height + big gap below
+          const CX = PAD + 200 + HGAP;        // content start X
+          const CW = FW - CX - PAD;           // content width
+
+          const DOC_W = 550;                   // summary doc width
+          const RGX = CX + DOC_W + 40;        // right group sticky X
+          const RCX = RGX + 200 + HGAP;       // right content X
+          const RCW = FW - RCX - PAD;         // right content width
+
+          // ── Derive section header colors ──
+          const sectionColor: string = headerColor || "light-violet";
+          const lightVariantMap: Record<string, string> = { blue: "light-blue", yellow: "yellow", green: "light-green", violet: "light-violet", orange: "yellow", red: "light-red" };
+          const sectionColorLight: string = lightVariantMap[sectionColor] || sectionColor;
+
+          // ── Pre-calculate ALL section heights from data ──
+          const docH = summary ? measureDocumentHeight(summary.content, DOC_W, 250) : 0;
+          const peopleH = (people && people.length > 0) ? people.length * 48 + 40 : 0;
+          const sec1H = Math.max(STICKY_H, docH, peopleH); // side-by-side row height
+
+          const ganttH = gantt ? Math.max(350, 120 + (gantt.tasks?.length || 0) * 40) : 0;
+          const sec2H = gantt ? Math.max(STICKY_H, ganttH) : 0;
+
+          const feedbackSlice = (userInsight?.feedback || []).slice(0, 6);
+          const cardW = Math.floor((CW - CARD_GAP * 2) / 3);
+          const cardH = 140;
+          const cardGridRows = feedbackSlice.length > 0 ? Math.ceil(feedbackSlice.length / 3) : 0;
+          const sec3H = cardGridRows > 0 ? Math.max(STICKY_H, cardGridRows * (cardH + CARD_GAP)) : 0;
+
+          const metricsSlice = (userInsight?.metrics || []).slice(0, 4);
+          const sec4H = metricsSlice.length > 0 ? STICKY_H : 0;
+
+          // ── Calculate total frame height ──
+          let totalH = PAD + TITLE_H;
+          if (sec1H > 0) totalH += sec1H + SGAP;
+          if (sec2H > 0) totalH += sec2H + SGAP;
+          if (sec3H > 0) totalH += sec3H + SGAP;
+          if (sec4H > 0) totalH += sec4H + SGAP;
+          totalH += PAD;
+
+          // ── Create frame at full calculated size ──
+          const engine = getPlacementEngine();
+          const framePos = engine.place({ category: "format", width: FW, height: totalH });
+          const frameId = createShapeId();
+          editor.createShape({
+            id: frameId, type: "frame",
+            x: framePos.x, y: framePos.y,
+            props: { name: title || "Zone", w: FW, h: totalH },
+            meta: { createdBy: "ai" },
+          });
+          engine.recordPlacement(frameId as unknown as string, { category: "format", width: FW, height: totalH }, framePos);
+
+          // ── Helpers ──
+          const addHeaderSticky = (text: string, x: number, y: number) => {
+            const sId = createShapeId();
+            editor.createShape({
+              id: sId, type: "note", x, y, rotation: noteRotation(), parentId: frameId,
+              props: { richText: toRichText(text), color: sectionColor as any, font: "sans", size: "s", fontSizeAdjustment: 20 } as any,
+              meta: { createdBy: "ai" },
+            });
+            return sId;
           };
 
-          let lastTotalH = 0;
-          const reposition = () => {
-            try {
-              let y = pad;
-              for (const item of zoneItems) {
-                if (item.kind === "label") {
-                  const shape = editor.getShape(item.id);
-                  if (!shape) continue;
-                  const labelH = getShapeH(item.id, sectionLabelH);
-                  const x = item.xOffset ?? pad;
-                  if (Math.abs((shape as any).y - y) > 2 || Math.abs((shape as any).x - x) > 2) {
-                    editor.updateShape({ id: item.id, type: "text" as any, x, y });
-                  }
-                  y += labelH + 20;
-                } else if (item.kind === "format") {
-                  const shape = editor.getShape(item.id);
-                  if (!shape) continue;
-                  const x = item.xOffset ?? pad;
-                  if (Math.abs((shape as any).y - y) > 2) {
-                    editor.updateShape({ id: item.id, type: shape.type as any, x, y });
-                  }
-                  // Read props.h — AutoSizeWrapper keeps this in sync with actual content
-                  const propsH = (shape.props as any).h || 200;
-                  y += propsH + gap;
-                } else if (item.kind === "stickyRow" && item.stickyIds) {
-                  // Measure tallest sticky (tldraw notes auto-size based on text)
-                  let tallest = item.stickyH || 100;
-                  const sw = item.stickyW || 200;
-                  for (let i = 0; i < item.stickyIds.length; i++) {
-                    const sx = pad + i * (sw + 16);
-                    const s = editor.getShape(item.stickyIds[i]);
-                    if (s && Math.abs((s as any).y - y) > 2) {
-                      editor.updateShape({ id: item.stickyIds[i], type: "note" as any, x: sx, y });
-                    }
-                    const actualH = getShapeH(item.stickyIds[i], tallest);
-                    tallest = Math.max(tallest, actualH);
-                  }
-                  y += tallest + gap;
-                } else if (item.kind === "stickyGrid" && item.stickyIds) {
-                  const cols = item.stickyCols || 2;
-                  const sw = item.stickyW || 160;
-                  const sGap = 12;
-                  const baseX = item.xOffset ?? pad;
-                  // Measure actual heights per row
-                  let totalGridH = 0;
-                  const rowCount = Math.ceil(item.stickyIds.length / cols);
-                  for (let row = 0; row < rowCount; row++) {
-                    let rowH = item.stickyH || 160;
-                    for (let col = 0; col < cols; col++) {
-                      const idx = row * cols + col;
-                      if (idx >= item.stickyIds.length) break;
-                      const sid = item.stickyIds[idx];
-                      const sx = baseX + col * (sw + sGap);
-                      const sy = y + totalGridH;
-                      const s = editor.getShape(sid);
-                      if (s && Math.abs((s as any).y - sy) > 2) {
-                        editor.updateShape({ id: sid, type: "note" as any, x: sx, y: sy });
-                      }
-                      rowH = Math.max(rowH, getShapeH(sid, rowH));
-                    }
-                    totalGridH += rowH + sGap;
-                  }
-                  y += totalGridH + gap;
-                } else if (item.kind === "threeCol" && item.colData) {
-                  let maxColH = 0;
-                  for (let ci = 0; ci < item.colData.length; ci++) {
-                    const col = item.colData[ci];
-                    const colX = pad + ci * (col.colWidth + colGap);
-                    const labelShape = editor.getShape(col.labelId);
-                    if (labelShape && Math.abs((labelShape as any).y - y) > 2) {
-                      editor.updateShape({ id: col.labelId, type: "text" as any, x: colX, y });
-                    }
-                    let itemY = y + sectionLabelH + 12;
-                    for (const itemId of col.itemIds) {
-                      const s = editor.getShape(itemId);
-                      if (!s) continue;
-                      if (Math.abs((s as any).y - itemY) > 2) {
-                        editor.updateShape({ id: itemId, type: s.type as any, x: colX, y: itemY });
-                      }
-                      // Measure actual height (notes auto-size, cards use props.h via AutoSizeWrapper)
-                      const actualH = getShapeH(itemId, 120);
-                      itemY += actualH + 12;
-                    }
-                    maxColH = Math.max(maxColH, itemY - y);
-                  }
-                  y += maxColH + gap;
-                }
-              }
-              const newH = y + pad;
-              editor.updateShape({ id: frameId, type: "frame", props: { h: newH } });
-              lastTotalH = newH;
-            } catch {
-              // Silently recover — shape may have been deleted
+          const addSticky = (text: string, color: string, x: number, y: number) => {
+            const sId = createShapeId();
+            editor.createShape({
+              id: sId, type: "note", x, y, rotation: noteRotation(), parentId: frameId,
+              props: { richText: toRichText(text), color: colorMap[color] || "yellow", font: "sans", size: "s", fontSizeAdjustment: 14 } as any,
+              meta: { createdBy: "ai" },
+            });
+            return sId;
+          };
+
+          // ── Place everything synchronously ──
+          let cy = PAD;
+
+          // Zone title text
+          editor.createShape({
+            id: createShapeId(), type: "text",
+            x: PAD, y: cy, parentId: frameId,
+            props: { richText: toRichText(title || "Zone"), size: "l", font: "sans", color: "black" },
+            meta: { createdBy: "ai" },
+          });
+          cy += TITLE_H;
+
+          // Section 1: Summary + People (side by side)
+          if (summary || (people && people.length > 0)) {
+            if (summary) {
+              addHeaderSticky("Project\nSummary", PAD, cy);
+              const docId = createShapeId();
+              editor.createShape({
+                id: docId, type: "document",
+                x: CX, y: cy, parentId: frameId,
+                props: { docId: generateId(), title: summary.title, w: DOC_W, h: docH },
+                meta: { createdBy: "ai", initialContent: summary.content },
+              });
             }
-          };
-
-          // Run reposition every 500ms for 20 seconds unconditionally.
-          // No stability detection — Zone 2+ content loads slower (browser busy
-          // rendering Zone 1) so "stable" might be reached before content renders.
-          let passCount = 0;
-          const repositionLoop = () => {
-            reposition();
-            passCount++;
-            if (passCount < 40) {
-              setTimeout(repositionLoop, 500);
+            if (people && people.length > 0) {
+              addHeaderSticky("Key\nPeople", RGX, cy);
+              editor.createShape({
+                id: createShapeId(), type: "peoplelist" as any,
+                x: RCX, y: cy, parentId: frameId,
+                props: { w: RCW, h: peopleH, people },
+                meta: { createdBy: "ai" },
+              });
             }
-          };
-          // First pass at 600ms (after AutoSizeWrapper's first 300ms sync)
-          setTimeout(repositionLoop, 600);
+            cy += sec1H + SGAP;
+          }
+
+          // Section 2: Timeline
+          if (gantt) {
+            addHeaderSticky("Project\nTimeline", PAD, cy);
+            editor.createShape({
+              id: createShapeId(), type: "ganttchart" as any,
+              x: CX, y: cy, parentId: frameId,
+              props: {
+                w: CW, h: ganttH, title: gantt.title,
+                tasks: gantt.tasks || [], links: gantt.links || [],
+                scales: [{ unit: "month", step: 1, format: "%F %Y" }, { unit: "week", step: 1, format: "%j" }],
+                columns: [{ id: "text", header: "Task name", width: 180 }, { id: "start", header: "Start", width: 90, align: "center" }, { id: "add-task", header: "", width: 40, align: "center" }],
+              },
+              meta: { createdBy: "ai" },
+            });
+            cy += sec2H + SGAP;
+          }
+
+          // Section 3: User Insight cards
+          if (feedbackSlice.length > 0) {
+            addHeaderSticky("User\nInsight", PAD, cy);
+            for (let i = 0; i < feedbackSlice.length; i++) {
+              const fb = feedbackSlice[i];
+              editor.createShape({
+                id: createShapeId(), type: "taskcard" as any,
+                x: CX + (i % 3) * (cardW + CARD_GAP),
+                y: cy + Math.floor(i / 3) * (cardH + CARD_GAP),
+                parentId: frameId,
+                props: {
+                  w: cardW, h: cardH, title: fb.title,
+                  description: fb.description || "",
+                  status: fb.status || "in_progress", priority: "medium",
+                  assignee: fb.assignee || "", dueDate: "",
+                  tags: fb.tags || [], subtasks: [],
+                },
+                meta: { createdBy: "ai" },
+              });
+            }
+            cy += sec3H + SGAP;
+          }
+
+          // Section 4: Key Metrics — header uses section color, content uses light variant
+          if (metricsSlice.length > 0) {
+            addHeaderSticky("Key\nMetrics", PAD, cy);
+            for (let i = 0; i < metricsSlice.length; i++) {
+              addSticky(metricsSlice[i].text, sectionColorLight, CX + i * (METRIC_W + METRIC_GAP), cy);
+            }
+            cy += sec4H + SGAP;
+          }
+
+          // Recommended sticker (outside frame, top-right corner)
+          if (isRecommended) {
+            const stickerUrl = "https://mirostatic.com/stickers/general-task-tacklers__2/task_tacklers_recommended.svg";
+            const dW = 180, dH = 180;
+            const assetId = `asset:sticker-recommended-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
+            editor.createAssets([{ id: assetId, type: "image", typeName: "asset", props: { name: "recommended", src: stickerUrl, w: 200, h: 200, mimeType: "image/svg+xml", isAnimated: false }, meta: {} }]);
+            editor.createShape({ id: createShapeId(), type: "image", x: framePos.x + FW - dW + 10, y: framePos.y - 20, props: { assetId, w: dW, h: dH }, meta: { createdBy: "ai" } });
+          } else if (resolvedStickers && resolvedStickers.length > 0) {
+            const stk = resolvedStickers[0];
+            const dW = 180, dH = 180;
+            const assetId = `asset:sticker-${stk.stickerId}-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
+            editor.createAssets([{ id: assetId, type: "image", typeName: "asset", props: { name: stk.stickerId, src: stk.url, w: stk.width, h: stk.height, mimeType: stk.url.endsWith(".svg") ? "image/svg+xml" : "image/png", isAnimated: false }, meta: {} }]);
+            editor.createShape({ id: createShapeId(), type: "image", x: framePos.x + FW - dW + 10, y: framePos.y - 20, props: { assetId, w: dW, h: dH }, meta: { createdBy: "ai" } });
+          }
 
           shapeId = frameId;
         }
@@ -3125,6 +2998,7 @@ export function Canvas() {
             type: "note",
             x: colX + (colW - noteMW) / 2,
             y: titleStickyY,
+            rotation: noteRotation(),
             parentId: frameId,
             props: { richText: toRichText(opt.title), color: titleColor, font: "sans", size: "m" },
             meta: { createdBy: "ai" },
@@ -3140,6 +3014,7 @@ export function Canvas() {
               type: "note",
               x: colX + p * (noteSW + detailGap),
               y: detailStickyY,
+              rotation: noteRotation(),
               parentId: frameId,
               props: { richText: toRichText(points[p]), color: detailColor, font: "sans", size: "s" },
               meta: { createdBy: "ai" },
@@ -3229,6 +3104,7 @@ export function Canvas() {
           type: "note",
           x: pos.x,
           y: pos.y,
+          rotation: noteRotation(),
           props: {
             richText: toRichText(`${title}\n\n${content}`),
             color: "light-violet",
@@ -3711,6 +3587,7 @@ export function Canvas() {
               type: "note",
               x,
               y,
+              rotation: noteRotation(),
               parentId: frameId,
               props: {
                 richText: toRichText(item.text || ""),
@@ -5338,7 +5215,16 @@ export function Canvas() {
                           <IconCheckMark css={{ width: 12, height: 12 }} />
                         </div>
                       )}
-                      <span className="text-sm font-medium text-gray-900 truncate flex-1 text-left">
+                      <span
+                        className="text-sm font-medium truncate flex-1 text-left"
+                        style={ct.isCreating ? {
+                          background: 'linear-gradient(90deg, #9ca3af 0%, #9ca3af 40%, #d1d5db 50%, #9ca3af 60%, #9ca3af 100%)',
+                          backgroundSize: '200% 100%',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          animation: 'shimmer-text 2s ease-in-out infinite',
+                        } : { color: '#111827' }}
+                      >
                         {ct.isCreating ? `Creating ${ct.name}...` : `Created ${ct.name}`}
                       </span>
                       {!ct.isCreating && (

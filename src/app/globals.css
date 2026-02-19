@@ -200,18 +200,29 @@ html, body {
   100% { background-position: -200% 0; }
 }
 
-/* Make tldraw frames match document/table border style (light gray, rounded, scales with zoom) */
+@keyframes shimmer-text {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Zone frames: dashed border, semi-transparent white background */
 .tl-frame__body {
   rx: 24px;
   ry: 24px;
   stroke: #d0d5dd !important;
-  stroke-width: 1px !important;
-  fill: #ffffff !important;
+  stroke-width: 1.5px !important;
+  stroke-dasharray: 8 6 !important;
+  fill: rgba(255, 255, 255, 0.4) !important;
 }
 
 .tl-frame-indicator {
   rx: 24px;
   ry: 24px;
+}
+
+/* Hide frame labels */
+.tl-frame-label {
+  display: none !important;
 }
 
 /* Hide Liveblocks badge */
