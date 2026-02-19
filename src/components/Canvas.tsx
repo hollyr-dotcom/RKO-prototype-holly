@@ -16,7 +16,6 @@ import { CommentShapeUtil } from "@/shapes/CommentShapeUtil";
 import { TaskCardShapeUtil } from "@/shapes/TaskCardShapeUtil";
 import { GanttChartShapeUtil } from "@/shapes/GanttChartShapeUtil";
 import { KanbanBoardShapeUtil } from "@/shapes/KanbanBoardShapeUtil";
-import { PeopleListShapeUtil } from "@/shapes/PeopleListShapeUtil";
 import { ApproveButtonShapeUtil } from "@/shapes/ApproveButtonShapeUtil";
 import { Toolbar } from "./toolbar/Toolbar";
 import { StartingPromptCards } from "./StartingPromptCards";
@@ -833,7 +832,7 @@ export function Canvas() {
 
   // LiveBlocks multiplayer store -- syncs tldraw state across users
   const [sessionUser] = useState(() => authUser ? getSessionUser(authUser) : getLocalDevUser());
-  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil, PeopleListShapeUtil, ApproveButtonShapeUtil], []);
+  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil, ApproveButtonShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 
   // Prevent browser back/forward navigation from trackpad gestures (Safari + fallback)
