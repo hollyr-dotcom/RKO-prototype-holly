@@ -1,4 +1,4 @@
-# Canvas Prototype
+# Canvas Prototype 
 
 An AI-powered interactive canvas where you can create diagrams, brainstorms, flowcharts, and more through natural language — by typing or talking.
 
