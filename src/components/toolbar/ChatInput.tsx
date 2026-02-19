@@ -154,8 +154,8 @@ export function ChatInput({
 
       {/* Response toast above */}
       {responseToast && !isLoading && (
-        <div className="absolute bottom-full left-0 right-0 mb-4">
-          <div className="w-full bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative">
+        <div className="absolute bottom-full mb-4" style={{ right: -8, width: "calc(100% + 16px)" }}>
+          <div className="w-full bg-white shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: 24 }}>
             {/* Sticky icon */}
             <div className="absolute top-4 left-4 z-10 bg-white">
               <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center">

@@ -158,6 +158,12 @@ export function Toolbar({
 
   const activeToolId = getActiveToolId();
   const activeIndex = primaryTools.findIndex((t) => t.id === activeToolId);
+  const lastActiveIndexRef = useRef(0);
+  if (activeIndex >= 0) {
+    lastActiveIndexRef.current = activeIndex;
+  }
+  const highlightIndex = activeIndex >= 0 ? activeIndex : lastActiveIndexRef.current;
+  const showHighlight = activeIndex >= 0 && !isChatFocused;
 
   // Visible tools: when chat focused, only show "plus"
   const visibleTools = isChatFocused
@@ -237,10 +243,17 @@ export function Toolbar({
     onExpandedChange?.(isChatFocused);
   }, [isChatFocused, onExpandedChange]);
 
+  // Offset to center the chat input on screen when focused
+  const chatCenterOffset = isChatFocused
+    ? -((CELL_W + CONTAINER_PADDING * 2 + DISCONNECTED_GAP) / 2)
+    : 0;
+
   return (
-    <div
+    <motion.div
       ref={toolbarRef}
       className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[70]"
+      animate={{ marginLeft: chatCenterOffset }}
+      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       onWheel={(e) => e.stopPropagation()}
     >
       <div
@@ -266,15 +279,13 @@ export function Toolbar({
           }}
         >
           <div className="relative flex items-center">
-            {/* Active tool highlight — sliding pill */}
-            {activeIndex >= 0 && !isChatFocused && (
-              <motion.div
-                className="absolute top-0 left-0 rounded-[18px] bg-[#e8ecfc]"
-                animate={{ x: activeIndex * CELL_W }}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                style={{ width: CELL_W, height: CELL_H }}
-              />
-            )}
+            {/* Active tool highlight — sliding pill (always mounted to avoid remount jump) */}
+            <motion.div
+              className="absolute top-0 left-0 rounded-[18px] bg-[#e8ecfc]"
+              animate={{ x: highlightIndex * CELL_W, opacity: showHighlight ? 1 : 0 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              style={{ width: CELL_W, height: CELL_H }}
+            />
 
             <AnimatePresence initial={false}>
               {visibleTools.map((tool) => (
@@ -435,6 +446,6 @@ export function Toolbar({
           </motion.button>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }

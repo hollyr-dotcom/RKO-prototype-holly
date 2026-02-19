@@ -100,7 +100,7 @@ export function PlusMenu({ open, onClose, onSelectItem }: PlusMenuProps) {
           <div className="max-h-[380px] overflow-y-auto overflow-x-hidden" style={{ borderRadius: CONTAINER_RADIUS }}>
             {/* Filter input — sticky grey pill */}
             <div className="sticky top-0 z-10 bg-white p-2" style={{ borderRadius: `${CONTAINER_RADIUS}px ${CONTAINER_RADIUS}px 0 0` }}>
-              <div className="flex items-center rounded-lg bg-[#f1f2f5] px-3 h-[36px]">
+              <div className="flex items-center rounded-full   bg-[#f1f2f5] px-3 h-[36px]">
                 <input
                   ref={inputRef}
                   type="text"
@@ -123,24 +123,14 @@ export function PlusMenu({ open, onClose, onSelectItem }: PlusMenuProps) {
                 {/* Custom shapes section */}
                 {customItems.length > 0 && (
                   <>
-                    <div className="px-4 py-1.5 text-xs font-medium text-[#656b81] uppercase tracking-wide">
-                      Custom shapes
-                    </div>
+                    
                     {customItems.map(renderItem)}
                   </>
-                )}
-
-                {/* Separator */}
-                {customItems.length > 0 && tldrawItems.length > 0 && (
-                  <div className="my-1.5 border-t border-[#e9eaef]" />
                 )}
 
                 {/* tldraw tools section */}
                 {tldrawItems.length > 0 && (
                   <>
-                    <div className="px-4 py-1.5 text-xs font-medium text-[#656b81] uppercase tracking-wide">
-                      Canvas tools
-                    </div>
                     {tldrawItems.map(renderItem)}
                   </>
                 )}

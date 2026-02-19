@@ -5,9 +5,6 @@ import { useState, useEffect, useRef } from "react";
 import Markdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  IconPlus,
-  IconMicrophone,
-  IconArrowUp,
   IconCheckMark,
   IconChevronDown,
   IconArrowRight,
@@ -18,6 +15,8 @@ import {
   IconSquarePencil,
   IconSidebarGlobalOpen,
 } from "@mirohq/design-system-icons";
+import { ChatInput } from "./toolbar/ChatInput";
+import { VoiceStopButton } from "./toolbar/VoiceStopButton";
 
 // Shimmer animation for loading text (Claude-style glimmer)
 const shimmerStyle = {
@@ -28,19 +27,6 @@ const shimmerStyle = {
   backgroundClip: "text",
   animation: "shimmer 2s ease-in-out infinite",
 } as React.CSSProperties;
-
-// Voice wave icon
-function VoiceWaveIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-      <rect x="2" y="9" width="2.5" height="6" rx="1.25" />
-      <rect x="6.5" y="5" width="2.5" height="14" rx="1.25" />
-      <rect x="11" y="3" width="2.5" height="18" rx="1.25" />
-      <rect x="15.5" y="5" width="2.5" height="14" rx="1.25" />
-      <rect x="20" y="9" width="2.5" height="6" rx="1.25" />
-    </svg>
-  );
-}
 
 interface ChatPanelProps {
   onClose: () => void;
@@ -60,6 +46,9 @@ interface ChatPanelProps {
   planPanel?: React.ReactNode;
   isPlanPanelVisible?: boolean;
   onTogglePlanPanel?: () => void;
+  voiceState?: "idle" | "connecting" | "listening" | "speaking" | "error";
+  onVoiceToggle?: () => void;
+  canvasState?: { frames: any[]; orphans: any[]; arrows: any[] };
 }
 
 // Question block with clickable suggestions
@@ -763,9 +752,11 @@ export function ChatPanel({
   planPanel,
   isPlanPanelVisible = true,
   onTogglePlanPanel,
+  voiceState = "idle",
+  onVoiceToggle,
+  canvasState = { frames: [], orphans: [], arrows: [] },
 }: ChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questionAnswers, setQuestionAnswers] = useState<string[]>([]);
   const [lastAskUserId, setLastAskUserId] = useState<string | null>(null);
@@ -785,22 +776,7 @@ export function ChatPanel({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  // Auto-focus input when panel becomes visible
-  useEffect(() => {
-    if (!isVisible) return;
-    // Small delay to ensure panel animation completes
-    const timer = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 150);
-    return () => clearTimeout(timer);
-  }, [isVisible]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-    onSubmit(input);
-    setInput("");
-  };
+  const isVoiceActive = voiceState !== "idle";
 
   // Extract active plan from messages for the header
   const activePlan = (() => {
@@ -1384,63 +1360,25 @@ export function ChatPanel({
       {/* Floating progress indicator - removed (was dead code) */}
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className={`relative p-4 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
-        <div className="flex items-center bg-gray-100 rounded-full">
-          {/* Plus button */}
-          <button
-            type="button"
-            className="p-3 text-black hover:text-black transition-colors duration-200 flex-shrink-0 flex items-center justify-center"
-            title="Add"
-          >
-            <IconPlus size="medium" />
-          </button>
-
-          {/* Input */}
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter reply..."
-            disabled={isLoading}
-            className="flex-1 py-3 text-base bg-transparent border-0 outline-none placeholder:text-gray-400 disabled:opacity-50 min-w-0"
+      <div className={`relative p-4 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
+        {isVoiceActive ? (
+          <VoiceStopButton
+            voiceState={voiceState}
+            onStop={() => onVoiceToggle?.()}
           />
-
-          {/* Mic button */}
-          <button
-            type="button"
-            className="p-3 text-black hover:text-black transition-colors duration-200 flex-shrink-0 flex items-center justify-center"
-            title="Voice input"
-          >
-            <IconMicrophone size="medium" />
-          </button>
-
-          {/* Voice mode / Submit button */}
-          {input.trim() ? (
-            <button
-              type="submit"
-              className="w-10 h-10 m-1 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:bg-gray-800 flex-shrink-0"
-              title="Send"
-            >
-              <IconArrowUp size="medium" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="w-10 h-10 m-1 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:bg-gray-800 flex-shrink-0"
-              title="Voice mode"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="2" y="9" width="2.5" height="6" rx="1.25" />
-                <rect x="6.5" y="5" width="2.5" height="14" rx="1.25" />
-                <rect x="11" y="3" width="2.5" height="18" rx="1.25" />
-                <rect x="15.5" y="5" width="2.5" height="14" rx="1.25" />
-                <rect x="20" y="9" width="2.5" height="6" rx="1.25" />
-              </svg>
-            </button>
-          )}
-        </div>
-      </form>
+        ) : (
+          <ChatInput
+            onSubmit={onSubmit}
+            onFocusChange={() => {}}
+            onVoiceStart={onVoiceToggle}
+            isLoading={isLoading}
+            hasMessages={messages.length > 0}
+            hasPendingQuestion={false}
+            canvasState={canvasState}
+            voiceState={voiceState}
+          />
+        )}
+      </div>
 
         </div>{/* end chat column */}
 

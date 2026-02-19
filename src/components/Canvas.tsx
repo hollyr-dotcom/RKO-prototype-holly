@@ -148,7 +148,7 @@ function FloatingQuestionCard({
 
   return (
     <div className="w-[520px]">
-      <div className="bg-white text-gray-900 shadow-2xl overflow-hidden border border-gray-200" style={{ borderRadius: '32px' }}>
+      <div className="bg-white text-gray-900 shadow-2xl overflow-hidden border border-gray-200" style={{ borderRadius: 24 }}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-2">
           <p className="text-base font-medium flex-1 pr-4">{question}</p>
@@ -179,7 +179,7 @@ function FloatingQuestionCard({
               }}
               placeholder="Type your answer..."
               className="w-full px-4 py-3 bg-gray-100 text-gray-900 placeholder-gray-400 outline-none border border-gray-200 focus:border-gray-300"
-              style={{ borderRadius: '32px' }}
+              style={{ borderRadius: 24 }}
             />
             <div className="flex justify-end gap-2 mt-3">
               <button
@@ -496,7 +496,7 @@ function FloatingProgressIndicator({
 
     return (
       <div className="absolute left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-300 bottom-28">
-        <div className="flex items-center gap-2 bg-green-600 text-white shadow-lg px-4 py-3 pb-3.5 w-[420px]" style={{ borderRadius: '32px' }}>
+        <div className="flex items-center gap-2 bg-green-600 text-white shadow-lg px-4 py-3 pb-3.5 w-[420px]" style={{ borderRadius: 24 }}>
           {/* Checkmark icon */}
           <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
             <IconCheckMark css={{ width: 20, height: 20, color: 'white' }} />
@@ -606,7 +606,7 @@ function FloatingProgressIndicator({
         <div
           onClick={handleReviewBatch}
           className="bg-blue-600 text-white shadow-lg overflow-hidden w-[420px] hover:bg-blue-700 transition-colors cursor-pointer"
-          style={{ borderRadius: '32px' }}
+          style={{ borderRadius: 24 }}
         >
           {/* Progress bar at top */}
           <div className="h-1 w-full bg-blue-800">
@@ -668,7 +668,7 @@ function FloatingProgressIndicator({
       <button
         onClick={onOpenPanel}
         className="flex flex-col bg-gray-100 text-gray-900 shadow-md hover:bg-gray-200 transition-colors overflow-hidden w-[420px]"
-        style={{ borderRadius: '32px' }}
+        style={{ borderRadius: 24 }}
       >
         {/* Progress bar at top */}
         <div className="h-1 w-full bg-gray-200">
@@ -5028,7 +5028,7 @@ export function Canvas() {
                 <div className="flex flex-col gap-2">
                   {/* Response toast card (ack during streaming, final reply when done) */}
                   {toastCentered && responseToast && (
-                    <div className="pointer-events-auto w-full bg-white shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: '32px' }}>
+                    <div className="pointer-events-auto w-full bg-white shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: 24 }}>
                       <div className="absolute top-4 left-4 z-10 bg-white">
                         <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center">
                           <IconSingleSparksFilled size="small" />
@@ -5090,7 +5090,7 @@ export function Canvas() {
                         lastCreationToastedRef.current = null;
                       }}
                       className="pointer-events-auto w-full bg-white shadow-lg border border-gray-200 flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
-                      style={{ borderRadius: '32px' }}
+                      style={{ borderRadius: 24 }}
                     >
                       {ct.isCreating ? (
                         <div className="w-5 h-5 flex-shrink-0 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />

@@ -12,6 +12,7 @@ import {
 } from "@mirohq/design-system-icons";
 
 const PANEL_WIDTH = 384;
+const PANEL_GAP = 16;
 const PLAN_SIDEBAR_WIDTH = 320;
 const TRANSITION = "0.25s cubic-bezier(0.25, 0.1, 0.25, 1)";
 
@@ -104,15 +105,12 @@ export function ChatShell() {
   const isHomePage = pathname === "/";
 
   // Check for immediate open flag and disable transition BEFORE paint
-  // useLayoutEffect fires synchronously after DOM commit but before browser paint,
-  // so the transition is killed before anything is visible on screen
   useLayoutEffect(() => {
     if (isFullscreen && typeof window !== "undefined") {
       const immediate = sessionStorage.getItem("chatOpenImmediate");
       if (immediate === "true") {
         setShouldTransition(false);
         sessionStorage.removeItem("chatOpenImmediate");
-        // Re-enable transitions after the browser has painted the no-transition state
         requestAnimationFrame(() => {
           setShouldTransition(true);
         });
@@ -120,66 +118,73 @@ export function ChatShell() {
     }
   }, [isFullscreen]);
 
-  // Compute the left edge of the fixed chat container
-  const chatLeft = isMinimized
-    ? "100%"
-    : isFullscreen
-      ? `${appSidebarWidth}px`
-      : `calc(100% - ${PANEL_WIDTH}px)`;
+  const chatPanel = (
+    <ChatPanel
+      isFullscreen={isFullscreen}
+      isVisible={!isMinimized}
+      onClose={() => setChatMode("minimized")}
+      onCollapse={() => setChatMode("minimized")}
+      onExpand={() => setChatMode("fullscreen")}
+      onExitFullscreen={() => setChatMode("sidepanel")}
+      onNewChat={startNewChat}
+      messages={messages}
+      input={input}
+      setInput={setInput}
+      onSubmit={handleSubmit}
+      isLoading={isLoading}
+      onNavigateToFrames={navigateToFrames}
+      onNavigateToCanvas={navigateToCanvas}
+      planPanel={isFullscreen && activePlanDetails ? (
+        <PlanProgressPanel
+          plan={activePlanDetails}
+          isLoading={isLoading}
+          onToggleVisibility={() => setIsPlanPanelVisible(false)}
+        />
+      ) : undefined}
+      isPlanPanelVisible={isPlanPanelVisible}
+      onTogglePlanPanel={() => setIsPlanPanelVisible(!isPlanPanelVisible)}
+    />
+  );
 
-  return (
-    <>
-
-      {/* Flex spacer — empty div that pushes <main> content left in sidepanel mode */}
+  // Sidepanel: normal flex item next to <main>
+  if (isSidePanel) {
+    return (
       <div
+        className="h-full flex-shrink-0 bg-white overflow-hidden"
         style={{
-          width: isSidePanel ? PANEL_WIDTH : 0,
-          transition: `width ${TRANSITION}`,
-          flexShrink: 0,
+          width: PANEL_WIDTH,
+          marginLeft: PANEL_GAP,
+          borderRadius: "1.5rem 0 0 1.5rem",
+          border: "1px solid #e5e7eb",
+          borderRight: "none",
+          transition: `width ${TRANSITION}, margin-left ${TRANSITION}`,
         }}
-      />
+      >
+        {chatPanel}
+      </div>
+    );
+  }
 
-      {/* Fixed chat container — single ChatPanel that animates its left edge */}
+  // Fullscreen: fixed overlay
+  if (isFullscreen) {
+    return (
       <div
         style={{
           position: "fixed",
           top: 0,
           right: 0,
           bottom: 0,
-          left: chatLeft,
+          left: `${appSidebarWidth}px`,
           transition: shouldTransition ? `left ${TRANSITION}` : "none",
-          visibility: isMinimized ? "hidden" : "visible",
-          pointerEvents: isMinimized ? "none" : "auto",
           zIndex: 10000,
+          overflow: "hidden",
         }}
-        className="border-l border-gray-200"
       >
-        <ChatPanel
-          isFullscreen={isFullscreen}
-          isVisible={!isMinimized}
-          onClose={() => setChatMode("minimized")}
-          onCollapse={() => setChatMode("minimized")}
-          onExpand={() => setChatMode("fullscreen")}
-          onExitFullscreen={() => setChatMode("sidepanel")}
-          onNewChat={startNewChat}
-          messages={messages}
-          input={input}
-          setInput={setInput}
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-          onNavigateToFrames={navigateToFrames}
-          onNavigateToCanvas={navigateToCanvas}
-          planPanel={isFullscreen && activePlanDetails ? (
-            <PlanProgressPanel
-              plan={activePlanDetails}
-              isLoading={isLoading}
-              onToggleVisibility={() => setIsPlanPanelVisible(false)}
-            />
-          ) : undefined}
-          isPlanPanelVisible={isPlanPanelVisible}
-          onTogglePlanPanel={() => setIsPlanPanelVisible(!isPlanPanelVisible)}
-        />
+        {chatPanel}
       </div>
-    </>
-  );
+    );
+  }
+
+  // Minimized: render nothing
+  return null;
 }
