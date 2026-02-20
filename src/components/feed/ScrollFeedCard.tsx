@@ -9,6 +9,7 @@ import { AgentCompletedContent } from "./content/AgentCompleted";
 import { CollaborationRequestContent } from "./content/CollaborationRequest";
 import { WorkflowChangeContent } from "./content/WorkflowChange";
 import { AlertFYIContent } from "./content/AlertFYI";
+import { GenericVisualPreview } from "./visuals/GenericVisualPreview";
 import { IconSingleSparksFilled } from "@mirohq/design-system-icons";
 import { getUser, getInitials, getUserColor } from "@/lib/users";
 
@@ -52,11 +53,18 @@ function CardAvatar({ source }: { source: FeedSource }) {
   );
 }
 
-
 function CardVisual({ item }: { item: FeedItem }) {
   switch (item.type) {
-    case "agent-opportunity":
-      return <AgentOpportunityContent item={item} />;
+    case "agent-opportunity": {
+      const content = <AgentOpportunityContent item={item as Extract<FeedItem, { type: "agent-opportunity" }>} />;
+      // AgentOpportunityContent returns null for items without payload/illustration —
+      // fall through to GenericVisualPreview if visualPreview data exists
+      const p = (item as Extract<FeedItem, { type: "agent-opportunity" }>).payload;
+      const hasPayload = p.forecast || p.capacity || p.capacityConflict || p.confidence != null || p.convergence || p.stalled || p.invitationStall;
+      const hasIllustration = item.id === "feed-core-01" || item.id === "feed-pq3-01" || item.id === "feed-cross-01" || item.id === "feed-claims-01";
+      if (hasPayload || hasIllustration) return content;
+      break; // fall through to visualPreview
+    }
     case "agent-completed":
       return <AgentCompletedContent item={item} />;
     case "collaboration-request":
@@ -69,9 +77,11 @@ function CardVisual({ item }: { item: FeedItem }) {
       return null; // video overlay covers this area
     case "decision":
       return null; // video overlay covers this area
-    default:
-      return null;
   }
+  if (item.visualPreview) {
+    return <GenericVisualPreview type={item.visualPreview.type} data={item.visualPreview.data} />;
+  }
+  return null;
 }
 
 const EASE = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
@@ -152,6 +162,21 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
       onMouseLeave={handleMouseLeave}
       onMouseMove={isDecision ? handleMouseMove : undefined}
     >
+      {/* HDR grain video — multiply blend, decision cards only */}
+      {isDecision && (
+        // eslint-disable-next-line jsx-a11y/media-has-caption
+        <video
+          poster="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQAAAAA3iMLMAAAAAXNSR0IArs4c6QAAAA5JREFUeNpj+P+fgRQEAP1OH+HeyHWXAAAAAElFTkSuQmCC"
+          src="data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAAvG1kYXQAAAAfTgEFGkdWStxcTEM/lO/FETzRQ6gD7gAA7gIAA3EYgAAAAEgoAa8iNjAkszOL+e58c//cEe//0TT//scp1n/381P/RWP/zOW4QtxorfVogeh8nQDbQAAAAwAQMCcWUTAAAAMAAAMAAAMA84AAAAAVAgHQAyu+KT35E7gAADFgAAADABLQAAAAEgIB4AiS76MTkNbgAAF3AAAPSAAAABICAeAEn8+hBOTXYAADUgAAHRAAAAPibW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAAKcAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAw10cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAAKcAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAACnAAAAAAABAAAAAAKFbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABdwAAAD6BVxAAAAAAAMWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABDb3JlIE1lZGlhIFZpZGVvAAAAAixtaW5mAAAAFHZtaGQAAAABAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAHsc3RibAAAARxzdHNkAAAAAAAAAAEAAAEMaHZjMQAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAQABAASAAAAEgAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABj//wAAAHVodmNDAQIgAAAAsAAAAAAAPPAA/P36+gAACwOgAAEAGEABDAH//wIgAAADALAAAAMAAAMAPBXAkKEAAQAmQgEBAiAAAAMAsAAAAwAAAwA8oBQgQcCTDLYgV7kWVYC1CRAJAICiAAEACUQBwChkuNBTJAAAAApmaWVsAQAAAAATY29scm5jbHgACQAQAAkAAAAAEHBhc3AAAAABAAAAAQAAABRidHJ0AAAAAAAALPwAACz8AAAAKHN0dHMAAAAAAAAAAwAAAAIAAAPoAAAAAQAAAAEAAAABAAAD6AAAABRzdHNzAAAAAAAAAAEAAAABAAAAEHNkdHAAAAAAIBAQGAAAAChjdHRzAAAAAAAAAAMAAAABAAAAAAAAAAEAAAfQAAAAAgAAAAAAAAAcc3RzYwAAAAAAAAABAAAAAQAAAAQAAAABAAAAJHN0c3oAAAAAAAAAAAAAAAQAAABvAAAAGQAAABYAAAAWAAAAFHN0Y28AAAAAAAAAAQAAACwAAABhdWR0YQAAAFltZXRhAAAAAAAAACFoZGxyAAAAAAAAAABtZGlyYXBwbAAAAAAAAAAAAAAAACxpbHN0AAAAJKl0b28AAAAcZGF0YQAAAAEAAAAATGF2ZjYwLjMuMTAw"
+          muted
+          autoPlay
+          playsInline
+          loop
+          className="absolute inset-0 w-full h-full rounded-3xl pointer-events-none z-[5] object-cover transition-opacity duration-300 opacity-0 group-hover:opacity-[0.15]"
+          style={{ mixBlendMode: "multiply" }}
+        />
+      )}
+
       {/* Gradient border — gold only, decision cards only */}
       {isDecision && (
         <div
@@ -194,13 +219,13 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
             opacity: videoSrc && videoState === "playing" ? 0 : 1,
           }}
         >
-          <h3 className="text-xl font-semibold tracking-tight text-gray-900 leading-snug line-clamp-3 h-[5.25rem]">
+          <h3 className="text-xl font-semibold tracking-tight text-gray-900 leading-snug line-clamp-3 h-[5.25rem] whitespace-pre-line">
             {item.title}
           </h3>
         </div>
 
-        {/* Visual area */}
-        <div className="mx-8 mt-4 h-[180px] rounded-2xl bg-gray-100 flex-shrink-0 overflow-hidden">
+        {/* Visual area — fills remaining space, vertically centers content */}
+        <div className="mx-8 mt-4 flex-1 min-h-0 rounded-2xl overflow-hidden flex items-center justify-center">
           <CardVisual item={item} />
         </div>
 
@@ -254,6 +279,7 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
                   }))}
                   size="large"
                   fill
+                  onDark={!!videoSrc && videoState === "playing"}
                 />
               </div>
             )
