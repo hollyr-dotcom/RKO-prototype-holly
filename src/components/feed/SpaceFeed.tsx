@@ -19,6 +19,35 @@ const staggerContainer = {
   },
 };
 
+/** Simple seeded PRNG (mulberry32) for deterministic shuffle per space. */
+function seededRng(seed: number) {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hashString(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  }
+  return h;
+}
+
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  const result = [...arr];
+  const rng = seededRng(seed);
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 export function SpaceFeed({ spaceId }: SpaceFeedProps) {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,19 +69,19 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
       .catch(() => {});
   }, [spaceId]);
 
-  // Fetch feed items (space-specific)
+  // Fetch all feed items and shuffle deterministically per spaceId
   useEffect(() => {
     let cancelled = false;
 
     setIsLoading(true);
-    fetch(`/api/spaces/${spaceId}/feed`)
+    fetch("/api/feed")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch feed");
         return res.json();
       })
-      .then((data) => {
+      .then((data: FeedItem[]) => {
         if (!cancelled) {
-          setItems(data);
+          setItems(seededShuffle(data, hashString(spaceId)));
           setIsLoading(false);
         }
       })
