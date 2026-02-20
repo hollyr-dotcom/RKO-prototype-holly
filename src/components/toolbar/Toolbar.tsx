@@ -58,6 +58,7 @@ interface ToolbarProps {
   onMultiLineChange?: (multiLine: boolean) => void;
   isCommentMode?: boolean;
   onToggleCommentMode?: () => void;
+  onPlusMenuChange?: (open: boolean) => void;
 }
 
 export function Toolbar({
@@ -90,6 +91,7 @@ export function Toolbar({
   onMultiLineChange: _onMultiLineChange,
   isCommentMode = false,
   onToggleCommentMode,
+  onPlusMenuChange,
 }: ToolbarProps) {
   const [activeTool, setActiveTool] = useState("cursor");
   const [isChatFocused, setIsChatFocused] = useState(false);
@@ -102,8 +104,13 @@ export function Toolbar({
   const prevVoiceActiveRef = useRef(false);
 
   const isVoiceActive = voiceState !== "idle";
-  const isConnected = !isChatFocused && !isVoiceActive;
   const showRightSection = !isChatOpen;
+  // Reset chat focus when sidebar opens (ChatInput unmounts without blur)
+  const effectiveChatFocused = isChatFocused && showRightSection;
+  const isConnected = !effectiveChatFocused && !isVoiceActive;
+
+  // Notify parent when plus menu opens/closes (used to hide toasts)
+  useEffect(() => { onPlusMenuChange?.(isPlusMenuOpen); }, [isPlusMenuOpen, onPlusMenuChange]);
 
   // Play sound when voice mode confirms listening (not on "connecting")
   const prevVoiceStateRef = useRef(voiceState);
@@ -165,10 +172,10 @@ export function Toolbar({
     lastActiveIndexRef.current = activeIndex;
   }
   const highlightIndex = activeIndex >= 0 ? activeIndex : lastActiveIndexRef.current;
-  const showHighlight = activeIndex >= 0 && !isChatFocused;
+  const showHighlight = activeIndex >= 0 && !effectiveChatFocused;
 
   // Visible tools: when chat focused, only show "plus"
-  const visibleTools = isChatFocused
+  const visibleTools = effectiveChatFocused
     ? primaryTools.filter((t) => t.id === "plus")
     : primaryTools;
 
@@ -242,11 +249,11 @@ export function Toolbar({
 
   // Notify parent of expanded state changes
   useEffect(() => {
-    onExpandedChange?.(isChatFocused);
-  }, [isChatFocused, onExpandedChange]);
+    onExpandedChange?.(effectiveChatFocused);
+  }, [effectiveChatFocused, onExpandedChange]);
 
   // Offset to center the chat input on screen when focused
-  const chatCenterOffset = isChatFocused
+  const chatCenterOffset = effectiveChatFocused
     ? -((CELL_W + CONTAINER_PADDING * 2 + DISCONNECTED_GAP) / 2)
     : 0;
 
