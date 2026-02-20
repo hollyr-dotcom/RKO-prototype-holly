@@ -119,9 +119,9 @@ export function ExpandedPrimaryPanel() {
         return res.json();
       })
       .then((data) => {
-        if (!cancelled && Array.isArray(data)) {
-          setSpaces(data);
-        }
+        if (cancelled) return;
+        const list = Array.isArray(data) ? data : data.spaces || [];
+        setSpaces(list);
       })
       .catch((err) => console.error("Failed to load spaces:", err));
     return () => {
@@ -212,9 +212,9 @@ export function ExpandedPrimaryPanel() {
       fetch("/api/spaces")
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
-          if (Array.isArray(data)) {
-            setSpaces(data);
-          }
+          if (!data) return;
+          const list = Array.isArray(data) ? data : data.spaces || [];
+          setSpaces(list);
         })
         .catch(() => {});
     };
