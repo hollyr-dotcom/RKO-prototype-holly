@@ -433,7 +433,7 @@ export function ExpandedPrimaryPanel() {
               {isHighlighted && (
                 <motion.div
                   layoutId="expanded-nav-indicator"
-                  className="absolute inset-0 rounded-[16px]]"
+                  className="absolute inset-0 rounded-[16px]"
                   style={{ backgroundColor: navPalette.indicator }}
                   transition={indicatorTransition}
                 />
