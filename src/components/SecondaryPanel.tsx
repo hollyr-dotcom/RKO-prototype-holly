@@ -569,7 +569,7 @@ function GroupedBoardList({
 
             {/* Board items */}
             {!isCollapsed && (
-              <div className="flex flex-col gap-0.5 pl-9 pr-2">
+              <div className="flex flex-col gap-0.5 pl-9 pr-2 pt-[6px]">
                 {sectionCanvases.map((canvas) => {
                   const href = `/space/${spaceId}/canvas/${canvas.id}`;
                   const isActive = activePath === href;

@@ -661,7 +661,7 @@ function GroupedSpaceList({
 
             {/* Space items — reorderable within section */}
             {!isCollapsed && (
-              <div className="pl-5">
+              <div className="pl-5 pt-[6px]">
                 <NavList
                   items={sectionNavItems}
                   isActive={(item) => activePath.startsWith(item.href)}
