@@ -176,7 +176,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
 
             {/* Sidebar panels — sticky to viewport top */}
             {sidebarPanels && (
-              <div className="flex flex-col gap-6 flex-shrink-0 sticky top-0" style={{ width: 320 }}>
+              <div className="flex flex-col gap-6 flex-shrink-0 sticky" style={{ width: 320, top: 24 }}>
                 {sidebarPanels.map((src, i) => (
                   <Image
                     key={i}
