@@ -367,12 +367,14 @@ const createFrameTool = tool({
 
 const createArrowTool = tool({
   name: "createArrow",
-  description: "Create an arrow to CONNECT shapes! Essential for flowcharts, org charts, sitemaps, process diagrams. Shows hierarchy, flow, relationships. Use liberally to make diagrams meaningful! Returns an ID.",
+  description: "Create an arrow to CONNECT shapes! Essential for flowcharts, org charts, sitemaps, process diagrams. Shows hierarchy, flow, relationships. Use liberally to make diagrams meaningful! Returns an ID. Optionally pass fromShapeId/toShapeId to create bound connectors that follow shapes when moved.",
   parameters: z.object({
     startX: z.number().describe("Start X (typically center-bottom of source shape)"),
     startY: z.number().describe("Start Y"),
     endX: z.number().describe("End X (typically center-top of target shape)"),
     endY: z.number().describe("End Y"),
+    fromShapeId: z.string().optional().describe("Source shape ID to bind the arrow start to (arrow follows when shape moves)"),
+    toShapeId: z.string().optional().describe("Target shape ID to bind the arrow end to (arrow follows when shape moves)"),
   }),
   execute: async (args) => {
     const id = generateItemId();

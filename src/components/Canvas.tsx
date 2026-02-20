@@ -1,6 +1,6 @@
 "use client";
 
-import { Tldraw, Editor, createShapeId, toRichText, renderHtmlFromRichTextForMeasurement, TLShapeId, DefaultFontStyle, DefaultSizeStyle, DefaultDashStyle, DefaultFillStyle, TLGridProps, DefaultColorStyle, DefaultColorThemePalette } from "tldraw";
+import { Tldraw, Editor, createShapeId, createBindingId, toRichText, renderHtmlFromRichTextForMeasurement, TLShapeId, DefaultFontStyle, DefaultSizeStyle, DefaultDashStyle, DefaultFillStyle, TLGridProps, DefaultColorStyle, DefaultColorThemePalette } from "tldraw";
 import "tldraw/tldraw.css";
 
 // ── Override tldraw sticky colors with Miro DS canvas sticky tokens ──
@@ -35,6 +35,8 @@ import { GanttChartShapeUtil } from "@/shapes/GanttChartShapeUtil";
 import { KanbanBoardShapeUtil } from "@/shapes/KanbanBoardShapeUtil";
 import { ApproveButtonShapeUtil } from "@/shapes/ApproveButtonShapeUtil";
 import { PeopleListShapeUtil } from "@/shapes/PeopleListShapeUtil";
+import { WorkdayCardShapeUtil } from "@/shapes/WorkdayCardShapeUtil";
+import { SlackCardShapeUtil } from "@/shapes/SlackCardShapeUtil";
 import { Toolbar } from "./toolbar/Toolbar";
 import { StartingPromptCards } from "./StartingPromptCards";
 import { CanvasComments } from "./CanvasComments";
@@ -57,6 +59,7 @@ import { FocusModeOverlay, FocusedShape } from "./FocusModeOverlay";
 import { FloatingQuestionCard } from "./FloatingQuestionCard";
 import { setFocusedDocId } from "@/lib/focusModeStore";
 import { PlacementEngine, getCategoryForTool } from "@/lib/placementEngine";
+import { ConnectorHandles } from "./ConnectorHandles";
 
 // Animation variants
 const sidebarVariants = {
@@ -714,7 +717,7 @@ function CustomBackground() {
   return <div style={{ position: 'absolute', inset: 0, backgroundColor: '#f8f8f8' }} />;
 }
 
-const tldrawComponents = { Grid: CustomGrid, Background: CustomBackground };
+const tldrawComponents = { Grid: CustomGrid, Background: CustomBackground, OnTheCanvas: ConnectorHandles };
 
 export function Canvas() {
   // Get authenticated user
@@ -722,7 +725,7 @@ export function Canvas() {
 
   // LiveBlocks multiplayer store -- syncs tldraw state across users
   const [sessionUser] = useState(() => authUser ? getSessionUser(authUser) : getLocalDevUser());
-  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil, ApproveButtonShapeUtil, PeopleListShapeUtil], []);
+  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil, ApproveButtonShapeUtil, PeopleListShapeUtil, WorkdayCardShapeUtil, SlackCardShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 
   // Prevent browser back/forward navigation from trackpad gestures (Safari + fallback)
@@ -3106,11 +3109,13 @@ export function Canvas() {
       }
 
       if (toolName === "createArrow") {
-        const { startX, startY, endX, endY } = args as {
+        const { startX, startY, endX, endY, fromShapeId, toShapeId } = args as {
           startX: number;
           startY: number;
           endX: number;
           endY: number;
+          fromShapeId?: string;
+          toShapeId?: string;
         };
 
         shapeId = createShapeId();
@@ -3125,6 +3130,38 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
+
+        // Create bindings if shape IDs are provided
+        if (fromShapeId) {
+          editor.createBinding({
+            id: createBindingId(),
+            type: "arrow",
+            fromId: shapeId,
+            toId: fromShapeId as TLShapeId,
+            props: {
+              terminal: "start",
+              normalizedAnchor: { x: 0.5, y: 0.5 },
+              isExact: false,
+              isPrecise: false,
+              snap: "none",
+            },
+          });
+        }
+        if (toShapeId) {
+          editor.createBinding({
+            id: createBindingId(),
+            type: "arrow",
+            fromId: shapeId,
+            toId: toShapeId as TLShapeId,
+            props: {
+              terminal: "end",
+              normalizedAnchor: { x: 0.5, y: 0.5 },
+              isExact: false,
+              isPrecise: false,
+              snap: "none",
+            },
+          });
+        }
       }
 
       // Working notes - larger sticky with distinct color
