@@ -1,12 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import type { FeedItem } from "@/types/feed";
 import { getUser } from "@/lib/users";
 import { formatTimeAgo } from "@/lib/formatTimeAgo";
 import { FeedSourceIndicator } from "./FeedSourceIndicator";
 import { FeedActions } from "./FeedActions";
 import { FeedReactions } from "./FeedReactions";
+import { CardTypeIcon } from "./FeedTypeIcon";
 import { GenericVisualPreview } from "./visuals/GenericVisualPreview";
 import { AgentOpportunityContent } from "./content/AgentOpportunity";
 import { AgentCompletedContent } from "./content/AgentCompleted";
@@ -27,7 +29,7 @@ import { BudgetNotificationContent } from "./content/BudgetNotification";
 interface FeedCardProps {
   item: FeedItem;
   spaceName?: string;
-  variant?: "default" | "stack";
+  variant?: "default" | "stack" | "horizontal";
 }
 
 const staggerItem = {
@@ -76,6 +78,19 @@ function FeedContentRenderer({ item }: { item: FeedItem }) {
   }
 }
 
+/** Extract a single action-word from a multi-word label */
+function simplifyLabel(label: string): string {
+  const first = label.split(/\s+/)[0];
+  const verbs = new Set([
+    "Review","Join","View","Read","Start","Approve","Dismiss","Open",
+    "Explore","Check","Watch","Redesign","Resolve","Ignore","Accept",
+    "Reject","Share","Download","Edit","Comment","Assign","Schedule",
+    "Plan","Assess","Audit","Evaluate","Investigate","Escalate",
+    "Compare","Align","Propose","Draft","Submit","Launch","Deploy",
+  ]);
+  return verbs.has(first) ? first : first;
+}
+
 const REACTABLE_TYPES = new Set([
   "workflow-change",
   "agent-completed",
@@ -94,6 +109,152 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
     (item.reactions.length > 0 || (item.viewCount != null && item.viewCount > 0));
 
   const isStack = variant === "stack";
+  const isHorizontal = variant === "horizontal";
+
+  /* ------------------------------------------------------------------ */
+  /*  Horizontal variant — side-by-side layout                           */
+  /* ------------------------------------------------------------------ */
+  if (isHorizontal) {
+    const sourceUser = !item.source.isAgent ? getUser(item.source.userId) : undefined;
+    const hasVisual = !!item.visualPreview;
+    // Show person avatar only when the title explicitly mentions the source user
+    const titleMentionsPerson =
+      sourceUser && (item.title.includes(sourceUser.name) || item.title.includes(sourceUser.firstName));
+    // Items with bespoke illustrations that should use FeedContentRenderer instead of GenericVisualPreview
+    const ILLUSTRATION_IDS = new Set(["feed-core-01", "feed-pq3-01", "feed-cross-01", "feed-claims-01", "feed-ff-youth-01"]);
+    const hasIllustration = ILLUSTRATION_IDS.has(item.id);
+    // Items with image-based illustrations
+    const IMAGE_ILLUSTRATIONS: Record<string, string> = {
+      "feed-cross-14": "/feed-viz/FirstFlex-Youth-Banking/psd3.png",
+      "feed-ff-youth-05": "/feed-viz/FirstFlex-Youth-Banking/Starling.png",
+      "feed-ff-03": "/feed-viz/FlexForward-26/venue.png",
+    };
+    const illustrationImage = IMAGE_ILLUSTRATIONS[item.id];
+    // Items with custom inline illustrations in the standard 240x184 frame
+    const CUSTOM_ILLUSTRATION_IDS = new Set(["feed-ff-youth-03", "feed-cross-06", "feed-ff26-02"]);
+    const hasCustomIllustration = CUSTOM_ILLUSTRATION_IDS.has(item.id);
+
+    return (
+      <motion.div
+        variants={staggerItem}
+        className="group relative rounded-2xl overflow-hidden transition-shadow duration-200 hover:shadow-md border border-gray-200 bg-white"
+        style={{ width: 712 }}
+      >
+        <div className="flex">
+          {/* Left: text content */}
+          <div className={`flex flex-col flex-1 min-w-0 p-6 ${hasVisual || hasIllustration || illustrationImage || hasCustomIllustration ? "pr-0" : ""}`} style={{ paddingBottom: item.actions.length > 0 ? 104 : 24 }}>
+            {/* Icon or avatar + timestamp */}
+            <div className="flex items-center gap-3 mb-3">
+              {titleMentionsPerson && sourceUser?.avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={sourceUser.avatar}
+                  alt={sourceUser.name}
+                  className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                  <CardTypeIcon itemType={item.type} itemId={item.id} />
+                </div>
+              )}
+              <div className="flex items-center gap-2 min-w-0">
+                {titleMentionsPerson && sourceUser && (
+                  <span className="text-sm font-medium text-gray-900 truncate">
+                    {sourceUser.name}
+                  </span>
+                )}
+                <span className="text-xs text-gray-400 flex-shrink-0">
+                  {formatTimeAgo(item.timestamp)}
+                </span>
+                {!item.isRead && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                )}
+              </div>
+            </div>
+
+            {/* Title */}
+            <h3 className="text-lg font-semibold text-gray-900 leading-snug mb-1">
+              {item.title}
+            </h3>
+
+            {/* Body */}
+            {item.body && (
+              <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
+                {item.body}
+              </p>
+            )}
+
+          </div>
+
+          {/* Right: visual preview or bespoke illustration */}
+          {hasCustomIllustration ? (
+            <div className="flex-shrink-0 flex items-center justify-center" style={{ padding: 32 }}>
+              <div className="overflow-hidden flex-shrink-0" style={{ width: 240, height: 184, borderRadius: 24 }}>
+                {(item.id === "feed-cross-06" || item.id === "feed-ff26-02") && (
+                  <div className="w-full h-full flex flex-col justify-center" style={{ padding: 20 }}>
+                    <div className="flex gap-1 mb-1.5">
+                      {["M", "T", "W", "T", "F"].map((d, i) => (
+                        <div key={i} className="flex-1 text-center text-xs text-gray-400">{d}</div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-5 gap-1">
+                      {[...Array(15)].map((_, i) => (
+                        <div key={i} className="h-5 rounded-sm" style={{ backgroundColor: i === 7 ? '#DB4F4F' : '#FFC6C6' }} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {item.id === "feed-ff-youth-03" && (
+                  <div className="w-full h-full flex flex-col justify-end" style={{ backgroundColor: '#e4f9ff', padding: 24 }}>
+                    <div className="flex items-center justify-center rounded-lg bg-white" style={{ width: 36, height: 36 }}>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <rect x="3" y="1" width="14" height="18" rx="2" fill="#22d3ee" />
+                      </svg>
+                    </div>
+                    <p className="mt-2 text-xl font-semibold" style={{ color: '#001d66' }}>Feature Spec</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : illustrationImage ? (
+            <div className="flex-shrink-0 flex items-center justify-center" style={{ padding: 32 }}>
+              <div className="overflow-hidden flex-shrink-0" style={{ width: 240, height: 184, borderRadius: 24 }}>
+                <Image src={illustrationImage} alt="" width={480} height={368} className="w-full h-full object-cover" />
+              </div>
+            </div>
+          ) : hasIllustration ? (
+            <div className="w-[280px] flex-shrink-0 p-4 pl-2 flex items-center justify-center">
+              <FeedContentRenderer item={item} />
+            </div>
+          ) : hasVisual && item.visualPreview ? (
+            <div className="w-[280px] flex-shrink-0 p-4 pl-2 flex items-center">
+              <div className="w-full rounded-xl bg-gray-50 border border-gray-100 overflow-hidden p-4">
+                <GenericVisualPreview type={item.visualPreview.type} data={item.visualPreview.data} />
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        {/* Hover-reveal actions — bottom-right */}
+        {item.actions.length > 0 && (
+          <div
+            className="absolute bottom-6 left-6 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out"
+            style={{ width: item.actions.length === 1 ? 194 : 396 }}
+          >
+            <FeedActions
+              actions={item.actions.map((a) => ({ ...a, label: simplifyLabel(a.label) }))}
+              size="large"
+              fill
+            />
+          </div>
+        )}
+      </motion.div>
+    );
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Default / stack variants — vertical layout                         */
+  /* ------------------------------------------------------------------ */
   const px = isStack ? "px-8" : "px-6";
   const pt = isStack ? "pt-8" : "pt-6";
   const pbActions = isStack ? "pb-10" : "pb-8";

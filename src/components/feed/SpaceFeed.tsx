@@ -1,31 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Masonry from "react-masonry-css";
+import Image from "next/image";
 import type { FeedItem } from "@/types/feed";
 import { FeedCard } from "./FeedCard";
-import { BoardEmoji } from "@/components/BoardEmoji";
+import { SpaceHeader } from "./SpaceHeader";
+import { HomePromptInput } from "@/components/HomePromptInput";
 
 interface SpaceFeedProps {
   spaceId: string;
 }
-
-type FilterTab = "all" | "ai" | "requests" | "updates";
-
-const tabs: { id: FilterTab; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "ai", label: "AI insights" },
-  { id: "requests", label: "Requests" },
-  { id: "updates", label: "Updates" },
-];
-
-const filterMap: Record<FilterTab, string[]> = {
-  all: [],
-  ai: ["agent-opportunity", "agent-completed"],
-  requests: ["collaboration-request"],
-  updates: ["workflow-change"],
-};
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -35,12 +20,33 @@ const staggerContainer = {
   },
 };
 
+/** Sidebar panel config — maps spaceId → ordered list of PNG image paths */
+const SIDEBAR_PANELS: Record<string, string[]> = {
+  "space-firstflex": [
+    "/feed-viz/FirstFlex-Youth-Banking/Single number-2.png",
+    "/feed-viz/FirstFlex-Youth-Banking/Single number.png",
+    "/feed-viz/FirstFlex-Youth-Banking/Single number-1.png",
+  ],
+  "space-ff26": [
+    "/feed-viz/FlexForward-26/Single number.png",
+    "/feed-viz/FlexForward-26/Single number-1.png",
+    "/feed-viz/FlexForward-26/Single number-2.png",
+    "/feed-viz/FlexForward-26/Single number-3.png",
+  ],
+};
+
 export function SpaceFeed({ spaceId }: SpaceFeedProps) {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [space, setSpace] = useState<{ name: string; emoji?: string; color?: string } | null>(null);
+  const [space, setSpace] = useState<{
+    id: string;
+    name: string;
+    description?: string;
+    emoji?: string;
+    color?: string;
+  } | null>(null);
 
-  // Fetch space data for banner emoji
+  // Fetch space data
   useEffect(() => {
     fetch(`/api/spaces/${spaceId}`)
       .then((res) => (res.ok ? res.json() : null))
@@ -50,6 +56,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
       .catch(() => {});
   }, [spaceId]);
 
+  // Fetch feed items for this space
   useEffect(() => {
     let cancelled = false;
 
@@ -59,7 +66,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
         if (!res.ok) throw new Error("Failed to fetch feed");
         return res.json();
       })
-      .then((data) => {
+      .then((data: FeedItem[]) => {
         if (!cancelled) {
           setItems(data);
           setIsLoading(false);
@@ -74,68 +81,113 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
     };
   }, [spaceId]);
 
-  const filteredItems = items;
+  const handleNameChange = useCallback(
+    (name: string) => {
+      fetch(`/api/spaces/${spaceId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      })
+        .then(() => {
+          window.dispatchEvent(
+            new CustomEvent("space-updated", { detail: { spaceId } })
+          );
+        })
+        .catch(() => {});
+    },
+    [spaceId]
+  );
 
-  const unreadCount = items.filter((item) => !item.isRead).length;
+  const handleDescriptionChange = useCallback(
+    (description: string) => {
+      fetch(`/api/spaces/${spaceId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description }),
+      })
+        .then(() => {
+          window.dispatchEvent(
+            new CustomEvent("space-updated", { detail: { spaceId } })
+          );
+        })
+        .catch(() => {});
+    },
+    [spaceId]
+  );
+
+  const sidebarPanels = SIDEBAR_PANELS[spaceId];
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="max-w-[900px] mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="mb-6">
-          {space?.emoji && (
-            <div className="mb-3">
-              <BoardEmoji emoji={space.emoji} size={48} />
+    <div className="h-full relative flex flex-col overflow-hidden">
+      {/* Header — full width with 16px padding */}
+      <div className="flex-shrink-0 px-4 pt-4">
+        {space && (
+          <SpaceHeader
+            space={space}
+            onNameChange={handleNameChange}
+            onDescriptionChange={handleDescriptionChange}
+          />
+        )}
+      </div>
+
+      {/* Below header: feed scrolls, sidebar is pinned */}
+      <div className="flex-1 min-h-0 flex justify-center">
+        <div className={`flex ${sidebarPanels ? "gap-12" : ""}`}>
+          {/* Feed column — scrollable */}
+          <div className="h-full overflow-y-auto" style={{ width: 712 }}>
+            <div className="pb-28">
+              {isLoading ? (
+                <div className="flex flex-col gap-4" style={{ width: 712 }}>
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="h-32 rounded-2xl bg-gray-100 animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : items.length === 0 ? (
+                <div className="text-center py-16" style={{ width: 712 }}>
+                  <p className="text-sm text-gray-400">No items to show</p>
+                </div>
+              ) : (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    variants={staggerContainer}
+                    initial="hidden"
+                    animate="visible"
+                    className="flex flex-col gap-4"
+                  >
+                    {items.map((item) => (
+                      <FeedCard key={item.id} item={item} variant="horizontal" />
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
+              )}
+            </div>
+          </div>
+
+          {/* Sidebar panels — pinned, does not scroll with feed */}
+          {sidebarPanels && (
+            <div className="flex flex-col gap-3 flex-shrink-0 overflow-y-auto self-start" style={{ width: 320 }}>
+              {sidebarPanels.map((src, i) => (
+                <Image
+                  key={i}
+                  src={src}
+                  alt=""
+                  width={480}
+                  height={480}
+                  className="w-full h-auto rounded-xl"
+                  priority={i === 0}
+                />
+              ))}
             </div>
           )}
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-gray-900">Overview</h1>
-            {unreadCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700">
-                {unreadCount} new
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-gray-500 mt-1">
-            Activity and updates across this space
-          </p>
         </div>
+      </div>
 
-        {/* Feed list */}
-        {isLoading ? (
-          <div className="grid grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="h-40 rounded-xl bg-gray-100 animate-pulse"
-              />
-            ))}
-          </div>
-        ) : filteredItems.length === 0 ? (
-          <div className="text-center py-16 col-span-2">
-            <p className="text-sm text-gray-400">No items to show</p>
-          </div>
-        ) : (
-          <AnimatePresence mode="wait">
-            <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              animate="visible"
-            >
-              <Masonry
-                breakpointCols={2}
-                className="flex gap-8 w-auto"
-                columnClassName="bg-clip-padding"
-              >
-                {filteredItems.map((item) => (
-                  <div key={item.id} className="mb-8">
-                    <FeedCard item={item} />
-                  </div>
-                ))}
-              </Masonry>
-            </motion.div>
-          </AnimatePresence>
-        )}
+      {/* Prompt bar — anchored to bottom */}
+      <div className="absolute bottom-8 left-6 right-6 z-20">
+        <HomePromptInput onSubmit={() => {}} isLoading={false} />
       </div>
 
       {/* Global shimmer keyframes for AI avatars */}

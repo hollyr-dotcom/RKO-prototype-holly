@@ -2,8 +2,8 @@
   {
     "id": "feed-decision-jeff-01",
     "type": "decision",
-    "spaceId": "space-1",
-    "spaceName": "Q2 Roadmap",
+    "spaceId": "space-launch-q3",
+    "spaceName": "Product Launch Q3",
     "title": "Jeff Chow and team just untangled some roadmap questions",
     "body": "Jeff's team resolved three open roadmap questions around prioritisation, timing, and scope. The decisions are now locked in.",
     "timestamp": "2026-02-19T08:45:00Z",
@@ -25,14 +25,19 @@
       "chosenOption": "FirstFlex DE launch in Q2",
       "decidedBy": "Jeff Chow",
       "videoSrc": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-      "participants": ["user-marcus", "user-priya", "user-james", "agent-product-leader"]
+      "participants": [
+        "user-marcus",
+        "user-priya",
+        "user-james",
+        "agent-product-leader"
+      ]
     }
   },
   {
     "id": "feed-roadmap-talktrack-01",
     "type": "talktrack",
-    "spaceId": "space-1",
-    "spaceName": "FirstFlex",
+    "spaceId": "space-roadmaps",
+    "spaceName": "Roadmaps",
     "title": "Marcus shared his Q2 roadmap Talktrack for your sign-off",
     "body": "Marcus has prepared a talk track walking through the Q2 roadmap priorities. He's requesting your sign-off before the all-hands on Friday.",
     "timestamp": "2026-02-17T11:30:00Z",
@@ -67,7 +72,7 @@
   {
     "id": "feed-kyc-01",
     "type": "alert-fyi",
-    "spaceId": "space-2",
+    "spaceId": "space-kyc",
     "title": "EU UBO transparency directive takes effect in 90 days",
     "body": "New UBO transparency directive affects 3 steps in the current KYC process map. Two document requirements change, one new verification step needed. Recommended action: begin mini optimisation cycle within 14 days.",
     "timestamp": "2026-02-18T08:14:00Z",
@@ -79,7 +84,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\u26a0\ufe0f",
+        "emoji": "⚠️",
         "count": 3,
         "users": [
           "Hendrik V.",
@@ -88,7 +93,7 @@
         ]
       },
       {
-        "emoji": "\ud83d\udc40",
+        "emoji": "👀",
         "count": 2,
         "users": [
           "Tom A.",
@@ -115,7 +120,7 @@
         "targetLabel": "EU UBO Directive Enforcement",
         "targetDate": "2026-05-18",
         "urgencyColor": "#ef4444",
-        "subLabel": "3 process steps affected \u00b7 Steps 8, 12, 15",
+        "subLabel": "3 process steps affected · Steps 8, 12, 15",
         "milestones": [
           {
             "label": "Template update",
@@ -131,14 +136,15 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-02",
     "type": "agent-opportunity",
-    "spaceId": "space-2",
-    "title": "First-pass approval rate dipped 7 points \u2014 training gap detected",
-    "body": "First-pass approval rate dipped from 81% to 74% last month. Correlates precisely with 3 new analysts who haven't completed the updated risk assessment template training. Not a process issue \u2014 a training issue.",
+    "spaceId": "space-kyc",
+    "title": "First-pass approval rate dipped 7 points — training gap detected",
+    "body": "First-pass approval rate dipped from 81% to 74% last month. Correlates precisely with 3 new analysts who haven't completed the updated risk assessment template training. Not a process issue — a training issue.",
     "timestamp": "2026-02-18T07:51:00Z",
     "priority": "medium",
     "source": {
@@ -148,7 +154,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\ud83d\udca1",
+        "emoji": "💡",
         "count": 1,
         "users": [
           "Sofia R."
@@ -171,7 +177,7 @@
     "visualPreview": {
       "type": "LineChartPreview",
       "data": {
-        "title": "First-Pass Approval Rate \u2014 Last 90 Days",
+        "title": "First-Pass Approval Rate — Last 90 Days",
         "series": [
           {
             "label": "Approval Rate",
@@ -213,13 +219,14 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-03",
     "type": "agent-completed",
-    "spaceId": "space-2",
-    "title": "Mini optimisation cycle update \u2014 regulatory change on track",
+    "spaceId": "space-kyc",
+    "title": "Mini optimisation cycle update — regulatory change on track",
     "body": "",
     "timestamp": "2026-02-17T16:30:00Z",
     "priority": "medium",
@@ -230,7 +237,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\u2705",
+        "emoji": "✅",
         "count": 2,
         "users": [
           "Sofia R.",
@@ -238,7 +245,7 @@
         ]
       },
       {
-        "emoji": "\ud83d\ude80",
+        "emoji": "🚀",
         "count": 1,
         "users": [
           "Tom A."
@@ -261,9 +268,9 @@
       "artifact": {
         "type": "document",
         "id": "artifact-kyc-03",
-        "name": "Mini optimisation cycle update \u2014 regulatory change on track"
+        "name": "Mini optimisation cycle update — regulatory change on track"
       },
-      "completionSummary": "Template and decision tree updates drafted. Legal review in progress for 2 affected jurisdictions. Engineering change is minimal \u2014 configuration update only.",
+      "completionSummary": "Template and decision tree updates drafted. Legal review in progress for 2 affected jurisdictions. Engineering change is minimal — configuration update only.",
       "timeSpent": "4.2h",
       "changesCount": 11
     },
@@ -299,14 +306,15 @@
             "eta": "3 days"
           }
         ],
-        "overallLabel": "On track \u00b7 Est. completion in 3 weeks"
+        "overallLabel": "On track · Est. completion in 3 weeks"
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-04",
     "type": "workflow-change",
-    "spaceId": "space-2",
+    "spaceId": "space-kyc",
     "title": "Screening timeout fix deployed to production",
     "body": "",
     "timestamp": "2026-02-17T11:00:00Z",
@@ -318,7 +326,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 4,
         "users": [
           "Sofia R.",
@@ -328,7 +336,7 @@
         ]
       },
       {
-        "emoji": "\u26a1",
+        "emoji": "⚡",
         "count": 2,
         "users": [
           "Tom A.",
@@ -379,12 +387,13 @@
           "color": "#10b981"
         }
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-05",
     "type": "workflow-change",
-    "spaceId": "space-2",
+    "spaceId": "space-kyc",
     "title": "Full rollout approved across all risk tiers",
     "body": "",
     "timestamp": "2026-02-14T15:45:00Z",
@@ -396,7 +405,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 6,
         "users": [
           "Sofia R.",
@@ -408,7 +417,7 @@
         ]
       },
       {
-        "emoji": "\ud83d\udcaf",
+        "emoji": "💯",
         "count": 3,
         "users": [
           "Tom A.",
@@ -465,15 +474,16 @@
           }
         ],
         "outcome": "approved",
-        "outcomeLabel": "Full rollout approved \u00b7 Phase 2 scoping begins March 1"
+        "outcomeLabel": "Full rollout approved · Phase 2 scoping begins March 1"
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-06",
     "type": "agent-completed",
-    "spaceId": "space-2",
-    "title": "Pilot results compiled \u2014 4 of 5 targets met",
+    "spaceId": "space-kyc",
+    "title": "Pilot results compiled — 4 of 5 targets met",
     "body": "",
     "timestamp": "2026-02-12T09:00:00Z",
     "priority": "high",
@@ -484,7 +494,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 5,
         "users": [
           "Sofia R.",
@@ -495,7 +505,7 @@
         ]
       },
       {
-        "emoji": "\ud83d\udcca",
+        "emoji": "📊",
         "count": 2,
         "users": [
           "Carla M.",
@@ -524,9 +534,9 @@
       "artifact": {
         "type": "slides",
         "id": "artifact-kyc-06",
-        "name": "Pilot results compiled \u2014 4 of 5 targets met"
+        "name": "Pilot results compiled — 4 of 5 targets met"
       },
-      "completionSummary": "Pilot hit 4 of 5 targets. Onboarding at 14.2 days vs target of 14 \u2014 within margin. Two edge cases surfaced with fix specs ready.",
+      "completionSummary": "Pilot hit 4 of 5 targets. Onboarding at 14.2 days vs target of 14 — within margin. Two edge cases surfaced with fix specs ready.",
       "timeSpent": "1.8h",
       "changesCount": 9
     },
@@ -534,7 +544,7 @@
       "type": "SlidesDeckPreview",
       "data": {
         "slideCount": 9,
-        "title": "KYC Pilot Results \u2014 Phase 1",
+        "title": "KYC Pilot Results — Phase 1",
         "previewSlides": [
           {
             "label": "Executive Summary",
@@ -573,7 +583,7 @@
           },
           {
             "label": "Analyst time saved",
-            "before": "\u2014",
+            "before": "—",
             "after": "-22%",
             "target": "-20%",
             "met": true
@@ -587,14 +597,15 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-07",
     "type": "agent-opportunity",
-    "spaceId": "space-2",
-    "title": "Italian entity resubmission rate trending up \u2014 possible regulatory change",
-    "body": "Italian entity resubmission rate has risen to 24% against a 12% average for other jurisdictions. Pattern matches a regulatory update cadence \u2014 investigating whether AGCM or Banca d'Italia issued new UBO guidance.",
+    "spaceId": "space-kyc",
+    "title": "Italian entity resubmission rate trending up — possible regulatory change",
+    "body": "Italian entity resubmission rate has risen to 24% against a 12% average for other jurisdictions. Pattern matches a regulatory update cadence — investigating whether AGCM or Banca d'Italia issued new UBO guidance.",
     "timestamp": "2026-02-16T14:22:00Z",
     "priority": "medium",
     "source": {
@@ -619,7 +630,7 @@
     "visualPreview": {
       "type": "BarChartPreview",
       "data": {
-        "title": "Resubmission Rate by Entity Jurisdiction \u2014 Last 30 Days",
+        "title": "Resubmission Rate by Entity Jurisdiction — Last 30 Days",
         "bars": [
           {
             "label": "DE",
@@ -657,12 +668,13 @@
         "targetLine": 15,
         "targetLineLabel": "Target"
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-08",
     "type": "alert-fyi",
-    "spaceId": "space-2",
+    "spaceId": "space-kyc",
     "title": "Romanian UBO policy amendment approved and live",
     "body": "Romanian UBO transparency requirements were updated 3 months ago. FlexFund policy amendment has been approved by Legal and applied to the risk assessment template. Section 4.2 revised.",
     "timestamp": "2026-02-11T10:15:00Z",
@@ -674,7 +686,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\u2705",
+        "emoji": "✅",
         "count": 2,
         "users": [
           "Hendrik V.",
@@ -696,7 +708,7 @@
         "title": "Romanian UBO Policy Amendment",
         "sections": [
           {
-            "label": "Section 4.2 \u2014 Beneficial Ownership Documentation",
+            "label": "Section 4.2 — Beneficial Ownership Documentation",
             "status": "updated",
             "lineCount": 4
           },
@@ -717,13 +729,14 @@
         },
         "lastUpdated": "2026-02-10"
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-09",
     "type": "agent-completed",
-    "spaceId": "space-2",
-    "title": "Week 9 pilot summary \u2014 4 metrics on track",
+    "spaceId": "space-kyc",
+    "title": "Week 9 pilot summary — 4 metrics on track",
     "body": "",
     "timestamp": "2026-02-10T08:30:00Z",
     "priority": "medium",
@@ -734,7 +747,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\udc40",
+        "emoji": "👀",
         "count": 2,
         "users": [
           "Sofia R.",
@@ -753,7 +766,7 @@
       "artifact": {
         "type": "table",
         "id": "artifact-kyc-09",
-        "name": "Week 9 pilot summary \u2014 4 metrics on track"
+        "name": "Week 9 pilot summary — 4 metrics on track"
       },
       "completionSummary": "Week 9 summary posted. 2 of 5 metrics within margin. 2 known issues logged: JV entity type gap and screening API timeout on large corporate groups.",
       "timeSpent": "0.4h",
@@ -762,7 +775,7 @@
     "visualPreview": {
       "type": "TablePreview",
       "data": {
-        "title": "Pilot Week 9 \u2014 Metrics vs Targets",
+        "title": "Pilot Week 9 — Metrics vs Targets",
         "columns": [
           "Metric",
           "Target",
@@ -774,41 +787,42 @@
             "Onboarding time",
             "<14 days",
             "15.1 days",
-            "\u26a0\ufe0f"
+            "⚠️"
           ],
           [
             "Resubmission rate",
             "<15%",
             "14%",
-            "\u2705"
+            "✅"
           ],
           [
             "First-pass approval",
             ">75%",
             "78%",
-            "\u2705"
+            "✅"
           ],
           [
             "Analyst time saved",
             "-20%",
             "-19%",
-            "\u26a0\ufe0f"
+            "⚠️"
           ],
           [
             "Client satisfaction",
             ">4.0",
             "3.9",
-            "\u26a0\ufe0f"
+            "⚠️"
           ]
         ],
         "highlightColumn": 3
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-10",
     "type": "collaboration-request",
-    "spaceId": "space-2",
+    "spaceId": "space-kyc",
     "title": "Sofia Reyes needs your decision: Phase 2 self-service portal scope",
     "body": "Phase 2 approval would unlock a self-service portal targeting <10 day onboarding. APAC runs at 16 days with the same framework using a portal. This directly addresses the Q4 deal losses. Scoping starts March 1 if approved.",
     "timestamp": "2026-02-14T09:00:00Z",
@@ -862,13 +876,14 @@
         ],
         "metrics": []
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-11",
     "type": "agent-completed",
-    "spaceId": "space-2",
-    "title": "Implementation plan live \u2014 three parallel workstreams started",
+    "spaceId": "space-kyc",
+    "title": "Implementation plan live — three parallel workstreams started",
     "body": "",
     "timestamp": "2026-01-20T11:00:00Z",
     "priority": "medium",
@@ -879,7 +894,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\ude80",
+        "emoji": "🚀",
         "count": 3,
         "users": [
           "Sofia R.",
@@ -904,7 +919,7 @@
       "artifact": {
         "type": "canvas",
         "id": "artifact-kyc-11",
-        "name": "Implementation plan live \u2014 three parallel workstreams started"
+        "name": "Implementation plan live — three parallel workstreams started"
       },
       "completionSummary": "Three parallel workstreams live. Dependency flagged: Document Request build blocked until Template finalised. Jira tickets assigned. Weekly standups started.",
       "timeSpent": "0.8h",
@@ -935,7 +950,7 @@
               {
                 "start": "2026-01-20",
                 "end": "2026-02-10",
-                "label": "Build \u00b7 blocked until template final"
+                "label": "Build · blocked until template final"
               }
             ]
           },
@@ -964,13 +979,14 @@
         ],
         "today": "2026-02-18"
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-12",
     "type": "agent-completed",
-    "spaceId": "space-2",
-    "title": "Root cause analysis synthesised \u2014 7 root causes, 3 themes",
+    "spaceId": "space-kyc",
+    "title": "Root cause analysis synthesised — 7 root causes, 3 themes",
     "body": "",
     "timestamp": "2026-01-08T16:00:00Z",
     "priority": "medium",
@@ -981,7 +997,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\udca1",
+        "emoji": "💡",
         "count": 3,
         "users": [
           "Sofia R.",
@@ -1006,7 +1022,7 @@
       "artifact": {
         "type": "canvas",
         "id": "artifact-kyc-12",
-        "name": "Root cause analysis synthesised \u2014 7 root causes, 3 themes"
+        "name": "Root cause analysis synthesised — 7 root causes, 3 themes"
       },
       "completionSummary": "Workshop synthesis complete. 7 root causes across 3 themes, each linked to process steps and metrics. Impact estimates drafted.",
       "timeSpent": "1.1h",
@@ -1021,7 +1037,7 @@
             "label": "Unclear Requirements",
             "color": "#ef4444",
             "notes": [
-              "Generic templates \u2014 same for all clients",
+              "Generic templates — same for all clients",
               "'Sufficient documentation' undefined",
               "No source-of-funds criteria"
             ]
@@ -1046,14 +1062,15 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-13",
     "type": "agent-opportunity",
-    "spaceId": "space-2",
-    "title": "$4.7M ARR at risk \u2014 onboarding speed cited by 3 lost prospects",
-    "body": "Three enterprise prospects cited onboarding speed as the primary reason for going elsewhere \u2014 combined ARR of $4.7M. Average onboarding has gone from 15 to 24 business days over 6 months. EDD cases averaging 31 days.",
+    "spaceId": "space-kyc",
+    "title": "$4.7M ARR at risk — onboarding speed cited by 3 lost prospects",
+    "body": "Three enterprise prospects cited onboarding speed as the primary reason for going elsewhere — combined ARR of $4.7M. Average onboarding has gone from 15 to 24 business days over 6 months. EDD cases averaging 31 days.",
     "timestamp": "2025-12-15T09:00:00Z",
     "priority": "high",
     "source": {
@@ -1063,7 +1080,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\udea8",
+        "emoji": "🚨",
         "count": 2,
         "users": [
           "Carla M.",
@@ -1087,7 +1104,7 @@
     "visualPreview": {
       "type": "BarChartPreview",
       "data": {
-        "title": "Q4 Win/Loss Analysis \u2014 Enterprise Deals",
+        "title": "Q4 Win/Loss Analysis — Enterprise Deals",
         "bars": [
           {
             "label": "Won",
@@ -1124,13 +1141,14 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-14",
     "type": "collaboration-request",
-    "spaceId": "space-2",
-    "title": "Sofia Reyes needs Legal review on revised KYC template \u2014 6 EU jurisdictions",
+    "spaceId": "space-kyc",
+    "title": "Sofia Reyes needs Legal review on revised KYC template — 6 EU jurisdictions",
     "body": "Revised risk assessment template needs Legal review against current regulations across all 6 EU jurisdictions. Key areas: source-of-funds criteria, UBO documentation per market, and new trust/foundation entity type handling.",
     "timestamp": "2026-01-25T14:00:00Z",
     "priority": "high",
@@ -1189,13 +1207,14 @@
         },
         "lastUpdated": "2026-01-25"
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-15",
     "type": "agent-completed",
-    "spaceId": "space-2",
-    "title": "Future-state process map ready \u2014 26 steps, down from 34",
+    "spaceId": "space-kyc",
+    "title": "Future-state process map ready — 26 steps, down from 34",
     "body": "",
     "timestamp": "2026-01-17T15:00:00Z",
     "priority": "medium",
@@ -1206,7 +1225,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\udc4f",
+        "emoji": "👏",
         "count": 3,
         "users": [
           "Sofia R.",
@@ -1231,9 +1250,9 @@
       "artifact": {
         "type": "canvas",
         "id": "artifact-kyc-15",
-        "name": "Future-state process map ready \u2014 26 steps, down from 34"
+        "name": "Future-state process map ready — 26 steps, down from 34"
       },
-      "completionSummary": "8 steps eliminated or automated. Projected impact: 24 days \u2192 13\u201315 days, rejection 58% \u2192 <20%, analyst capacity freed by 25%.",
+      "completionSummary": "8 steps eliminated or automated. Projected impact: 24 days → 13–15 days, rejection 58% → <20%, analyst capacity freed by 25%.",
       "timeSpent": "2.3h",
       "changesCount": 26
     },
@@ -1293,13 +1312,14 @@
         "totalStepsAfter": 26,
         "eliminatedSteps": 8
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-16",
     "type": "workflow-change",
-    "spaceId": "space-2",
-    "title": "Phase 1 proposal approved \u2014 pilot condition set",
+    "spaceId": "space-kyc",
+    "title": "Phase 1 proposal approved — pilot condition set",
     "body": "",
     "timestamp": "2026-01-27T16:00:00Z",
     "priority": "high",
@@ -1310,7 +1330,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 4,
         "users": [
           "Sofia R.",
@@ -1320,7 +1340,7 @@
         ]
       },
       {
-        "emoji": "\ud83d\udcaa",
+        "emoji": "💪",
         "count": 2,
         "users": [
           "Maria L.",
@@ -1361,14 +1381,15 @@
         "outcome": "approved",
         "outcomeLabel": "Pilot scope: low/medium-risk EU corporate clients only"
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-17",
     "type": "collaboration-request",
-    "spaceId": "space-2",
-    "title": "Sofia Reyes wants your input: quarterly review agenda \u2014 three issues flagged",
-    "body": "Three items flagged for the quarterly review. First-pass approval dipped \u2014 likely new analyst training issue. Italian resubmission trending up. Your input on prioritisation before the session would help.",
+    "spaceId": "space-kyc",
+    "title": "Sofia Reyes wants your input: quarterly review agenda — three issues flagged",
+    "body": "Three items flagged for the quarterly review. First-pass approval dipped — likely new analyst training issue. Italian resubmission trending up. Your input on prioritisation before the session would help.",
     "timestamp": "2026-02-16T09:00:00Z",
     "priority": "medium",
     "source": {
@@ -1397,7 +1418,7 @@
     "visualPreview": {
       "type": "CalendarPreview",
       "data": {
-        "eventTitle": "KYC Quarterly Review \u2014 Compliance Leads",
+        "eventTitle": "KYC Quarterly Review — Compliance Leads",
         "date": "2026-02-20",
         "time": "10:00",
         "duration": "60 min",
@@ -1414,14 +1435,15 @@
           "Italian entity resubmission trend"
         ]
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-18",
     "type": "agent-opportunity",
-    "spaceId": "space-2",
-    "title": "Document completion down 18% \u2014 linked to 30% volume increase",
-    "body": "Two near-misses with Dutch and German regulators this quarter \u2014 both caused by incomplete UBO documentation. Completion rates have dropped 18% over 6 months, directly correlating with a 30% increase in case volume per analyst.",
+    "spaceId": "space-kyc",
+    "title": "Document completion down 18% — linked to 30% volume increase",
+    "body": "Two near-misses with Dutch and German regulators this quarter — both caused by incomplete UBO documentation. Completion rates have dropped 18% over 6 months, directly correlating with a 30% increase in case volume per analyst.",
     "timestamp": "2025-12-10T09:00:00Z",
     "priority": "high",
     "source": {
@@ -1431,7 +1453,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\u26a0\ufe0f",
+        "emoji": "⚠️",
         "count": 2,
         "users": [
           "Hendrik V.",
@@ -1500,12 +1522,13 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-ff-01",
     "type": "workflow-change",
-    "spaceId": "space-4",
+    "spaceId": "space-ff26",
     "title": "Tom Andersen approved FlexForward 26 event budget",
     "body": "",
     "timestamp": "2026-02-13T14:00:00Z",
@@ -1517,7 +1540,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 5,
         "users": [
           "Nina J.",
@@ -1528,7 +1551,7 @@
         ]
       },
       {
-        "emoji": "\ud83d\udcb0",
+        "emoji": "💰",
         "count": 2,
         "users": [
           "Tom A.",
@@ -1567,15 +1590,16 @@
           }
         ],
         "outcome": "approved",
-        "outcomeLabel": "\u20ac2.4M total budget approved \u2014 venue, catering, production, speakers"
+        "outcomeLabel": "€2.4M total budget approved — venue, catering, production, speakers"
       }
-    }
+    },
+    "spaceName": "FlexForward 26"
   },
   {
     "id": "feed-ff-02",
     "type": "agent-opportunity",
-    "spaceId": "space-4",
-    "title": "Speaker confirmation rate stalled at 60% \u2014 outreach window closing",
+    "spaceId": "space-ff26",
+    "title": "Speaker confirmation rate stalled at 60% — outreach window closing",
     "body": "Speaker confirmation rate has stalled. 5 invitations sent, 3 confirmed, 2 with no response after 2 follow-ups. Optimal window for securing replacements closes in 10 days.",
     "timestamp": "2026-02-15T10:30:00Z",
     "priority": "high",
@@ -1605,25 +1629,25 @@
         "people": [
           {
             "name": "Dr. Amara Osei",
-            "role": "Keynote \u2014 AI Ethics",
+            "role": "Keynote — AI Ethics",
             "status": "confirmed",
             "color": "#10b981"
           },
           {
             "name": "Priya Narayan",
-            "role": "Keynote \u2014 FinTech Policy",
+            "role": "Keynote — FinTech Policy",
             "status": "confirmed",
             "color": "#10b981"
           },
           {
             "name": "Marcus Tan",
-            "role": "Panel \u2014 Open Banking",
+            "role": "Panel — Open Banking",
             "status": "pending",
             "color": "#f59e0b"
           },
           {
             "name": "Dr. Lena Holm",
-            "role": "Panel \u2014 ESG Finance",
+            "role": "Panel — ESG Finance",
             "status": "pending",
             "color": "#f59e0b"
           },
@@ -1634,16 +1658,17 @@
             "color": "#ef4444"
           }
         ],
-        "summary": "3 of 5 confirmed \u00b7 2 pending \u00b7 Outreach deadline: Feb 28"
+        "summary": "3 of 5 confirmed · 2 pending · Outreach deadline: Feb 28"
       }
-    }
+    },
+    "spaceName": "FlexForward 26"
   },
   {
     "id": "feed-ff-03",
     "type": "collaboration-request",
-    "spaceId": "space-4",
+    "spaceId": "space-ff26",
     "title": "Liam O'Brien wants feedback on attendee survey design",
-    "body": "Survey draft covers 5 dimensions across 28 questions. Looking for feedback on section weighting \u2014 particularly whether networking gets enough coverage given our hybrid format this year.",
+    "body": "Survey draft covers 5 dimensions across 28 questions. Looking for feedback on section weighting — particularly whether networking gets enough coverage given our hybrid format this year.",
     "timestamp": "2026-02-15T13:00:00Z",
     "priority": "low",
     "source": {
@@ -1703,12 +1728,13 @@
         "centerLabel": "5 sections",
         "centerSubLabel": "28 questions"
       }
-    }
+    },
+    "spaceName": "FlexForward 26"
   },
   {
     "id": "feed-ff-04",
     "type": "workflow-change",
-    "spaceId": "space-4",
+    "spaceId": "space-ff26",
     "title": "Sofia Reyes moved venue contract to Signed",
     "body": "",
     "timestamp": "2026-02-11T09:00:00Z",
@@ -1720,7 +1746,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83c\udfe2",
+        "emoji": "🏢",
         "count": 3,
         "users": [
           "Nina J.",
@@ -1729,7 +1755,7 @@
         ]
       },
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 2,
         "users": [
           "Tom A.",
@@ -1747,7 +1773,7 @@
     "payload": {
       "fromStatus": "Pending Legal Review",
       "toStatus": "Signed",
-      "implication": "RAI Amsterdam secured for June 12\u201313, 2026. Capacity 2,400 attendees."
+      "implication": "RAI Amsterdam secured for June 12–13, 2026. Capacity 2,400 attendees."
     },
     "visualPreview": {
       "type": "MetricsPreview",
@@ -1765,12 +1791,12 @@
           },
           {
             "label": "Date locked",
-            "value": "Jun 12\u201313",
+            "value": "Jun 12–13",
             "valueColor": "#4262FF"
           },
           {
             "label": "Contract value",
-            "value": "\u20ac680K",
+            "value": "€680K",
             "valueColor": "#f59e0b"
           }
         ],
@@ -1780,13 +1806,14 @@
           "color": "#10b981"
         }
       }
-    }
+    },
+    "spaceName": "FlexForward 26"
   },
   {
     "id": "feed-pq3-01",
     "type": "agent-opportunity",
-    "spaceId": "space-1",
-    "title": "Timeline conflict \u2014 PayGrid API and mobile release share engineering",
+    "spaceId": "space-paygrid",
+    "title": "Timeline conflict — PayGrid API and mobile release share engineering",
     "body": "PayGrid API integration and the mobile release sprint both require full engineering capacity in the same 2.5-week window. Current team of 5 can't cover both at peak simultaneously.",
     "timestamp": "2026-02-17T08:00:00Z",
     "priority": "high",
@@ -1812,7 +1839,7 @@
     "visualPreview": {
       "type": "TimelinePreview",
       "data": {
-        "title": "Resource Conflict \u2014 Week of Feb 24",
+        "title": "Resource Conflict — Week of Feb 24",
         "startDate": "2026-02-10",
         "endDate": "2026-03-28",
         "tracks": [
@@ -1855,12 +1882,13 @@
         ],
         "today": "2026-02-18"
       }
-    }
+    },
+    "spaceName": "PayGrid"
   },
   {
     "id": "feed-pq3-02",
     "type": "collaboration-request",
-    "spaceId": "space-1",
+    "spaceId": "space-launch-q3",
     "title": "Marcus Chen needs review: GTM strategy for PayGrid launch",
     "body": "GTM strategy updated based on the competitive analysis. Added a direct response plan for Stripe Treasury's announced expansion into EU SMB market. Key decision needed on whether we lead with price or compliance.",
     "timestamp": "2026-02-16T15:30:00Z",
@@ -1925,13 +1953,14 @@
         },
         "lastUpdated": "2026-02-16"
       }
-    }
+    },
+    "spaceName": "Product Launch Q3"
   },
   {
     "id": "feed-pq3-03",
     "type": "agent-completed",
-    "spaceId": "space-1",
-    "title": "Competitive analysis framework ready \u2014 PayGrid vs 6 competitors",
+    "spaceId": "space-paygrid",
+    "title": "Competitive analysis framework ready — PayGrid vs 6 competitors",
     "body": "",
     "timestamp": "2026-02-14T11:00:00Z",
     "priority": "medium",
@@ -1942,7 +1971,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\udca1",
+        "emoji": "💡",
         "count": 3,
         "users": [
           "Marcus C.",
@@ -1967,7 +1996,7 @@
       "artifact": {
         "type": "canvas",
         "id": "artifact-pq3-03",
-        "name": "Competitive analysis framework ready \u2014 PayGrid vs 6 competitors"
+        "name": "Competitive analysis framework ready — PayGrid vs 6 competitors"
       },
       "completionSummary": "6x6 competitive matrix covering 6 dimensions across 6 competitors. PayGrid leads on compliance coverage and EU regulation. Gap identified in API ecosystem vs Stripe and Adyen.",
       "timeSpent": "3.1h",
@@ -1976,7 +2005,7 @@
     "visualPreview": {
       "type": "HeatmapPreview",
       "data": {
-        "title": "Competitive Matrix \u2014 PayGrid vs Market",
+        "title": "Competitive Matrix — PayGrid vs Market",
         "rows": [
           "Onboarding Speed",
           "Compliance Coverage",
@@ -2055,12 +2084,13 @@
           "max": "5 = Strong"
         }
       }
-    }
+    },
+    "spaceName": "PayGrid"
   },
   {
     "id": "feed-pq3-04",
     "type": "workflow-change",
-    "spaceId": "space-1",
+    "spaceId": "space-launch-q3",
     "title": "Nina Johansson approved Q3 product development budget",
     "body": "",
     "timestamp": "2026-02-13T16:00:00Z",
@@ -2072,7 +2102,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 4,
         "users": [
           "Marcus C.",
@@ -2082,7 +2112,7 @@
         ]
       },
       {
-        "emoji": "\u2705",
+        "emoji": "✅",
         "count": 1,
         "users": [
           "Tom A."
@@ -2120,15 +2150,16 @@
           }
         ],
         "outcome": "approved",
-        "outcomeLabel": "\u20ac1.8M approved \u2014 engineering, design, and QA headcount included"
+        "outcomeLabel": "€1.8M approved — engineering, design, and QA headcount included"
       }
-    }
+    },
+    "spaceName": "Product Launch Q3"
   },
   {
     "id": "feed-pq3-05",
     "type": "collaboration-request",
-    "spaceId": "space-1",
-    "title": "Elena Vasquez needs your decision: PayGrid EU scope \u2014 3 vs 6 markets at launch",
+    "spaceId": "space-paygrid",
+    "title": "Elena Vasquez needs your decision: PayGrid EU scope — 3 vs 6 markets at launch",
     "body": "Need a decision on launch scope before the compliance and engineering teams finalise their plans. Option B doubles the revenue opportunity but adds ~6 weeks of compliance work for ES and IT. Recommend deciding by Feb 20.",
     "timestamp": "2026-02-15T11:00:00Z",
     "priority": "high",
@@ -2163,38 +2194,39 @@
     "visualPreview": {
       "type": "DesignPreview",
       "data": {
-        "title": "PayGrid Launch Scope \u2014 Option Comparison",
+        "title": "PayGrid Launch Scope — Option Comparison",
         "frames": [
           {
-            "label": "Option A \u2014 3 Markets",
-            "subtitle": "DE, NL, FR \u00b7 Q3 2026",
+            "label": "Option A — 3 Markets",
+            "subtitle": "DE, NL, FR · Q3 2026",
             "accentColor": "#10b981",
             "tags": [
               "Lower risk",
               "Faster",
-              "Revenue: \u20ac12M ARR"
+              "Revenue: €12M ARR"
             ]
           },
           {
-            "label": "Option B \u2014 6 Markets",
-            "subtitle": "DE, NL, FR, BE, ES, IT \u00b7 Q3 2026",
+            "label": "Option B — 6 Markets",
+            "subtitle": "DE, NL, FR, BE, ES, IT · Q3 2026",
             "accentColor": "#4262FF",
             "tags": [
               "Higher coverage",
               "More compliance work",
-              "Revenue: \u20ac21M ARR"
+              "Revenue: €21M ARR"
             ]
           }
         ],
         "note": "Compliance sign-off required for each market separately"
       }
-    }
+    },
+    "spaceName": "PayGrid"
   },
   {
     "id": "feed-pq3-06",
     "type": "agent-opportunity",
-    "spaceId": "space-1",
-    "title": "Feature prioritisation stalled \u2014 6 items in backlog with no owner assigned",
+    "spaceId": "space-roadmaps",
+    "title": "Feature prioritisation stalled — 6 items in backlog with no owner assigned",
     "body": "6 backlog items have no assigned owner and have been stalled for over 6 days. Two are blocking enterprise pilot preparations. Recommend assignment in today's standup.",
     "timestamp": "2026-02-16T08:00:00Z",
     "priority": "medium",
@@ -2220,7 +2252,7 @@
     "visualPreview": {
       "type": "TablePreview",
       "data": {
-        "title": "Unowned Backlog Items \u2014 Q3 Release",
+        "title": "Unowned Backlog Items — Q3 Release",
         "columns": [
           "Feature",
           "Priority",
@@ -2267,13 +2299,14 @@
         ],
         "highlightColumn": 2
       }
-    }
+    },
+    "spaceName": "Roadmaps"
   },
   {
     "id": "feed-pq3-08",
     "type": "agent-completed",
-    "spaceId": "space-1",
-    "title": "Weekly stakeholder update synthesised \u2014 4 workstreams, 2 blockers",
+    "spaceId": "space-launch-q3",
+    "title": "Weekly stakeholder update synthesised — 4 workstreams, 2 blockers",
     "body": "",
     "timestamp": "2026-02-17T07:00:00Z",
     "priority": "low",
@@ -2284,7 +2317,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\ud83d\udc40",
+        "emoji": "👀",
         "count": 3,
         "users": [
           "Marcus C.",
@@ -2304,7 +2337,7 @@
       "artifact": {
         "type": "document",
         "id": "artifact-pq3-08",
-        "name": "Weekly stakeholder update synthesised \u2014 4 workstreams, 2 blockers"
+        "name": "Weekly stakeholder update synthesised — 4 workstreams, 2 blockers"
       },
       "completionSummary": "Week's status synthesised across 4 workstreams. 2 blockers active: legal certification delay and GTM strategy pending CPTO review.",
       "timeSpent": "0.3h",
@@ -2313,7 +2346,7 @@
     "visualPreview": {
       "type": "ProgressBarsPreview",
       "data": {
-        "title": "Q3 Workstream Status \u2014 Week of Feb 17",
+        "title": "Q3 Workstream Status — Week of Feb 17",
         "bars": [
           {
             "label": "PayGrid API Integration",
@@ -2342,15 +2375,16 @@
             "blockers": 1
           }
         ],
-        "overallLabel": "2 blockers flagged \u2014 see update for details"
+        "overallLabel": "2 blockers flagged — see update for details"
       }
-    }
+    },
+    "spaceName": "Product Launch Q3"
   },
   {
     "id": "feed-pq3-09",
     "type": "alert-fyi",
-    "spaceId": "space-1",
-    "title": "Stripe Treasury announced EU SMB expansion \u2014 Q3 launch timing at risk",
+    "spaceId": "space-launch-q3",
+    "title": "Stripe Treasury announced EU SMB expansion — Q3 launch timing at risk",
     "body": "Stripe Treasury confirmed EU SMB expansion targeting Q2 2026. If our PayGrid launch slips to Q3, they'll have a 3-month head start in Germany, Netherlands, and France. Recommend reviewing launch acceleration options.",
     "timestamp": "2026-02-16T12:00:00Z",
     "priority": "high",
@@ -2361,7 +2395,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\ud83d\udea8",
+        "emoji": "🚨",
         "count": 3,
         "users": [
           "Marcus C.",
@@ -2410,12 +2444,13 @@
         ],
         "transition": null
       }
-    }
+    },
+    "spaceName": "Product Launch Q3"
   },
   {
     "id": "feed-pq3-10",
     "type": "workflow-change",
-    "spaceId": "space-1",
+    "spaceId": "space-roadmaps",
     "title": "Priya Sharma moved feature prioritisation to In Review",
     "body": "",
     "timestamp": "2026-02-12T10:00:00Z",
@@ -2427,7 +2462,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\udc4d",
+        "emoji": "👍",
         "count": 2,
         "users": [
           "Marcus C.",
@@ -2450,7 +2485,7 @@
     "visualPreview": {
       "type": "ProgressBarsPreview",
       "data": {
-        "title": "Feature Prioritisation \u2014 Review Status",
+        "title": "Feature Prioritisation — Review Status",
         "bars": [
           {
             "label": "Must-have (P0)",
@@ -2471,16 +2506,17 @@
             "status": "in-review"
           }
         ],
-        "overallLabel": "In Review \u2014 3 stakeholders to sign off"
+        "overallLabel": "In Review — 3 stakeholders to sign off"
       }
-    }
+    },
+    "spaceName": "Roadmaps"
   },
   {
     "id": "feed-claims-01",
     "type": "agent-opportunity",
-    "spaceId": "space-5",
+    "spaceId": "space-claims",
     "title": "Claims processing time up,\nAI model retraining triggered",
-    "body": "Claims processing time has risen 34% over 12 weeks, breaching the 2.5-day SLA target. Correlated with a 42% volume increase following the new flood risk coverage launch. AI model confidence scores also declining \u2014 retraining cycle recommended.",
+    "body": "Claims processing time has risen 34% over 12 weeks, breaching the 2.5-day SLA target. Correlated with a 42% volume increase following the new flood risk coverage launch. AI model confidence scores also declining — retraining cycle recommended.",
     "timestamp": "2026-02-17T09:00:00Z",
     "priority": "high",
     "source": {
@@ -2490,7 +2526,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\u26a0\ufe0f",
+        "emoji": "⚠️",
         "count": 2,
         "users": [
           "Claims Lead",
@@ -2514,7 +2550,7 @@
     "visualPreview": {
       "type": "LineChartPreview",
       "data": {
-        "title": "Average Claims Processing Time \u2014 12 Weeks",
+        "title": "Average Claims Processing Time — 12 Weeks",
         "series": [
           {
             "label": "Avg Processing Time (days)",
@@ -2562,12 +2598,13 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "AI Claims"
   },
   {
     "id": "feed-claims-02",
     "type": "workflow-change",
-    "spaceId": "space-5",
+    "spaceId": "space-claims",
     "title": "AI Claims model v3.2 promoted to production",
     "body": "",
     "timestamp": "2026-02-10T14:00:00Z",
@@ -2579,7 +2616,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\ude80",
+        "emoji": "🚀",
         "count": 3,
         "users": [
           "Claims Lead",
@@ -2588,7 +2625,7 @@
         ]
       },
       {
-        "emoji": "\u2728",
+        "emoji": "✨",
         "count": 2,
         "users": [
           "Product",
@@ -2624,7 +2661,7 @@
           },
           {
             "label": "False positive rate",
-            "value": "\u2193 2.3%",
+            "value": "↓ 2.3%",
             "valueColor": "#10b981"
           },
           {
@@ -2639,14 +2676,15 @@
           "color": "#10b981"
         }
       }
-    }
+    },
+    "spaceName": "AI Claims"
   },
   {
     "id": "feed-claims-03",
     "type": "collaboration-request",
-    "spaceId": "space-5",
-    "title": "Claims Lead needs decision: expand AI auto-approval threshold from \u00a3500 to \u00a31,000",
-    "body": "Raising the auto-approval threshold from \u00a3500 to \u00a31,000 would automate 16% more claims, saving ~240 analyst hours per month. Modelled fraud exposure increase is \u00a3180K/yr \u2014 within acceptable risk parameters per the current risk appetite statement.",
+    "spaceId": "space-claims",
+    "title": "Claims Lead needs decision: expand AI auto-approval threshold from £500 to £1,000",
+    "body": "Raising the auto-approval threshold from £500 to £1,000 would automate 16% more claims, saving ~240 analyst hours per month. Modelled fraud exposure increase is £180K/yr — within acceptable risk parameters per the current risk appetite statement.",
     "timestamp": "2026-02-15T14:00:00Z",
     "priority": "high",
     "source": {
@@ -2680,7 +2718,7 @@
     "visualPreview": {
       "type": "BarChartPreview",
       "data": {
-        "title": "Projected Impact \u2014 Auto-Approval Threshold Change",
+        "title": "Projected Impact — Auto-Approval Threshold Change",
         "bars": [
           {
             "label": "Claims auto-approved (current)",
@@ -2707,17 +2745,18 @@
           },
           {
             "label": "Risk: fraud exposure increase",
-            "value": "Est. \u00a3180K/yr"
+            "value": "Est. £180K/yr"
           }
         ]
       }
-    }
+    },
+    "spaceName": "AI Claims"
   },
   {
     "id": "feed-claims-04",
     "type": "agent-completed",
-    "spaceId": "space-5",
-    "title": "Claims bias audit complete \u2014 no systemic patterns detected",
+    "spaceId": "space-claims",
+    "title": "Claims bias audit complete — no systemic patterns detected",
     "body": "",
     "timestamp": "2026-02-08T09:00:00Z",
     "priority": "medium",
@@ -2728,7 +2767,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\u2705",
+        "emoji": "✅",
         "count": 3,
         "users": [
           "Compliance",
@@ -2737,7 +2776,7 @@
         ]
       },
       {
-        "emoji": "\ud83d\udcca",
+        "emoji": "📊",
         "count": 1,
         "users": [
           "CTO"
@@ -2760,7 +2799,7 @@
       "artifact": {
         "type": "document",
         "id": "artifact-claims-04",
-        "name": "Claims bias audit complete \u2014 no systemic patterns detected"
+        "name": "Claims bias audit complete — no systemic patterns detected"
       },
       "completionSummary": "Bias audit across 5 claim types and 4 age segments. Variance within 5% across all cells. No systemic approval rate disparities detected. Recommended for quarterly board reporting.",
       "timeSpent": "2.8h",
@@ -2771,9 +2810,9 @@
       "data": {
         "title": "Approval Rate Variance by Segment",
         "rows": [
-          "Age 18\u201325",
-          "Age 26\u201345",
-          "Age 46\u201365",
+          "Age 18–25",
+          "Age 26–45",
+          "Age 46–65",
           "Age 65+"
         ],
         "columns": [
@@ -2825,13 +2864,14 @@
           "max": "95% (high)"
         }
       }
-    }
+    },
+    "spaceName": "AI Claims"
   },
   {
     "id": "feed-claims-05",
     "type": "alert-fyi",
-    "spaceId": "space-5",
-    "title": "FCA issued new AI decision-making guidance for insurance \u2014 review required",
+    "spaceId": "space-claims",
+    "title": "FCA issued new AI decision-making guidance for insurance — review required",
     "body": "FCA published new guidance on AI-assisted decision-making in financial services. Key requirement: customers must be able to request a human review of any AI-driven claim decision. Our current auto-rejection flow may not meet this standard.",
     "timestamp": "2026-02-12T11:00:00Z",
     "priority": "high",
@@ -2842,7 +2882,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\u26a0\ufe0f",
+        "emoji": "⚠️",
         "count": 2,
         "users": [
           "Legal",
@@ -2885,14 +2925,15 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "AI Claims"
   },
   {
     "id": "feed-ff-youth-01",
     "type": "agent-opportunity",
-    "spaceId": "space-3",
-    "title": "FirstFlex activation 12% below target \u2014 drop-off at parental consent",
-    "body": "FirstFlex activation rate is 61% lower than benchmarks for the 13\u201317 segment. The parental consent step has a 47% drop-off \u2014 parents are not completing the ID verification flow. Consent flow redesign or alternative verification method recommended.",
+    "spaceId": "space-firstflex",
+    "title": "FirstFlex activation 12% below target — drop-off at parental consent",
+    "body": "FirstFlex activation rate is 61% lower than benchmarks for the 13–17 segment. The parental consent step has a 47% drop-off — parents are not completing the ID verification flow. Consent flow redesign or alternative verification method recommended.",
     "timestamp": "2026-02-16T11:00:00Z",
     "priority": "high",
     "source": {
@@ -2902,7 +2943,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\u26a0\ufe0f",
+        "emoji": "⚠️",
         "count": 2,
         "users": [
           "Product Lead",
@@ -2926,7 +2967,7 @@
     "visualPreview": {
       "type": "JourneyMapPreview",
       "data": {
-        "title": "FirstFlex \u2014 Activation Funnel Drop-Off",
+        "title": "FirstFlex — Activation Funnel Drop-Off",
         "persona": "13-17 year old (parent-assisted sign-up)",
         "stages": [
           {
@@ -2983,13 +3024,14 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "FirstFlex Youth Banking"
   },
   {
     "id": "feed-ff-youth-02",
     "type": "workflow-change",
-    "spaceId": "space-3",
-    "title": "FirstFlex brand identity approved \u2014 card design finalised",
+    "spaceId": "space-brand",
+    "title": "FirstFlex brand identity approved — card design finalised",
     "body": "",
     "timestamp": "2026-02-13T15:00:00Z",
     "priority": "medium",
@@ -3000,7 +3042,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83c\udfa8",
+        "emoji": "🎨",
         "count": 4,
         "users": [
           "Design Team",
@@ -3010,7 +3052,7 @@
         ]
       },
       {
-        "emoji": "\ud83c\udf1f",
+        "emoji": "🌟",
         "count": 2,
         "users": [
           "Tom A.",
@@ -3033,11 +3075,11 @@
     "visualPreview": {
       "type": "DesignPreview",
       "data": {
-        "title": "FirstFlex Card Design \u2014 Approved",
+        "title": "FirstFlex Card Design — Approved",
         "frames": [
           {
-            "label": "Card Front \u2014 Amber gradient",
-            "subtitle": "FirstFlex wordmark \u00b7 Vertical card \u00b7 4 colourways",
+            "label": "Card Front — Amber gradient",
+            "subtitle": "FirstFlex wordmark · Vertical card · 4 colourways",
             "accentColor": "#f59e0b",
             "tags": [
               "Approved",
@@ -3056,12 +3098,13 @@
         ],
         "note": "Approved for production. Card printing RFP opens next week."
       }
-    }
+    },
+    "spaceName": "Brand Refresh"
   },
   {
     "id": "feed-ff-youth-03",
     "type": "collaboration-request",
-    "spaceId": "space-3",
+    "spaceId": "space-firstflex",
     "title": "Product Lead needs review: FirstFlex spend controls feature spec",
     "body": "First pass at the parental spend controls spec. Key design decision needed: should limits be set by the teen or parent, or both with overrides? Research suggests teens disengage if parents have unconstrained control.",
     "timestamp": "2026-02-15T09:30:00Z",
@@ -3092,7 +3135,7 @@
     "visualPreview": {
       "type": "DocPreview",
       "data": {
-        "title": "FirstFlex Spend Controls \u2014 Feature Spec v1.0",
+        "title": "FirstFlex Spend Controls — Feature Spec v1.0",
         "sections": [
           {
             "label": "Parental Dashboard Controls",
@@ -3121,18 +3164,19 @@
           }
         ],
         "badge": {
-          "label": "Draft \u2014 First Review",
+          "label": "Draft — First Review",
           "color": "#f59e0b"
         },
         "lastUpdated": "2026-02-14"
       }
-    }
+    },
+    "spaceName": "FirstFlex Youth Banking"
   },
   {
     "id": "feed-ff-youth-04",
     "type": "agent-completed",
-    "spaceId": "space-3",
-    "title": "FirstFlex market sizing analysis ready \u2014 4.2M addressable teens in target markets",
+    "spaceId": "space-firstflex",
+    "title": "FirstFlex market sizing analysis ready — 4.2M addressable teens in target markets",
     "body": "",
     "timestamp": "2026-02-09T14:00:00Z",
     "priority": "medium",
@@ -3143,7 +3187,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\udcca",
+        "emoji": "📊",
         "count": 2,
         "users": [
           "Product Lead",
@@ -3167,16 +3211,16 @@
       "artifact": {
         "type": "document",
         "id": "artifact-ff-youth-04",
-        "name": "FirstFlex market sizing analysis ready \u2014 4.2M addressable teens in target markets"
+        "name": "FirstFlex market sizing analysis ready — 4.2M addressable teens in target markets"
       },
-      "completionSummary": "4.2M addressable teens across 4 launch markets. UK is largest at 1.6M. Penetration benchmarks from Starling Kite and GoHenry suggest 3\u20135% in Y2 is achievable = 126K\u2013210K accounts.",
+      "completionSummary": "4.2M addressable teens across 4 launch markets. UK is largest at 1.6M. Penetration benchmarks from Starling Kite and GoHenry suggest 3–5% in Y2 is achievable = 126K–210K accounts.",
       "timeSpent": "1.5h",
       "changesCount": 8
     },
     "visualPreview": {
       "type": "DonutChartPreview",
       "data": {
-        "title": "Addressable Teen Banking Market \u2014 Launch Markets",
+        "title": "Addressable Teen Banking Market — Launch Markets",
         "segments": [
           {
             "label": "UK",
@@ -3204,15 +3248,16 @@
           }
         ],
         "centerLabel": "4.2M",
-        "centerSubLabel": "Total addressable (13\u201317)"
+        "centerSubLabel": "Total addressable (13–17)"
       }
-    }
+    },
+    "spaceName": "FirstFlex Youth Banking"
   },
   {
     "id": "feed-ff-youth-05",
     "type": "alert-fyi",
-    "spaceId": "space-3",
-    "title": "Starling Kite launching teen debit card in Germany \u2014 6 weeks ahead of FirstFlex",
+    "spaceId": "space-firstflex",
+    "title": "Starling Kite launching teen debit card in Germany — 6 weeks ahead of FirstFlex",
     "body": "Starling Kite confirmed German launch for April 1. FirstFlex is targeting May 15. Recommend reviewing whether the approval-to-launch timeline in Germany can be compressed, particularly the BaFin notification process.",
     "timestamp": "2026-02-14T10:00:00Z",
     "priority": "high",
@@ -3223,7 +3268,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\ud83d\udea8",
+        "emoji": "🚨",
         "count": 2,
         "users": [
           "Product Lead",
@@ -3271,13 +3316,14 @@
         ],
         "transition": null
       }
-    }
+    },
+    "spaceName": "FirstFlex Youth Banking"
   },
   {
     "id": "feed-ff-youth-06",
     "type": "agent-completed",
-    "spaceId": "space-3",
-    "title": "FirstFlex UX research synthesis ready \u2014 24 teen interviews across 3 markets",
+    "spaceId": "space-firstflex",
+    "title": "FirstFlex UX research synthesis ready — 24 teen interviews across 3 markets",
     "body": "",
     "timestamp": "2026-02-07T11:00:00Z",
     "priority": "medium",
@@ -3288,7 +3334,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\udca1",
+        "emoji": "💡",
         "count": 3,
         "users": [
           "Product Lead",
@@ -3313,16 +3359,16 @@
       "artifact": {
         "type": "canvas",
         "id": "artifact-ff-youth-06",
-        "name": "FirstFlex UX research synthesis ready \u2014 24 teen interviews across 3 markets"
+        "name": "FirstFlex UX research synthesis ready — 24 teen interviews across 3 markets"
       },
-      "completionSummary": "24 interviews synthesised across UK, DE, NL. 3 main clusters: teen desires, parent priorities, and shared pain points. Top insight: teens want peer-to-peer instantly \u2014 current incumbents all have 1-day delays.",
+      "completionSummary": "24 interviews synthesised across UK, DE, NL. 3 main clusters: teen desires, parent priorities, and shared pain points. Top insight: teens want peer-to-peer instantly — current incumbents all have 1-day delays.",
       "timeSpent": "1.9h",
       "changesCount": 24
     },
     "visualPreview": {
       "type": "BrainstormPreview",
       "data": {
-        "title": "Teen Banking Research \u2014 Key Themes",
+        "title": "Teen Banking Research — Key Themes",
         "clusters": [
           {
             "label": "What teens want",
@@ -3353,13 +3399,14 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "FirstFlex Youth Banking"
   },
   {
     "id": "feed-embed-01",
     "type": "agent-opportunity",
-    "spaceId": "space-6",
-    "title": "Embedded Finance API usage 3x in 60 days \u2014 scaling needed",
+    "spaceId": "space-embed",
+    "title": "Embedded Finance API usage 3x in 60 days — scaling needed",
     "body": "Embedded Finance API request volume has tripled in 60 days driven by 3 new partner integrations. Current infrastructure is at 85% capacity. At current growth rate, ceiling hit in ~18 days. Recommend immediate scaling review.",
     "timestamp": "2026-02-16T08:30:00Z",
     "priority": "high",
@@ -3370,7 +3417,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\ud83d\udea8",
+        "emoji": "🚨",
         "count": 2,
         "users": [
           "Platform Engineering",
@@ -3394,7 +3441,7 @@
     "visualPreview": {
       "type": "LineChartPreview",
       "data": {
-        "title": "Embedded Finance API \u2014 Request Volume (Indexed)",
+        "title": "Embedded Finance API — Request Volume (Indexed)",
         "series": [
           {
             "label": "API Requests / Day",
@@ -3432,12 +3479,13 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "Embedded Finance"
   },
   {
     "id": "feed-embed-02",
     "type": "collaboration-request",
-    "spaceId": "space-6",
+    "spaceId": "space-embed",
     "title": "Platform Engineering needs decision: multi-tenant vs single-tenant for partner isolation",
     "body": "Architecture decision required before HSBC and Allianz contracts can be finalised. Both require data isolation guarantees but HSBC's security team specifically asked about physical separation. Need a decision on which model to offer enterprise partners.",
     "timestamp": "2026-02-15T16:00:00Z",
@@ -3473,11 +3521,11 @@
     "visualPreview": {
       "type": "DesignPreview",
       "data": {
-        "title": "Architecture Decision \u2014 Partner Isolation",
+        "title": "Architecture Decision — Partner Isolation",
         "frames": [
           {
             "label": "Multi-tenant (shared infra)",
-            "subtitle": "Lower cost \u00b7 Shared compute \u00b7 Logical isolation only",
+            "subtitle": "Lower cost · Shared compute · Logical isolation only",
             "accentColor": "#06b6d4",
             "tags": [
               "80% cheaper",
@@ -3487,7 +3535,7 @@
           },
           {
             "label": "Single-tenant (dedicated infra)",
-            "subtitle": "Higher cost \u00b7 Dedicated compute \u00b7 Physical isolation",
+            "subtitle": "Higher cost · Dedicated compute · Physical isolation",
             "accentColor": "#6366f1",
             "tags": [
               "Enterprise-grade",
@@ -3498,12 +3546,13 @@
         ],
         "note": "Decision affects HSBC and Allianz contracts currently in negotiation"
       }
-    }
+    },
+    "spaceName": "Embedded Finance"
   },
   {
     "id": "feed-embed-03",
     "type": "workflow-change",
-    "spaceId": "space-6",
+    "spaceId": "space-embed",
     "title": "HSBC embedded finance pilot agreement signed",
     "body": "",
     "timestamp": "2026-02-11T13:00:00Z",
@@ -3515,7 +3564,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 5,
         "users": [
           "Carla M.",
@@ -3526,7 +3575,7 @@
         ]
       },
       {
-        "emoji": "\ud83d\ude80",
+        "emoji": "🚀",
         "count": 3,
         "users": [
           "CTO",
@@ -3573,7 +3622,7 @@
           },
           {
             "label": "ARR potential",
-            "value": "\u00a34.2M",
+            "value": "£4.2M",
             "valueColor": "#10b981"
           }
         ],
@@ -3583,13 +3632,14 @@
           "color": "#10b981"
         }
       }
-    }
+    },
+    "spaceName": "Embedded Finance"
   },
   {
     "id": "feed-embed-04",
     "type": "agent-completed",
-    "spaceId": "space-6",
-    "title": "Embedded Finance partner API documentation updated \u2014 12 new endpoints",
+    "spaceId": "space-embed",
+    "title": "Embedded Finance partner API documentation updated — 12 new endpoints",
     "body": "",
     "timestamp": "2026-02-13T16:00:00Z",
     "priority": "low",
@@ -3600,7 +3650,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\udcd6",
+        "emoji": "📖",
         "count": 2,
         "users": [
           "Platform Engineering",
@@ -3619,9 +3669,9 @@
       "artifact": {
         "type": "document",
         "id": "artifact-embed-04",
-        "name": "Embedded Finance partner API documentation updated \u2014 12 new endpoints"
+        "name": "Embedded Finance partner API documentation updated — 12 new endpoints"
       },
-      "completionSummary": "12 new API endpoints documented with sample requests, response schemas, and error codes. Changelog and migration guide included for v2.3 \u2192 v2.4.",
+      "completionSummary": "12 new API endpoints documented with sample requests, response schemas, and error codes. Changelog and migration guide included for v2.3 → v2.4.",
       "timeSpent": "1.2h",
       "changesCount": 12
     },
@@ -3662,13 +3712,14 @@
         },
         "lastUpdated": "2026-02-14"
       }
-    }
+    },
+    "spaceName": "Embedded Finance"
   },
   {
     "id": "feed-core-01",
     "type": "agent-opportunity",
-    "spaceId": "space-7",
-    "title": "Core banking migration 3 weeks behind \u2014 data validation failing on legacy accounts",
+    "spaceId": "space-core",
+    "title": "Core banking migration 3 weeks behind — data validation failing on legacy accounts",
     "body": "Phase 1 data migration ran 3 weeks over schedule due to unexpected validation failures in legacy account structures. 2,847 accounts with non-standard field formats. Phase 2 start has been pushed and Phase 3 cutover now at risk.",
     "timestamp": "2026-02-17T10:00:00Z",
     "priority": "high",
@@ -3679,7 +3730,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\u26a0\ufe0f",
+        "emoji": "⚠️",
         "count": 3,
         "users": [
           "CTO",
@@ -3704,7 +3755,7 @@
     "visualPreview": {
       "type": "TimelinePreview",
       "data": {
-        "title": "Core Banking Migration \u2014 Schedule vs Actual",
+        "title": "Core Banking Migration — Schedule vs Actual",
         "startDate": "2025-10-01",
         "endDate": "2026-06-30",
         "tracks": [
@@ -3750,13 +3801,14 @@
         ],
         "today": "2026-02-18"
       }
-    }
+    },
+    "spaceName": "Core Banking Migration"
   },
   {
     "id": "feed-core-02",
     "type": "workflow-change",
-    "spaceId": "space-7",
-    "title": "Core banking Phase 1 data migration completed \u2014 99.7% records migrated",
+    "spaceId": "space-core",
+    "title": "Core banking Phase 1 data migration completed — 99.7% records migrated",
     "body": "",
     "timestamp": "2026-01-21T17:00:00Z",
     "priority": "high",
@@ -3767,7 +3819,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 3,
         "users": [
           "Migration Lead",
@@ -3824,14 +3876,15 @@
           "color": "#10b981"
         }
       }
-    }
+    },
+    "spaceName": "Core Banking Migration"
   },
   {
     "id": "feed-core-03",
     "type": "collaboration-request",
-    "spaceId": "space-7",
-    "title": "Migration Lead needs your decision: parallel run duration \u2014 4 vs 8 weeks",
-    "body": "Decision needed on parallel run duration before Phase 2 kick-off. 4 weeks is the industry minimum \u2014 8 weeks provides higher confidence but costs an additional \u00a3340K in infrastructure. Given the Phase 1 delays, the risk team recommends 8 weeks.",
+    "spaceId": "space-core",
+    "title": "Migration Lead needs your decision: parallel run duration — 4 vs 8 weeks",
+    "body": "Decision needed on parallel run duration before Phase 2 kick-off. 4 weeks is the industry minimum — 8 weeks provides higher confidence but costs an additional £340K in infrastructure. Given the Phase 1 delays, the risk team recommends 8 weeks.",
     "timestamp": "2026-02-16T13:00:00Z",
     "priority": "high",
     "source": {
@@ -3883,19 +3936,20 @@
           },
           {
             "label": "Cost delta",
-            "value": "+\u00a3340K",
+            "value": "+£340K",
             "valueColor": "#6366f1"
           }
         ],
         "transition": null
       }
-    }
+    },
+    "spaceName": "Core Banking Migration"
   },
   {
     "id": "feed-core-04",
     "type": "alert-fyi",
-    "spaceId": "space-7",
-    "title": "Legacy core banking vendor support ends August 2026 \u2014 6 months to cutover",
+    "spaceId": "space-core",
+    "title": "Legacy core banking vendor support ends August 2026 — 6 months to cutover",
     "body": "FlexFund's contract with the legacy core banking vendor includes support until August 31, 2026. With Phase 1 running 3 weeks late, the cutover buffer has shrunk to approximately 10 weeks. Escalation to board risk committee recommended.",
     "timestamp": "2026-02-15T09:00:00Z",
     "priority": "high",
@@ -3906,7 +3960,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\ud83d\udea8",
+        "emoji": "🚨",
         "count": 3,
         "users": [
           "Tom A.",
@@ -3934,7 +3988,7 @@
         "targetLabel": "Legacy Vendor Support End Date",
         "targetDate": "2026-08-31",
         "urgencyColor": "#ef4444",
-        "subLabel": "Migration 3 weeks behind \u2014 buffer now 2.5 months",
+        "subLabel": "Migration 3 weeks behind — buffer now 2.5 months",
         "milestones": [
           {
             "label": "Phase 2 integration complete",
@@ -3950,14 +4004,15 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "Core Banking Migration"
   },
   {
     "id": "feed-cross-01",
     "type": "agent-opportunity",
-    "spaceId": "space-1",
-    "title": "Q1 OKR review: 3 of 8 key results behind pace \u2014 intervention needed",
-    "body": "Q1 OKR mid-quarter review: 5 key results on track, 2 at risk, 1 behind. FirstFlex activation (KR4) is the most critical \u2014 currently at 48% of pace. Engineering cycle time (KR8) is also lagging, compounding delivery risk across all initiatives.",
+    "spaceId": "space-roadmaps",
+    "title": "Q1 OKR review: 3 of 8 key results behind pace — intervention needed",
+    "body": "Q1 OKR mid-quarter review: 5 key results on track, 2 at risk, 1 behind. FirstFlex activation (KR4) is the most critical — currently at 48% of pace. Engineering cycle time (KR8) is also lagging, compounding delivery risk across all initiatives.",
     "timestamp": "2026-02-17T12:00:00Z",
     "priority": "high",
     "source": {
@@ -3967,7 +4022,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\ud83d\udc40",
+        "emoji": "👀",
         "count": 4,
         "users": [
           "Tom A.",
@@ -3993,7 +4048,7 @@
     "visualPreview": {
       "type": "ProgressBarsPreview",
       "data": {
-        "title": "Q1 2026 Key Results \u2014 Pace vs Target",
+        "title": "Q1 2026 Key Results — Pace vs Target",
         "bars": [
           {
             "label": "KR1: PayGrid beta customers",
@@ -4038,7 +4093,7 @@
             "target": 100
           },
           {
-            "label": "KR7: NPS score \u226552",
+            "label": "KR7: NPS score ≥52",
             "value": 90,
             "color": "#10b981",
             "status": "on-track",
@@ -4052,15 +4107,16 @@
             "target": 100
           }
         ],
-        "overallLabel": "5 on track \u00b7 2 at risk \u00b7 1 behind \u2014 6 weeks to Q1 close"
+        "overallLabel": "5 on track · 2 at risk · 1 behind — 6 weeks to Q1 close"
       }
-    }
+    },
+    "spaceName": "Roadmaps"
   },
   {
     "id": "feed-cross-02",
     "type": "agent-completed",
-    "spaceId": "space-1",
-    "title": "Monthly portfolio health report ready \u2014 5 initiatives, executive summary",
+    "spaceId": "space-launch-q3",
+    "title": "Monthly portfolio health report ready — 5 initiatives, executive summary",
     "body": "",
     "timestamp": "2026-02-18T06:00:00Z",
     "priority": "medium",
@@ -4071,7 +4127,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\ud83d\udcca",
+        "emoji": "📊",
         "count": 3,
         "users": [
           "Tom A.",
@@ -4080,7 +4136,7 @@
         ]
       },
       {
-        "emoji": "\u2705",
+        "emoji": "✅",
         "count": 2,
         "users": [
           "Hendrik V.",
@@ -4104,7 +4160,7 @@
       "artifact": {
         "type": "slides",
         "id": "artifact-cross-02",
-        "name": "Monthly portfolio health report ready \u2014 5 initiatives, executive summary"
+        "name": "Monthly portfolio health report ready — 5 initiatives, executive summary"
       },
       "completionSummary": "February portfolio report covers 5 active initiatives across 7 spaces. 3 cross-initiative risks identified. Engineering capacity the primary constraint. Prepared for board pack.",
       "timeSpent": "2.1h",
@@ -4114,7 +4170,7 @@
       "type": "SlidesDeckPreview",
       "data": {
         "slideCount": 14,
-        "title": "Portfolio Health \u2014 February 2026",
+        "title": "Portfolio Health — February 2026",
         "previewSlides": [
           {
             "label": "Executive Summary",
@@ -4135,13 +4191,14 @@
         ],
         "metrics": []
       }
-    }
+    },
+    "spaceName": "Product Launch Q3"
   },
   {
     "id": "feed-cross-03",
     "type": "collaboration-request",
-    "spaceId": "space-1",
-    "title": "Nina Johansson needs your input: engineering hiring plan \u2014 4 senior roles",
+    "spaceId": "space-epd",
+    "title": "Nina Johansson needs your input: engineering hiring plan — 4 senior roles",
     "body": "4 senior engineering roles currently open. Two are blocking deliverables on Embedded Finance and AI Claims. Input needed on priority order and whether to use agency headhunters for the urgent roles to compress the timeline from 12 to 6 weeks.",
     "timestamp": "2026-02-15T10:00:00Z",
     "priority": "medium",
@@ -4175,37 +4232,38 @@
         "people": [
           {
             "name": "Senior Platform Engineer",
-            "role": "Embedded Finance \u00b7 Level 5",
+            "role": "Embedded Finance · Level 5",
             "status": "urgent",
             "color": "#ef4444"
           },
           {
             "name": "ML Engineer (Claims AI)",
-            "role": "AI Claims Automation \u00b7 Level 5",
+            "role": "AI Claims Automation · Level 5",
             "status": "urgent",
             "color": "#ef4444"
           },
           {
             "name": "Senior Backend Engineer",
-            "role": "Core Banking \u00b7 Level 4",
+            "role": "Core Banking · Level 4",
             "status": "interviewing",
             "color": "#f59e0b"
           },
           {
             "name": "Engineering Manager",
-            "role": "Product Platform \u00b7 Level 6",
+            "role": "Product Platform · Level 6",
             "status": "sourcing",
             "color": "#6366f1"
           }
         ],
-        "summary": "4 open roles \u00b7 2 urgent \u00b7 6-week hiring timeline"
+        "summary": "4 open roles · 2 urgent · 6-week hiring timeline"
       }
-    }
+    },
+    "spaceName": "EPD Leadership"
   },
   {
     "id": "feed-cross-04",
     "type": "workflow-change",
-    "spaceId": "space-1",
+    "spaceId": "space-launch-q3",
     "title": "Marcus Chen moved PayGrid GTM strategy to Approved",
     "body": "",
     "timestamp": "2026-02-12T11:00:00Z",
@@ -4217,7 +4275,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\ude80",
+        "emoji": "🚀",
         "count": 3,
         "users": [
           "Carla M.",
@@ -4226,7 +4284,7 @@
         ]
       },
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 2,
         "users": [
           "Marcus C.",
@@ -4273,14 +4331,15 @@
         "outcome": "approved",
         "outcomeLabel": "GTM strategy locked for Q3 launch"
       }
-    }
+    },
+    "spaceName": "Product Launch Q3"
   },
   {
     "id": "feed-cross-05",
     "type": "agent-opportunity",
-    "spaceId": "space-7",
-    "title": "Engineering capacity at 94% \u2014 resourcing conflict emerging",
-    "body": "Engineering team is at 94% allocation. Payroll processing for new hires (4 engineers in Feb) won't free capacity until March. PayGrid and Core Banking share 3 engineers across their critical path in weeks 4\u20136.",
+    "spaceId": "space-paygrid",
+    "title": "Engineering capacity at 94% — resourcing conflict emerging",
+    "body": "Engineering team is at 94% allocation. Payroll processing for new hires (4 engineers in Feb) won't free capacity until March. PayGrid and Core Banking share 3 engineers across their critical path in weeks 4–6.",
     "timestamp": "2026-02-15T09:00:00Z",
     "priority": "high",
     "source": {
@@ -4290,7 +4349,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\u26a0\ufe0f",
+        "emoji": "⚠️",
         "count": 3,
         "users": [
           "CTO",
@@ -4315,7 +4374,7 @@
     "visualPreview": {
       "type": "DonutChartPreview",
       "data": {
-        "title": "Engineering Capacity \u2014 Current Allocation",
+        "title": "Engineering Capacity — Current Allocation",
         "segments": [
           {
             "label": "Core Banking Migration",
@@ -4357,14 +4416,15 @@
         "centerLabel": "94%",
         "centerSubLabel": "Allocated"
       }
-    }
+    },
+    "spaceName": "PayGrid"
   },
   {
     "id": "feed-cross-06",
     "type": "alert-fyi",
-    "spaceId": "space-1",
-    "title": "Board deck submission deadline: March 3 \u2014 5 portfolio updates required",
-    "body": "Board deck is due March 3. 5 sections require CPTO input: Q1 OKR status, Core Banking migration risk, PayGrid launch readiness, H2 investment priorities, and AI governance. Agent has drafted an outline \u2014 review available now.",
+    "spaceId": "space-roadmaps",
+    "title": "Board deck submission deadline: March 3 — 5 portfolio updates required",
+    "body": "Board deck is due March 3. 5 sections require CPTO input: Q1 OKR status, Core Banking migration risk, PayGrid launch readiness, H2 investment priorities, and AI governance. Agent has drafted an outline — review available now.",
     "timestamp": "2026-02-18T07:00:00Z",
     "priority": "high",
     "source": {
@@ -4389,11 +4449,11 @@
     "visualPreview": {
       "type": "CalendarPreview",
       "data": {
-        "eventTitle": "Board Meeting \u2014 Q1 Review",
+        "eventTitle": "Board Meeting — Q1 Review",
         "date": "2026-03-10",
         "time": "09:00",
         "duration": "3 hours",
-        "location": "FlexFund HQ \u2014 Boardroom 1",
+        "location": "FlexFund HQ — Boardroom 1",
         "attendees": [
           "Board Members",
           "Tom A.",
@@ -4408,13 +4468,14 @@
           "AI governance framework approval"
         ]
       }
-    }
+    },
+    "spaceName": "Roadmaps"
   },
   {
     "id": "feed-cross-07",
     "type": "agent-completed",
-    "spaceId": "space-1",
-    "title": "NPS survey synthesis ready \u2014 score 51, down 3 points from Q3",
+    "spaceId": "space-brand",
+    "title": "NPS survey synthesis ready — score 51, down 3 points from Q3",
     "body": "",
     "timestamp": "2026-02-10T10:00:00Z",
     "priority": "medium",
@@ -4425,7 +4486,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\udcca",
+        "emoji": "📊",
         "count": 2,
         "users": [
           "Tom A.",
@@ -4433,7 +4494,7 @@
         ]
       },
       {
-        "emoji": "\ud83d\udca1",
+        "emoji": "💡",
         "count": 1,
         "users": [
           "Marcus C."
@@ -4456,16 +4517,16 @@
       "artifact": {
         "type": "document",
         "id": "artifact-cross-07",
-        "name": "NPS survey synthesis ready \u2014 score 51, down 3 points from Q3"
+        "name": "NPS survey synthesis ready — score 51, down 3 points from Q3"
       },
-      "completionSummary": "Q4 NPS = 51, down from 54 in Q2 (peak). Primary driver of decline: enterprise onboarding speed complaints. Promoter comments cluster around AI Claims speed. Detractor comments dominated by KYC wait times \u2014 now being addressed.",
+      "completionSummary": "Q4 NPS = 51, down from 54 in Q2 (peak). Primary driver of decline: enterprise onboarding speed complaints. Promoter comments cluster around AI Claims speed. Detractor comments dominated by KYC wait times — now being addressed.",
       "timeSpent": "0.9h",
       "changesCount": 6
     },
     "visualPreview": {
       "type": "LineChartPreview",
       "data": {
-        "title": "FlexFund NPS \u2014 Quarterly Trend",
+        "title": "FlexFund NPS — Quarterly Trend",
         "series": [
           {
             "label": "NPS Score",
@@ -4499,14 +4560,15 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "Brand Refresh"
   },
   {
     "id": "feed-cross-08",
     "type": "collaboration-request",
-    "spaceId": "space-1",
+    "spaceId": "space-paygrid",
     "title": "Tom Andersen needs your input: H2 2026 technology investment priorities",
-    "body": "Working through H2 budget allocation. Three funding scenarios prepared \u2014 each makes different trade-offs between Core Banking completion, new product launches, and infrastructure scaling. Your priorities as CPTO are the key input for the board recommendation.",
+    "body": "Working through H2 budget allocation. Three funding scenarios prepared — each makes different trade-offs between Core Banking completion, new product launches, and infrastructure scaling. Your priorities as CPTO are the key input for the board recommendation.",
     "timestamp": "2026-02-16T11:00:00Z",
     "priority": "high",
     "source": {
@@ -4541,7 +4603,7 @@
       "type": "SlidesDeckPreview",
       "data": {
         "slideCount": 8,
-        "title": "H2 2026 Technology Investment \u2014 CFO Draft",
+        "title": "H2 2026 Technology Investment — CFO Draft",
         "previewSlides": [
           {
             "label": "Budget Summary",
@@ -4558,12 +4620,13 @@
         ],
         "metrics": []
       }
-    }
+    },
+    "spaceName": "PayGrid"
   },
   {
     "id": "feed-cross-09",
     "type": "workflow-change",
-    "spaceId": "space-5",
+    "spaceId": "space-claims",
     "title": "AI governance framework moved to Board Approved",
     "body": "",
     "timestamp": "2026-02-09T15:00:00Z",
@@ -4575,7 +4638,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\u2705",
+        "emoji": "✅",
         "count": 4,
         "users": [
           "Hendrik V.",
@@ -4585,7 +4648,7 @@
         ]
       },
       {
-        "emoji": "\ud83d\udee1\ufe0f",
+        "emoji": "🛡️",
         "count": 2,
         "users": [
           "Compliance",
@@ -4630,15 +4693,16 @@
           }
         ],
         "outcome": "approved",
-        "outcomeLabel": "Framework live \u2014 applies to all AI systems in production"
+        "outcomeLabel": "Framework live — applies to all AI systems in production"
       }
-    }
+    },
+    "spaceName": "AI Claims"
   },
   {
     "id": "feed-cross-10",
     "type": "agent-opportunity",
-    "spaceId": "space-2",
-    "title": "3 initiatives share the same Legal team bandwidth \u2014 bottleneck forming",
+    "spaceId": "space-kyc",
+    "title": "3 initiatives share the same Legal team bandwidth — bottleneck forming",
     "body": "KYC directive review, PayGrid compliance certification, and HSBC integration agreement all require Legal team review in the same 2-week window. At current scope, Legal bandwidth will be overcommitted by ~40%. Recommend re-sequencing.",
     "timestamp": "2026-02-16T15:00:00Z",
     "priority": "medium",
@@ -4649,7 +4713,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\u26a0\ufe0f",
+        "emoji": "⚠️",
         "count": 2,
         "users": [
           "Legal",
@@ -4673,7 +4737,7 @@
     "visualPreview": {
       "type": "ProgressBarsPreview",
       "data": {
-        "title": "Legal Team Workload \u2014 Next 4 Weeks",
+        "title": "Legal Team Workload — Next 4 Weeks",
         "bars": [
           {
             "label": "KYC UBO Directive review",
@@ -4703,15 +4767,16 @@
             "status": "reference"
           }
         ],
-        "overallLabel": "Projected overcommitment: week of Feb 24 \u2014 90% conflict probability"
+        "overallLabel": "Projected overcommitment: week of Feb 24 — 90% conflict probability"
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-cross-11",
     "type": "agent-completed",
-    "spaceId": "space-1",
-    "title": "Q4 2025 retrospective synthesis \u2014 5 themes, 12 action items",
+    "spaceId": "space-brand",
+    "title": "Q4 2025 retrospective synthesis — 5 themes, 12 action items",
     "body": "",
     "timestamp": "2026-01-09T10:00:00Z",
     "priority": "low",
@@ -4722,7 +4787,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\udc4f",
+        "emoji": "👏",
         "count": 4,
         "users": [
           "Nina J.",
@@ -4748,7 +4813,7 @@
       "artifact": {
         "type": "canvas",
         "id": "artifact-cross-11",
-        "name": "Q4 2025 retrospective synthesis \u2014 5 themes, 12 action items"
+        "name": "Q4 2025 retrospective synthesis — 5 themes, 12 action items"
       },
       "completionSummary": "Q4 retrospective input from 23 team members synthesised into 5 themes and 12 prioritised action items. Owner and timeline assigned to each.",
       "timeSpent": "1.4h",
@@ -4757,7 +4822,7 @@
     "visualPreview": {
       "type": "BrainstormPreview",
       "data": {
-        "title": "Q4 2025 Retrospective \u2014 Key Themes",
+        "title": "Q4 2025 Retrospective — Key Themes",
         "clusters": [
           {
             "label": "What went well",
@@ -4781,20 +4846,21 @@
             "label": "Action items",
             "color": "#4262FF",
             "notes": [
-              "Legal resource planning \u2192 Nina (Q1)",
-              "Portfolio dashboard automate \u2192 Agent",
-              "Engineering hiring front-loaded \u2192 HR"
+              "Legal resource planning → Nina (Q1)",
+              "Portfolio dashboard automate → Agent",
+              "Engineering hiring front-loaded → HR"
             ]
           }
         ]
       }
-    }
+    },
+    "spaceName": "Brand Refresh"
   },
   {
     "id": "feed-cross-12",
     "type": "collaboration-request",
-    "spaceId": "space-1",
-    "title": "Amara Okafor needs your input on visual direction \u2014 3 brand options",
+    "spaceId": "space-brand",
+    "title": "Amara Okafor needs your input on visual direction — 3 brand options",
     "body": "Three visual directions developed for PayGrid. Research shows enterprises prefer A, SMB prefers B, and developer partners prefer C. Recommend choosing based on which segment we're leading the launch with.",
     "timestamp": "2026-02-13T14:00:00Z",
     "priority": "medium",
@@ -4805,7 +4871,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83c\udfa8",
+        "emoji": "🎨",
         "count": 2,
         "users": [
           "Marcus C.",
@@ -4838,11 +4904,11 @@
     "visualPreview": {
       "type": "DesignPreview",
       "data": {
-        "title": "PayGrid Visual Direction \u2014 3 Options",
+        "title": "PayGrid Visual Direction — 3 Options",
         "frames": [
           {
-            "label": "Option A \u2014 Structured",
-            "subtitle": "Geometric \u00b7 Deep navy \u00b7 Trust-forward",
+            "label": "Option A — Structured",
+            "subtitle": "Geometric · Deep navy · Trust-forward",
             "accentColor": "#1e293b",
             "tags": [
               "Enterprise-friendly",
@@ -4850,8 +4916,8 @@
             ]
           },
           {
-            "label": "Option B \u2014 Dynamic",
-            "subtitle": "Gradient \u00b7 Electric blue \u00b7 Momentum",
+            "label": "Option B — Dynamic",
+            "subtitle": "Gradient · Electric blue · Momentum",
             "accentColor": "#4262FF",
             "tags": [
               "Modern",
@@ -4859,8 +4925,8 @@
             ]
           },
           {
-            "label": "Option C \u2014 Minimal",
-            "subtitle": "Clean \u00b7 Monochrome \u00b7 System-native",
+            "label": "Option C — Minimal",
+            "subtitle": "Clean · Monochrome · System-native",
             "accentColor": "#64748b",
             "tags": [
               "Developer-first",
@@ -4870,12 +4936,13 @@
         ],
         "note": "Your vote + rationale needed by Feb 21"
       }
-    }
+    },
+    "spaceName": "Brand Refresh"
   },
   {
     "id": "feed-cross-13",
     "type": "workflow-change",
-    "spaceId": "space-1",
+    "spaceId": "space-brand",
     "title": "Amara Okafor moved PayGrid visual identity to Approved",
     "body": "",
     "timestamp": "2026-02-15T16:00:00Z",
@@ -4887,7 +4954,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\ud83c\udfa8",
+        "emoji": "🎨",
         "count": 3,
         "users": [
           "Design Team",
@@ -4896,7 +4963,7 @@
         ]
       },
       {
-        "emoji": "\u2728",
+        "emoji": "✨",
         "count": 2,
         "users": [
           "Amara O.",
@@ -4919,11 +4986,11 @@
     "visualPreview": {
       "type": "DesignPreview",
       "data": {
-        "title": "PayGrid Visual Identity \u2014 Approved",
+        "title": "PayGrid Visual Identity — Approved",
         "frames": [
           {
-            "label": "Option B \u2014 Dynamic",
-            "subtitle": "Gradient \u00b7 Electric blue \u00b7 Momentum",
+            "label": "Option B — Dynamic",
+            "subtitle": "Gradient · Electric blue · Momentum",
             "accentColor": "#4262FF",
             "tags": [
               "Approved",
@@ -4933,14 +5000,15 @@
         ],
         "note": "Dev handoff complete. Design tokens published to Figma."
       }
-    }
+    },
+    "spaceName": "Brand Refresh"
   },
   {
     "id": "feed-pq3-11",
     "type": "agent-opportunity",
-    "spaceId": "space-1",
-    "title": "Research convergence \u2014 4 sources agree on push notifications as highest-value feature",
-    "body": "4 independent research sources \u2014 user interviews, competitive benchmarking, NPS verbatims, and sales discovery calls \u2014 all independently surface real-time push notifications for payment events as the highest-value unbuilt feature.",
+    "spaceId": "space-brand",
+    "title": "Research convergence — 4 sources agree on push notifications as highest-value feature",
+    "body": "4 independent research sources — user interviews, competitive benchmarking, NPS verbatims, and sales discovery calls — all independently surface real-time push notifications for payment events as the highest-value unbuilt feature.",
     "timestamp": "2026-02-11T13:00:00Z",
     "priority": "medium",
     "source": {
@@ -4950,7 +5018,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\udca1",
+        "emoji": "💡",
         "count": 3,
         "users": [
           "Marcus C.",
@@ -5012,13 +5080,14 @@
         "totalStepsAfter": 1,
         "eliminatedSteps": 0
       }
-    }
+    },
+    "spaceName": "Brand Refresh"
   },
   {
     "id": "feed-ff-05",
     "type": "agent-completed",
-    "spaceId": "space-4",
-    "title": "FlexForward 26 session schedule draft ready \u2014 24 sessions across 2 days",
+    "spaceId": "space-ff26",
+    "title": "FlexForward 26 session schedule draft ready — 24 sessions across 2 days",
     "body": "",
     "timestamp": "2026-02-08T14:00:00Z",
     "priority": "medium",
@@ -5029,7 +5098,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 3,
         "users": [
           "Nina J.",
@@ -5054,7 +5123,7 @@
       "artifact": {
         "type": "canvas",
         "id": "artifact-ff-05",
-        "name": "FlexForward 26 session schedule draft ready \u2014 24 sessions across 2 days"
+        "name": "FlexForward 26 session schedule draft ready — 24 sessions across 2 days"
       },
       "completionSummary": "24 sessions scheduled across 2 days: 14 keynotes, 6 breakout tracks, 4 workshops. Speaker slots for 5 confirmed speakers filled. 2 panel slots pending confirmation.",
       "timeSpent": "1.1h",
@@ -5063,7 +5132,7 @@
     "visualPreview": {
       "type": "TimelinePreview",
       "data": {
-        "title": "FlexForward 26 \u2014 Session Schedule",
+        "title": "FlexForward 26 — Session Schedule",
         "startDate": "2026-06-12",
         "endDate": "2026-06-13",
         "tracks": [
@@ -5113,14 +5182,15 @@
         ],
         "today": "2026-02-18"
       }
-    }
+    },
+    "spaceName": "FlexForward 26"
   },
   {
     "id": "feed-ff-06",
     "type": "collaboration-request",
-    "spaceId": "space-4",
+    "spaceId": "space-ff26",
     "title": "Sofia Reyes needs your decision: FlexForward 26 keynote speaker lineup",
-    "body": "Day 1 opener slot is still vacant. Recommending Jamie Liu from BIS on digital assets \u2014 relevant given the EU MiCA discussion that's likely to dominate H2. Need your approval to extend the invitation.",
+    "body": "Day 1 opener slot is still vacant. Recommending Jamie Liu from BIS on digital assets — relevant given the EU MiCA discussion that's likely to dominate H2. Need your approval to extend the invitation.",
     "timestamp": "2026-02-15T12:00:00Z",
     "priority": "high",
     "source": {
@@ -5153,45 +5223,46 @@
         "people": [
           {
             "name": "Dr. Amara Osei",
-            "role": "AI Ethics \u00b7 Oxford",
+            "role": "AI Ethics · Oxford",
             "status": "confirmed",
             "color": "#10b981"
           },
           {
             "name": "Priya Narayan",
-            "role": "EU FinTech Policy \u00b7 ECB",
+            "role": "EU FinTech Policy · ECB",
             "status": "confirmed",
             "color": "#10b981"
           },
           {
             "name": "Marcus Tan",
-            "role": "Open Banking \u00b7 Mastercard",
+            "role": "Open Banking · Mastercard",
             "status": "pending",
             "color": "#f59e0b"
           },
           {
             "name": "Dr. Lena Holm",
-            "role": "ESG Finance \u00b7 Nordea",
+            "role": "ESG Finance · Nordea",
             "status": "pending",
             "color": "#f59e0b"
           },
           {
             "name": "Jamie Liu",
-            "role": "Digital Assets \u00b7 BIS",
+            "role": "Digital Assets · BIS",
             "status": "proposed",
             "color": "#6366f1"
           }
         ],
-        "summary": "2 confirmed \u00b7 2 pending \u00b7 1 proposed \u00b7 Day 1 opener slot vacant"
+        "summary": "2 confirmed · 2 pending · 1 proposed · Day 1 opener slot vacant"
       }
-    }
+    },
+    "spaceName": "FlexForward 26"
   },
   {
     "id": "feed-ff-07",
     "type": "agent-opportunity",
-    "spaceId": "space-4",
-    "title": "Hybrid format preference at 62% \u2014 venue AV setup needs revision",
-    "body": "Pre-registration survey shows 62% of respondents want some form of hybrid access. Current RAI Amsterdam AV setup only supports in-person broadcast to overflow rooms. Adding streaming capability requires contract amendment \u2014 cost estimated at \u20ac45K.",
+    "spaceId": "space-ff26",
+    "title": "Hybrid format preference at 62% — venue AV setup needs revision",
+    "body": "Pre-registration survey shows 62% of respondents want some form of hybrid access. Current RAI Amsterdam AV setup only supports in-person broadcast to overflow rooms. Adding streaming capability requires contract amendment — cost estimated at €45K.",
     "timestamp": "2026-02-12T11:00:00Z",
     "priority": "medium",
     "source": {
@@ -5201,7 +5272,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\udca1",
+        "emoji": "💡",
         "count": 2,
         "users": [
           "Nina J.",
@@ -5225,7 +5296,7 @@
     "visualPreview": {
       "type": "DonutChartPreview",
       "data": {
-        "title": "Attendee Format Preference \u2014 Pre-Registration Survey (n=847)",
+        "title": "Attendee Format Preference — Pre-Registration Survey (n=847)",
         "segments": [
           {
             "label": "In-person only",
@@ -5255,13 +5326,14 @@
         "centerLabel": "62%",
         "centerSubLabel": "Want hybrid option"
       }
-    }
+    },
+    "spaceName": "FlexForward 26"
   },
   {
     "id": "feed-kyc-19",
     "type": "agent-completed",
-    "spaceId": "space-2",
-    "title": "Sponsorship memo drafted \u2014 3 success criteria for exec sign-off",
+    "spaceId": "space-kyc",
+    "title": "Sponsorship memo drafted — 3 success criteria for exec sign-off",
     "body": "",
     "timestamp": "2025-12-17T11:00:00Z",
     "priority": "high",
@@ -5287,7 +5359,7 @@
       "artifact": {
         "type": "document",
         "id": "artifact-kyc-19",
-        "name": "Sponsorship memo drafted \u2014 3 success criteria for exec sign-off"
+        "name": "Sponsorship memo drafted — 3 success criteria for exec sign-off"
       },
       "completionSummary": "Sponsorship memo drafted with 3 measurable success criteria. Based on baseline data and industry benchmarks. Ready for Tom and Hendrik's review.",
       "timeSpent": "0.6h",
@@ -5320,13 +5392,14 @@
         ],
         "transition": null
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-kyc-20",
     "type": "workflow-change",
-    "spaceId": "space-2",
-    "title": "KYC onboarding initiative launched \u2014 Sofia Reyes assigned as lead",
+    "spaceId": "space-kyc",
+    "title": "KYC onboarding initiative launched — Sofia Reyes assigned as lead",
     "body": "",
     "timestamp": "2025-12-18T15:00:00Z",
     "priority": "high",
@@ -5337,7 +5410,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83d\ude80",
+        "emoji": "🚀",
         "count": 3,
         "users": [
           "Sofia R.",
@@ -5346,7 +5419,7 @@
         ]
       },
       {
-        "emoji": "\ud83d\udcaa",
+        "emoji": "💪",
         "count": 2,
         "users": [
           "David K.",
@@ -5369,11 +5442,11 @@
     "visualPreview": {
       "type": "PeoplePreview",
       "data": {
-        "title": "Initiative Team \u2014 KYC Onboarding Optimisation",
+        "title": "Initiative Team — KYC Onboarding Optimisation",
         "people": [
           {
             "name": "Sofia Reyes",
-            "role": "Senior PM \u00b7 Initiative Lead",
+            "role": "Senior PM · Initiative Lead",
             "status": "confirmed",
             "color": "#10b981"
           },
@@ -5391,20 +5464,21 @@
           },
           {
             "name": "Daniel (Engineering)",
-            "role": "Platform Engineer \u00b7 API lead",
+            "role": "Platform Engineer · API lead",
             "status": "confirmed",
             "color": "#06b6d4"
           }
         ],
-        "summary": "Initiative launched \u00b7 Tom & Hendrik co-sponsoring \u00b7 6-week discovery phase begins"
+        "summary": "Initiative launched · Tom & Hendrik co-sponsoring · 6-week discovery phase begins"
       }
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-pq3-12",
     "type": "agent-completed",
-    "spaceId": "space-1",
-    "title": "PayGrid prototype preview ready \u2014 3 user flows for usability testing",
+    "spaceId": "space-paygrid",
+    "title": "PayGrid prototype preview ready — 3 user flows for usability testing",
     "body": "",
     "timestamp": "2026-02-13T09:00:00Z",
     "priority": "medium",
@@ -5415,7 +5489,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\ud83c\udfa8",
+        "emoji": "🎨",
         "count": 3,
         "users": [
           "Raj P.",
@@ -5440,7 +5514,7 @@
       "artifact": {
         "type": "frame",
         "id": "artifact-pq3-12",
-        "name": "PayGrid prototype preview ready \u2014 3 user flows for usability testing"
+        "name": "PayGrid prototype preview ready — 3 user flows for usability testing"
       },
       "completionSummary": "3 interactive prototype flows built in Figma. All ready for usability testing starting Feb 24. 8 participants recruited across SMB and enterprise segments.",
       "timeSpent": "4.5h",
@@ -5449,11 +5523,11 @@
     "visualPreview": {
       "type": "DesignPreview",
       "data": {
-        "title": "PayGrid \u2014 Usability Test Prototype",
+        "title": "PayGrid — Usability Test Prototype",
         "frames": [
           {
-            "label": "Flow 1 \u2014 Send Payment",
-            "subtitle": "7 screens \u00b7 Contact-first entry",
+            "label": "Flow 1 — Send Payment",
+            "subtitle": "7 screens · Contact-first entry",
             "accentColor": "#4262FF",
             "tags": [
               "Ready to test",
@@ -5461,8 +5535,8 @@
             ]
           },
           {
-            "label": "Flow 2 \u2014 Bulk Upload",
-            "subtitle": "5 screens \u00b7 CSV-first entry",
+            "label": "Flow 2 — Bulk Upload",
+            "subtitle": "5 screens · CSV-first entry",
             "accentColor": "#10b981",
             "tags": [
               "Ready to test",
@@ -5470,8 +5544,8 @@
             ]
           },
           {
-            "label": "Flow 3 \u2014 Payment Approval",
-            "subtitle": "4 screens \u00b7 Dual-auth flow",
+            "label": "Flow 3 — Payment Approval",
+            "subtitle": "4 screens · Dual-auth flow",
             "accentColor": "#8b5cf6",
             "tags": [
               "Ready to test",
@@ -5479,15 +5553,16 @@
             ]
           }
         ],
-        "note": "Figma prototype live \u00b7 Testing starts Feb 24 with 8 participants"
+        "note": "Figma prototype live · Testing starts Feb 24 with 8 participants"
       }
-    }
+    },
+    "spaceName": "PayGrid"
   },
   {
     "id": "feed-cross-14",
     "type": "alert-fyi",
-    "spaceId": "space-2",
-    "title": "PSD3 draft published \u2014 impacts 4 active FlexFund initiatives",
+    "spaceId": "space-firstflex",
+    "title": "PSD3 draft published — impacts 4 active FlexFund initiatives",
     "body": "European Parliament published PSD3 draft text. Affects 4 active FlexFund initiatives across authentication, data sharing, TPSP liability, and data portability. Legal and Compliance review recommended within 2 weeks.",
     "timestamp": "2026-02-16T16:00:00Z",
     "priority": "high",
@@ -5498,7 +5573,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\u26a0\ufe0f",
+        "emoji": "⚠️",
         "count": 4,
         "users": [
           "Hendrik V.",
@@ -5524,7 +5599,7 @@
     "visualPreview": {
       "type": "TablePreview",
       "data": {
-        "title": "PSD3 Impact Assessment \u2014 Active Initiatives",
+        "title": "PSD3 Impact Assessment — Active Initiatives",
         "columns": [
           "Initiative",
           "Impact Area",
@@ -5559,13 +5634,14 @@
         ],
         "highlightColumn": 2
       }
-    }
+    },
+    "spaceName": "FirstFlex Youth Banking"
   },
   {
     "id": "feed-claims-06",
     "type": "workflow-change",
-    "spaceId": "space-5",
-    "title": "AI Claims \u2014 auto-approval threshold raised to \u00a31,000 \u2014 live in production",
+    "spaceId": "space-claims",
+    "title": "AI Claims — auto-approval threshold raised to £1,000 — live in production",
     "body": "",
     "timestamp": "2026-02-14T15:00:00Z",
     "priority": "high",
@@ -5576,7 +5652,7 @@
     "isRead": false,
     "reactions": [
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 4,
         "users": [
           "Claims Lead",
@@ -5586,7 +5662,7 @@
         ]
       },
       {
-        "emoji": "\u26a1",
+        "emoji": "⚡",
         "count": 2,
         "users": [
           "ML Engineering",
@@ -5612,12 +5688,12 @@
         "metrics": [
           {
             "label": "Previous threshold",
-            "value": "\u00a3500",
+            "value": "£500",
             "valueColor": "#f59e0b"
           },
           {
             "label": "New threshold",
-            "value": "\u00a31,000",
+            "value": "£1,000",
             "valueColor": "#10b981"
           },
           {
@@ -5632,18 +5708,19 @@
           }
         ],
         "transition": {
-          "from": "\u00a3500 limit",
-          "to": "\u00a31,000 limit",
+          "from": "£500 limit",
+          "to": "£1,000 limit",
           "color": "#10b981"
         }
       }
-    }
+    },
+    "spaceName": "AI Claims"
   },
   {
     "id": "feed-cross-15",
     "type": "agent-completed",
-    "spaceId": "space-4",
-    "title": "Travel coordination summary compiled \u2014 47 speakers, 6 cities",
+    "spaceId": "space-ff26",
+    "title": "Travel coordination summary compiled — 47 speakers, 6 cities",
     "body": "",
     "timestamp": "2026-02-08T12:00:00Z",
     "priority": "low",
@@ -5654,7 +5731,7 @@
     "isRead": true,
     "reactions": [
       {
-        "emoji": "\u2708\ufe0f",
+        "emoji": "✈️",
         "count": 2,
         "users": [
           "Liam O.",
@@ -5673,16 +5750,16 @@
       "artifact": {
         "type": "document",
         "id": "artifact-cross-15",
-        "name": "Travel coordination summary compiled \u2014 47 speakers, 6 cities"
+        "name": "Travel coordination summary compiled — 47 speakers, 6 cities"
       },
-      "completionSummary": "Travel booked for 47 speakers across 6 origin cities. 2 cities (Berlin, Stockholm) have 11 speakers with pending hotel confirmations \u2014 follow-up needed by Feb 22.",
+      "completionSummary": "Travel booked for 47 speakers across 6 origin cities. 2 cities (Berlin, Stockholm) have 11 speakers with pending hotel confirmations — follow-up needed by Feb 22.",
       "timeSpent": "0.8h",
       "changesCount": 47
     },
     "visualPreview": {
       "type": "TablePreview",
       "data": {
-        "title": "Speaker Travel Summary \u2014 FlexForward 26",
+        "title": "Speaker Travel Summary — FlexForward 26",
         "columns": [
           "City",
           "Speakers",
@@ -5694,49 +5771,50 @@
             "Amsterdam (venue)",
             "12",
             "Waldorf Astoria",
-            "\u2705 Booked"
+            "✅ Booked"
           ],
           [
             "London",
             "8",
             "The Hoxton Southwark",
-            "\u2705 Booked"
+            "✅ Booked"
           ],
           [
             "Berlin",
             "7",
             "Soho House",
-            "\ud83d\udfe1 Pending"
+            "🟡 Pending"
           ],
           [
             "Paris",
             "6",
             "Hotel du Collectionneur",
-            "\u2705 Booked"
+            "✅ Booked"
           ],
           [
             "Stockholm",
             "4",
             "Berns Hotel",
-            "\ud83d\udfe1 Pending"
+            "🟡 Pending"
           ],
           [
             "Zurich",
             "3",
             "Park Hyatt",
-            "\u2705 Booked"
+            "✅ Booked"
           ]
         ],
         "highlightColumn": 3
       }
-    }
+    },
+    "spaceName": "FlexForward 26"
   },
   {
     "id": "feed-embed-05",
     "type": "agent-opportunity",
-    "spaceId": "space-6",
-    "title": "Allianz integration stalled \u2014 technical contact unresponsive for 12 days",
-    "body": "Allianz integration has stalled \u2014 their technical contact hasn't responded to 3 emails and 1 call over 12 days. API credentials needed before sandbox testing can begin. Recommend escalating to Allianz executive contact or account manager.",
+    "spaceId": "space-paygrid",
+    "title": "Allianz integration stalled — technical contact unresponsive for 12 days",
+    "body": "Allianz integration has stalled — their technical contact hasn't responded to 3 emails and 1 call over 12 days. API credentials needed before sandbox testing can begin. Recommend escalating to Allianz executive contact or account manager.",
     "timestamp": "2026-02-18T09:30:00Z",
     "priority": "medium",
     "source": {
@@ -5785,13 +5863,14 @@
         ],
         "transition": null
       }
-    }
+    },
+    "spaceName": "PayGrid"
   },
   {
     "id": "feed-cross-16",
     "type": "collaboration-request",
-    "spaceId": "space-1",
-    "title": "Priya Sharma wants feedback on Q2 product roadmap \u2014 5 initiatives ranked",
+    "spaceId": "space-roadmaps",
+    "title": "Priya Sharma wants feedback on Q2 product roadmap — 5 initiatives ranked",
     "body": "Q2 roadmap prioritised by value/effort. Core Banking cutover scores highest but is engineering-heavy. Your feedback on whether the FCA compliance work should be pulled forward given the new guidance timeline.",
     "timestamp": "2026-02-14T11:00:00Z",
     "priority": "medium",
@@ -5821,7 +5900,7 @@
     "visualPreview": {
       "type": "TablePreview",
       "data": {
-        "title": "Q2 2026 Product Roadmap \u2014 Proposed Priorities",
+        "title": "Q2 2026 Product Roadmap — Proposed Priorities",
         "columns": [
           "Initiative",
           "Value Score",
@@ -5862,24 +5941,25 @@
         ],
         "highlightColumn": 1
       }
-    }
+    },
+    "spaceName": "Roadmaps"
   },
   {
     "id": "feed-new-01",
     "type": "key-metric",
-    "spaceId": "space-1",
+    "spaceId": "space-brand",
     "source": {
       "userId": "agent-product-leader",
       "isAgent": true
     },
-    "title": "NPS Score drops to 51 \u2014 down 3 points in Q4",
+    "title": "NPS Score drops to 51 — down 3 points in Q4",
     "body": "Customer satisfaction trend reversal detected. Q4 2025 NPS declined from 54 to 51. Correlates with delayed feature releases and support ticket volume increase.",
     "timestamp": "2026-02-17T14:22:00Z",
     "isRead": false,
     "priority": "medium",
     "reactions": [
       {
-        "emoji": "\ud83d\udcc9",
+        "emoji": "📉",
         "count": 2,
         "users": [
           "Marcus C.",
@@ -5905,24 +5985,25 @@
       "trend": "down",
       "changePercent": 3,
       "period": "Q4 2025"
-    }
+    },
+    "spaceName": "Brand Refresh"
   },
   {
     "id": "feed-new-02",
     "type": "key-metric",
-    "spaceId": "space-2",
+    "spaceId": "space-kyc",
     "source": {
       "userId": "agent-product-leader",
       "isAgent": true
     },
-    "title": "First-pass approval rate jumps to 81% \u2014 pilot success",
-    "body": "12-week KYC optimisation pilot delivered exceptional results. First-pass approval rate improved from 42% to 81% \u2014 a 39-point gain. New risk assessment template and decision tree logic driving the improvement.",
+    "title": "First-pass approval rate jumps to 81% — pilot success",
+    "body": "12-week KYC optimisation pilot delivered exceptional results. First-pass approval rate improved from 42% to 81% — a 39-point gain. New risk assessment template and decision tree logic driving the improvement.",
     "timestamp": "2026-02-16T10:15:00Z",
     "isRead": false,
     "priority": "high",
     "reactions": [
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 5,
         "users": [
           "Sofia R.",
@@ -5951,24 +6032,25 @@
       "trend": "up",
       "changePercent": 39,
       "period": "12-week pilot"
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-new-03",
     "type": "key-metric",
-    "spaceId": "space-6",
+    "spaceId": "space-embed",
     "source": {
       "userId": "agent-product-leader",
       "isAgent": true
     },
     "title": "API uptime holds at 99.97% through February",
-    "body": "Platform stability remains excellent. February 2026 uptime 99.97% \u2014 consistent with target. Zero P1 incidents, two minor latency spikes resolved within SLA.",
+    "body": "Platform stability remains excellent. February 2026 uptime 99.97% — consistent with target. Zero P1 incidents, two minor latency spikes resolved within SLA.",
     "timestamp": "2026-02-15T08:45:00Z",
     "isRead": true,
     "priority": "low",
     "reactions": [
       {
-        "emoji": "\u2705",
+        "emoji": "✅",
         "count": 1,
         "users": [
           "Platform Eng."
@@ -5982,17 +6064,18 @@
       "trend": "flat",
       "changePercent": 0,
       "period": "February 2026"
-    }
+    },
+    "spaceName": "Embedded Finance"
   },
   {
     "id": "feed-new-04",
     "type": "chart",
-    "spaceId": "space-1",
+    "spaceId": "space-roadmaps",
     "source": {
       "userId": "agent-product-leader",
       "isAgent": true
     },
-    "title": "Engineering capacity allocation \u2014 Q1 2026 snapshot",
+    "title": "Engineering capacity allocation — Q1 2026 snapshot",
     "body": "Current engineering capacity split: 42% product features, 28% technical debt, 18% platform stability, 12% innovation experiments. Product feature allocation down 8 points from Q4 due to migration support.",
     "timestamp": "2026-02-14T16:30:00Z",
     "isRead": false,
@@ -6007,7 +6090,7 @@
     ],
     "payload": {
       "chartType": "donut",
-      "title": "Engineering Capacity Allocation \u2014 Q1 2026",
+      "title": "Engineering Capacity Allocation — Q1 2026",
       "data": {
         "segments": [
           {
@@ -6032,24 +6115,25 @@
           }
         ]
       }
-    }
+    },
+    "spaceName": "Roadmaps"
   },
   {
     "id": "feed-new-05",
     "type": "chart",
-    "spaceId": "space-5",
+    "spaceId": "space-claims",
     "source": {
       "userId": "agent-product-leader",
       "isAgent": true
     },
-    "title": "Claims processing volume trend \u2014 steady growth",
+    "title": "Claims processing volume trend — steady growth",
     "body": "Claims automation system handling increasing volume. January 2026: 12,400 claims processed, up 18% month-over-month. Auto-approval rate holding at 67%.",
     "timestamp": "2026-02-13T11:20:00Z",
     "isRead": true,
     "priority": "medium",
     "reactions": [
       {
-        "emoji": "\ud83d\udcc8",
+        "emoji": "📈",
         "count": 1,
         "users": [
           "Claims Team"
@@ -6084,17 +6168,18 @@
           "Jan"
         ]
       }
-    }
+    },
+    "spaceName": "AI Claims"
   },
   {
     "id": "feed-new-06",
     "type": "chart",
-    "spaceId": "space-6",
+    "spaceId": "space-embed",
     "source": {
       "userId": "agent-product-leader",
       "isAgent": true
     },
-    "title": "Partner API adoption tracking \u2014 strong uptake",
+    "title": "Partner API adoption tracking — strong uptake",
     "body": "Embedded finance API adoption accelerating. 47 active partners in January 2026, up from 12 in launch month (July 2025). PayGrid integration represents 38% of API volume.",
     "timestamp": "2026-02-12T09:10:00Z",
     "isRead": true,
@@ -6135,24 +6220,25 @@
           "Jan"
         ]
       }
-    }
+    },
+    "spaceName": "Embedded Finance"
   },
   {
     "id": "feed-new-07",
     "type": "decision",
-    "spaceId": "space-1",
+    "spaceId": "space-roadmaps",
     "source": {
       "userId": "user-tom",
       "isAgent": false
     },
-    "title": "H2 investment priority sequencing \u2014 decision needed by Feb 25",
+    "title": "H2 investment priority sequencing — decision needed by Feb 25",
     "body": "Leadership team must decide H2 2026 investment sequencing across three competing priorities: PayGrid partner expansion, FirstFlex market entry acceleration, or Core Banking migration Phase 3. Each option has strong business case but resource constraints require prioritisation.",
     "timestamp": "2026-02-11T15:45:00Z",
     "isRead": false,
     "priority": "high",
     "reactions": [
       {
-        "emoji": "\ud83e\udd14",
+        "emoji": "🤔",
         "count": 4,
         "users": [
           "Marcus C.",
@@ -6182,24 +6268,25 @@
         "Core Banking Phase 3 (customer data migration)"
       ],
       "deadline": "2026-02-25"
-    }
+    },
+    "spaceName": "Roadmaps"
   },
   {
     "id": "feed-new-08",
     "type": "decision",
-    "spaceId": "space-5",
+    "spaceId": "space-claims",
     "source": {
       "userId": "user-tom",
       "isAgent": false
     },
-    "title": "AI auto-approval threshold increased to \u00a31,000",
-    "body": "Leadership approved increasing AI claims auto-approval threshold from \u00a3500 to \u00a31,000 effective March 1. Based on 12-week pilot data showing 94% accuracy at higher threshold. Expected to auto-approve additional 2,100 claims per month.",
+    "title": "AI auto-approval threshold increased to £1,000",
+    "body": "Leadership approved increasing AI claims auto-approval threshold from £500 to £1,000 effective March 1. Based on 12-week pilot data showing 94% accuracy at higher threshold. Expected to auto-approve additional 2,100 claims per month.",
     "timestamp": "2026-02-10T14:20:00Z",
     "isRead": true,
     "priority": "high",
     "reactions": [
       {
-        "emoji": "\u2705",
+        "emoji": "✅",
         "count": 3,
         "users": [
           "Claims Team",
@@ -6218,30 +6305,31 @@
     "payload": {
       "status": "made",
       "options": [
-        "Keep threshold at \u00a3500",
-        "Increase to \u00a31,000",
-        "Increase to \u00a31,500"
+        "Keep threshold at £500",
+        "Increase to £1,000",
+        "Increase to £1,500"
       ],
-      "chosenOption": "Increase to \u00a31,000",
+      "chosenOption": "Increase to £1,000",
       "decidedBy": "Tom Andersen"
-    }
+    },
+    "spaceName": "AI Claims"
   },
   {
     "id": "feed-new-09",
     "type": "approval",
-    "spaceId": "space-4",
+    "spaceId": "space-ff26",
     "source": {
       "userId": "user-nina",
       "isAgent": false
     },
-    "title": "FlexForward 26 speaker budget increase \u2014 \u20ac85K additional funding requested",
-    "body": "Event team requests additional \u20ac85K for confirmed keynote speaker lineup. Original budget: \u20ac140K. New total: \u20ac225K. Includes: fintech industry leader (\u20ac45K), AI ethics researcher (\u20ac25K), regulatory panel honorariums (\u20ac15K).",
+    "title": "FlexForward 26 speaker budget increase — €85K additional funding requested",
+    "body": "Event team requests additional €85K for confirmed keynote speaker lineup. Original budget: €140K. New total: €225K. Includes: fintech industry leader (€45K), AI ethics researcher (€25K), regulatory panel honorariums (€15K).",
     "timestamp": "2026-02-09T11:30:00Z",
     "isRead": false,
     "priority": "medium",
     "reactions": [
       {
-        "emoji": "\ud83d\udcb0",
+        "emoji": "💰",
         "count": 2,
         "users": [
           "Liam O.",
@@ -6264,30 +6352,31 @@
     "payload": {
       "status": "needed",
       "approver": "Nina Johansson",
-      "subject": "FlexForward 26 speaker budget increase (\u20ac85K)",
+      "subject": "FlexForward 26 speaker budget increase (€85K)",
       "conditions": [
         "Confirmed speaker contracts required",
         "Marketing impact assessment completed",
         "Event ROI projection updated"
       ]
-    }
+    },
+    "spaceName": "FlexForward 26"
   },
   {
     "id": "feed-new-10",
     "type": "approval",
-    "spaceId": "space-7",
+    "spaceId": "space-core",
     "source": {
       "userId": "user-tom",
       "isAgent": false
     },
-    "title": "Core Banking Phase 2 kickoff approved \u2014 March 3 start date",
+    "title": "Core Banking Phase 2 kickoff approved — March 3 start date",
     "body": "Phase 2 (loan product migration) approved to begin March 3. Risk assessment completed, rollback procedures validated, customer communication plan ready. 8-week timeline to migrate 47,000 active loan accounts.",
     "timestamp": "2026-02-08T10:15:00Z",
     "isRead": true,
     "priority": "high",
     "reactions": [
       {
-        "emoji": "\ud83d\ude80",
+        "emoji": "🚀",
         "count": 4,
         "users": [
           "Migration Team",
@@ -6308,24 +6397,25 @@
       "status": "given",
       "approver": "Tom Andersen",
       "subject": "Core Banking Phase 2 kickoff"
-    }
+    },
+    "spaceName": "Core Banking Migration"
   },
   {
     "id": "feed-new-11",
     "type": "team-announcement",
-    "spaceId": "space-5",
+    "spaceId": "space-claims",
     "source": {
       "userId": "user-nina",
       "isAgent": false
     },
-    "title": "Dr. Sarah Kim joins as Senior ML Engineer \u2014 AI Claims team",
+    "title": "Dr. Sarah Kim joins as Senior ML Engineer — AI Claims team",
     "body": "Excited to welcome Dr. Sarah Kim to the AI Claims Automation team starting March 1. Sarah joins from TechCorp where she led predictive fraud detection systems. PhD in Machine Learning from MIT. Will focus on improving claims classification accuracy and expanding auto-approval capabilities.",
     "timestamp": "2026-02-07T09:45:00Z",
     "isRead": false,
     "priority": "low",
     "reactions": [
       {
-        "emoji": "\ud83d\udc4b",
+        "emoji": "👋",
         "count": 6,
         "users": [
           "Claims Team",
@@ -6352,24 +6442,25 @@
         "startDate": "2026-03-01"
       },
       "announcementType": "new-hire"
-    }
+    },
+    "spaceName": "AI Claims"
   },
   {
     "id": "feed-new-12",
     "type": "team-announcement",
-    "spaceId": "space-1",
+    "spaceId": "space-epd",
     "source": {
       "userId": "user-nina",
       "isAgent": false
     },
-    "title": "Marcus Chen promoted to VP of Product \u2014 EPD Leadership",
+    "title": "Marcus Chen promoted to VP of Product — EPD Leadership",
     "body": "Congratulations to Marcus Chen on promotion to VP of Product effective immediately. Marcus has led Product Launch Q3, PayGrid partner strategy, and cross-functional prioritisation frameworks over the past 18 months. Will now oversee all product strategy and roadmap planning across EPD.",
     "timestamp": "2026-02-06T14:00:00Z",
     "isRead": true,
     "priority": "medium",
     "reactions": [
       {
-        "emoji": "\ud83c\udf89",
+        "emoji": "🎉",
         "count": 12,
         "users": [
           "EPD Leadership",
@@ -6396,17 +6487,18 @@
         "startDate": "2026-02-06"
       },
       "announcementType": "promotion"
-    }
+    },
+    "spaceName": "EPD Leadership"
   },
   {
     "id": "feed-new-13",
     "type": "live-session",
-    "spaceId": "space-7",
+    "spaceId": "space-core",
     "source": {
       "userId": "user-james",
       "isAgent": false
     },
-    "title": "Core Banking Migration Risk Review \u2014 live workshop in progress",
+    "title": "Core Banking Migration Risk Review — live workshop in progress",
     "body": "Phase 2 risk assessment workshop underway. Reviewing data integrity protocols, rollback procedures, and customer communication timing. Critical path decisions needed on backup validation frequency.",
     "timestamp": "2026-02-18T09:05:00Z",
     "isRead": false,
@@ -6428,17 +6520,18 @@
         "Risk Team"
       ],
       "startedAt": "2026-02-18T09:05:00Z"
-    }
+    },
+    "spaceName": "Core Banking Migration"
   },
   {
     "id": "feed-new-14",
     "type": "live-session",
-    "spaceId": "space-3",
+    "spaceId": "space-firstflex",
     "source": {
       "userId": "user-amara",
       "isAgent": false
     },
-    "title": "FirstFlex Parental Consent Redesign \u2014 brainstorm session live",
+    "title": "FirstFlex Parental Consent Redesign — brainstorm session live",
     "body": "Design sprint for improved parental consent flow. Exploring frictionless approval methods while maintaining GDPR compliance for under-16 users. Early concepts showing 40% reduction in abandonment.",
     "timestamp": "2026-02-18T09:20:00Z",
     "isRead": false,
@@ -6459,24 +6552,25 @@
         "UX Research"
       ],
       "startedAt": "2026-02-18T09:20:00Z"
-    }
+    },
+    "spaceName": "FirstFlex Youth Banking"
   },
   {
     "id": "feed-new-15",
     "type": "competitor-threat",
-    "spaceId": "space-1",
+    "spaceId": "space-paygrid",
     "source": {
       "userId": "agent-product-leader",
       "isAgent": true
     },
-    "title": "Stripe Treasury EU SMB expansion confirmed \u2014 Q2 2026 launch",
+    "title": "Stripe Treasury EU SMB expansion confirmed — Q2 2026 launch",
     "body": "Confirmed: Stripe Treasury targeting EU SMB banking sector Q2 2026. Markets: Germany, Netherlands, France. 3-month head start over PayGrid in DE market. Aggressive pricing strategy likely. Recommendation: accelerate PayGrid partner onboarding and prioritise DE market entry.",
     "timestamp": "2026-02-05T16:40:00Z",
     "isRead": false,
     "priority": "high",
     "reactions": [
       {
-        "emoji": "\u26a0\ufe0f",
+        "emoji": "⚠️",
         "count": 5,
         "users": [
           "Marcus C.",
@@ -6503,24 +6597,25 @@
       "competitor": "Stripe Treasury",
       "threatLevel": "high",
       "summary": "Confirmed EU SMB expansion targeting Q2 2026. 3-month head start risk in DE, NL, FR markets."
-    }
+    },
+    "spaceName": "PayGrid"
   },
   {
     "id": "feed-new-16",
     "type": "competitor-threat",
-    "spaceId": "space-3",
+    "spaceId": "space-firstflex",
     "source": {
       "userId": "agent-product-leader",
       "isAgent": true
     },
-    "title": "Starling Kite German teen debit card \u2014 6 weeks ahead of FirstFlex",
-    "body": "Starling announced Kite teen banking product launching in Germany mid-March 2026 \u2014 6 weeks before FirstFlex planned launch. Feature parity: spending controls, savings goals, parental oversight. Differentiation opportunity: our AI financial literacy coach and gamified savings challenges.",
+    "title": "Starling Kite German teen debit card — 6 weeks ahead of FirstFlex",
+    "body": "Starling announced Kite teen banking product launching in Germany mid-March 2026 — 6 weeks before FirstFlex planned launch. Feature parity: spending controls, savings goals, parental oversight. Differentiation opportunity: our AI financial literacy coach and gamified savings challenges.",
     "timestamp": "2026-02-04T13:25:00Z",
     "isRead": false,
     "priority": "medium",
     "reactions": [
       {
-        "emoji": "\ud83c\udfaf",
+        "emoji": "🎯",
         "count": 2,
         "users": [
           "Amara O.",
@@ -6539,24 +6634,25 @@
       "competitor": "Starling Kite",
       "threatLevel": "medium",
       "summary": "German teen debit card launching 6 weeks ahead of FirstFlex. Feature parity on core functionality."
-    }
+    },
+    "spaceName": "FirstFlex Youth Banking"
   },
   {
     "id": "feed-new-17",
     "type": "feedback-request",
-    "spaceId": "space-1",
+    "spaceId": "space-paygrid",
     "source": {
       "userId": "user-marcus",
       "isAgent": false
     },
-    "title": "PayGrid pricing model review \u2014 input needed by Feb 22",
+    "title": "PayGrid pricing model review — input needed by Feb 22",
     "body": "Reviewing PayGrid partner pricing tiers for Q2 2026 adjustments. Three proposals under consideration: tiered volume discounts, flat-rate simplification, or hybrid usage-based model. Need leadership feedback on revenue impact projections and competitive positioning.",
     "timestamp": "2026-02-03T10:50:00Z",
     "isRead": false,
     "priority": "medium",
     "reactions": [
       {
-        "emoji": "\ud83d\udcad",
+        "emoji": "💭",
         "count": 1,
         "users": [
           "Tom A."
@@ -6579,17 +6675,18 @@
       "requestType": "review",
       "from": "Marcus Chen",
       "dueDate": "2026-02-22"
-    }
+    },
+    "spaceName": "PayGrid"
   },
   {
     "id": "feed-new-18",
     "type": "feedback-request",
-    "spaceId": "space-2",
+    "spaceId": "space-kyc",
     "source": {
       "userId": "user-sofia",
       "isAgent": false
     },
-    "title": "KYC quarterly review agenda \u2014 input requested by Feb 19",
+    "title": "KYC quarterly review agenda — input requested by Feb 19",
     "body": "Preparing Q1 2026 KYC optimisation quarterly review. Draft agenda includes: pilot results analysis, regulatory change impact, first-pass approval rate deep dive, training effectiveness assessment. Need stakeholder input on priority discussion topics and time allocation.",
     "timestamp": "2026-02-02T14:15:00Z",
     "isRead": false,
@@ -6606,24 +6703,25 @@
       "requestType": "input",
       "from": "Sofia Reyes",
       "dueDate": "2026-02-19"
-    }
+    },
+    "spaceName": "EU KYC Optimisation"
   },
   {
     "id": "feed-new-19",
     "type": "feedback-request",
-    "spaceId": "space-3",
+    "spaceId": "space-firstflex",
     "source": {
       "userId": "user-raj",
       "isAgent": false
     },
-    "title": "FirstFlex onboarding flow wireframes \u2014 feedback by Feb 24",
+    "title": "FirstFlex onboarding flow wireframes — feedback by Feb 24",
     "body": "High-fidelity wireframes ready for FirstFlex youth onboarding flow. Focus areas: parental consent step, ID verification for under-16s, gamified account setup. Looking for feedback on friction points, accessibility considerations, and brand consistency.",
     "timestamp": "2026-02-01T11:20:00Z",
     "isRead": true,
     "priority": "low",
     "reactions": [
       {
-        "emoji": "\ud83d\udc40",
+        "emoji": "👀",
         "count": 2,
         "users": [
           "Amara O.",
@@ -6642,24 +6740,25 @@
       "requestType": "feedback",
       "from": "Raj Patel",
       "dueDate": "2026-02-24"
-    }
+    },
+    "spaceName": "FirstFlex Youth Banking"
   },
   {
     "id": "feed-new-20",
     "type": "budget-request",
-    "spaceId": "space-1",
+    "spaceId": "space-launch-q3",
     "source": {
       "userId": "user-nina",
       "isAgent": false
     },
-    "title": "Q2 engineering hiring budget \u2014 \u20ac450K request pending",
-    "body": "Requesting \u20ac450K additional budget for Q2 2026 engineering hiring. Plan: 3 senior backend engineers, 2 ML engineers, 1 platform architect. Supporting PayGrid expansion, AI Claims scaling, and Core Banking Phase 3. Current capacity at 94% utilisation \u2014 limiting new feature velocity.",
+    "title": "Q2 engineering hiring budget — €450K request pending",
+    "body": "Requesting €450K additional budget for Q2 2026 engineering hiring. Plan: 3 senior backend engineers, 2 ML engineers, 1 platform architect. Supporting PayGrid expansion, AI Claims scaling, and Core Banking Phase 3. Current capacity at 94% utilisation — limiting new feature velocity.",
     "timestamp": "2026-01-31T09:30:00Z",
     "isRead": false,
     "priority": "high",
     "reactions": [
       {
-        "emoji": "\ud83d\udcca",
+        "emoji": "📊",
         "count": 2,
         "users": [
           "Tom A.",
@@ -6680,28 +6779,29 @@
       }
     ],
     "payload": {
-      "amount": "\u20ac450K",
+      "amount": "€450K",
       "category": "Engineering Hiring",
       "status": "pending",
       "requestedBy": "Nina Johansson"
-    }
+    },
+    "spaceName": "Product Launch Q3"
   },
   {
     "id": "feed-new-21",
     "type": "budget-request",
-    "spaceId": "space-4",
+    "spaceId": "space-ff26",
     "source": {
       "userId": "user-liam",
       "isAgent": false
     },
-    "title": "FlexForward 26 speaker fees \u2014 \u20ac85K approved",
-    "body": "Additional speaker budget approved for confirmed keynote lineup. Brings total speaker investment to \u20ac225K. Includes fintech industry leader, AI ethics researcher, and regulatory panel. Expected attendance ROI: 450+ attendees, 40% partner pipeline growth.",
+    "title": "FlexForward 26 speaker fees — €85K approved",
+    "body": "Additional speaker budget approved for confirmed keynote lineup. Brings total speaker investment to €225K. Includes fintech industry leader, AI ethics researcher, and regulatory panel. Expected attendance ROI: 450+ attendees, 40% partner pipeline growth.",
     "timestamp": "2026-01-30T15:45:00Z",
     "isRead": true,
     "priority": "medium",
     "reactions": [
       {
-        "emoji": "\u2705",
+        "emoji": "✅",
         "count": 3,
         "users": [
           "Events",
@@ -6712,28 +6812,29 @@
     ],
     "actions": [],
     "payload": {
-      "amount": "\u20ac85K",
+      "amount": "€85K",
       "category": "FlexForward 26 Event",
       "status": "approved",
       "requestedBy": "Liam O'Brien"
-    }
+    },
+    "spaceName": "FlexForward 26"
   },
   {
     "id": "feed-new-22",
     "type": "budget-request",
-    "spaceId": "space-5",
+    "spaceId": "space-claims",
     "source": {
       "userId": "user-james",
       "isAgent": false
     },
-    "title": "AI model infrastructure scaling \u2014 \u00a3180K pending",
-    "body": "Requesting \u00a3180K for AI Claims model infrastructure scaling. Current GPU capacity limiting model retraining frequency to bi-weekly. Proposal: expand to 3x GPU capacity enabling daily retraining \u2014 projected to improve auto-approval accuracy 4-6 points. ROI payback: 7 months via reduced manual review costs.",
+    "title": "AI model infrastructure scaling — £180K pending",
+    "body": "Requesting £180K for AI Claims model infrastructure scaling. Current GPU capacity limiting model retraining frequency to bi-weekly. Proposal: expand to 3x GPU capacity enabling daily retraining — projected to improve auto-approval accuracy 4-6 points. ROI payback: 7 months via reduced manual review costs.",
     "timestamp": "2026-01-29T13:10:00Z",
     "isRead": false,
     "priority": "high",
     "reactions": [
       {
-        "emoji": "\ud83d\udd27",
+        "emoji": "🔧",
         "count": 1,
         "users": [
           "ML Eng."
@@ -6753,22 +6854,23 @@
       }
     ],
     "payload": {
-      "amount": "\u00a3180K",
+      "amount": "£180K",
       "category": "AI Infrastructure",
       "status": "pending",
       "requestedBy": "James Holloway"
-    }
+    },
+    "spaceName": "AI Claims"
   },
   {
     "id": "feed-new-23",
     "type": "budget-notification",
-    "spaceId": "space-1",
+    "spaceId": "space-core",
     "source": {
       "userId": "agent-product-leader",
       "isAgent": true
     },
-    "title": "Engineering headcount budget \u2014 75% utilised through February",
-    "body": "Q1 2026 engineering headcount budget tracking on target. \u20ac2.1M spent of \u20ac2.8M total (75% utilisation). Remaining budget covers 2 planned Q1 hires plus contingency. Q2 hiring plan requires separate budget approval (pending request for \u20ac450K).",
+    "title": "Engineering headcount budget — 75% utilised through February",
+    "body": "Q1 2026 engineering headcount budget tracking on target. €2.1M spent of €2.8M total (75% utilisation). Remaining budget covers 2 planned Q1 hires plus contingency. Q2 hiring plan requires separate budget approval (pending request for €450K).",
     "timestamp": "2026-01-28T08:20:00Z",
     "isRead": true,
     "priority": "medium",
@@ -6782,27 +6884,28 @@
     ],
     "payload": {
       "category": "Engineering Headcount",
-      "currentSpend": "\u20ac2.1M",
-      "budget": "\u20ac2.8M",
+      "currentSpend": "€2.1M",
+      "budget": "€2.8M",
       "percentUsed": 75
-    }
+    },
+    "spaceName": "Core Banking Migration"
   },
   {
     "id": "feed-new-24",
     "type": "budget-notification",
-    "spaceId": "space-5",
+    "spaceId": "space-claims",
     "source": {
       "userId": "agent-product-leader",
       "isAgent": true
     },
-    "title": "AI infrastructure budget approaching 90% threshold \u2014 review needed",
-    "body": "Q1 AI infrastructure spend at 85% of budget (\u00a3340K of \u00a3400K). Approaching internal 90% review threshold. Current spend driven by increased model retraining frequency and data pipeline scaling. Pending \u00a3180K request for GPU capacity expansion would require Q2 allocation.",
+    "title": "AI infrastructure budget approaching 90% threshold — review needed",
+    "body": "Q1 AI infrastructure spend at 85% of budget (£340K of £400K). Approaching internal 90% review threshold. Current spend driven by increased model retraining frequency and data pipeline scaling. Pending £180K request for GPU capacity expansion would require Q2 allocation.",
     "timestamp": "2026-01-27T10:45:00Z",
     "isRead": false,
     "priority": "high",
     "reactions": [
       {
-        "emoji": "\u26a0\ufe0f",
+        "emoji": "⚠️",
         "count": 2,
         "users": [
           "Finance",
@@ -6824,28 +6927,29 @@
     ],
     "payload": {
       "category": "AI Infrastructure",
-      "currentSpend": "\u00a3340K",
-      "budget": "\u00a3400K",
+      "currentSpend": "£340K",
+      "budget": "£400K",
       "percentUsed": 85,
-      "alert": "Approaching 90% threshold \u2014 review needed"
-    }
+      "alert": "Approaching 90% threshold — review needed"
+    },
+    "spaceName": "AI Claims"
   },
   {
     "id": "feed-new-25",
     "type": "budget-notification",
-    "spaceId": "space-4",
+    "spaceId": "space-epd",
     "source": {
       "userId": "agent-product-leader",
       "isAgent": true
     },
-    "title": "FlexForward 26 event budget \u2014 75% allocated, on track",
-    "body": "FlexForward 26 event budget utilisation at 75% with 6 weeks to event. \u20ac1.8M spent of \u20ac2.4M total. Remaining budget covers: final speaker confirmations (\u20ac85K approved), venue final payment (\u20ac300K), marketing push (\u20ac220K). No budget concerns identified.",
+    "title": "FlexForward 26 event budget — 75% allocated, on track",
+    "body": "FlexForward 26 event budget utilisation at 75% with 6 weeks to event. €1.8M spent of €2.4M total. Remaining budget covers: final speaker confirmations (€85K approved), venue final payment (€300K), marketing push (€220K). No budget concerns identified.",
     "timestamp": "2026-01-26T14:55:00Z",
     "isRead": true,
     "priority": "medium",
     "reactions": [
       {
-        "emoji": "\u2705",
+        "emoji": "✅",
         "count": 1,
         "users": [
           "Events"
@@ -6855,9 +6959,1408 @@
     "actions": [],
     "payload": {
       "category": "FlexForward 26 Event",
-      "currentSpend": "\u20ac1.8M",
-      "budget": "\u20ac2.4M",
+      "currentSpend": "€1.8M",
+      "budget": "€2.4M",
       "percentUsed": 75
-    }
+    },
+    "spaceName": "EPD Leadership"
+  },
+  {
+    "id": "feed-org27-01",
+    "type": "agent-opportunity",
+    "spaceId": "space-org27",
+    "title": "Q1 OKR review: 3 of 8 key results behind pace — intervention needed",
+    "body": "Q1 OKR mid-quarter review: 5 key results on track, 2 at risk, 1 behind. FirstFlex activation (KR4) is the most critical — currently at 48% of pace. Engineering cycle time (KR8) is also lagging, compounding delivery risk across all initiatives.",
+    "timestamp": "2026-02-17T12:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "👀",
+        "count": 4,
+        "users": [
+          "Tom A.",
+          "Nina J.",
+          "Hendrik V.",
+          "CTO"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-okr-board",
+        "label": "Review OKR board",
+        "variant": "primary"
+      },
+      {
+        "id": "schedule-intervention",
+        "label": "Schedule review",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {},
+    "visualPreview": {
+      "type": "ProgressBarsPreview",
+      "data": {
+        "title": "Q1 2026 Key Results — Pace vs Target",
+        "bars": [
+          {
+            "label": "KR1: PayGrid beta customers",
+            "value": 65,
+            "color": "#f59e0b",
+            "status": "at-risk",
+            "target": 100
+          },
+          {
+            "label": "KR2: KYC onboarding <14 days",
+            "value": 95,
+            "color": "#10b981",
+            "status": "on-track",
+            "target": 100
+          },
+          {
+            "label": "KR3: AI claims accuracy >90%",
+            "value": 98,
+            "color": "#10b981",
+            "status": "on-track",
+            "target": 100
+          },
+          {
+            "label": "KR4: FirstFlex activation rate",
+            "value": 48,
+            "color": "#ef4444",
+            "status": "behind",
+            "target": 100
+          },
+          {
+            "label": "KR5: Core banking migration Phase 1",
+            "value": 72,
+            "color": "#f59e0b",
+            "status": "at-risk",
+            "target": 100
+          },
+          {
+            "label": "KR6: Embedded Finance partners",
+            "value": 80,
+            "color": "#10b981",
+            "status": "on-track",
+            "target": 100
+          },
+          {
+            "label": "KR7: NPS score ≥52",
+            "value": 90,
+            "color": "#10b981",
+            "status": "on-track",
+            "target": 100
+          },
+          {
+            "label": "KR8: Engineering cycle time",
+            "value": 55,
+            "color": "#ef4444",
+            "status": "behind",
+            "target": 100
+          }
+        ],
+        "overallLabel": "5 on track · 2 at risk · 1 behind — 6 weeks to Q1 close"
+      }
+    },
+    "spaceName": "Org Plan 2027"
+  },
+  {
+    "id": "feed-org27-02",
+    "type": "agent-completed",
+    "spaceId": "space-org27",
+    "title": "Q4 2025 retrospective synthesis — 5 themes, 12 action items",
+    "body": "",
+    "timestamp": "2026-01-09T10:00:00Z",
+    "priority": "low",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": true,
+    "reactions": [
+      {
+        "emoji": "👏",
+        "count": 4,
+        "users": [
+          "Nina J.",
+          "Tom A.",
+          "Marcus C.",
+          "Sofia R."
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-retro-board",
+        "label": "View retro board",
+        "variant": "primary"
+      },
+      {
+        "id": "track-action-items",
+        "label": "Track action items",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "canvas",
+        "id": "artifact-cross-11",
+        "name": "Q4 2025 retrospective synthesis — 5 themes, 12 action items"
+      },
+      "completionSummary": "Q4 retrospective input from 23 team members synthesised into 5 themes and 12 prioritised action items. Owner and timeline assigned to each.",
+      "timeSpent": "1.4h",
+      "changesCount": 12
+    },
+    "visualPreview": {
+      "type": "BrainstormPreview",
+      "data": {
+        "title": "Q4 2025 Retrospective — Key Themes",
+        "clusters": [
+          {
+            "label": "What went well",
+            "color": "#10b981",
+            "notes": [
+              "AI Claims automation exceeded targets",
+              "KYC pilot results strong",
+              "Team collaboration on FlexForward 26"
+            ]
+          },
+          {
+            "label": "What to improve",
+            "color": "#ef4444",
+            "notes": [
+              "Core banking timeline slipped",
+              "Legal bandwidth a recurring constraint",
+              "Cross-initiative visibility was manual"
+            ]
+          },
+          {
+            "label": "Action items",
+            "color": "#4262FF",
+            "notes": [
+              "Legal resource planning → Nina (Q1)",
+              "Portfolio dashboard automate → Agent",
+              "Engineering hiring front-loaded → HR"
+            ]
+          }
+        ]
+      }
+    },
+    "spaceName": "Org Plan 2027"
+  },
+  {
+    "id": "feed-org27-03",
+    "type": "chart",
+    "spaceId": "space-org27",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Engineering capacity allocation — Q1 2026 snapshot",
+    "body": "Current engineering capacity split: 42% product features, 28% technical debt, 18% platform stability, 12% innovation experiments. Product feature allocation down 8 points from Q4 due to migration support.",
+    "timestamp": "2026-02-14T16:30:00Z",
+    "isRead": false,
+    "priority": "medium",
+    "reactions": [],
+    "actions": [
+      {
+        "id": "view-detailed-breakdown",
+        "label": "View detailed breakdown",
+        "variant": "primary"
+      }
+    ],
+    "payload": {
+      "chartType": "donut",
+      "title": "Engineering Capacity Allocation — Q1 2026",
+      "data": {
+        "segments": [
+          {
+            "label": "Product Features",
+            "value": 42,
+            "color": "#4262FF"
+          },
+          {
+            "label": "Technical Debt",
+            "value": 28,
+            "color": "#f59e0b"
+          },
+          {
+            "label": "Platform Stability",
+            "value": 18,
+            "color": "#10b981"
+          },
+          {
+            "label": "Innovation",
+            "value": 12,
+            "color": "#8b5cf6"
+          }
+        ]
+      }
+    },
+    "spaceName": "Org Plan 2027"
+  },
+  {
+    "id": "feed-org27-04",
+    "type": "collaboration-request",
+    "spaceId": "space-org27",
+    "title": "Tom Andersen needs your input: H2 2026 technology investment priorities",
+    "body": "Working through H2 budget allocation. Three funding scenarios prepared — each makes different trade-offs between Core Banking completion, new product launches, and infrastructure scaling. Your priorities as CPTO are the key input for the board recommendation.",
+    "timestamp": "2026-02-16T11:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-tom",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [],
+    "actions": [
+      {
+        "id": "add-priorities",
+        "label": "Add priorities",
+        "variant": "primary"
+      },
+      {
+        "id": "view-scenarios",
+        "label": "View scenarios",
+        "variant": "secondary"
+      },
+      {
+        "id": "schedule-call",
+        "label": "Schedule call",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "input",
+      "mentionedUsers": [],
+      "dueDate": "2026-02-25"
+    },
+    "visualPreview": {
+      "type": "SlidesDeckPreview",
+      "data": {
+        "slideCount": 8,
+        "title": "H2 2026 Technology Investment — CFO Draft",
+        "previewSlides": [
+          {
+            "label": "Budget Summary",
+            "accent": "#3b82f6"
+          },
+          {
+            "label": "Initiative Funding Options",
+            "accent": "#4262FF"
+          },
+          {
+            "label": "Risk-Adjusted Scenarios",
+            "accent": "#8b5cf6"
+          }
+        ],
+        "metrics": []
+      }
+    },
+    "spaceName": "Org Plan 2027"
+  },
+  {
+    "id": "feed-org27-05",
+    "type": "agent-completed",
+    "spaceId": "space-org27",
+    "title": "NPS survey synthesis ready — score 51, down 3 points from Q3",
+    "body": "",
+    "timestamp": "2026-02-10T10:00:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": true,
+    "reactions": [
+      {
+        "emoji": "📊",
+        "count": 2,
+        "users": [
+          "Tom A.",
+          "Carla M."
+        ]
+      },
+      {
+        "emoji": "💡",
+        "count": 1,
+        "users": [
+          "Marcus C."
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-synthesis",
+        "label": "View synthesis",
+        "variant": "primary"
+      },
+      {
+        "id": "share-with-leadership",
+        "label": "Share with leadership",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "document",
+        "id": "artifact-cross-07",
+        "name": "NPS survey synthesis ready — score 51, down 3 points from Q3"
+      },
+      "completionSummary": "Q4 NPS = 51, down from 54 in Q2 (peak). Primary driver of decline: enterprise onboarding speed complaints. Promoter comments cluster around AI Claims speed. Detractor comments dominated by KYC wait times — now being addressed.",
+      "timeSpent": "0.9h",
+      "changesCount": 6
+    },
+    "visualPreview": {
+      "type": "LineChartPreview",
+      "data": {
+        "title": "FlexFund NPS — Quarterly Trend",
+        "series": [
+          {
+            "label": "NPS Score",
+            "color": "#4262FF",
+            "data": [
+              44,
+              48,
+              54,
+              53,
+              51
+            ],
+            "targetLine": 52
+          }
+        ],
+        "xLabels": [
+          "Q4 '24",
+          "Q1 '25",
+          "Q2 '25",
+          "Q3 '25",
+          "Q4 '25"
+        ],
+        "yDomain": [
+          35,
+          65
+        ],
+        "annotations": [
+          {
+            "x": 4,
+            "label": "Onboarding complaints up",
+            "color": "#ef4444"
+          }
+        ]
+      }
+    },
+    "spaceName": "Org Plan 2027"
+  },
+  {
+    "id": "feed-org27-06",
+    "type": "budget-request",
+    "spaceId": "space-org27",
+    "source": {
+      "userId": "user-nina",
+      "isAgent": false
+    },
+    "title": "Q2 engineering hiring budget — €450K request pending",
+    "body": "Requesting €450K additional budget for Q2 2026 engineering hiring. Plan: 3 senior backend engineers, 2 ML engineers, 1 platform architect. Supporting PayGrid expansion, AI Claims scaling, and Core Banking Phase 3. Current capacity at 94% utilisation — limiting new feature velocity.",
+    "timestamp": "2026-01-31T09:30:00Z",
+    "isRead": false,
+    "priority": "high",
+    "reactions": [
+      {
+        "emoji": "📊",
+        "count": 2,
+        "users": [
+          "Tom A.",
+          "CFO"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-hiring-plan",
+        "label": "Review hiring plan",
+        "variant": "primary"
+      },
+      {
+        "id": "view-capacity-analysis",
+        "label": "View capacity analysis",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "amount": "€450K",
+      "category": "Engineering Hiring",
+      "status": "pending",
+      "requestedBy": "Nina Johansson"
+    },
+    "spaceName": "Org Plan 2027"
+  },
+  {
+    "id": "feed-revops-01",
+    "type": "agent-opportunity",
+    "spaceId": "space-revenueops",
+    "title": "$4.7M ARR at risk — onboarding speed cited by 3 lost prospects",
+    "body": "Three enterprise prospects cited onboarding speed as the primary reason for going elsewhere — combined ARR of $4.7M. Average onboarding has gone from 15 to 24 business days over 6 months. EDD cases averaging 31 days.",
+    "timestamp": "2025-12-15T09:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": true,
+    "reactions": [
+      {
+        "emoji": "🚨",
+        "count": 2,
+        "users": [
+          "Carla M.",
+          "Tom A."
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-win/loss-data",
+        "label": "View win/loss",
+        "variant": "primary"
+      },
+      {
+        "id": "start-initiative",
+        "label": "Start initiative",
+        "variant": "primary"
+      }
+    ],
+    "payload": {},
+    "visualPreview": {
+      "type": "BarChartPreview",
+      "data": {
+        "title": "Q4 Win/Loss Analysis — Enterprise Deals",
+        "bars": [
+          {
+            "label": "Won",
+            "value": 8,
+            "color": "#10b981"
+          },
+          {
+            "label": "Lost to competition",
+            "value": 3,
+            "color": "#ef4444",
+            "highlighted": true
+          },
+          {
+            "label": "Lost (other)",
+            "value": 2,
+            "color": "#94a3b8"
+          }
+        ],
+        "annotations": [
+          {
+            "label": "$4.7M ARR",
+            "bar": "Lost to competition",
+            "color": "#ef4444"
+          }
+        ],
+        "subMetrics": [
+          {
+            "label": "Primary reason cited",
+            "value": "Onboarding speed"
+          },
+          {
+            "label": "Lost to",
+            "value": "Stripe Treasury / Airwallex"
+          }
+        ]
+      }
+    },
+    "spaceName": "Revenue Operations"
+  },
+  {
+    "id": "feed-revops-02",
+    "type": "key-metric",
+    "spaceId": "space-revenueops",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "NPS Score drops to 51 — down 3 points in Q4",
+    "body": "Customer satisfaction trend reversal detected. Q4 2025 NPS declined from 54 to 51. Correlates with delayed feature releases and support ticket volume increase.",
+    "timestamp": "2026-02-17T14:22:00Z",
+    "isRead": false,
+    "priority": "medium",
+    "reactions": [
+      {
+        "emoji": "📉",
+        "count": 2,
+        "users": [
+          "Marcus C.",
+          "Tom A."
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-breakdown",
+        "label": "View breakdown",
+        "variant": "primary"
+      },
+      {
+        "id": "compare-quarters",
+        "label": "Compare quarters",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "metric": "NPS Score",
+      "value": "51",
+      "trend": "down",
+      "changePercent": 3,
+      "period": "Q4 2025"
+    },
+    "spaceName": "Revenue Operations"
+  },
+  {
+    "id": "feed-revops-03",
+    "type": "alert-fyi",
+    "spaceId": "space-revenueops",
+    "title": "Stripe Treasury announced EU SMB expansion — Q3 launch timing at risk",
+    "body": "Stripe Treasury confirmed EU SMB expansion targeting Q2 2026. If our PayGrid launch slips to Q3, they'll have a 3-month head start in Germany, Netherlands, and France. Recommend reviewing launch acceleration options.",
+    "timestamp": "2026-02-16T12:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "🚨",
+        "count": 3,
+        "users": [
+          "Marcus C.",
+          "Elena V.",
+          "Carla M."
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-acceleration-options",
+        "label": "Review acceleration options",
+        "variant": "primary"
+      },
+      {
+        "id": "competitive-brief",
+        "label": "Competitive brief",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {},
+    "visualPreview": {
+      "type": "MetricsPreview",
+      "data": {
+        "metrics": [
+          {
+            "label": "Stripe EU launch target",
+            "value": "Q2 2026",
+            "valueColor": "#ef4444"
+          },
+          {
+            "label": "Our launch target",
+            "value": "Q3 2026",
+            "valueColor": "#f59e0b"
+          },
+          {
+            "label": "Timing gap",
+            "value": "~3 months",
+            "valueColor": "#ef4444"
+          },
+          {
+            "label": "Affected markets",
+            "value": "DE, NL, FR",
+            "valueColor": "#6366f1"
+          }
+        ],
+        "transition": null
+      }
+    },
+    "spaceName": "Revenue Operations"
+  },
+  {
+    "id": "feed-revops-04",
+    "type": "competitor-threat",
+    "spaceId": "space-revenueops",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "title": "Stripe Treasury EU SMB expansion confirmed — Q2 2026 launch",
+    "body": "Confirmed: Stripe Treasury targeting EU SMB banking sector Q2 2026. Markets: Germany, Netherlands, France. 3-month head start over PayGrid in DE market. Aggressive pricing strategy likely. Recommendation: accelerate PayGrid partner onboarding and prioritise DE market entry.",
+    "timestamp": "2026-02-05T16:40:00Z",
+    "isRead": false,
+    "priority": "high",
+    "reactions": [
+      {
+        "emoji": "⚠️",
+        "count": 5,
+        "users": [
+          "Marcus C.",
+          "Tom A.",
+          "Nina J.",
+          "Strategy",
+          "Product"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-competitive-analysis",
+        "label": "View competitive analysis",
+        "variant": "primary"
+      },
+      {
+        "id": "compare-feature-parity",
+        "label": "Compare feature parity",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "competitor": "Stripe Treasury",
+      "threatLevel": "high",
+      "summary": "Confirmed EU SMB expansion targeting Q2 2026. 3-month head start risk in DE, NL, FR markets."
+    },
+    "spaceName": "Revenue Operations"
+  },
+  {
+    "id": "feed-revops-05",
+    "type": "agent-completed",
+    "spaceId": "space-revenueops",
+    "title": "Monthly portfolio health report ready — 5 initiatives, executive summary",
+    "body": "",
+    "timestamp": "2026-02-18T06:00:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "📊",
+        "count": 3,
+        "users": [
+          "Tom A.",
+          "Nina J.",
+          "Board Secretary"
+        ]
+      },
+      {
+        "emoji": "✅",
+        "count": 2,
+        "users": [
+          "Hendrik V.",
+          "CTO"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-report",
+        "label": "Review report",
+        "variant": "primary"
+      },
+      {
+        "id": "add-to-board-pack",
+        "label": "Add to board pack",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "slides",
+        "id": "artifact-cross-02",
+        "name": "Monthly portfolio health report ready — 5 initiatives, executive summary"
+      },
+      "completionSummary": "February portfolio report covers 5 active initiatives across 7 spaces. 3 cross-initiative risks identified. Engineering capacity the primary constraint. Prepared for board pack.",
+      "timeSpent": "2.1h",
+      "changesCount": 14
+    },
+    "visualPreview": {
+      "type": "SlidesDeckPreview",
+      "data": {
+        "slideCount": 14,
+        "title": "Portfolio Health — February 2026",
+        "previewSlides": [
+          {
+            "label": "Executive Summary",
+            "accent": "#4262FF"
+          },
+          {
+            "label": "Initiative Scorecards",
+            "accent": "#10b981"
+          },
+          {
+            "label": "Cross-Initiative Risks",
+            "accent": "#ef4444"
+          },
+          {
+            "label": "Resource & Capacity",
+            "accent": "#8b5cf6"
+          }
+        ],
+        "metrics": []
+      }
+    },
+    "spaceName": "Revenue Operations"
+  },
+  {
+    "id": "feed-revops-06",
+    "type": "feedback-request",
+    "spaceId": "space-revenueops",
+    "source": {
+      "userId": "user-marcus",
+      "isAgent": false
+    },
+    "title": "PayGrid pricing model review — input needed by Feb 22",
+    "body": "Reviewing PayGrid partner pricing tiers for Q2 2026 adjustments. Three proposals under consideration: tiered volume discounts, flat-rate simplification, or hybrid usage-based model. Need leadership feedback on revenue impact projections and competitive positioning.",
+    "timestamp": "2026-02-03T10:50:00Z",
+    "isRead": false,
+    "priority": "medium",
+    "reactions": [
+      {
+        "emoji": "💭",
+        "count": 1,
+        "users": [
+          "Tom A."
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-pricing-proposals",
+        "label": "Review pricing proposals",
+        "variant": "primary"
+      },
+      {
+        "id": "compare-competitor-pricing",
+        "label": "Compare competitor pricing",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "review",
+      "from": "Marcus Chen",
+      "dueDate": "2026-02-22"
+    },
+    "spaceName": "Revenue Operations"
+  },
+  {
+    "id": "feed-revops-07",
+    "type": "agent-opportunity",
+    "spaceId": "space-revenueops",
+    "title": "Embedded Finance API usage 3x in 60 days — scaling needed",
+    "body": "Embedded Finance API request volume has tripled in 60 days driven by 3 new partner integrations. Current infrastructure is at 85% capacity. At current growth rate, ceiling hit in ~18 days. Recommend immediate scaling review.",
+    "timestamp": "2026-02-16T08:30:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "🚨",
+        "count": 2,
+        "users": [
+          "Platform Engineering",
+          "CTO"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "trigger-scaling-review",
+        "label": "Trigger review",
+        "variant": "primary"
+      },
+      {
+        "id": "view-capacity-plan",
+        "label": "View capacity",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {},
+    "visualPreview": {
+      "type": "LineChartPreview",
+      "data": {
+        "title": "Embedded Finance API — Request Volume (Indexed)",
+        "series": [
+          {
+            "label": "API Requests / Day",
+            "color": "#06b6d4",
+            "data": [
+              100,
+              118,
+              142,
+              175,
+              210,
+              255,
+              298
+            ],
+            "targetLine": 250
+          }
+        ],
+        "xLabels": [
+          "Dec 15",
+          "Dec 22",
+          "Jan 5",
+          "Jan 19",
+          "Feb 2",
+          "Feb 9",
+          "Feb 16"
+        ],
+        "yDomain": [
+          80,
+          320
+        ],
+        "annotations": [
+          {
+            "x": 5,
+            "label": "Capacity ceiling",
+            "color": "#ef4444"
+          }
+        ]
+      }
+    },
+    "spaceName": "Revenue Operations"
+  },
+  {
+    "id": "feed-ff26-01",
+    "type": "team-announcement",
+    "spaceId": "space-ff26",
+    "source": {
+      "userId": "user-nina",
+      "isAgent": false
+    },
+    "title": "Marcus Chen promoted to VP of Product — EPD Leadership",
+    "body": "Congratulations to Marcus Chen on promotion to VP of Product effective immediately. Marcus has led Product Launch Q3, PayGrid partner strategy, and cross-functional prioritisation frameworks over the past 18 months. Will now oversee all product strategy and roadmap planning across EPD.",
+    "timestamp": "2026-02-06T14:00:00Z",
+    "isRead": true,
+    "priority": "medium",
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 12,
+        "users": [
+          "EPD Leadership",
+          "Product Team",
+          "Engineering",
+          "Tom A.",
+          "Nina J.",
+          "Sofia R.",
+          "Amara O.",
+          "Raj P.",
+          "Priya S.",
+          "Elena V.",
+          "Liam O.",
+          "James H."
+        ]
+      }
+    ],
+    "actions": [],
+    "payload": {
+      "person": {
+        "name": "Marcus Chen",
+        "role": "VP of Product",
+        "department": "EPD Leadership",
+        "startDate": "2026-02-06"
+      },
+      "announcementType": "promotion"
+    },
+    "spaceName": "FlexForward 26"
+  },
+  {
+    "id": "feed-ff26-02",
+    "type": "alert-fyi",
+    "spaceId": "space-ff26",
+    "title": "Board deck submission deadline: March 3 — 5 portfolio updates required",
+    "body": "Board deck is due March 3. 5 sections require CPTO input: Q1 OKR status, Core Banking migration risk, PayGrid launch readiness, H2 investment priorities, and AI governance. Agent has drafted an outline — review available now.",
+    "timestamp": "2026-02-18T07:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review-outline",
+        "label": "Review outline",
+        "variant": "primary"
+      },
+      {
+        "id": "set-reminder",
+        "label": "Set reminder",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {},
+    "visualPreview": {
+      "type": "CalendarPreview",
+      "data": {
+        "eventTitle": "Board Meeting — Q1 Review",
+        "date": "2026-03-10",
+        "time": "09:00",
+        "duration": "3 hours",
+        "location": "FlexFund HQ — Boardroom 1",
+        "attendees": [
+          "Board Members",
+          "Tom A.",
+          "Nina J.",
+          "Alex M. (CPTO)"
+        ],
+        "agendaItems": [
+          "Q1 OKR mid-point review",
+          "Core banking migration update",
+          "PayGrid launch readiness",
+          "Strategic investment priorities H2",
+          "AI governance framework approval"
+        ]
+      }
+    },
+    "spaceName": "FlexForward 26"
+  },
+  {
+    "id": "feed-epd-01",
+    "type": "agent-completed",
+    "spaceId": "space-epd",
+    "title": "Sponsorship memo drafted — 3 success criteria for exec sign-off",
+    "body": "",
+    "timestamp": "2025-12-17T11:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": true,
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review-memo",
+        "label": "Review memo",
+        "variant": "primary"
+      },
+      {
+        "id": "request-sign-off",
+        "label": "Request sign-off",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "document",
+        "id": "artifact-kyc-19",
+        "name": "Sponsorship memo drafted — 3 success criteria for exec sign-off"
+      },
+      "completionSummary": "Sponsorship memo drafted with 3 measurable success criteria. Based on baseline data and industry benchmarks. Ready for Tom and Hendrik's review.",
+      "timeSpent": "0.6h",
+      "changesCount": 3
+    },
+    "visualPreview": {
+      "type": "MetricsPreview",
+      "data": {
+        "metrics": [
+          {
+            "label": "Success criterion 1",
+            "value": "Onboarding <14 days",
+            "valueColor": "#10b981"
+          },
+          {
+            "label": "From current",
+            "value": "24 days",
+            "valueColor": "#ef4444"
+          },
+          {
+            "label": "Success criterion 2",
+            "value": "Zero doc gaps",
+            "valueColor": "#10b981"
+          },
+          {
+            "label": "Success criterion 3",
+            "value": "Absorb 30% volume",
+            "valueColor": "#10b981"
+          }
+        ],
+        "transition": null
+      }
+    },
+    "spaceName": "EPD Leadership"
+  },
+  {
+    "id": "feed-epd-02",
+    "type": "workflow-change",
+    "spaceId": "space-epd",
+    "title": "Phase 1 proposal approved — pilot condition set",
+    "body": "",
+    "timestamp": "2026-01-27T16:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-tom",
+      "isAgent": false
+    },
+    "isRead": true,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 4,
+        "users": [
+          "Sofia R.",
+          "David K.",
+          "Compliance Lead",
+          "Ops Lead"
+        ]
+      },
+      {
+        "emoji": "💪",
+        "count": 2,
+        "users": [
+          "Maria L.",
+          "Engineering Lead"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-pilot-plan",
+        "label": "View pilot plan",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "Proposal Under Review",
+      "toStatus": "Approved for Pilot",
+      "implication": "Pilot design and workstream setup to begin immediately"
+    },
+    "visualPreview": {
+      "type": "ApprovalPreview",
+      "data": {
+        "title": "Phase 1 Approval",
+        "approvals": [
+          {
+            "name": "Tom Andersen",
+            "role": "CFO",
+            "status": "approved",
+            "condition": "Pilot low/medium-risk EU clients first"
+          },
+          {
+            "name": "Hendrik Voss",
+            "role": "CCO",
+            "status": "approved",
+            "condition": "No case through untested process"
+          }
+        ],
+        "outcome": "approved",
+        "outcomeLabel": "Pilot scope: low/medium-risk EU corporate clients only"
+      }
+    },
+    "spaceName": "EPD Leadership"
+  },
+  {
+    "id": "feed-epd-03",
+    "type": "agent-completed",
+    "spaceId": "space-epd",
+    "title": "Competitive analysis framework ready — PayGrid vs 6 competitors",
+    "body": "",
+    "timestamp": "2026-02-14T11:00:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": true,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 3,
+        "users": [
+          "Marcus C.",
+          "Priya S.",
+          "Elena V."
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-matrix",
+        "label": "Review matrix",
+        "variant": "primary"
+      },
+      {
+        "id": "open-in-space",
+        "label": "Open in Space",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "canvas",
+        "id": "artifact-pq3-03",
+        "name": "Competitive analysis framework ready — PayGrid vs 6 competitors"
+      },
+      "completionSummary": "6x6 competitive matrix covering 6 dimensions across 6 competitors. PayGrid leads on compliance coverage and EU regulation. Gap identified in API ecosystem vs Stripe and Adyen.",
+      "timeSpent": "3.1h",
+      "changesCount": 36
+    },
+    "visualPreview": {
+      "type": "HeatmapPreview",
+      "data": {
+        "title": "Competitive Matrix — PayGrid vs Market",
+        "rows": [
+          "Onboarding Speed",
+          "Compliance Coverage",
+          "API Ecosystem",
+          "SMB Pricing",
+          "Enterprise Features",
+          "EU Regulation"
+        ],
+        "columns": [
+          "PayGrid",
+          "Stripe Treasury",
+          "Airwallex",
+          "Wise Business",
+          "Adyen",
+          "Revolut Business"
+        ],
+        "data": [
+          [
+            3,
+            4,
+            4,
+            3,
+            2,
+            4
+          ],
+          [
+            5,
+            3,
+            3,
+            2,
+            4,
+            2
+          ],
+          [
+            3,
+            5,
+            4,
+            3,
+            5,
+            3
+          ],
+          [
+            4,
+            3,
+            3,
+            5,
+            2,
+            4
+          ],
+          [
+            3,
+            4,
+            3,
+            2,
+            5,
+            2
+          ],
+          [
+            5,
+            3,
+            3,
+            3,
+            4,
+            3
+          ]
+        ],
+        "colorScale": [
+          "#ef4444",
+          "#f59e0b",
+          "#fcd34d",
+          "#86efac",
+          "#10b981"
+        ],
+        "legend": {
+          "min": "1 = Weak",
+          "max": "5 = Strong"
+        }
+      }
+    },
+    "spaceName": "EPD Leadership"
+  },
+  {
+    "id": "feed-epd-04",
+    "type": "workflow-change",
+    "spaceId": "space-epd",
+    "title": "KYC onboarding initiative launched — Sofia Reyes assigned as lead",
+    "body": "",
+    "timestamp": "2025-12-18T15:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-nina",
+      "isAgent": false
+    },
+    "isRead": true,
+    "reactions": [
+      {
+        "emoji": "🚀",
+        "count": 3,
+        "users": [
+          "Sofia R.",
+          "Tom A.",
+          "Hendrik V."
+        ]
+      },
+      {
+        "emoji": "💪",
+        "count": 2,
+        "users": [
+          "David K.",
+          "Maria L."
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-initiative-brief",
+        "label": "View initiative brief",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "Scoping",
+      "toStatus": "Active",
+      "implication": "6-week discovery phase begins. Kickoff Monday at 10am."
+    },
+    "visualPreview": {
+      "type": "PeoplePreview",
+      "data": {
+        "title": "Initiative Team — KYC Onboarding Optimisation",
+        "people": [
+          {
+            "name": "Sofia Reyes",
+            "role": "Senior PM · Initiative Lead",
+            "status": "confirmed",
+            "color": "#10b981"
+          },
+          {
+            "name": "David Kowalski",
+            "role": "Senior Compliance Officer",
+            "status": "confirmed",
+            "color": "#4262FF"
+          },
+          {
+            "name": "Maria Lopes",
+            "role": "Compliance Analyst",
+            "status": "confirmed",
+            "color": "#8b5cf6"
+          },
+          {
+            "name": "Daniel (Engineering)",
+            "role": "Platform Engineer · API lead",
+            "status": "confirmed",
+            "color": "#06b6d4"
+          }
+        ],
+        "summary": "Initiative launched · Tom & Hendrik co-sponsoring · 6-week discovery phase begins"
+      }
+    },
+    "spaceName": "EPD Leadership"
+  },
+  {
+    "id": "feed-epd-05",
+    "type": "agent-completed",
+    "spaceId": "space-epd",
+    "title": "Root cause analysis synthesised — 7 root causes, 3 themes",
+    "body": "",
+    "timestamp": "2026-01-08T16:00:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": true,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 3,
+        "users": [
+          "Sofia R.",
+          "David K.",
+          "PM"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-synthesis",
+        "label": "View synthesis",
+        "variant": "primary"
+      },
+      {
+        "id": "review-impact-model",
+        "label": "Review impact model",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "canvas",
+        "id": "artifact-kyc-12",
+        "name": "Root cause analysis synthesised — 7 root causes, 3 themes"
+      },
+      "completionSummary": "Workshop synthesis complete. 7 root causes across 3 themes, each linked to process steps and metrics. Impact estimates drafted.",
+      "timeSpent": "1.1h",
+      "changesCount": 7
+    },
+    "visualPreview": {
+      "type": "BrainstormPreview",
+      "data": {
+        "title": "KYC Root Cause Workshop",
+        "clusters": [
+          {
+            "label": "Unclear Requirements",
+            "color": "#ef4444",
+            "notes": [
+              "Generic templates — same for all clients",
+              "'Sufficient documentation' undefined",
+              "No source-of-funds criteria"
+            ]
+          },
+          {
+            "label": "Manual Steps",
+            "color": "#f59e0b",
+            "notes": [
+              "Manual name copying into screening tool",
+              "Analysts use personal spreadsheets",
+              "Handoff form outdated (3 years)"
+            ]
+          },
+          {
+            "label": "Inconsistent Standards",
+            "color": "#6366f1",
+            "notes": [
+              "Approval criteria partly undocumented",
+              "58% first-pass rejection rate",
+              "Reviewer interpretation varies"
+            ]
+          }
+        ]
+      }
+    },
+    "spaceName": "EPD Leadership"
   }
 ]

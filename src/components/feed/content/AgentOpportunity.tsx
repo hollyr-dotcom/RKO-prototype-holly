@@ -260,6 +260,22 @@ function ClaimsSparkIllustration() {
   );
 }
 
+/** Stylised activation drop illustration — 12% below target, same SVG as ClaimsSparkIllustration */
+function ActivationDropIllustration() {
+  return (
+    <div
+      className="flex flex-col items-center justify-center"
+      style={{ width: 240, height: 184, padding: 32 }}
+    >
+      <div className="text-[40px] font-bold text-gray-800 tracking-tight leading-none">12%</div>
+      <svg viewBox="0 0 242 90" fill="none" className="w-full">
+        <path d="M242 82L0 82" stroke="black" />
+        <path d="M118.13 74L151.971 39.0432L184.131 59L233.205 12.2705" stroke="#FF0909" strokeWidth="6" strokeLinecap="round" />
+      </svg>
+    </div>
+  );
+}
+
 /** Stylised OKR progress ring — 3/8 behind pace (Figma node 1108:5303) */
 function OkrRingIllustration() {
   // Ring with a gap at the bottom (~270° arc total)
@@ -315,6 +331,9 @@ export function AgentOpportunityContent({ item }: AgentOpportunityProps) {
     }
     if (item.id === "feed-claims-01") {
       return <ClaimsSparkIllustration />;
+    }
+    if (item.id === "feed-ff-youth-01") {
+      return <ActivationDropIllustration />;
     }
     return null;
   }

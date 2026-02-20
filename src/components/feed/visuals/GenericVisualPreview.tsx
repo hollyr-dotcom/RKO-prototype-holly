@@ -406,7 +406,7 @@ function CalendarShape() {
       </div>
       <div className="grid grid-cols-5 gap-1">
         {[...Array(15)].map((_, i) => (
-          <div key={i} className={`h-4 rounded-sm ${i === 7 ? 'bg-gray-400/40' : 'bg-gray-200/50'}`} />
+          <div key={i} className="h-4 rounded-sm" style={{ backgroundColor: i === 7 ? '#DB4F4F' : '#FFC6C6' }} />
         ))}
       </div>
     </div>
@@ -439,11 +439,11 @@ function getShapeForType(type: string, data: Record<string, unknown>) {
 
 export function GenericVisualPreview({ type, data }: GenericVisualPreviewProps) {
   const title = getTitle(data);
-  const isTimeline = type === "TimelinePreview";
+  const isFrameless = type === "TimelinePreview" || type === "CalendarPreview";
 
-  // Timeline: no container chrome — sits directly on the card's white background.
+  // Frameless previews: no container chrome — sit directly on the card's white background.
   // Other preview types still use the gray container (to be migrated per visual-system-home.md).
-  if (isTimeline) {
+  if (isFrameless) {
     return (
       <div className="mt-3 px-1">
         {title && (
