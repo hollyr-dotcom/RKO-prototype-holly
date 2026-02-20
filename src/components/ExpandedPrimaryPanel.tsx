@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 import {
   IconHouse,
   IconChat,
@@ -18,6 +18,7 @@ import { useSidebar } from "@/hooks/useSidebar";
 import { EXPANDED_PRIMARY_WIDTH } from "@/providers/SidebarProvider";
 import { NavList, NavListItem, NavMenuAction } from "@/components/NavList";
 import { BoardEmoji } from "@/components/BoardEmoji";
+import { SPACE_SECTIONS } from "@/data/space-sections";
 
 // Same nav items as PrimaryRail — identical icons, IDs, hrefs
 const navItems = [
@@ -476,8 +477,8 @@ export function ExpandedPrimaryPanel() {
         {/* Header */}
         <div className="flex items-center h-8 px-3 mb-1">
           <span
-            className="flex-1 text-xs font-medium uppercase tracking-wider"
-            style={{ color: navPalette.iconMuted }}
+            className="flex-1 text-sm font-bold"
+            style={{ color: navPalette.textPrimary }}
           >
             Spaces
           </span>
@@ -491,14 +492,15 @@ export function ExpandedPrimaryPanel() {
           </button>
         </div>
 
-        {/* Spaces list — double-click to rename */}
-        <NavList
-          items={spaceNavItems}
-          isActive={(item) => pathname.startsWith(item.href)}
+        {/* Spaces list — grouped by section */}
+        <GroupedSpaceList
+          sections={SPACE_SECTIONS}
+          spaces={spaces}
+          activePath={pathname}
+          navPalette={navPalette}
           onReorder={handleReorderSpaces}
           onRename={handleRenameSpace}
           menuActions={spaceMenuActions}
-          emptyMessage="No spaces yet"
         />
       </div>
     </aside>
@@ -507,4 +509,172 @@ export function ExpandedPrimaryPanel() {
 
 function getSpaceInitial(name: string): string {
   return name.charAt(0).toUpperCase();
+}
+
+/* ── Grouped space list with collapsible sections ──────────────── */
+
+import type { SpaceSection } from "@/data/space-sections";
+
+type NavPalette = ReturnType<typeof useSidebar>["navPalette"];
+
+function GroupedSpaceList({
+  sections: initialSections,
+  spaces,
+  activePath,
+  navPalette,
+  onReorder,
+  onRename,
+  menuActions,
+}: {
+  sections: SpaceSection[];
+  spaces: Space[];
+  activePath: string;
+  navPalette: NavPalette;
+  onReorder: (orderedIds: string[]) => void;
+  onRename?: (id: string, newName: string) => void;
+  menuActions?: NavMenuAction[];
+}) {
+  const [orderedSections, setOrderedSections] = useState(initialSections);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+
+  // Sync if initial sections change
+  useEffect(() => {
+    setOrderedSections(initialSections);
+  }, [initialSections]);
+
+  const toggle = useCallback((label: string) => {
+    setCollapsed((prev) => ({ ...prev, [label]: !prev[label] }));
+  }, []);
+
+  const spaceMap = new Map(spaces.map((s) => [s.id, s]));
+
+  // Rebuild global space order from current section arrangement
+  const rebuildGlobalOrder = useCallback(
+    (currentSections: SpaceSection[]) => {
+      const allIds: string[] = [];
+      for (const section of currentSections) {
+        const sectionSpaces = section.spaceIds
+          .map((id) => spaceMap.get(id))
+          .filter(Boolean) as Space[];
+        allIds.push(...sectionSpaces.map((s) => s.id));
+      }
+      // Include any spaces not in any section
+      const sectionedIds = new Set(currentSections.flatMap((s) => s.spaceIds));
+      const unsectioned = spaces.filter((s) => !sectionedIds.has(s.id));
+      allIds.push(...unsectioned.map((s) => s.id));
+      return allIds;
+    },
+    [spaces, spaceMap]
+  );
+
+  // When items within a section are reordered
+  const handleSectionItemReorder = useCallback(
+    (sectionLabel: string, sectionOrderedIds: string[]) => {
+      const updated = orderedSections.map((s) =>
+        s.label === sectionLabel ? { ...s, spaceIds: sectionOrderedIds } : s
+      );
+      setOrderedSections(updated);
+      onReorder(rebuildGlobalOrder(updated));
+    },
+    [orderedSections, onReorder, rebuildGlobalOrder]
+  );
+
+  // When sections themselves are reordered
+  const handleSectionsReorder = useCallback(
+    (newOrder: SpaceSection[]) => {
+      setOrderedSections(newOrder);
+      onReorder(rebuildGlobalOrder(newOrder));
+    },
+    [onReorder, rebuildGlobalOrder]
+  );
+
+  return (
+    <Reorder.Group
+      axis="y"
+      values={orderedSections}
+      onReorder={handleSectionsReorder}
+      className="flex flex-col gap-3"
+      as="div"
+    >
+      {orderedSections.map((section) => {
+        const isCollapsed = collapsed[section.label] ?? false;
+        const sectionSpaces = section.spaceIds
+          .map((id) => spaceMap.get(id))
+          .filter(Boolean) as Space[];
+
+        if (sectionSpaces.length === 0) return null;
+
+        const sectionNavItems: NavListItem[] = sectionSpaces.map((space) => ({
+          id: space.id,
+          label: space.name,
+          href: `/space/${space.id}`,
+          icon: space.emoji ? (
+            <BoardEmoji emoji={space.emoji} size={16} />
+          ) : (
+            <span
+              className="w-4 h-4 text-[10px] leading-4 text-center rounded flex items-center justify-center"
+              style={{
+                backgroundColor: space.color || navPalette.logoContainer,
+                color: navPalette.textPrimary,
+              }}
+            >
+              {getSpaceInitial(space.name)}
+            </span>
+          ),
+        }));
+
+        return (
+          <Reorder.Item
+            key={section.label}
+            value={section}
+            as="div"
+            className="flex flex-col"
+            whileDrag={{
+              scale: 1.02,
+              zIndex: 50,
+            }}
+            style={{ position: "relative" }}
+          >
+            {/* Section header — drag handle */}
+            <button
+              onClick={() => toggle(section.label)}
+              className="flex items-center gap-2 h-8 px-3 pt-2 text-sm cursor-grab active:cursor-grabbing bg-transparent border-none"
+              style={{ color: navPalette.textPrimary }}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                className={`flex-shrink-0 transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`}
+              >
+                <path
+                  d="M4 6L8 10L12 6"
+                  stroke={navPalette.textPrimary}
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="text-sm">{section.label}</span>
+            </button>
+
+            {/* Space items — reorderable within section */}
+            {!isCollapsed && (
+              <div className="pl-5">
+                <NavList
+                  items={sectionNavItems}
+                  isActive={(item) => activePath.startsWith(item.href)}
+                  onReorder={(orderedIds) => handleSectionItemReorder(section.label, orderedIds)}
+                  onRename={onRename}
+                  menuActions={menuActions}
+                  emptyMessage="No spaces"
+                />
+              </div>
+            )}
+          </Reorder.Item>
+        );
+      })}
+    </Reorder.Group>
+  );
 }
