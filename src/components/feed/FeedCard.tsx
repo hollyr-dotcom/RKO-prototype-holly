@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import type { FeedItem } from "@/types/feed";
 import { getUser } from "@/lib/users";
 import { formatTimeAgo } from "@/lib/formatTimeAgo";
@@ -119,6 +120,15 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
     // Show person avatar only when the title explicitly mentions the source user
     const titleMentionsPerson =
       sourceUser && (item.title.includes(sourceUser.name) || item.title.includes(sourceUser.firstName));
+    // Items with bespoke illustrations that should use FeedContentRenderer instead of GenericVisualPreview
+    const ILLUSTRATION_IDS = new Set(["feed-core-01", "feed-pq3-01", "feed-cross-01", "feed-claims-01", "feed-ff-youth-01"]);
+    const hasIllustration = ILLUSTRATION_IDS.has(item.id);
+    // Items with image-based illustrations
+    const IMAGE_ILLUSTRATIONS: Record<string, string> = {
+      "feed-cross-14": "/feed-viz/FirstFlex-Youth-Banking/psd3.png",
+      "feed-ff-youth-05": "/feed-viz/FirstFlex-Youth-Banking/Starling.png",
+    };
+    const illustrationImage = IMAGE_ILLUSTRATIONS[item.id];
 
     return (
       <motion.div
@@ -128,7 +138,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
       >
         <div className="flex">
           {/* Left: text content */}
-          <div className={`flex flex-col flex-1 min-w-0 p-6 ${hasVisual ? "pr-0" : ""}`} style={{ paddingBottom: item.actions.length > 0 ? 104 : 24 }}>
+          <div className={`flex flex-col flex-1 min-w-0 p-6 ${hasVisual || hasIllustration || illustrationImage ? "pr-0" : ""}`} style={{ paddingBottom: item.actions.length > 0 ? 104 : 24 }}>
             {/* Icon or avatar + timestamp */}
             <div className="flex items-center gap-3 mb-3">
               {titleMentionsPerson && sourceUser?.avatar ? (
@@ -172,14 +182,24 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
 
           </div>
 
-          {/* Right: visual preview */}
-          {hasVisual && item.visualPreview && (
+          {/* Right: visual preview or bespoke illustration */}
+          {illustrationImage ? (
+            <div className="flex-shrink-0 flex items-center justify-center" style={{ padding: 32 }}>
+              <div className="overflow-hidden flex-shrink-0" style={{ width: 240, height: 184, borderRadius: 24 }}>
+                <Image src={illustrationImage} alt="" width={480} height={368} className="w-full h-full object-cover" />
+              </div>
+            </div>
+          ) : hasIllustration ? (
+            <div className="w-[280px] flex-shrink-0 p-4 pl-2 flex items-center justify-center">
+              <FeedContentRenderer item={item} />
+            </div>
+          ) : hasVisual && item.visualPreview ? (
             <div className="w-[280px] flex-shrink-0 p-4 pl-2 flex items-center">
               <div className="w-full rounded-xl bg-gray-50 border border-gray-100 overflow-hidden p-4">
                 <GenericVisualPreview type={item.visualPreview.type} data={item.visualPreview.data} />
               </div>
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Hover-reveal actions — bottom-right */}

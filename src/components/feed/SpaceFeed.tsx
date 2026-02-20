@@ -132,7 +132,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
 
       {/* Below header: feed scrolls, sidebar is pinned */}
       <div className="flex-1 min-h-0 flex justify-center">
-        <div className={`flex ${sidebarPanels ? "gap-5" : ""}`}>
+        <div className={`flex ${sidebarPanels ? "gap-12" : ""}`}>
           {/* Feed column — scrollable */}
           <div className="h-full overflow-y-auto" style={{ width: 712 }}>
             <div className="pb-28">
@@ -168,7 +168,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
 
           {/* Sidebar panels — pinned, does not scroll with feed */}
           {sidebarPanels && (
-            <div className="flex flex-col gap-3 flex-shrink-0 overflow-y-auto" style={{ width: 240 }}>
+            <div className="flex flex-col gap-3 flex-shrink-0 overflow-y-auto self-start" style={{ width: 320 }}>
               {sidebarPanels.map((src, i) => (
                 <Image
                   key={i}
