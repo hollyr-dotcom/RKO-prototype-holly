@@ -26,6 +26,20 @@ async function migrate() {
   const spacesPath = path.join(process.cwd(), 'src/data/spaces.json');
   const canvasesPath = path.join(process.cwd(), 'src/data/canvases.json');
 
+  // --- Cleanup: delete all existing data ---
+  console.log('Cleaning up existing data...');
+  const { error: delCanvases } = await supabase.from('canvases').delete().neq('id', '');
+  if (delCanvases) {
+    console.error('Failed to delete canvases:', delCanvases);
+    process.exit(1);
+  }
+  const { error: delSpaces } = await supabase.from('spaces').delete().neq('id', '');
+  if (delSpaces) {
+    console.error('Failed to delete spaces:', delSpaces);
+    process.exit(1);
+  }
+  console.log('Existing data cleared');
+
   // --- Spaces ---
   const spaces = JSON.parse(fs.readFileSync(spacesPath, 'utf-8'));
   const spaceRows = spaces.map((s: Record<string, unknown>) => ({
