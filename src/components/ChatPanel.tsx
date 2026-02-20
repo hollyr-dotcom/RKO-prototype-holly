@@ -1284,19 +1284,40 @@ export function ChatPanel({
                         li: ({ children }: { children?: React.ReactNode }) => <li className="mb-0.5">{children}</li>,
                         code: ({ children }: { children?: React.ReactNode }) => <code className="bg-gray-100 px-1 rounded text-xs">{children}</code>,
                       };
-                      const clean = (s: string) => s.replace(/\n?---\n?/g, '\n').trim();
+                      const stripSep = (s: string) => s.replace(/\n?---\n?/g, '\n').trim();
 
-                      // Split text at tool boundary: acknowledgment → cards → summary
+                      // Split strategy:
+                      // 1. PRIMARY: Look for explicit "---" separator in the text (AI always adds it)
+                      // 2. FALLBACK: Use toolTextSplit (stream-timing based, works for creation ops)
+                      // 3. DEFAULT: Show full text above cards
+                      const sepIdx = message.content.indexOf('\n---\n');
+                      const hasSeparator = sepIdx !== -1;
                       const split = message.toolTextSplit;
-                      // split=0 means tools came first, all text is "after tools" → goes below cards
-                      // split>0 means there's text before AND after tools
-                      // split undefined or >= content.length means no tools or all text before tools
-                      const allTextAfterTools = hasArtifactTools && split === 0;
-                      const hasRealSplit = hasArtifactTools && split !== undefined && split > 0 && split < message.content.length;
-                      const ackText = hasRealSplit ? clean(message.content.slice(0, split)) : (allTextAfterTools ? "" : (hasText ? clean(message.content) : ""));
-                      const rawSummary = hasRealSplit ? clean(message.content.slice(split)) : (allTextAfterTools && hasText ? clean(message.content) : "");
-                      // Suppress summary if AI repeated its ack text after tools
-                      const summaryText = (rawSummary && ackText && rawSummary.startsWith(ackText)) ? rawSummary.slice(ackText.length).trim() : rawSummary;
+
+                      let ackText: string;
+                      let summaryText: string;
+
+                      if (hasSeparator) {
+                        // Best case: AI included --- separator — reliable split regardless of tool ordering
+                        ackText = stripSep(message.content.slice(0, sepIdx));
+                        summaryText = stripSep(message.content.slice(sepIdx + 5));
+                      } else if (hasArtifactTools && split !== undefined && split > 0 && split < message.content.length) {
+                        // Fallback: toolTextSplit (works when model writes text → tools → text)
+                        ackText = stripSep(message.content.slice(0, split));
+                        const rawSummary = stripSep(message.content.slice(split));
+                        // Suppress if AI repeated its ack text
+                        summaryText = (rawSummary && ackText && rawSummary.startsWith(ackText))
+                          ? rawSummary.slice(ackText.length).trim()
+                          : rawSummary;
+                      } else if (hasArtifactTools && split === 0) {
+                        // All text came after tools
+                        ackText = "";
+                        summaryText = hasText ? stripSep(message.content) : "";
+                      } else {
+                        // No split info — show everything as ack (above cards)
+                        ackText = hasText ? stripSep(message.content) : "";
+                        summaryText = "";
+                      }
 
                       return (
                         <>
