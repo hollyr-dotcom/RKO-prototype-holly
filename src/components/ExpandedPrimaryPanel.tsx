@@ -475,7 +475,7 @@ export function ExpandedPrimaryPanel() {
       {/* Spaces section */}
       <div className="flex-1 overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center h-8 px-3 mb-1">
+        <div className="flex items-center h-8 pl-3 pr-1 mb-1">
           <span
             className="flex-1 text-sm font-bold"
             style={{ color: navPalette.textPrimary }}
@@ -484,7 +484,7 @@ export function ExpandedPrimaryPanel() {
           </span>
           <button
             onClick={handleCreateSpace}
-            className="flex items-center justify-center w-6 h-6 rounded transition-colors duration-200"
+            className="flex items-center justify-center w-6 h-6 rounded transition-colors duration-200 -mr-1"
             style={{ color: navPalette.iconMuted }}
             title="Add space"
           >
@@ -638,9 +638,10 @@ function GroupedSpaceList({
             {/* Section header — drag handle */}
             <button
               onClick={() => toggle(section.label)}
-              className="flex items-center gap-2 h-8 px-3 pt-2 text-sm cursor-grab active:cursor-grabbing bg-transparent border-none"
-              style={{ color: navPalette.textPrimary }}
+              className="flex items-center h-8 pl-3 pr-1 pt-2 text-xs font-bold cursor-grab active:cursor-grabbing bg-transparent border-none w-full"
+              style={{ color: "#AEB2C0" }}
             >
+              <span className="flex-1 text-left">{section.label}</span>
               <svg
                 width="16"
                 height="16"
@@ -650,18 +651,17 @@ function GroupedSpaceList({
               >
                 <path
                   d="M4 6L8 10L12 6"
-                  stroke={navPalette.textPrimary}
+                  stroke="#AEB2C0"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="text-sm">{section.label}</span>
             </button>
 
             {/* Space items — reorderable within section */}
             {!isCollapsed && (
-              <div className="pl-5 pt-[6px]">
+              <div className="pt-[6px]">
                 <NavList
                   items={sectionNavItems}
                   isActive={(item) => activePath.startsWith(item.href)}
@@ -669,6 +669,7 @@ function GroupedSpaceList({
                   onRename={onRename}
                   menuActions={menuActions}
                   emptyMessage="No spaces"
+                  itemColor="#222428"
                 />
               </div>
             )}

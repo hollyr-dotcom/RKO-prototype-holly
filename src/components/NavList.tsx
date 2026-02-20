@@ -28,6 +28,8 @@ type NavListProps = {
   onDelete?: (id: string) => void;
   menuActions?: NavMenuAction[];
   emptyMessage?: string;
+  /** Override text color for items (both active and inactive) */
+  itemColor?: string;
 };
 
 export function NavList({
@@ -38,6 +40,7 @@ export function NavList({
   onDelete,
   menuActions,
   emptyMessage = "Nothing here yet",
+  itemColor,
 }: NavListProps) {
   const { navPalette } = useSidebar();
 
@@ -75,6 +78,7 @@ export function NavList({
           onRename={onRename}
           onDelete={onDelete}
           menuActions={menuActions}
+          itemColor={itemColor}
           onDragEnd={() => {
             // Fire reorder callback with the current ordered IDs
             onReorder(orderedItems.map((i) => i.id));
@@ -94,11 +98,13 @@ function NavListRow({
   onRename,
   onDelete,
   menuActions,
+  itemColor,
   onDragEnd,
 }: {
   item: NavListItem;
   isActive: boolean;
   navPalette: NavPalette;
+  itemColor?: string;
   onRename?: (id: string, newName: string) => void;
   onDelete?: (id: string) => void;
   menuActions?: NavMenuAction[];
@@ -210,7 +216,7 @@ function NavListRow({
         }}
         className="flex items-center gap-3 h-9 px-3 rounded-lg text-sm transition-colors duration-200"
         style={{
-          color: isActive ? navPalette.textPrimary : navPalette.textSecondary,
+          color: itemColor ?? (isActive ? navPalette.textPrimary : navPalette.textSecondary),
           fontWeight: isActive ? 500 : 400,
           backgroundColor: isActive || isHovered ? navPalette.hoverBg : "transparent",
         }}
