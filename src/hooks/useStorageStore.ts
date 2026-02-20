@@ -46,11 +46,16 @@ export function useStorageStore({
   });
 
   useEffect(() => {
+    let cancelled = false;
     const unsubs: (() => void)[] = [];
     setStoreWithStatus({ status: "loading" });
 
     async function setup() {
       const { root } = await room.getStorage();
+
+      // If the effect was cleaned up while we were awaiting storage,
+      // bail out to prevent orphaned listeners and duplicate syncs.
+      if (cancelled) return;
 
       // Get the LiveMap for records -- we use `any` for the LiveMap value type
       // because tldraw's TLRecord doesn't satisfy LiveBlocks' Lson constraint.
@@ -82,6 +87,13 @@ export function useStorageStore({
         return r;
       });
 
+      // Guard: prevent init events from syncing back to Liveblocks.
+      // Orphaned listeners from a previous setup() (caused by effect re-runs
+      // during Liveblocks reconnection or React Strict Mode) could otherwise
+      // echo clear/put changes back to Liveblocks, duplicating content for
+      // all connected clients.
+      let isInitializing = true;
+
       store.clear();
       store.put(
         [
@@ -98,12 +110,18 @@ export function useStorageStore({
         "initialize"
       );
 
+      // Bail out if cleaned up during store initialization
+      if (cancelled) return;
+
       // -----------------------------------------------------------
       // Sync local tldraw document changes → LiveBlocks Storage
       // -----------------------------------------------------------
       unsubs.push(
         store.listen(
           ({ changes }: TLStoreEventInfo) => {
+            // Skip syncing during store initialization
+            if (isInitializing) return;
+
             room.batch(() => {
               Object.values(changes.added).forEach((record) => {
                 liveRecords.set(record.id, record);
@@ -303,8 +321,10 @@ export function useStorageStore({
       );
 
       // -----------------------------------------------------------
-      // Mark store as synced
+      // Initialization complete — allow local→remote sync
       // -----------------------------------------------------------
+      isInitializing = false;
+
       setStoreWithStatus({
         store,
         status: "synced-remote",
@@ -315,6 +335,7 @@ export function useStorageStore({
     setup();
 
     return () => {
+      cancelled = true;
       unsubs.forEach((fn) => fn());
       unsubs.length = 0;
     };
