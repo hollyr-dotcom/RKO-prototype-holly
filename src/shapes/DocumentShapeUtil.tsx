@@ -138,7 +138,7 @@ export class DocumentShapeUtil extends ShapeUtil<IDocumentShape> {
             <IconArrowsOutSimple css={{ width: 14, height: 14, color: "#6b7280" }} />
           </button>
         )}
-        <AutoSizeWrapper shapeId={shape.id} shapeType={DOCUMENT_SHAPE_TYPE} shapeH={shape.props.h} editor={this.editor}>
+        <AutoSizeWrapper shapeId={shape.id} shapeType={DOCUMENT_SHAPE_TYPE} shapeH={shape.props.h} editor={this.editor} growOnly>
           <DocumentEditor
             docId={shape.props.docId}
             title={shape.props.title}

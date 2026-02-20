@@ -8,8 +8,9 @@ import {
   ShapeUtil,
   T,
   TLShape,
+  useEditor,
 } from "tldraw";
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect } from "react";
 import lottie, { AnimationItem } from "lottie-web";
 import approveButtonData from "@/data/approve-button-lottie.json";
 
@@ -31,13 +32,17 @@ const DEFAULT_H = 278;
 
 // Lottie animation frame markers (ip=120, op=360 at 60fps)
 const FRAME_START = 120;
-const FRAME_END = 360;
+const FRAME_END = 280;
+const TRIGGER_FRAME = 110;
 
 function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<AnimationItem | null>(null);
   const hasTriggeredRef = useRef(false);
   const isHoldingRef = useRef(false);
+  const committedRef = useRef(false);
+  const startPointRef = useRef<{ x: number; y: number } | null>(null);
+  const editor = useEditor();
 
   // Initialize Lottie animation and listen for complete
   useEffect(() => {
@@ -52,17 +57,17 @@ function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
     });
 
     animRef.current = anim;
-    anim.goToAndStop(0, true);
+    anim.goToAndStop(1, true);
 
     const onComplete = () => {
-      if (!isHoldingRef.current || hasTriggeredRef.current) return;
+      console.log("[ApproveButton] onComplete", { isHolding: isHoldingRef.current, committed: committedRef.current, hasTriggered: hasTriggeredRef.current });
+      if (hasTriggeredRef.current) return;
+      if (!isHoldingRef.current && !committedRef.current) return;
       hasTriggeredRef.current = true;
+      console.log("[ApproveButton] TRIGGERED — dispatching shape:approve-trigger");
 
-      // Hold on last frame
-      const totalFrames = FRAME_END - FRAME_START;
-      anim.goToAndStop(totalFrames - 1, true);
+      anim.goToAndStop(FRAME_END - 1, true);
 
-      // Dispatch event for Canvas.tsx to send the AI prompt
       window.dispatchEvent(
         new CustomEvent("shape:approve-trigger", {
           detail: {
@@ -73,6 +78,13 @@ function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
       );
     };
 
+    anim.addEventListener("enterFrame", () => {
+      console.log("[ApproveButton] frame:", anim.currentFrame);
+      if (anim.currentFrame >= TRIGGER_FRAME && !committedRef.current) {
+        committedRef.current = true;
+        console.log("[ApproveButton] passed trigger frame — committed");
+      }
+    });
     anim.addEventListener("complete", onComplete);
 
     return () => {
@@ -82,32 +94,77 @@ function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
     };
   }, [shape.id]);
 
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent) => {
+  // Listen on the editor container — bypasses the overlay and tldraw's
+  // event interception. Hit-test to check if the click is on this shape.
+  useEffect(() => {
+    const editorContainer = editor.getContainer();
+
+    const onDown = () => {
       if (hasTriggeredRef.current) return;
+      const point = editor.inputs.currentPagePoint;
+      const hitShape = editor.getShapeAtPoint(point);
+      console.log("[ApproveButton] editorContainer pointerdown", {
+        point,
+        hitShapeId: hitShape?.id,
+        myShapeId: shape.id,
+        match: hitShape?.id === shape.id,
+      });
+      if (hitShape?.id !== shape.id) return;
+
       isHoldingRef.current = true;
-
-      // Play the full animation from the start
+      startPointRef.current = { x: point.x, y: point.y };
+      console.log("[ApproveButton] started hold — playing animation");
       if (animRef.current) {
-        const totalFrames = FRAME_END - FRAME_START;
-        animRef.current.playSegments([0, totalFrames], true);
+        animRef.current.playSegments([FRAME_START, FRAME_END], true);
       }
-    },
-    []
-  );
+    };
 
-  const handleRelease = useCallback(
-    (e: React.PointerEvent) => {
+    const DRAG_THRESHOLD = 5;
+
+    const onMove = () => {
+      if (!isHoldingRef.current || committedRef.current || !startPointRef.current) return;
+      const point = editor.inputs.currentPagePoint;
+      const dx = point.x - startPointRef.current.x;
+      const dy = point.y - startPointRef.current.y;
+      if (dx * dx + dy * dy > DRAG_THRESHOLD * DRAG_THRESHOLD) {
+        console.log("[ApproveButton] drag detected — cancelling animation");
+        isHoldingRef.current = false;
+        startPointRef.current = null;
+        if (animRef.current) {
+          animRef.current.stop();
+          animRef.current.goToAndStop(1, true);
+        }
+      }
+    };
+
+    const onUp = () => {
+      startPointRef.current = null;
+      if (!isHoldingRef.current) return;
       isHoldingRef.current = false;
-
-      // If not yet triggered, stop and reset the animation
-      if (!hasTriggeredRef.current && animRef.current) {
+      const currentFrame = animRef.current?.currentFrame ?? 0;
+      const isCommitted = committedRef.current || currentFrame >= TRIGGER_FRAME;
+      console.log("[ApproveButton] pointerup", { currentFrame, isCommitted, hasTriggered: hasTriggeredRef.current });
+      if (isCommitted) {
+        committedRef.current = true;
+      } else if (!hasTriggeredRef.current && animRef.current) {
+        console.log("[ApproveButton] released early — resetting animation");
         animRef.current.stop();
-        animRef.current.goToAndStop(0, true);
+        animRef.current.goToAndStop(1, true);
       }
-    },
-    []
-  );
+    };
+
+    editorContainer.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+
+    return () => {
+      editorContainer.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [editor, shape.id]);
 
   return (
     <HTMLContainer
@@ -124,9 +181,6 @@ function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
       {/* Lottie animation container */}
       <div
         ref={containerRef}
-        onPointerDown={handlePointerDown}
-        onPointerUp={handleRelease}
-        onPointerLeave={handleRelease}
         style={{
           width: "100%",
           height: "100%",
@@ -154,7 +208,7 @@ export class ApproveButtonShapeUtil extends ShapeUtil<IApproveButtonShape> {
   }
 
   override canEdit() {
-    return false;
+    return true;
   }
 
   override canResize() {
@@ -173,6 +227,14 @@ export class ApproveButtonShapeUtil extends ShapeUtil<IApproveButtonShape> {
     return true;
   }
 
+  override hideSelectionBoundsBg() {
+    return true;
+  }
+
+  override hideSelectionBoundsFg() {
+    return true;
+  }
+
   getGeometry(shape: IApproveButtonShape): Geometry2d {
     return new Rectangle2d({
       width: shape.props.w,
@@ -185,14 +247,7 @@ export class ApproveButtonShapeUtil extends ShapeUtil<IApproveButtonShape> {
     return <ApproveButtonComponent shape={shape} />;
   }
 
-  indicator(shape: IApproveButtonShape) {
-    return (
-      <rect
-        width={shape.props.w}
-        height={shape.props.h}
-        rx={16}
-        ry={16}
-      />
-    );
+  indicator() {
+    return null;
   }
 }

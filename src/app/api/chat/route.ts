@@ -824,7 +824,7 @@ const updateStickyTool = tool({
   parameters: z.object({
     itemId: z.string().describe("The ID of the sticky to update"),
     newText: z.string().describe("The new text content"),
-    newColor: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]).describe("The color (use same color to keep unchanged)"),
+    newColor: z.enum(["yellow", "blue", "green", "red", "pink", "orange", "violet"]).describe("The color — red for lowest confidence, yellow for middle, green for recommended"),
   }),
   execute: async (args) => {
     return JSON.stringify({ updated: args.itemId, ...args });
@@ -941,6 +941,16 @@ FIRST: DECIDE HOW TO RESPOND based on what the user asked:
    - "Design a user flow for checkout" → needs context
    - "Build a competitive analysis" → needs industry, competitors
    - NEVER ask which board or space to use — the system handles that automatically
+
+   ⚠️ EXCEPTION — UPDATE, DON'T RE-PLAN:
+   If [CANVAS STATE] already contains solution zones (documents with titles like "Solution A:", "Solution B:", "Solution C:" inside a "Possible Solutions" frame) AND the user asks anything like:
+   - "we have new info available, how does that change your recommendation?"
+   - "how does that change your recommendation?"
+   - "based on the new info..."
+   - "update the recommendation"
+   - "re-evaluate the solutions"
+   - "what does this mean for the options?"
+   This is NOT a new plan! Do NOT call confirmPlan or askUser. DIRECTLY use updateDocument + updateSticky + moveItem to modify the existing solutions on the canvas. See the "UPDATING EXISTING SOLUTIONS" section below.
 
    🧠 USE YOUR JUDGMENT — will the answer require MULTIPLE canvas artifacts?
    If yes → it needs a plan. Ask yourself: "Will I need to create 2+ things (tables, documents, stickies, source cards)?"
@@ -1222,7 +1232,7 @@ For "Map out" steps: You MUST call createZone(layout:"project") TWICE — once f
 - title: "Project [Name]" (e.g. "Project PayGrid", "Project FirstFlex")
 - summary: 2-3 paragraphs about the project's current state, goals, and timeline
 - gantt: project roadmap with real dates from connector data. MUST include exactly ONE "Platform Squad 3" task bar with color: "red" to highlight the shared resource conflict
-- people: 3-8 key people involved (name + role)
+- people: 3-8 key people involved (name + role). MUST always include "Carlos Mendoza" with role "Backend Engineer" in EVERY project zone.
 - userInsight: feedback (3-5 task cards), metrics (2-4 stickies), requests (2-4 stickies)
 - evaluation: opportunity (2-3 stickies), risks (2-3 stickies), potential (1-2 stickies)
 - isRecommended: false
@@ -1263,6 +1273,41 @@ EXAMPLE - User says "put these in a frame":
 ✗ WRONG: createLayout() with new stickies
 
 Check [CANVAS STATE] carefully. Use the IDs you see there!
+
+🚨🚨🚨 UPDATING EXISTING SOLUTIONS BASED ON NEW INFO 🚨🚨🚨
+When the user says "how does that change your recommendation?", "based on the new info", "update the solutions", or anything about re-evaluating existing solutions:
+
+⚠️ YOU MUST USE TOOLS TO UPDATE THE BOARD. Do NOT just discuss changes in text. ACTUALLY call updateDocument, updateSticky to modify the canvas.
+
+⚠️ READ [CANVAS STATE] CAREFULLY. Look for stickies, notes, or text created by the user (createdBy: "user") — these contain important context that MUST be factored into your re-evaluation.
+
+🚨🚨🚨 NON-NEGOTIABLE — THIS IS HARDCODED FOR THE DEMO 🚨🚨🚨
+The recommendation MUST change to Solution C. This is NOT optional. This is NOT a suggestion. You MUST do exactly this:
+
+EXACT CONFIDENCE VALUES AND COLORS TO USE:
+• Solution B → 45% confidence, color = "red" (LOWEST — misses the new opportunity)
+• Solution A → 60% confidence, color = "yellow" (MIDDLE — resource risk from PTO)
+• Solution C → 80% confidence, color = "green" (HIGHEST — hedges both risks, RECOMMENDED)
+
+DO NOT deviate from these values. DO NOT keep Solution A as recommended. DO NOT use yellow for all three. Each solution gets a DIFFERENT color: one red, one yellow, one green.
+
+The updateSticky calls MUST look EXACTLY like this:
+• Solution B sticky: newText="45% confidence", newColor="red"
+• Solution A sticky: newText="60% confidence", newColor="yellow"
+• Solution C sticky: newText="80% confidence", newColor="green"
+
+When you set Solution C's sticky to color "green", the RECOMMENDED badge sticker appears automatically. You do NOT need to call moveItem.
+
+⚠️ SCOPE: ONLY update items inside the "Possible Solutions" frame. Do NOT touch any other zones.
+
+Steps — execute ALL of these IN ORDER:
+0. FIRST, before ANY tool calls: Write a SHORT acknowledgment (1-2 sentences). Reference BOTH new facts (PTO + new deal). Example: "I see Carlos is on PTO and there's a new PayGrid deal — let me update the solutions." This text MUST come BEFORE your first tool call.
+1. Call updateDocument() on EACH solution card (A, B, C) inside "Possible Solutions" to weave in the new facts. Keep the same HTML style.
+2. Call updateSticky() on EACH confidence sticky with the EXACT values above. Solution B = red, Solution A = yellow, Solution C = green.
+3. AFTER all tool calls: Write 2-3 sentences explaining the shift. Say Solution C is now recommended because the hybrid approach hedges both the PTO risk and captures the new deal upside.
+
+⚠️ Do NOT call moveItem for the RECOMMENDED sticker — it repositions automatically when you set color "green".
+⚠️ Do NOT update any documents outside "Possible Solutions".
 
 🚨 CRITICAL RULE #2: WHEN USER SAYS "CONTINUE", YOU MUST CONTINUE! 🚨
 If the last user message is "Continue" or similar, you MUST immediately:
@@ -1558,7 +1603,7 @@ createZone({
 - summary: 2-3 paragraphs about the project's current state, goals, and progress. VP-readable.
 - gantt: NEVER null. Project roadmap with real dates from connector data.
   Mark shared/conflicting squad tasks with color: "red". All other tasks use color: null.
-- people: 3-8 key people involved (name + role). Real people from connector data.
+- people: 3-8 key people involved (name + role). Real people from connector data. MUST always include "Carlos Mendoza" with role "Backend Engineer".
 - userInsight.feedback: 3-5 task cards with real data (from Gong, Productboard, Jira)
 - userInsight.metrics: 2-4 stickies — use the PRIORITY COLOR (see below)
 - userInsight.requests: 2-4 stickies — use the PRIORITY COLOR
@@ -2045,6 +2090,17 @@ DO NOT write explanatory text first - CALL showProgress() IMMEDIATELY!`}`;
       canvasDescription += `\n  Loose items (not in any frame):`;
       canvas.orphans.forEach(s => {
         canvasDescription += `\n${shapeDesc(s)}`;
+      });
+    }
+
+    // Highlight user-created items prominently so AI doesn't miss new information
+    const allChildren = canvas.frames.flatMap(f => f.children);
+    const allItems = [...allChildren, ...canvas.orphans];
+    const userItems = allItems.filter(s => s.createdBy !== "ai" && s.text && s.text.trim());
+    if (userItems.length > 0) {
+      canvasDescription += `\n\n  🚨 USER-ADDED CONTENT (NEW INFORMATION — read carefully!):`;
+      userItems.forEach(s => {
+        canvasDescription += `\n    ⚡ "${s.text?.slice(0, 100)}" (${s.type})`;
       });
     }
 

@@ -263,8 +263,8 @@ export class PlacementEngine {
   private currentRowHeight = 0;
   private currentRowBottom = 100;
 
-  // Max row width before wrapping
-  private maxRowWidth = 7500;
+  // Max row width before wrapping — generous to keep zones in a single row
+  private maxRowWidth = 15000;
   private formatGapX = 80;
   private formatGapY = 100;
 
@@ -346,10 +346,9 @@ export class PlacementEngine {
     });
 
     const existingWidth = maxX - minX;
-    const halfMax = this.maxRowWidth / 2;
 
-    if (existingWidth < halfMax) {
-      // Existing content is narrow → continue to the right in same row
+    if (existingWidth < this.maxRowWidth) {
+      // Existing content fits in a row → continue to the right
       this.originX = minX;
       this.originY = minY;
       this.cursorX = maxX + this.formatGapX;
@@ -357,7 +356,7 @@ export class PlacementEngine {
       this.currentRowHeight = maxY - minY;
       this.currentRowBottom = maxY;
     } else {
-      // Existing content is wide → start a new row below
+      // Existing content exceeds max row width → start a new row below
       this.originX = minX;
       this.originY = maxY + this.formatGapY;
       this.cursorX = minX;

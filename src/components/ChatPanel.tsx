@@ -339,7 +339,7 @@ function ThinkingLottie({ size = 24, gray = false }: { size?: number; gray?: boo
 function ThinkingBlock({ status }: { status: string }) {
   return (
     <div className="flex items-center gap-2 text-sm text-gray-500">
-      <ThinkingLottie size={20} />
+      <ThinkingLottie size={40} />
       <span>{status}</span>
     </div>
   );
@@ -349,7 +349,7 @@ function ThinkingBlock({ status }: { status: string }) {
 function ProgressBlock({ status }: { status: string }) {
   return (
     <div className="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-lg">
-      <ThinkingLottie size={20} />
+      <ThinkingLottie size={40} />
       <span className="text-sm text-gray-700">{status}</span>
     </div>
   );
@@ -1077,11 +1077,14 @@ export function ChatPanel({
         ? currentRunningStep - 1
         : completedSteps > 0 ? completedSteps - 1 : 0;
 
+      // Plan is complete when all steps have been completed
+      const planComplete = completedSteps >= args.steps.length;
+
       return {
         title: args.title,
         steps: args.steps,
         currentStep: Math.min(currentStep, args.steps.length - 1),
-        isExecuting: isLoading,
+        isExecuting: isLoading && !planComplete,
       };
     }
     return null;
@@ -1269,7 +1272,7 @@ export function ChatPanel({
                     {(() => {
                       const hasText = message.content && !message.content.trim().startsWith('{');
                       const hasArtifactTools = message.toolInvocations?.some(t =>
-                        ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "createZone", "webSearch", "queryConnectors"].includes(t.toolName)
+                        ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "createZone", "webSearch", "queryConnectors", "updateDocument", "updateSticky", "updateDocument_result", "updateSticky_result"].includes(t.toolName)
                       );
 
                       const mdComponents = {
@@ -1626,7 +1629,7 @@ export function ChatPanel({
 
             return (
               <div className="flex items-center gap-2">
-                <ThinkingLottie size={20} />
+                <ThinkingLottie size={40} />
                 <span className="text-sm text-slate-400">{activityMsg}</span>
               </div>
             );

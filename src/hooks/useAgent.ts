@@ -161,10 +161,14 @@ export function useAgent(
               : m
           ));
           if (onToolCall) {
-            onToolCall(next.toolName, next.result);
+            try {
+              onToolCall(next.toolName, next.result);
+            } catch (err) {
+              console.error(`[dispatchNextZone] Error dispatching ${next.toolName}:`, err);
+            }
           }
 
-          // Schedule next zone dispatch
+          // Schedule next zone dispatch — always continue even if one zone failed
           if (pendingZoneResults.length > 0) {
             zoneDispatchTimer = setTimeout(dispatchNextZone, 1200);
           } else {

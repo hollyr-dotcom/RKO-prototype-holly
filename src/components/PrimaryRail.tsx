@@ -71,7 +71,7 @@ export function PrimaryRail() {
               {isHighlighted && (
                 <motion.div
                   layoutId="rail-indicator"
-                  className="absolute inset-0 rounded-full"
+                  className="absolute inset-0 rounded-[16px]"
                   style={{ backgroundColor: navPalette.indicator }}
                   transition={indicatorTransition}
                 />

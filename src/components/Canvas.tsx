@@ -763,6 +763,7 @@ export function Canvas() {
   const [toastCentered, setToastCentered] = useState(false);
   const [isToolbarExpanded, setIsToolbarExpanded] = useState(false);
   const [isToolbarMultiLine, setIsToolbarMultiLine] = useState(false);
+  const [isPlusMenuOpen, setIsPlusMenuOpen] = useState(false);
   const [isInQAFlow, setIsInQAFlow] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questionAnswers, setQuestionAnswers] = useState<string[]>([]);
@@ -884,6 +885,7 @@ export function Canvas() {
   // Re-initialize placement engine when a new AI response starts
   useEffect(() => {
     if (isLoading && editor) {
+      console.log("[PlacementEngine] Re-initializing (isLoading=true)");
       placementEngineRef.current = new PlacementEngine(editor);
       placementEngineRef.current.initialize();
     }
@@ -1023,6 +1025,14 @@ export function Canvas() {
         const taskCount = tasks?.length ?? 0;
         const taskPreview = tasks?.slice(0, 5).map(t => t.text || '?').join(', ') || '';
         text = `"${gcTitle || 'Gantt Chart'}" (${taskCount} tasks${taskPreview ? ': ' + taskPreview : ''})`;
+      }
+
+      // Images: detect RECOMMENDED sticker by assetId
+      if (shape.type === 'image') {
+        const assetId = (props.assetId as string) || "";
+        if (assetId.includes("sticker-recommended")) {
+          text = "RECOMMENDED sticker";
+        }
       }
 
       return {
@@ -1926,6 +1936,83 @@ export function Canvas() {
             type: "document",
             meta: { ...shape.meta, pendingContent: content },
           });
+
+          // After doc resizes, reposition any confidence stickies that overlap it
+          // Delay to let DocumentEditor re-render and update the shape height
+          setTimeout(() => {
+            const freshDoc = editor.getShape(shape.id);
+            if (!freshDoc || !freshDoc.parentId) return;
+            const docH = (freshDoc.props as any).h || 400;
+            const docW = (freshDoc.props as any).w || 500;
+            const CONF_OVERLAP = 60;
+            const stickyW = 200;
+
+            // Find confidence stickies in the same frame
+            const siblings = editor.getCurrentPageShapes().filter(s => s.parentId === freshDoc.parentId);
+            const confStickies = siblings.filter(s => {
+              if (s.type !== "note") return false;
+              const text = ((s.props as any).richText?.content?.[0]?.content?.[0]?.text || "").toLowerCase();
+              return text.includes("confidence");
+            });
+
+            let maxChildBottom = 0;
+            for (const sticky of confStickies) {
+              // Check if this sticky belongs to this doc (by X proximity)
+              const stickyCenterX = sticky.x + stickyW / 2;
+              const docCenterX = freshDoc.x + docW / 2;
+              if (Math.abs(stickyCenterX - docCenterX) < docW) {
+                const newX = freshDoc.x + Math.floor((docW - stickyW) / 2);
+                const newY = freshDoc.y + docH - CONF_OVERLAP;
+                editor.updateShape({
+                  id: sticky.id,
+                  type: "note",
+                  x: newX,
+                  y: newY,
+                });
+                maxChildBottom = Math.max(maxChildBottom, newY + stickyW);
+
+                // Also reposition RECOMMENDED sticker if this is a green sticky
+                const stickyColor = (sticky.props as any).color;
+                if (stickyColor === "green") {
+                  const allShapes = editor.getCurrentPageShapes();
+                  const images = allShapes.filter(s => s.type === "image");
+                  const recSticker = images.find(img => {
+                    const assetId = (img.props as any).assetId || "";
+                    return assetId.includes("sticker-recommended");
+                  });
+                  if (recSticker) {
+                    const frame = editor.getShape(freshDoc.parentId as any);
+                    const frameX = frame?.x || 0;
+                    const frameY = frame?.y || 0;
+                    const dW = (recSticker.props as any).w || 140;
+                    editor.updateShape({
+                      id: recSticker.id,
+                      type: "image",
+                      x: frameX + newX + stickyW - dW + 20,
+                      y: frameY + newY + stickyW - 50,
+                    });
+                    maxChildBottom = Math.max(maxChildBottom, newY + stickyW);
+                  }
+                }
+              }
+            }
+
+            // Resize parent frame if stickies extend beyond its bounds
+            if (maxChildBottom > 0 && freshDoc.parentId) {
+              const frame = editor.getShape(freshDoc.parentId as any);
+              if (frame) {
+                const frameH = (frame.props as any).h || 600;
+                const neededH = maxChildBottom + 40; // 40px padding
+                if (neededH > frameH) {
+                  editor.updateShape({
+                    id: frame.id,
+                    type: "frame",
+                    props: { h: neededH },
+                  });
+                }
+              }
+            }
+          }, 500);
         }
       }
 
@@ -2423,12 +2510,12 @@ export function Canvas() {
           const CONF_STICKY = 200;       // "s" note size
           const CONF_OVERLAP = 60;       // how far the sticky overlaps the doc bottom
 
-          const solArr = solutions || [];
+          const solArr = (solutions || []).filter(sol => sol && sol.summary);
 
           // Pre-calculate card heights from data
           // Doc gets an h1 with the solution title prepended, so measure with that
           const cardHeights = solArr.map(sol => {
-            const docContent = `<h1>${sol.title}</h1>${sol.summary.content}`;
+            const docContent = `<h1>${sol.title || ""}</h1>${sol.summary?.content || ""}`;
             const docH = measureDocumentHeight(docContent, CARD_W, 150);
             // Sticky overlaps the doc by CONF_OVERLAP, so net addition is less
             return docH + (CONF_STICKY - CONF_OVERLAP) + 24;
@@ -2465,17 +2552,17 @@ export function Canvas() {
             let cy = PAD + TITLE_H;
 
             // Document card — solution title as h1 inside the doc itself
-            const docContent = `<h1>${sol.title}</h1>${sol.summary.content}`;
+            const docContent = `<h1>${sol.title || ""}</h1>${sol.summary?.content || ""}`;
             const docH = measureDocumentHeight(docContent, CARD_W, 150);
             editor.createShape({
               id: createShapeId(), type: "document",
               x: cardX, y: cy, parentId: frameId,
-              props: { docId: generateId(), title: sol.summary.title, w: CARD_W, h: docH },
+              props: { docId: generateId(), title: sol.summary?.title || sol.title || "", w: CARD_W, h: docH },
               meta: { createdBy: "ai", initialContent: docContent },
             });
 
             // Confidence sticky — overlaps bottom of doc, centered horizontally on the card
-            const confText = `${sol.confidence} confidence`;
+            const confText = `${sol.confidence || "?"} confidence`;
             const confX = cardX + Math.floor((CARD_W - CONF_STICKY) / 2); // center on card
             const confY = cy + docH - CONF_OVERLAP; // overlap bottom of doc
             const confId = createShapeId();
@@ -2776,13 +2863,15 @@ export function Canvas() {
           });
 
           // Confidence sticky
+          let newConfX = 0;
+          let newConfY = 0;
           if (confidence) {
             const confText = `${confidence} confidence`;
-            const confX = cardX + Math.floor((CARD_W - CONF_STICKY) / 2);
-            const confY = cy + docH - CONF_OVERLAP;
+            newConfX = cardX + Math.floor((CARD_W - CONF_STICKY) / 2);
+            newConfY = cy + docH - CONF_OVERLAP;
             editor.createShape({
               id: createShapeId(), type: "note",
-              x: confX, y: confY, rotation: noteRotation(), parentId: frameId,
+              x: newConfX, y: newConfY, rotation: noteRotation(), parentId: frameId,
               props: {
                 richText: toRichText(confText),
                 color: solRecommended ? (colorMap["green"] || "green") : (colorMap["yellow"] || "yellow"),
@@ -2790,6 +2879,52 @@ export function Canvas() {
               } as any,
               meta: { createdBy: "ai" },
             });
+          }
+
+          // If this is the new recommended solution, move the RECOMMENDED sticker
+          if (solRecommended) {
+            // Find and remove old recommended sticker image(s) inside the solutions frame
+            const frameChildren = allShapes.filter(s => s.parentId === frameId);
+            frameChildren.forEach(child => {
+              if (child.type === "image") {
+                const assetId = (child.props as any).assetId as string | undefined;
+                if (assetId && assetId.includes("recommended")) {
+                  editor.deleteShape(child.id);
+                }
+              }
+            });
+
+            // Also change old green confidence stickies to yellow (de-recommend)
+            frameChildren.forEach(child => {
+              if (child.type === "note") {
+                const noteColor = (child.props as any).color;
+                if (noteColor === (colorMap["green"] || "green")) {
+                  editor.updateShape({
+                    id: child.id, type: "note",
+                    props: { color: colorMap["yellow"] || "yellow" },
+                  });
+                }
+              }
+            });
+
+            // Place RECOMMENDED sticker on the new card's confidence sticky
+            if (confidence) {
+              const stickerUrl = "https://mirostatic.com/stickers/general-task-tacklers__2/task_tacklers_recommended.svg";
+              const dW = 140, dH = 140;
+              const assetId = `asset:sticker-recommended-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
+              editor.createAssets([{
+                id: assetId, type: "image", typeName: "asset",
+                props: { name: "recommended", src: stickerUrl, w: 200, h: 200, mimeType: "image/svg+xml", isAnimated: false },
+                meta: {},
+              }]);
+              editor.createShape({
+                id: createShapeId(), type: "image",
+                x: solutionsFrame.x + newConfX + CONF_STICKY - dW + 20,
+                y: solutionsFrame.y + newConfY + CONF_STICKY - 50,
+                props: { assetId, w: dW, h: dH },
+                meta: { createdBy: "ai" },
+              });
+            }
           }
 
           // Extend frame height if needed
@@ -3704,14 +3839,105 @@ export function Canvas() {
           (s) => s.id === itemId || s.id === `shape:${itemId}`
         );
         if (shapeToUpdate && shapeToUpdate.type === "note") {
+          // Map AI color names to tldraw color values
+          const stickyColorMap: Record<string, string> = {
+            yellow: "yellow", blue: "blue", green: "green",
+            red: "red", pink: "red", orange: "orange", violet: "violet",
+          };
+          const mappedColor = stickyColorMap[newColor] || newColor || "yellow";
+
           editor.updateShape({
             id: shapeToUpdate.id,
             type: "note",
             props: {
               richText: toRichText(newText),
-              color: randomStickyColor(),
+              color: mappedColor,
             },
           });
+
+          // If this is a confidence sticky, reposition it to the bottom of its doc
+          const isConfidence = newText.toLowerCase().includes("confidence");
+          if (isConfidence && shapeToUpdate.parentId) {
+            // Find document shapes in the same frame
+            const siblings = allShapes.filter(s => s.parentId === shapeToUpdate.parentId);
+            const docs = siblings.filter(s => s.type === "document");
+
+            // Find the doc closest to this sticky's X position (same column)
+            const stickyX = shapeToUpdate.x;
+            const stickyW = 200; // "s" note size
+            let bestDoc: typeof docs[0] | null = null;
+            let bestDist = Infinity;
+            for (const doc of docs) {
+              const docW = (doc.props as any).w || 500;
+              const docCenterX = doc.x + docW / 2;
+              const stickyCenterX = stickyX + stickyW / 2;
+              const dist = Math.abs(docCenterX - stickyCenterX);
+              if (dist < bestDist) {
+                bestDist = dist;
+                bestDoc = doc;
+              }
+            }
+
+            if (bestDoc) {
+              const docW = (bestDoc.props as any).w || 500;
+              const docH = (bestDoc.props as any).h || 400;
+              const CONF_OVERLAP = 60;
+              // Center sticky under the doc, overlapping by CONF_OVERLAP
+              const newX = bestDoc.x + Math.floor((docW - stickyW) / 2);
+              const newY = bestDoc.y + docH - CONF_OVERLAP;
+              editor.updateShape({
+                id: shapeToUpdate.id,
+                type: "note",
+                x: newX,
+                y: newY,
+              });
+
+              // If color is green → this is the new recommended solution
+              // Move (or create) the RECOMMENDED sticker image on this sticky
+              if (mappedColor === "green") {
+                const CONF_STICKY = 200;
+                const frame = editor.getShape(shapeToUpdate.parentId as any);
+                const frameX = frame?.x || 0;
+                const frameY = frame?.y || 0;
+
+                const images = allShapes.filter(s => s.type === "image");
+                const recSticker = images.find(img => {
+                  const assetId = (img.props as any).assetId || "";
+                  return assetId.includes("sticker-recommended");
+                });
+
+                const stickerX = frameX + newX + CONF_STICKY - 140 + 20;
+                const stickerY = frameY + newY + CONF_STICKY - 50;
+
+                if (recSticker) {
+                  // Move existing sticker
+                  editor.updateShape({
+                    id: recSticker.id,
+                    type: "image",
+                    x: stickerX,
+                    y: stickerY,
+                  });
+                } else {
+                  // Sticker doesn't exist — create it
+                  const stickerUrl = "https://mirostatic.com/stickers/general-task-tacklers__2/task_tacklers_recommended.svg";
+                  const dW = 140, dH = 140;
+                  const assetId = `asset:sticker-recommended-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
+                  editor.createAssets([{
+                    id: assetId, type: "image", typeName: "asset",
+                    props: { name: "recommended", src: stickerUrl, w: 200, h: 200, mimeType: "image/svg+xml", isAnimated: false },
+                    meta: {},
+                  }]);
+                  editor.createShape({
+                    id: createShapeId(), type: "image",
+                    x: stickerX,
+                    y: stickerY,
+                    props: { assetId, w: dW, h: dH },
+                    meta: { createdBy: "ai" },
+                  });
+                }
+              }
+            }
+          }
         }
       }
 
@@ -3842,6 +4068,8 @@ export function Canvas() {
       if (shapeId) {
         createdShapesRef.current.push(shapeId);
       }
+      } catch (err) {
+        console.error(`[handleToolCall] Error handling ${toolName}:`, err);
       } finally {
         // ALWAYS reset the flag, even if we return early
         isProcessingToolCallRef.current = false;
@@ -4159,7 +4387,7 @@ export function Canvas() {
     editor.setStyleForNextShapes(DefaultSizeStyle, 's');
     editor.setStyleForNextShapes(DefaultDashStyle, 'solid');
     editor.setStyleForNextShapes(DefaultFillStyle, 'solid');
-    editor.setStyleForNextShapes(DefaultColorStyle, 'yellow'); // sunshine sticky by default
+    editor.setStyleForNextShapes(DefaultColorStyle, 'black');
 
     // One-time migration: set colorScheme on existing Gantt charts based on parent frame name
     setTimeout(() => {
@@ -4267,6 +4495,9 @@ export function Canvas() {
     hasPlayedStartChimeRef.current = false;
     waitingForGoodbyeRef.current = false;
     goodbyeTranscriptLengthRef.current = 0;
+    // Clear stale toast so it doesn't reappear after voice mode ends
+    setResponseToast(null);
+    setToastCentered(false);
   }, [voice]);
 
   // Handle voice transcripts - add to message history
@@ -4450,8 +4681,8 @@ export function Canvas() {
             }
           });
 
-          // Plan is done when all steps are completed AND we're not still loading
-          if (totalSteps > 0 && completedSteps >= totalSteps && !isLoading) {
+          // Plan is done when all steps are completed
+          if (totalSteps > 0 && completedSteps >= totalSteps) {
             // Check if there's a NEW user message AFTER the plan finished
             // (i.e., the user has moved on to something else)
             const lastUserMsgIndex = messages.findLastIndex(m => m.role === 'user');
@@ -4459,6 +4690,8 @@ export function Canvas() {
             if (lastUserMsgIndex > approvalIndex) {
               return false; // User sent a new prompt after plan — plan is over
             }
+            // Plan is done — keep hasActivePlan true so completion UI can show
+            // (FloatingPlanProgress handles the green "Plan completed" bar)
           }
 
           return true;
@@ -4556,34 +4789,24 @@ export function Canvas() {
         : lastMsg.content.trim() || null;
     }
 
-    // Done
+    // Done — show only the post-tool text (final summary), not the ack
     if (hasTools) {
       const ackText = (split !== undefined && split > 0)
         ? lastMsg.content.slice(0, split).trim()
         : "";
 
-      // Get the raw post-tool text
-      let rawPostTool = (split !== undefined && split > 0 && split < lastMsg.content.length)
+      // Get the raw post-tool text (everything after the last tool call)
+      const rawPostTool = (split !== undefined && split > 0 && split < lastMsg.content.length)
         ? lastMsg.content.slice(split).trim()
         : "";
 
-      // AI often repeats the ack after tools — strip the duplicate prefix
-      if (rawPostTool && ackText && rawPostTool.startsWith(ackText)) {
-        rawPostTool = rawPostTool.slice(ackText.length).trim();
+      // If there's post-tool text, show it as-is (no stripping)
+      if (rawPostTool) {
+        return rawPostTool;
       }
 
-      // If the post-tool text still starts similarly (fuzzy), strip the first
-      // paragraph since it's likely the repeated ack
-      if (rawPostTool && ackText) {
-        const ackStart = ackText.slice(0, 25);
-        if (rawPostTool.startsWith(ackStart)) {
-          // Strip the first paragraph (everything up to the first double-newline)
-          const paraBreak = rawPostTool.indexOf("\n\n");
-          rawPostTool = paraBreak > 0 ? rawPostTool.slice(paraBreak).trim() : "";
-        }
-      }
-
-      return rawPostTool || null;
+      // No post-tool text — if there's ack text only, don't re-show it when done
+      return null;
     }
 
     // No tools — simple text reply
@@ -4802,13 +5025,13 @@ export function Canvas() {
     }
   }, [showFloatingQuestion, showFloatingPlan, isLoading, hasActivePlan]);
 
-  // Clear toast when plan execution starts (but not if plan approval is still showing)
+  // Clear toast when plan execution starts (but not if plan approval is still showing, and not after completion)
   useEffect(() => {
-    if (hasActivePlan && !showFloatingPlan) {
+    if (hasActivePlan && !showFloatingPlan && isLoading) {
       setResponseToast(null);
       setToastCentered(false);
     }
-  }, [hasActivePlan, showFloatingPlan]);
+  }, [hasActivePlan, showFloatingPlan, isLoading]);
 
   // Reset dismissedPlan when a new plan arrives OR when sidebar opens
   useEffect(() => {
@@ -4903,7 +5126,7 @@ export function Canvas() {
 
         {/* Floating progress indicator - shown when plan active and no other floating UI */}
         <AnimatePresence>
-          {showFloatingProgress && editor && (
+          {showFloatingProgress && !isPlusMenuOpen && !voice.isConnected && editor && (
             <motion.div
               key="floating-progress"
               initial="hidden"
@@ -5034,8 +5257,8 @@ export function Canvas() {
 
           {/* Stacked toasts — response text + creation status lines */}
           <AnimatePresence>
-            {!showFloatingQuestion && !isChatOpen && !shouldHideToastRef.current && !areSuggestionsVisible && (
-              (toastCentered && responseToast) || creationToasts.length > 0
+            {!showFloatingQuestion && !isChatOpen && !shouldHideToastRef.current && !areSuggestionsVisible && !isPlusMenuOpen && !voice.isConnected && (
+              (toastCentered && responseToast)
             ) && (
               <motion.div
                 key="toast-stack"
@@ -5099,48 +5322,13 @@ export function Canvas() {
                     </div>
                   )}
 
-                  {/* Creation toast lines — one per tool call */}
-                  {creationToasts.map((ct) => (
-                    <button
-                      key={ct.id}
-                      onClick={() => {
-                        setChatMode("sidepanel");
-                        setIsCompletionDismissed(true);
-                        if (ct.type === "board" && ct.canvasId) {
-                          navigateToCanvas(ct.canvasId);
-                        } else if (ct.type === "frame" && ct.frameName) {
-                          navigateToFrames([ct.frameName]);
-                        }
-                        setCreationToasts([]);
-                        lastCreationToastedRef.current = null;
-                      }}
-                      className="pointer-events-auto w-full bg-white shadow-lg border border-gray-200 flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
-                      style={{ borderRadius: 24 }}
-                    >
-                      {ct.isCreating ? (
-                        <div className="w-5 h-5 flex-shrink-0 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
-                      ) : (
-                        <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center flex-shrink-0">
-                          <IconCheckMark css={{ width: 12, height: 12 }} />
-                        </div>
-                      )}
-                      <span
-                        className="text-sm font-medium truncate flex-1 text-left"
-                        style={ct.isCreating ? {
-                          background: 'linear-gradient(90deg, #9ca3af 0%, #9ca3af 40%, #d1d5db 50%, #9ca3af 60%, #9ca3af 100%)',
-                          backgroundSize: '200% 100%',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          animation: 'shimmer-text 2s ease-in-out infinite',
-                        } : { color: '#111827' }}
-                      >
-                        {ct.isCreating ? `Creating ${ct.name}...` : `Created ${ct.name}`}
-                      </span>
-                      {!ct.isCreating && (
-                        <IconArrowRight css={{ width: 16, height: 16, color: "#9ca3af", flexShrink: 0 }} />
-                      )}
-                    </button>
-                  ))}
+                  {/* Thinking indicator — shows while AI is working on the board */}
+                  {isLoading && (
+                    <div className="pointer-events-auto flex items-center gap-2.5 px-5 py-3 bg-white shadow-lg border border-gray-200" style={{ borderRadius: 24 }}>
+                      <div className="w-5 h-5 flex-shrink-0 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
+                      <span className="text-sm text-gray-500">Updating the board...</span>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -5175,7 +5363,7 @@ export function Canvas() {
               onToggleMute={voice.toggleMute}
               onExpandedChange={setIsToolbarExpanded}
               onMultiLineChange={setIsToolbarMultiLine}
-              responseToast={isChatOpen || toastCentered || showFloatingQuestion || shouldHideToastRef.current || areSuggestionsVisible ? null : responseToast}
+              responseToast={isChatOpen || toastCentered || showFloatingQuestion || shouldHideToastRef.current || areSuggestionsVisible || voice.isConnected ? null : responseToast}
               onDismissToast={() => { setResponseToast(null); setToastCentered(false); }}
               onOpenChat={() => {
                 setResponseToast(null);
@@ -5188,6 +5376,7 @@ export function Canvas() {
               canvasState={getCanvasState()}
               onSuggestionsVisibilityChange={setAreSuggestionsVisible}
               onInputChange={setHasToolbarText}
+              onPlusMenuChange={setIsPlusMenuOpen}
               onCreateDocument={() => {
                 if (!editor) return;
                 // Get the center of the current viewport

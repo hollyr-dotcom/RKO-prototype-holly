@@ -15,32 +15,54 @@ type ToolCall = {
  * Serialize canvas state into text for the voice AI.
  * Groups confidence stickies with their preceding solution document
  * so the AI doesn't mix up which confidence belongs to which solution.
+ * Also detects RECOMMENDED stickers and marks which solution is recommended.
  */
 function serializeCanvasState(state: {
-  frames: Array<{ id: string; name?: string; children: Array<{ id: string; text?: string; type: string }> }>;
-  orphans: Array<{ id: string; text?: string; type: string }>;
+  frames: Array<{ id: string; name?: string; children: Array<{ id: string; text?: string; type: string; color?: string }> }>;
+  orphans: Array<{ id: string; text?: string; type: string; color?: string }>;
 }) {
   const escapeText = (text: string) => text.replace(/"/g, '\\"').replace(/\n/g, ' ');
   const confPattern = /^\d+%\s*confidence$/i;
 
-  const serializeChildren = (children: Array<{ id: string; text?: string; type: string }>) => {
+  const serializeChildren = (children: Array<{ id: string; text?: string; type: string; color?: string }>) => {
     const items: string[] = [];
+
+    // First pass: find if there's a RECOMMENDED sticker in this frame
+    const hasRecommendedSticker = children.some(c =>
+      c.type === 'image' && c.text === 'RECOMMENDED sticker'
+    );
+
     for (let i = 0; i < children.length; i++) {
       const c = children[i];
       const text = c.text?.slice(0, 200) || 'no text';
 
+      // Skip RECOMMENDED sticker images from the item list (we attach the info to the solution)
+      if (c.type === 'image' && text === 'RECOMMENDED sticker') {
+        continue;
+      }
+
       // If this is a confidence note, attach it to the previous document instead of listing separately
       if (c.type === 'note' && confPattern.test(text.trim()) && items.length > 0) {
-        // Append confidence to the last item (the solution document)
+        // Include color: green = recommended, yellow = lower confidence
+        const colorInfo = c.color === 'green' ? ', RECOMMENDED' :
+                          c.color ? `, color:${c.color}` : '';
+        // Append confidence + color to the last item (the solution document)
         items[items.length - 1] = items[items.length - 1].replace(
           /\)$/,
-          `, ${escapeText(text.trim())})`
+          `, ${escapeText(text.trim())}${colorInfo})`
         );
         continue;
       }
 
       items.push(`[ID: ${c.id}] ${escapeText(text)} (${c.type})`);
     }
+
+    // If we found a recommended sticker but no green confidence note was tagged,
+    // add a note at the end so the AI still knows about the recommendation
+    if (hasRecommendedSticker && !items.some(item => item.includes('RECOMMENDED'))) {
+      items.push('[This zone contains a RECOMMENDED sticker]');
+    }
+
     return items.join(', ');
   };
 
@@ -459,8 +481,8 @@ export function useRealtimeVoice() {
         // Send fresh canvas state as context
         if (getCanvasState) {
           const state = getCanvasState() as {
-            frames: Array<{ id: string; name?: string; children: Array<{ id: string; text?: string; type: string }> }>;
-            orphans: Array<{ id: string; text?: string; type: string }>;
+            frames: Array<{ id: string; name?: string; children: Array<{ id: string; text?: string; type: string; color?: string }> }>;
+            orphans: Array<{ id: string; text?: string; type: string; color?: string }>;
           };
           const hasContent = state.frames.length > 0 || state.orphans.length > 0;
           if (hasContent) {
@@ -622,29 +644,14 @@ export function useRealtimeVoice() {
 
     const dc = dataChannelRef.current;
     const state = getCanvasStateRef.current() as {
-      frames: Array<{ id: string; name?: string; children: Array<{ id: string; text?: string; type: string }> }>;
-      orphans: Array<{ id: string; text?: string; type: string }>;
+      frames: Array<{ id: string; name?: string; children: Array<{ id: string; text?: string; type: string; color?: string }> }>;
+      orphans: Array<{ id: string; text?: string; type: string; color?: string }>;
     };
 
     const hasContent = state.frames.length > 0 || state.orphans.length > 0;
     if (hasContent) {
-      // Escape text and include IDs so AI can use moveItem/deleteItem
-      const escapeText = (text: string) => text.replace(/"/g, '\\"').replace(/\n/g, ' ');
-
-      const parts: string[] = [];
-      state.frames.forEach(f => {
-        const items = f.children.map(c =>
-          `[ID: ${c.id}] ${escapeText(c.text?.slice(0, 200) || 'no text')} (${c.type})`
-        ).join(', ');
-        parts.push(`Frame "${escapeText(f.name || 'Untitled')}": ${items}`);
-      });
-      if (state.orphans.length > 0) {
-        parts.push(`Loose: ${state.orphans.map(s =>
-          `[ID: ${s.id}] ${escapeText(s.text?.slice(0, 200) || 'no text')} (${s.type})`
-        ).join(', ')}`);
-      }
-
-      console.log("[VOICE] Sending canvas update:", parts.join('; '));
+      const summary = serializeCanvasState(state);
+      console.log("[VOICE] Sending canvas update:", summary);
       dc.send(JSON.stringify({
         type: "conversation.item.create",
         item: {
@@ -652,7 +659,7 @@ export function useRealtimeVoice() {
           role: "user",
           content: [{
             type: "input_text",
-            text: `[CANVAS UPDATED] ${parts.join('; ')}`
+            text: `[CANVAS UPDATED] ${summary}`
           }]
         }
       }));
