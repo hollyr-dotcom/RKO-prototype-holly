@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { HomePromptInput } from "@/components/HomePromptInput";
+import { ChatInput } from "@/components/toolbar/ChatInput";
 import { HorizontalFeed } from "@/components/feed/HorizontalFeed";
 import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/hooks/useAuth";
@@ -139,8 +139,16 @@ export default function HomePage() {
       </div>
 
       {/* Prompt bar */}
-      <div className="absolute bottom-8 left-6 right-6">
-        <HomePromptInput onSubmit={handleSubmit} isLoading={isLoading} />
+      <div className="absolute bottom-8 left-0 right-0 mx-auto w-full max-w-3xl px-6">
+        <ChatInput
+          onSubmit={handleSubmit}
+          onFocusChange={() => {}}
+          isLoading={isLoading}
+          hasMessages={false}
+          hasPendingQuestion={false}
+          canvasState={{ frames: [], orphans: [], arrows: [] }}
+          voiceState="idle"
+        />
       </div>
     </div>
   );
