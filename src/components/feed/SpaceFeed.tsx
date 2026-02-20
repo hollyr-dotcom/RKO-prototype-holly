@@ -118,7 +118,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
   const sidebarPanels = SIDEBAR_PANELS[spaceId];
 
   return (
-    <div className="h-full relative flex flex-col">
+    <div className="h-full relative flex flex-col overflow-hidden">
       {/* Header — full width with 16px padding */}
       <div className="flex-shrink-0 px-4 pt-4">
         {space && (

@@ -127,8 +127,12 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
     const IMAGE_ILLUSTRATIONS: Record<string, string> = {
       "feed-cross-14": "/feed-viz/FirstFlex-Youth-Banking/psd3.png",
       "feed-ff-youth-05": "/feed-viz/FirstFlex-Youth-Banking/Starling.png",
+      "feed-ff-03": "/feed-viz/FlexForward-26/venue.png",
     };
     const illustrationImage = IMAGE_ILLUSTRATIONS[item.id];
+    // Items with custom inline illustrations in the standard 240x184 frame
+    const CUSTOM_ILLUSTRATION_IDS = new Set(["feed-ff-youth-03", "feed-cross-06", "feed-ff26-02"]);
+    const hasCustomIllustration = CUSTOM_ILLUSTRATION_IDS.has(item.id);
 
     return (
       <motion.div
@@ -138,7 +142,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
       >
         <div className="flex">
           {/* Left: text content */}
-          <div className={`flex flex-col flex-1 min-w-0 p-6 ${hasVisual || hasIllustration || illustrationImage ? "pr-0" : ""}`} style={{ paddingBottom: item.actions.length > 0 ? 104 : 24 }}>
+          <div className={`flex flex-col flex-1 min-w-0 p-6 ${hasVisual || hasIllustration || illustrationImage || hasCustomIllustration ? "pr-0" : ""}`} style={{ paddingBottom: item.actions.length > 0 ? 104 : 24 }}>
             {/* Icon or avatar + timestamp */}
             <div className="flex items-center gap-3 mb-3">
               {titleMentionsPerson && sourceUser?.avatar ? (
@@ -183,7 +187,36 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
           </div>
 
           {/* Right: visual preview or bespoke illustration */}
-          {illustrationImage ? (
+          {hasCustomIllustration ? (
+            <div className="flex-shrink-0 flex items-center justify-center" style={{ padding: 32 }}>
+              <div className="overflow-hidden flex-shrink-0" style={{ width: 240, height: 184, borderRadius: 24 }}>
+                {(item.id === "feed-cross-06" || item.id === "feed-ff26-02") && (
+                  <div className="w-full h-full flex flex-col justify-center" style={{ padding: 20 }}>
+                    <div className="flex gap-1 mb-1.5">
+                      {["M", "T", "W", "T", "F"].map((d, i) => (
+                        <div key={i} className="flex-1 text-center text-xs text-gray-400">{d}</div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-5 gap-1">
+                      {[...Array(15)].map((_, i) => (
+                        <div key={i} className="h-5 rounded-sm" style={{ backgroundColor: i === 7 ? '#DB4F4F' : '#FFC6C6' }} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {item.id === "feed-ff-youth-03" && (
+                  <div className="w-full h-full flex flex-col justify-end" style={{ backgroundColor: '#e4f9ff', padding: 24 }}>
+                    <div className="flex items-center justify-center rounded-lg bg-white" style={{ width: 36, height: 36 }}>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <rect x="3" y="1" width="14" height="18" rx="2" fill="#22d3ee" />
+                      </svg>
+                    </div>
+                    <p className="mt-2 text-xl font-semibold" style={{ color: '#001d66' }}>Feature Spec</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : illustrationImage ? (
             <div className="flex-shrink-0 flex items-center justify-center" style={{ padding: 32 }}>
               <div className="overflow-hidden flex-shrink-0" style={{ width: 240, height: 184, borderRadius: 24 }}>
                 <Image src={illustrationImage} alt="" width={480} height={368} className="w-full h-full object-cover" />
