@@ -69,7 +69,6 @@ function deserializeTasks(raw: GanttTask[]) {
 const GANTT_TASK_TYPES = [
   { id: "task", label: "Task" },
   { id: "summary", label: "Summary task" },
-  { id: "milestone", label: "Milestone" },
   { id: "conflict", label: "Conflict" },
 ];
 
@@ -105,11 +104,13 @@ export function GanttInteractive({
   shapeId,
   editor,
   isEditing,
+  colorScheme,
   onEscape,
 }: {
   shapeId: string;
   editor: TLEditor;
   isEditing: boolean;
+  colorScheme?: string;
   onEscape?: () => void;
 }) {
   const [api, setApi] = useState<IApi | null>(null);
@@ -133,8 +134,50 @@ export function GanttInteractive({
   );
 
   const links = (props?.links ?? []) as GanttLink[];
-  const scales = (props?.scales ?? []) as GanttScale[];
   const columns = (props?.columns ?? []) as GanttColumn[];
+
+  // Auto-compute viewport start/end from tasks so bars are always visible
+  const { chartStart, chartEnd, smartScales } = useMemo(() => {
+    if (!tasks.length) return { chartStart: undefined, chartEnd: undefined, smartScales: (props?.scales ?? []) as GanttScale[] };
+
+    let minDate = tasks[0].start;
+    let maxDate = tasks[0].end;
+    for (const t of tasks) {
+      if (t.start < minDate) minDate = t.start;
+      if (t.end > maxDate) maxDate = t.end;
+    }
+
+    // Add padding: 1 week before, 2 weeks after
+    const pad = (d: Date, days: number) => {
+      const r = new Date(d);
+      r.setDate(r.getDate() + days);
+      return r;
+    };
+    const start = pad(minDate, -7);
+    const end = pad(maxDate, 14);
+
+    // Pick scales based on date span
+    const spanDays = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    let scales: GanttScale[];
+    if (spanDays <= 30) {
+      scales = [
+        { unit: "month", step: 1, format: "%F %Y" },
+        { unit: "day", step: 1, format: "%j" },
+      ];
+    } else if (spanDays <= 120) {
+      scales = [
+        { unit: "month", step: 1, format: "%F %Y" },
+        { unit: "week", step: 1, format: "%j" },
+      ];
+    } else {
+      scales = [
+        { unit: "quarter", step: 1, format: "%F %Y" },
+        { unit: "month", step: 1, format: "%F" },
+      ];
+    }
+
+    return { chartStart: start, chartEnd: end, smartScales: scales };
+  }, [tasks, props?.scales]);
 
   // Save changes back to shape
   const saveToShape = useCallback(
@@ -200,6 +243,7 @@ export function GanttInteractive({
 
   return (
     <div
+      className={colorScheme ? `gantt-scheme-${colorScheme}` : undefined}
       style={{ width: "100%", height: "100%" }}
       onPointerDown={(e) => {
         if (isEditing) e.stopPropagation();
@@ -222,8 +266,10 @@ export function GanttInteractive({
                   <Gantt
                     tasks={tasks}
                     links={links}
-                    scales={scales}
+                    scales={smartScales}
                     columns={columns}
+                    start={chartStart}
+                    end={chartEnd}
                     taskTypes={GANTT_TASK_TYPES}
                     init={(a: IApi) => setApi(a)}
                   />
@@ -235,8 +281,10 @@ export function GanttInteractive({
             <Gantt
               tasks={tasks}
               links={links}
-              scales={scales}
+              scales={smartScales}
               columns={columns}
+              start={chartStart}
+              end={chartEnd}
               taskTypes={GANTT_TASK_TYPES}
               readonly={true}
             />

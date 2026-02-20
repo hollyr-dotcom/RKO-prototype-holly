@@ -11,6 +11,50 @@ type ToolCall = {
   call_id?: string;
 };
 
+/**
+ * Serialize canvas state into text for the voice AI.
+ * Groups confidence stickies with their preceding solution document
+ * so the AI doesn't mix up which confidence belongs to which solution.
+ */
+function serializeCanvasState(state: {
+  frames: Array<{ id: string; name?: string; children: Array<{ id: string; text?: string; type: string }> }>;
+  orphans: Array<{ id: string; text?: string; type: string }>;
+}) {
+  const escapeText = (text: string) => text.replace(/"/g, '\\"').replace(/\n/g, ' ');
+  const confPattern = /^\d+%\s*confidence$/i;
+
+  const serializeChildren = (children: Array<{ id: string; text?: string; type: string }>) => {
+    const items: string[] = [];
+    for (let i = 0; i < children.length; i++) {
+      const c = children[i];
+      const text = c.text?.slice(0, 200) || 'no text';
+
+      // If this is a confidence note, attach it to the previous document instead of listing separately
+      if (c.type === 'note' && confPattern.test(text.trim()) && items.length > 0) {
+        // Append confidence to the last item (the solution document)
+        items[items.length - 1] = items[items.length - 1].replace(
+          /\)$/,
+          `, ${escapeText(text.trim())})`
+        );
+        continue;
+      }
+
+      items.push(`[ID: ${c.id}] ${escapeText(text)} (${c.type})`);
+    }
+    return items.join(', ');
+  };
+
+  const parts: string[] = [];
+  state.frames.forEach(f => {
+    const items = serializeChildren(f.children);
+    parts.push(`Frame "${escapeText(f.name || 'Untitled')}": ${items}`);
+  });
+  if (state.orphans.length > 0) {
+    parts.push(`Loose: ${state.orphans.map(s => `[ID: ${s.id}] ${escapeText(s.text?.slice(0, 200) || 'no text')} (${s.type})`).join(', ')}`);
+  }
+  return parts.join('; ');
+}
+
 export function useRealtimeVoice() {
   const [state, _setState] = useState<VoiceState>("idle");
   const stateRef = useRef<VoiceState>("idle");
@@ -262,8 +306,10 @@ export function useRealtimeVoice() {
             } else {
               voiceStreamingRef.current = null;
               // Canvas tools → execute directly on canvas (normal path)
+              // createZone: rename to createZone_result so Canvas.tsx uses the same handler as chat
+              const dispatchName = toolName === "createZone" ? "createZone_result" : toolName;
               if (onToolCallRef.current) {
-                onToolCallRef.current(toolName, args);
+                onToolCallRef.current(dispatchName, args);
               }
             }
 
@@ -315,7 +361,7 @@ export function useRealtimeVoice() {
             // Canvas-modifying tools - send fresh canvas state with the response
             const canvasTools = ["createSticky", "createShape", "createText", "createFrame",
               "createArrow", "createWorkingNote", "createLayout", "createSources",
-              "deleteItem", "deleteFrame", "updateSticky", "moveItem", "createWorkshopBoard"];
+              "deleteItem", "deleteFrame", "updateSticky", "moveItem", "createWorkshopBoard", "createZone", "addSolutionCard"];
             const isCanvasTool = canvasTools.includes(toolName);
 
             if (isCanvasTool && getCanvasStateRef.current) {
@@ -327,18 +373,9 @@ export function useRealtimeVoice() {
                   frames: Array<{ id: string; name?: string; createdBy: string; children: Array<{ id: string; text?: string; type: string; color?: string; createdBy: string }> }>;
                   orphans: Array<{ id: string; text?: string; type: string; createdBy: string }>;
                 };
-                // Build summary with IDs so AI can use moveItem/deleteItem
-                const escapeText = (text: string) => text.replace(/"/g, '\\"').replace(/\n/g, ' ');
-                const summary = freshState.frames.map(f =>
-                  `Frame "${escapeText(f.name || 'Untitled')}": ${f.children.map(c =>
-                    `[ID: ${c.id}] ${escapeText(c.text?.slice(0, 200) || 'no text')} (${c.type})`
-                  ).join(', ')}`
-                ).join('; ');
-                const orphanSummary = freshState.orphans.length > 0
-                  ? `; Loose: ${freshState.orphans.map(s => `[ID: ${s.id}] ${escapeText(s.text?.slice(0, 200) || 'no text')} (${s.type})`).join(', ')}`
-                  : '';
+                const summary = serializeCanvasState(freshState);
 
-                const outputData = { success: true, canvasUpdate: (summary + orphanSummary) || "Canvas updated" };
+                const outputData = { success: true, canvasUpdate: summary || "Canvas updated" };
                 dc.send(JSON.stringify({
                   type: "conversation.item.create",
                   item: {
@@ -427,15 +464,7 @@ export function useRealtimeVoice() {
           };
           const hasContent = state.frames.length > 0 || state.orphans.length > 0;
           if (hasContent) {
-            const escapeText = (text: string) => text.replace(/"/g, '\\"').replace(/\n/g, ' ');
-            const parts: string[] = [];
-            state.frames.forEach(f => {
-              const items = f.children.map(c => `[ID: ${c.id}] ${escapeText(c.text?.slice(0, 200) || 'no text')} (${c.type})`).join(', ');
-              parts.push(`Frame "${escapeText(f.name || 'Untitled')}": ${items}`);
-            });
-            if (state.orphans.length > 0) {
-              parts.push(`Loose: ${state.orphans.map(s => `[ID: ${s.id}] ${escapeText(s.text?.slice(0, 200) || 'no text')} (${s.type})`).join(', ')}`);
-            }
+            const summary = serializeCanvasState(state);
             dc.send(JSON.stringify({
               type: "conversation.item.create",
               item: {
@@ -443,7 +472,7 @@ export function useRealtimeVoice() {
                 role: "user",
                 content: [{
                   type: "input_text",
-                  text: `[CANVAS STATE] ${parts.join('; ')}`
+                  text: `[CANVAS STATE] ${summary}`
                 }]
               }
             }));

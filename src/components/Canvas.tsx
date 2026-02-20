@@ -1,7 +1,24 @@
 "use client";
 
-import { Tldraw, Editor, createShapeId, toRichText, renderHtmlFromRichTextForMeasurement, TLShapeId, DefaultFontStyle, DefaultSizeStyle, DefaultDashStyle, DefaultFillStyle, TLGridProps } from "tldraw";
+import { Tldraw, Editor, createShapeId, toRichText, renderHtmlFromRichTextForMeasurement, TLShapeId, DefaultFontStyle, DefaultSizeStyle, DefaultDashStyle, DefaultFillStyle, TLGridProps, DefaultColorStyle, DefaultColorThemePalette } from "tldraw";
 import "tldraw/tldraw.css";
+
+// ── Override tldraw sticky colors with Miro DS canvas sticky tokens ──
+// Uses the official Miro sticky background colors (canvas-*-400 scale).
+const light = DefaultColorThemePalette.lightMode;
+light.yellow.noteFill    = "#FFE86D"; light.yellow.noteText    = "#231E0C";   // sunshine-400 / yellow-950
+light.orange.noteFill    = "#FFF79E"; light.orange.noteText    = "#231E0C";   // sunshine-250 (light) / yellow-950
+light.green.noteFill     = "#6AE08D"; light.green.noteText     = "#02400F";   // moss-400 / moss-900
+light["light-green"].noteFill = "#B3E65F"; light["light-green"].noteText = "#21370B"; // lime-400 / lime-900
+light.blue.noteFill      = "#86B4F9"; light.blue.noteText      = "#001D66";   // ocean-400 / ocean-900
+light["light-blue"].noteFill  = "#B2D0FE"; light["light-blue"].noteText  = "#001D66"; // ocean-250 / ocean-900
+light.violet.noteFill    = "#B8ACFB"; light.violet.noteText    = "#20084F";   // lilac-400 / violet-900
+light["light-violet"].noteFill = "#FD9AE7"; light["light-violet"].noteText = "#55055C"; // pink-400 / pink-900
+light.red.noteFill       = "#FF9E9E"; light.red.noteText       = "#600000";   // coral-400 / coral-900
+light["light-red"].noteFill   = "#81E7DE"; light["light-red"].noteText   = "#0E4343"; // teal-400 / teal-900
+light.grey.noteFill      = "#CFCFCF"; light.grey.noteText      = "#333333";   // coal-400 / coal-900
+light.black.noteFill     = "#151515"; light.black.noteText     = "#FFFFFF";   // black / white
+light.white.noteFill     = "#FFFFFF"; light.white.noteText     = "#34363E";   // white / gray-800
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { Message } from "@/hooks/useAgent";
 import { useChat } from "@/hooks/useChat";
@@ -37,6 +54,7 @@ import type { LayoutType, LayoutItem, LayoutOptions } from "@/types/layout";
 import Markdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { FocusModeOverlay, FocusedShape } from "./FocusModeOverlay";
+import { FloatingQuestionCard } from "./FloatingQuestionCard";
 import { setFocusedDocId } from "@/lib/focusModeStore";
 import { PlacementEngine, getCategoryForTool } from "@/lib/placementEngine";
 
@@ -95,169 +113,6 @@ function FloatingThinkingIndicator({ status = "Thinking..." }: { status?: string
 
 // Floating voice indicator
 // Floating question card (Claude Cowork style)
-function FloatingQuestionCard({
-  question,
-  options,
-  onSelect,
-  onSkip,
-}: {
-  question: string;
-  options: string[];
-  onSelect: (answer: string) => void;
-  onSkip: () => void;
-}) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [customInput, setCustomInput] = useState("");
-  const [showCustomInput, setShowCustomInput] = useState(false);
-
-  // Filter out "something else" from options since we have built-in custom input
-  const filteredOptions = options.filter(opt => !opt.toLowerCase().includes('something else'));
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't handle if typing in input
-      if (showCustomInput) return;
-
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setSelectedIndex((prev) => Math.max(0, prev - 1));
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setSelectedIndex((prev) => Math.min(filteredOptions.length, prev + 1));
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        if (selectedIndex === filteredOptions.length) {
-          setShowCustomInput(true);
-        } else {
-          onSelect(filteredOptions[selectedIndex]);
-        }
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        onSkip();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedIndex, filteredOptions, onSelect, onSkip, showCustomInput]);
-
-  const handleCustomSubmit = () => {
-    if (customInput.trim()) {
-      onSelect(customInput.trim());
-    }
-  };
-
-  return (
-    <div className="w-[520px]">
-      <div className="bg-white text-gray-900 shadow-2xl overflow-hidden border border-gray-200" style={{ borderRadius: 24 }}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-2">
-          <p className="text-base font-medium flex-1 pr-4">{question}</p>
-          <button
-            onClick={onSkip}
-            className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
-          >
-            <IconCross css={{ width: 18, height: 18 }} />
-          </button>
-        </div>
-
-        {/* Options or Custom Input */}
-        {showCustomInput ? (
-          <div className="px-4 pb-4">
-            <input
-              autoFocus
-              value={customInput}
-              onChange={(e) => setCustomInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && customInput.trim()) {
-                  e.preventDefault();
-                  handleCustomSubmit();
-                } else if (e.key === "Escape") {
-                  e.preventDefault();
-                  setShowCustomInput(false);
-                  setCustomInput("");
-                }
-              }}
-              placeholder="Type your answer..."
-              className="w-full px-4 py-3 bg-gray-100 text-gray-900 placeholder-gray-400 outline-none border border-gray-200 focus:border-gray-300"
-              style={{ borderRadius: 24 }}
-            />
-            <div className="flex justify-end gap-2 mt-3">
-              <button
-                onClick={() => {
-                  setShowCustomInput(false);
-                  setCustomInput("");
-                }}
-                className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                Back
-              </button>
-              <button
-                onClick={handleCustomSubmit}
-                disabled={!customInput.trim()}
-                className="px-4 py-1.5 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Submit
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="px-3 py-2 space-y-1">
-              {filteredOptions.map((option, i) => (
-                <button
-                  key={i}
-                  onClick={() => onSelect(option)}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors animate-slideInFromLeft ${
-                    selectedIndex === i ? "bg-gray-100" : "hover:bg-gray-50"
-                  }`}
-                  style={{ animationDelay: `${i * 60}ms` }}
-                >
-                  <span className="w-7 h-7 flex items-center justify-center rounded bg-gray-100 text-sm font-medium text-gray-600">
-                    {i + 1}
-                  </span>
-                  <span className="text-left flex-1">{option}</span>
-                  {selectedIndex === i && (
-                    <IconArrowRight css={{ width: 18, height: 18, color: '#9ca3af' }} />
-                  )}
-                </button>
-              ))}
-
-              {/* Something else option */}
-              <button
-                onClick={() => setShowCustomInput(true)}
-                className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                  selectedIndex === filteredOptions.length ? "bg-gray-100" : "hover:bg-gray-50"
-                }`}
-              >
-                <span className="w-7 h-7 flex items-center justify-center rounded bg-gray-100 text-gray-500">
-                  <IconSquarePencil css={{ width: 14, height: 14 }} />
-                </span>
-                <span className="text-gray-400">Something else</span>
-              </button>
-            </div>
-
-            {/* Skip button */}
-            <div className="px-5 py-3 flex justify-end border-t border-gray-100">
-              <button
-                onClick={onSkip}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors"
-              >
-                Skip
-              </button>
-            </div>
-
-            {/* Keyboard hints */}
-            <div className="px-5 py-2 text-xs text-gray-400 text-center border-t border-gray-100">
-              ↑↓ to navigate · Enter to select · Esc to skip
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // Floating plan approval toast (simple, like checkpoint)
 function FloatingPlanApproval({
   title,
@@ -445,16 +300,27 @@ function FloatingProgressIndicator({
   const rawStepText = activePlan.steps[activePlan.currentStep] || "";
   const isComplete = stepNumber >= totalSteps && !isLoading;
 
+  // Check if canvas creation tools have started (zones, frames, etc.)
+  // Once creation starts, skip the connector cycling and show real step progress
+  const hasCanvasCreationStarted = messages.some(m =>
+    m.role === 'assistant' && m.toolInvocations?.some(t =>
+      ["createZone", "createFrame", "createLayout", "createCanvas", "createDocument", "createDataTable", "createSources"].includes(t.toolName)
+    )
+  );
+
   // Derive displayed step text from elapsed animation time
+  // Only show connector cycling before canvas creation tools arrive
   const elapsed = animStart > 0 ? Date.now() - animStart : 0;
   let currentStepText = rawStepText;
   let connectorIcon: React.ReactNode = null;
-  if (elapsed > 0 && elapsed < 2000) {
-    currentStepText = "Finding relevant data…";
-  } else if (elapsed >= 2000 && elapsed < 20000) {
-    const idx = Math.floor((elapsed - 2000) / 4000) % connectorSources.length;
-    currentStepText = `Connecting to ${connectorSources[idx].name}…`;
-    connectorIcon = connectorSources[idx].icon;
+  if (!hasCanvasCreationStarted) {
+    if (elapsed > 0 && elapsed < 2000) {
+      currentStepText = "Finding relevant data…";
+    } else if (elapsed >= 2000 && elapsed < 20000) {
+      const idx = Math.floor((elapsed - 2000) / 4000) % connectorSources.length;
+      currentStepText = `Connecting to ${connectorSources[idx].name}…`;
+      connectorIcon = connectorSources[idx].icon;
+    }
   }
 
   // If complete and dismissed, show nothing (don't fall through to checkpoint)
@@ -503,15 +369,7 @@ function FloatingProgressIndicator({
             <IconCheckMark css={{ width: 20, height: 20, color: 'white' }} />
           </div>
 
-          <span className="text-sm font-medium flex-1">Task completed</span>
-
-          {/* View work button */}
-          <button
-            onClick={handleViewWork}
-            className="px-3 py-1 text-sm font-medium bg-white text-green-600 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            View work
-          </button>
+          <span className="text-sm font-medium flex-1">Plan completed</span>
 
           {/* Close button */}
           <button
@@ -764,13 +622,13 @@ const colorMap: Record<string, TLColor> = {
   white: "white",
 };
 
-// Sticky note color palette — matches home page sticky colors (PromptStickyNotes)
+// Sticky note color palette — Miro DS canvas sticky colors
 const STICKY_COLOR_PALETTE: TLColor[] = [
-  "yellow",       // home: #F5D550
-  "light-red",    // home: #F08080 (coral)
-  "light-violet", // home: #E07BE0 (pink)
-  "violet",       // home: #B0A0D8 (lavender)
-  "light-blue",   // home: #88A8E0 (blue)
+  "yellow",       // sunshine-400: #FFE86D
+  "light-red",    // teal-400: #81E7DE
+  "light-violet", // pink-400: #FD9AE7
+  "violet",       // lilac-400: #B8ACFB
+  "light-blue",   // cyan-400: #9CE6FF
 ];
 
 function randomStickyColor(): TLColor {
@@ -2336,10 +2194,11 @@ export function Canvas() {
       }
 
       if (toolName === "createGanttChart") {
-        const { title, tasks, links } = args as {
+        const { title, tasks, links, colorScheme: ganttColorScheme } = args as {
           title?: string;
           tasks?: Array<{ id: number; text: string; start: string; end: string; progress: number; parent: number; type: string; open: boolean }>;
           links?: Array<{ id: number; source: number; target: number; type: string }>;
+          colorScheme?: string;
         };
 
         // Generous initial size — AutoSizeWrapper will adjust to fit content
@@ -2369,6 +2228,7 @@ export function Canvas() {
               { id: "start", header: "Start date", width: 106, align: "center" },
               { id: "add-task", header: "", width: 40, align: "center" },
             ],
+            colorScheme: ganttColorScheme || "",
           },
           meta: { createdBy: "ai" },
         });
@@ -2446,6 +2306,8 @@ export function Canvas() {
       }
 
       // ─── createZone_result: composed frame with mixed content ────────────
+      // Chat flow: server processes createZone → sends createZone_result
+      // Voice flow: useRealtimeVoice renames createZone → createZone_result before dispatch
       if (toolName === "createZone_result") {
         const {
           title, layout, gantt, summary, people,
@@ -2506,7 +2368,7 @@ export function Canvas() {
         if (layout === "synthesis") {
           const FW = 750;
           const PAD = 72;
-          const TITLE_H = 80;
+          const TITLE_H = 160;
           const contentWidth = FW - PAD * 2;
 
           // Pre-calculate total height
@@ -2532,7 +2394,7 @@ export function Canvas() {
           editor.createShape({
             id: createShapeId(), type: "text",
             x: PAD, y: cy, parentId: frameId,
-            props: { richText: toRichText(title || "Synthesis"), size: "l", font: "sans", color: "black" },
+            props: { richText: toRichText(title || "Synthesis"), size: "xl", font: "sans", color: "black" },
             meta: { createdBy: "ai" },
           });
           cy += TITLE_H;
@@ -2557,7 +2419,7 @@ export function Canvas() {
           const PAD = 72;
           const CARD_GAP = 48;
           const CARD_W = Math.floor((FW - PAD * 2 - CARD_GAP) / 2); // ~504px each
-          const TITLE_H = 80;
+          const TITLE_H = 160;
           const CONF_STICKY = 200;       // "s" note size
           const CONF_OVERLAP = 60;       // how far the sticky overlaps the doc bottom
 
@@ -2590,12 +2452,13 @@ export function Canvas() {
           editor.createShape({
             id: createShapeId(), type: "text",
             x: PAD, y: PAD, parentId: frameId,
-            props: { richText: toRichText(title || "Possible Solutions"), size: "l", font: "sans", color: "black" },
+            props: { richText: toRichText(title || "Possible Solutions"), size: "xl", font: "sans", color: "black" },
             meta: { createdBy: "ai" },
           });
 
           // Place each solution card side-by-side
-          let recommendedCardX = 0;
+          let recStickyX = 0;
+          let recStickyY = 0;
           for (let i = 0; i < solArr.length; i++) {
             const sol = solArr[i];
             const cardX = PAD + i * (CARD_W + CARD_GAP);
@@ -2628,15 +2491,16 @@ export function Canvas() {
             });
 
             if (sol.isRecommended) {
-              recommendedCardX = cardX;
+              recStickyX = confX;
+              recStickyY = confY;
             }
           }
 
-          // Recommended sticker on preferred card — left+down, larger
+          // Recommended sticker — on the green confidence sticky, bottom-right
           const recSol = solArr.find(s => s.isRecommended);
           if (recSol) {
             const stickerUrl = "https://mirostatic.com/stickers/general-task-tacklers__2/task_tacklers_recommended.svg";
-            const dW = 180, dH = 180;
+            const dW = 140, dH = 140;
             const assetId = `asset:sticker-recommended-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
             editor.createAssets([{
               id: assetId, type: "image", typeName: "asset",
@@ -2645,8 +2509,8 @@ export function Canvas() {
             }]);
             editor.createShape({
               id: createShapeId(), type: "image",
-              x: framePos.x + recommendedCardX + CARD_W - dW + 10,
-              y: framePos.y + PAD + TITLE_H - 30,
+              x: framePos.x + recStickyX + CONF_STICKY - dW + 20,
+              y: framePos.y + recStickyY + CONF_STICKY - 50,
               props: { assetId, w: dW, h: dH },
               meta: { createdBy: "ai" },
             });
@@ -2667,7 +2531,7 @@ export function Canvas() {
           const CARD_GAP = 14;
           const METRIC_GAP = 16;
           const METRIC_W = 200;                // matches "s" note width
-          const TITLE_H = 80;                  // zone title text height + big gap below
+          const TITLE_H = 160;                 // zone title text height + big gap below
           const CX = PAD + 200 + HGAP;        // content start X
           const CW = FW - CX - PAD;           // content width
 
@@ -2677,8 +2541,11 @@ export function Canvas() {
           const RCW = FW - RCX - PAD;         // right content width
 
           // ── Derive section header colors ──
-          const sectionColor: string = headerColor || "light-violet";
-          const lightVariantMap: Record<string, string> = { blue: "light-blue", yellow: "yellow", green: "light-green", violet: "light-violet", orange: "yellow", red: "light-red" };
+          // Prio 1 (headerColor:"green") → ocean stickies, ocean-light metrics
+          // Prio 2 (headerColor:"violet") → sunshine stickies, sunshine-light metrics
+          const sectionColorMap: Record<string, string> = { green: "blue", violet: "yellow" };
+          const sectionColor: string = sectionColorMap[headerColor || ""] || headerColor || "light-violet";
+          const lightVariantMap: Record<string, string> = { blue: "light-blue", yellow: "orange", green: "light-green", violet: "light-violet", red: "light-red" };
           const sectionColorLight: string = lightVariantMap[sectionColor] || sectionColor;
 
           // ── Pre-calculate ALL section heights from data ──
@@ -2746,7 +2613,7 @@ export function Canvas() {
           editor.createShape({
             id: createShapeId(), type: "text",
             x: PAD, y: cy, parentId: frameId,
-            props: { richText: toRichText(title || "Zone"), size: "l", font: "sans", color: "black" },
+            props: { richText: toRichText(title || "Zone"), size: "xl", font: "sans", color: "black" },
             meta: { createdBy: "ai" },
           });
           cy += TITLE_H;
@@ -2768,7 +2635,7 @@ export function Canvas() {
               editor.createShape({
                 id: createShapeId(), type: "peoplelist" as any,
                 x: RCX, y: cy, parentId: frameId,
-                props: { w: RCW, h: peopleH, people },
+                props: { w: RCW, h: peopleH, people, colorScheme: headerColor || "" },
                 meta: { createdBy: "ai" },
               });
             }
@@ -2786,6 +2653,7 @@ export function Canvas() {
                 tasks: gantt.tasks || [], links: gantt.links || [],
                 scales: [{ unit: "month", step: 1, format: "%F %Y" }, { unit: "week", step: 1, format: "%j" }],
                 columns: [{ id: "text", header: "Task name", width: 180 }, { id: "start", header: "Start", width: 90, align: "center" }, { id: "add-task", header: "", width: 40, align: "center" }],
+                colorScheme: headerColor || "",
               },
               meta: { createdBy: "ai" },
             });
@@ -2794,7 +2662,7 @@ export function Canvas() {
 
           // Section 3: User Insight cards
           if (feedbackSlice.length > 0) {
-            addHeaderSticky("User\nInsight", PAD, cy);
+            addHeaderSticky("User\nInsights", PAD, cy);
             for (let i = 0; i < feedbackSlice.length; i++) {
               const fb = feedbackSlice[i];
               editor.createShape({
@@ -2830,13 +2698,13 @@ export function Canvas() {
             const dW = 180, dH = 180;
             const assetId = `asset:sticker-recommended-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
             editor.createAssets([{ id: assetId, type: "image", typeName: "asset", props: { name: "recommended", src: stickerUrl, w: 200, h: 200, mimeType: "image/svg+xml", isAnimated: false }, meta: {} }]);
-            editor.createShape({ id: createShapeId(), type: "image", x: framePos.x + FW - dW + 10, y: framePos.y - 20, props: { assetId, w: dW, h: dH }, meta: { createdBy: "ai" } });
+            editor.createShape({ id: createShapeId(), type: "image", x: framePos.x + FW - dW + 10, y: framePos.y + 40, props: { assetId, w: dW, h: dH }, meta: { createdBy: "ai" } });
           } else if (resolvedStickers && resolvedStickers.length > 0) {
             const stk = resolvedStickers[0];
             const dW = 180, dH = 180;
             const assetId = `asset:sticker-${stk.stickerId}-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
             editor.createAssets([{ id: assetId, type: "image", typeName: "asset", props: { name: stk.stickerId, src: stk.url, w: stk.width, h: stk.height, mimeType: stk.url.endsWith(".svg") ? "image/svg+xml" : "image/png", isAnimated: false }, meta: {} }]);
-            editor.createShape({ id: createShapeId(), type: "image", x: framePos.x + FW - dW + 10, y: framePos.y - 20, props: { assetId, w: dW, h: dH }, meta: { createdBy: "ai" } });
+            editor.createShape({ id: createShapeId(), type: "image", x: framePos.x + FW - dW + 10, y: framePos.y + 40, props: { assetId, w: dW, h: dH }, meta: { createdBy: "ai" } });
           }
 
           shapeId = frameId;
@@ -2844,6 +2712,100 @@ export function Canvas() {
       }
 
       // ─── createWorkshopBoard: decision workshop for team dot-voting ────────────
+      // ─── addSolutionCard: append a new solution to the existing Possible Solutions frame ───
+      if (toolName === "addSolutionCard") {
+        const { title: solTitle, content, confidence, isRecommended: solRecommended } = args as {
+          title?: string;
+          content?: string;
+          confidence?: string;
+          isRecommended?: boolean;
+        };
+
+        // Find the solutions frame — look for frames with "solution" or "possible" in name, or containing document children
+        const allShapes = editor.getCurrentPageShapes();
+        const solutionsFrame = allShapes.find(s => {
+          if (s.type !== "frame") return false;
+          const name = ((s.props as any).name || "").toLowerCase();
+          return name.includes("solution") || name.includes("possible");
+        }) || allShapes.find(s => {
+          // Fallback: find a frame that contains document shapes (likely the solutions frame)
+          if (s.type !== "frame") return false;
+          const children = allShapes.filter(c => c.parentId === s.id && c.type === "document");
+          return children.length >= 2;
+        });
+
+        if (solutionsFrame) {
+          const frameId = solutionsFrame.id;
+          const frameW = (solutionsFrame.props as any).w || 1200;
+          const frameH = (solutionsFrame.props as any).h || 600;
+
+          // Count existing document cards to know the column index
+          const existingDocs = allShapes.filter(s => s.parentId === frameId && s.type === "document");
+          const colIndex = existingDocs.length; // 0-based, so 2 existing = column index 2
+
+          // Layout constants (must match solution layout)
+          const PAD = 72;
+          const CARD_GAP = 48;
+          const TITLE_H = 160;
+          const CONF_STICKY = 200;
+          const CONF_OVERLAP = 60;
+
+          // Calculate card width from existing layout (reverse-engineer from frame width and doc count)
+          const existingCount = Math.max(existingDocs.length, 2);
+          const CARD_W = Math.floor((frameW - PAD * 2 - (existingCount - 1) * CARD_GAP) / existingCount);
+
+          // New card position
+          const cardX = PAD + colIndex * (CARD_W + CARD_GAP);
+          const cy = PAD + TITLE_H;
+
+          // Widen the frame to fit the new card
+          const newFrameW = PAD * 2 + (colIndex + 1) * CARD_W + colIndex * CARD_GAP;
+          editor.updateShape({
+            id: frameId, type: "frame",
+            props: { w: newFrameW },
+          });
+
+          // Document card
+          const docContent = `<h1>${solTitle || "Option C"}</h1>${content || ""}`;
+          const docH = measureDocumentHeight(docContent, CARD_W, 150);
+          editor.createShape({
+            id: createShapeId(), type: "document",
+            x: cardX, y: cy, parentId: frameId,
+            props: { docId: generateId(), title: solTitle || "Option C", w: CARD_W, h: docH },
+            meta: { createdBy: "ai", initialContent: docContent },
+          });
+
+          // Confidence sticky
+          if (confidence) {
+            const confText = `${confidence} confidence`;
+            const confX = cardX + Math.floor((CARD_W - CONF_STICKY) / 2);
+            const confY = cy + docH - CONF_OVERLAP;
+            editor.createShape({
+              id: createShapeId(), type: "note",
+              x: confX, y: confY, rotation: noteRotation(), parentId: frameId,
+              props: {
+                richText: toRichText(confText),
+                color: solRecommended ? (colorMap["green"] || "green") : (colorMap["yellow"] || "yellow"),
+                font: "sans", size: "s", fontSizeAdjustment: 14,
+              } as any,
+              meta: { createdBy: "ai" },
+            });
+          }
+
+          // Extend frame height if needed
+          const cardH = docH + (CONF_STICKY - CONF_OVERLAP) + 24;
+          const neededH = PAD + TITLE_H + cardH + PAD;
+          if (neededH > frameH) {
+            editor.updateShape({
+              id: frameId, type: "frame",
+              props: { h: neededH },
+            });
+          }
+
+          shapeId = frameId;
+        }
+      }
+
       if (toolName === "createWorkshopBoard") {
         const { title, options } = args as {
           title?: string;
@@ -4197,6 +4159,30 @@ export function Canvas() {
     editor.setStyleForNextShapes(DefaultSizeStyle, 's');
     editor.setStyleForNextShapes(DefaultDashStyle, 'solid');
     editor.setStyleForNextShapes(DefaultFillStyle, 'solid');
+    editor.setStyleForNextShapes(DefaultColorStyle, 'yellow'); // sunshine sticky by default
+
+    // One-time migration: set colorScheme on existing Gantt charts based on parent frame name
+    setTimeout(() => {
+      try {
+        const shapes = editor.getCurrentPageShapes();
+        for (const shape of shapes) {
+          if (shape.type === 'ganttchart' && !(shape.props as any).colorScheme) {
+            const parent = shape.parentId ? editor.getShape(shape.parentId as any) : null;
+            if (parent?.type === 'frame') {
+              const name = ((parent.props as any).name || '').toLowerCase();
+              let scheme = '';
+              if (name.includes('paygrid') || name.includes('prio 1') || name.includes('priority: pay')) scheme = 'green';
+              else if (name.includes('firstflex') || name.includes('prio 2') || name.includes('priority: first')) scheme = 'violet';
+              if (scheme) {
+                editor.updateShape({ id: shape.id, type: shape.type, props: { colorScheme: scheme } } as any);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        // Ignore — migration is best-effort
+      }
+    }, 3000);
 
     // Auto-enter editing mode when a single document/table shape is clicked in its interior
     editor.sideEffects.registerAfterChangeHandler('instance_page_state', (prev, next) => {
@@ -5064,9 +5050,13 @@ export function Canvas() {
                   {/* Response toast card (ack during streaming, final reply when done) */}
                   {toastCentered && responseToast && (
                     <div className="pointer-events-auto w-full bg-white shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: 24 }}>
-                      <div className="absolute top-4 left-4 z-10 bg-white">
-                        <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center">
-                          <IconSingleSparksFilled size="small" />
+                      <div className="absolute top-4 left-4 z-10">
+                        <div className="w-6 h-6 rounded-full bg-slate-400 flex items-center justify-center">
+                          <svg width="14" height="14" viewBox="0 0 105 105" fill="none">
+                            <ellipse cx="20" cy="50" rx="16" ry="32" fill="white" />
+                            <ellipse cx="50" cy="50" rx="16" ry="48" fill="white" />
+                            <ellipse cx="80" cy="50" rx="16" ry="44" fill="white" />
+                          </svg>
                         </div>
                       </div>
                       <div className="absolute top-4 right-4 z-10">
@@ -5378,6 +5368,7 @@ export function Canvas() {
                       { id: "start", header: "Start date", width: 106, align: "center" },
                       { id: "add-task", header: "", width: 40, align: "center" },
                     ],
+                    colorScheme: "",
                   },
                   meta: { createdBy: "user" },
                 });

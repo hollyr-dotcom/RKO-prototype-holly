@@ -179,7 +179,7 @@
               "scheduledEnd": "2026-08-07",
               "requiredSquad": "Platform Squad 3",
               "keyDependency": "PLAT-389 \u2014 Shared API gateway must be upgraded before migration can start",
-              "strategicLabel": "Customer Impact Play",
+              "strategicLabel": "Project FirstFlex",
               "strategicRationale": "FirstFlex is a customer-impact bet: fix onboarding \u2192 unlock 106K monthly signups \u2192 drive retention and LTV. The impact compounds over time but is not time-gated by a single external deadline.",
               "timelineComparison": {
                 "fullScope": {
@@ -340,7 +340,7 @@
               "scheduledStart": "2026-07-01",
               "scheduledEnd": "2026-08-22",
               "requiredSquad": "Platform Squad 3",
-              "strategicLabel": "Time to Market Play",
+              "strategicLabel": "Project PayGrid",
               "strategicRationale": "PayGrid is a time-to-market bet: competitive window is closing (Stripe has 6\u20139mo head start), Meridian Bank has a hard Q3 deadline, and every month of delay widens the gap. Speed determines whether FlexFund stays in the enterprise game.",
               "timelineComparison": {
                 "fullScope": {
@@ -2430,7 +2430,7 @@
                 "title": "Head-to-Head Impact Comparison \u2014 FirstFlex vs PayGrid",
                 "analysisDate": "2026-02-06",
                 "firstFlex": {
-                  "label": "Customer Impact Play",
+                  "label": "Project FirstFlex",
                   "reach": "106K monthly signups (consumer)",
                   "ltvUplift": "$55/user additional LTV from faster onboarding",
                   "projectedARRUplift": "$14.2M Y1",
@@ -2441,7 +2441,7 @@
                   "recoverability": "Partially recoverable \u2014 delayed launch still captures users, just fewer. Network effects and referral loops start later."
                 },
                 "payGrid": {
-                  "label": "Time to Market Play",
+                  "label": "Project PayGrid",
                   "reach": "45 enterprise pipeline deals",
                   "pipelineValue": "$47.2M ARR (31 deals requiring multi-rail orchestration)",
                   "anchorDeal": "Meridian Bank \u2014 $3.2M ARR, hard Q3 deadline",

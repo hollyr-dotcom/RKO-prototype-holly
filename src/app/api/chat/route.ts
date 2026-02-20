@@ -538,7 +538,7 @@ const createGanttChartTool = tool({
       duration: z.number().default(1).describe("Duration in days"),
       progress: z.number().default(0).describe("Completion percentage 0-100"),
       parent: z.number().default(0).describe("Parent task ID for hierarchy (0 = root)"),
-      type: z.enum(["task", "summary", "milestone"]).default("task").describe("Task type: 'summary' for parent groups, 'milestone' for zero-duration markers, 'task' for normal"),
+      type: z.enum(["task", "summary"]).default("task").describe("Task type: 'summary' for parent groups, 'task' for normal"),
       open: z.boolean().default(true).describe("Whether subtasks are expanded"),
     })).describe("Array of tasks for the timeline"),
     links: z.array(z.object({
@@ -597,7 +597,7 @@ const createZoneTool = tool({
   name: "createZone",
   description: "Create a composed frame with mixed content — one call = one complete zone. Three layout modes: 'project' (full project overview with summary, roadmap, people, user insight, evaluation), 'synthesis' (narrow doc-only zone about the tension/takeaways), 'solution' (compact card with punchy title, short description, and confidence level). Much better than calling createFrame + 5-6 nested tools separately.",
   parameters: z.object({
-    title: z.string().describe("Frame title (e.g. 'Priority: PayGrid', 'Synthesis: Competing Priorities', 'Solution A: Speed First')"),
+    title: z.string().describe("Frame title — for projects use 'Project [Name]' (e.g. 'Project PayGrid', 'Project FirstFlex'). For synthesis/solution use just the name (e.g. 'Competing Priorities', 'Possible Solutions')"),
     layout: z.enum(["project", "synthesis", "solution"]).describe("Layout mode: 'project' for profiling a competing project, 'synthesis' for tension/takeaways doc, 'solution' for compact decision card"),
 
     // ── Shared fields ──
@@ -669,7 +669,7 @@ const createZoneTool = tool({
 
     // ── Solution layout: both solutions in one call ──
     solutions: z.array(z.object({
-      title: z.string().describe("Solution title e.g. 'Solution A: Speed First'"),
+      title: z.string().describe("Solution title e.g. 'Solution A: Prioritize PayGrid'"),
       summary: z.object({
         title: z.string(),
         content: z.string().describe("2-3 punchy sentences. VP-scannable in 5 seconds."),
@@ -961,13 +961,13 @@ FIRST: DECIDE HOW TO RESPOND based on what the user asked:
    NEVER ask users to name projects, describe initiatives, or provide data you can look up from connectors.
 
    The plan MUST follow this exact 4-step arc:
-   1. Map out [Project A] and [Project B] ← createZone(layout:"project") x2 — one zone per project
+   1. Map out [Project A] and [Project B] ← createZone(layout:"project") x2 SEQUENTIALLY — one zone per project, one at a time
    2. Analyze competing priorities ← queryConnectors (broad data gathering, no canvas output)
    3. Synthesize the tension ← createZone(layout:"synthesis") — tension/takeaways doc
    4. Explore solutions ← createZone(layout:"solution") with solutions array (SINGLE call, both paths)
 
    STEP NAMING RULES (the executor matches these patterns):
-   - Step 1 MUST start with "Map out" (triggers TWO createZone calls with layout:"project", one per project)
+   - Step 1 MUST start with "Map out" (triggers TWO SEQUENTIAL createZone calls with layout:"project" — create first, wait for result, then create second)
    - Step 2 MUST start with "Analyze" (triggers queryConnectors + showProgress, no canvas output)
    - Step 3 MUST start with "Synthesize" (triggers createZone with layout:"synthesis")
    - Step 4 MUST start with "Explore solutions" (triggers ONE createZone call with solutions array)
@@ -1161,11 +1161,11 @@ PLAN EXAMPLES:
   Step 1: Create task cards ← createTaskCard (one call per task, NOT stickies!)
 
 "Help me prioritize / resolve a strategic tension" (PRIORITISATION):
-  Step 1: Map out [Project A] and [Project B] ← createZone(layout:"project") x2
+  Step 1: Map out [Project A] and [Project B] ← createZone(layout:"project") x2 SEQUENTIALLY (first one, wait, then second)
   Step 2: Analyze competing priorities ← queryConnectors (no canvas output)
   Step 3: Synthesize the tension ← createZone(layout:"synthesis") — tension/takeaways doc
   Step 4: Explore solutions ← createZone(layout:"solution") x1 with solutions array + recommended on AI's pick
-  🚨 Exactly 4 steps. Step 1 maps both projects, step 2 analyzes, step 3 synthesizes, step 4 proposes solutions in one call.
+  🚨 Exactly 4 steps. Step 1 maps both projects ONE AT A TIME (never parallel), step 2 analyzes, step 3 synthesizes, step 4 proposes solutions in one call.
 
 FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
 - Multiple sections/frames with dependencies
@@ -1213,15 +1213,15 @@ const executionAgent = new Agent({
 🚨🚨🚨 RULE ZERO — TOOL MATCHING FOR PRIORITISATION PLANS 🚨🚨🚨
 Match the step title to the EXACT tool(s):
 
-Step title starts with "Map out" → TWO createZone(layout:"project") calls — one per project, back-to-back
+Step title starts with "Map out" → TWO createZone(layout:"project") calls — one per project, SEQUENTIALLY (call the first, wait for its result, THEN call the second)
 Step title starts with "Analyze" → queryConnectors (broad) + showProgress (NO canvas output — analysis only)
 Step title starts with "Synthesize" → createZone(layout:"synthesis") — summary doc only, everything else null
 Step title starts with "Explore solutions" → ONE createZone(layout:"solution") call with solutions array containing BOTH proposed paths
 
-For "Map out" steps: You MUST call createZone(layout:"project") TWICE — once for each project. For EACH zone provide:
-- title: "Priority: [Project Name]"
+For "Map out" steps: You MUST call createZone(layout:"project") TWICE — once for each project. ⚠️ CRITICAL: Call them SEQUENTIALLY, not in parallel. Create the FIRST project zone, wait for the tool result, THEN create the SECOND project zone. This ensures they render one at a time on the canvas. For EACH zone provide:
+- title: "Project [Name]" (e.g. "Project PayGrid", "Project FirstFlex")
 - summary: 2-3 paragraphs about the project's current state, goals, and timeline
-- gantt: project roadmap with real dates from connector data. Mark shared/conflicting squad tasks with color: "red"
+- gantt: project roadmap with real dates from connector data. MUST include exactly ONE "Platform Squad 3" task bar with color: "red" to highlight the shared resource conflict
 - people: 3-8 key people involved (name + role)
 - userInsight: feedback (3-5 task cards), metrics (2-4 stickies), requests (2-4 stickies)
 - evaluation: opportunity (2-3 stickies), risks (2-3 stickies), potential (1-2 stickies)
@@ -1230,7 +1230,7 @@ For "Map out" steps: You MUST call createZone(layout:"project") TWICE — once f
 For "Analyze" steps: Call queryConnectors broadly + showProgress. NO canvas output.
 
 For "Synthesize" steps: You MUST call createZone(layout:"synthesis"). Provide:
-- title: "Synthesis: Competing Priorities"
+- title: "Competing Priorities" (just the name, no "Synthesis:" prefix)
 - summary: 3-5 paragraphs about the tension, trade-offs, and key takeaways
 - gantt: null, people: null, userInsight: null, evaluation: null
 - isRecommended: false
@@ -1286,7 +1286,7 @@ Work through steps in sequence. For each step:
 1. Call showProgress(stepNumber, "step title", "starting")
 2. CHECK RULE ZERO — match the step title to the correct tool:
    - "Gather..." → queryConnectors
-   - "Map out..." → createZone(layout:"project") x2 — one per project
+   - "Map out..." → createZone(layout:"project") x2 SEQUENTIALLY — first project, wait for result, then second
    - "Analyze..." → queryConnectors + showProgress (no canvas output)
    - "Synthesize..." → createZone(layout:"synthesis") — doc only
    - "Explore solutions..." → createZone(layout:"solution") x1 — with solutions array
@@ -1464,11 +1464,11 @@ Use connectors for INTERNAL company data. Use webSearch for EXTERNAL data. Both 
 🏗️ createZone — COMPOSED FRAME IN ONE CALL:
 When a plan step says "Map out..." (projects), "Synthesize..." (tension), or "Explore solutions..." (proposed paths):
 
-Call createZone with ALL content in ONE tool call per zone. "Map out" steps require TWO createZone calls (one per project). "Explore solutions" requires ONE createZone call with both solutions in the solutions array. For project zones: gantt, summary, people, userInsight, and evaluation are REQUIRED.
+Call createZone with ALL content in ONE tool call per zone. "Map out" steps require TWO SEQUENTIAL createZone calls (one per project — call the first, wait for its result, THEN call the second. NEVER call both in parallel). "Explore solutions" requires ONE createZone call with both solutions in the solutions array. For project zones: gantt, summary, people, userInsight, and evaluation are REQUIRED.
 
 // PROJECT ZONE EXAMPLE (Priority step):
 createZone({
-  title: "Priority: PayGrid",
+  title: "Project PayGrid",
   layout: "project",
   summary: {
     title: "PayGrid — Current State",
@@ -1532,17 +1532,25 @@ createZone({
   stickers: []
 })
 
-// SOLUTION ZONE EXAMPLE (compact card):
+// SOLUTION ZONE EXAMPLE (both solutions in ONE call):
 createZone({
-  title: "Solution A: PayGrid First",
+  title: "Possible Solutions",
   layout: "solution",
-  summary: {
-    title: "PayGrid First",
-    content: "<p>Ship PayGrid MVP by August to capture the $47.2M enterprise pipeline. Delay FirstFlex by 4-6 weeks — the delay cost is flat, not accelerating.</p>"
-  },
-  confidence: "85%",
-  isRecommended: true,
-  gantt: null, people: null, userInsight: null, evaluation: null,
+  solutions: [
+    {
+      title: "Solution A: Prioritize PayGrid",
+      summary: { title: "Go all-in on PayGrid", content: "<p>Make PayGrid the #1 priority. The $47.2M enterprise pipeline has a hard Q3 window — miss it and we lose a year. FirstFlex growth is steady and can absorb a 6-week delay without material impact.</p>" },
+      confidence: "85%",
+      isRecommended: true
+    },
+    {
+      title: "Solution B: Prioritize FirstFlex",
+      summary: { title: "Go all-in on FirstFlex", content: "<p>Consumer activation is compounding — every week of delay costs us 15% in onboarding momentum. PayGrid enterprise deals have longer sales cycles and can slip a quarter without pipeline loss.</p>" },
+      confidence: "60%",
+      isRecommended: false
+    }
+  ],
+  summary: null, gantt: null, people: null, userInsight: null, evaluation: null,
   stickers: []
 })
 
@@ -1568,11 +1576,17 @@ createZone({
 ONE call with both solutions in the solutions array. Each solution is a COMPACT DECISION CARD.
 - title: "Possible Solutions"
 - solutions: Array of 2 objects, each with:
-  - title: "Solution A: [Name]" / "Solution B: [Name]"
+  - title: "Solution A: Prioritize [Project A]" / "Solution B: Prioritize [Project B]"
   - summary: { title, content } — 2-3 punchy sentences ONLY. VP-scannable in 5 seconds.
   - confidence: A percentage string (e.g. "85%", "60%") — AI's confidence in this path.
   - isRecommended: true on the AI's preferred solution. Only ONE gets this.
 - summary: null, gantt: null, people: null, userInsight: null, evaluation: null (all null for solutions)
+
+⚠️ FRAMING: Solutions MUST be about PRIORITIZING one project over the other — NOT about sequencing.
+- Solution A = "Go all-in on [Project A]" — what happens if we make Project A the top priority
+- Solution B = "Go all-in on [Project B]" — what happens if we make Project B the top priority
+- Each summary should explain WHY this project deserves priority, what we gain, and what we risk by deprioritizing the other
+- Do NOT frame solutions as "do A first then B" — frame them as a clear choice between the two
 
 🎨 COLOR RULES: Every sticky in a zone uses ONE consistent color.
 - Priority A (first project): all content stickies = "green", headerColor = "green"
@@ -1906,7 +1920,7 @@ DO THIS IMMEDIATELY:
 1. showProgress(stepNumber, "step title", "starting")
 2. Match the step title to the CORRECT tool (see RULE ZERO):
    - "Gather..." → queryConnectors
-   - "Map out..." → createZone(layout:"project") x2 — one per project
+   - "Map out..." → createZone(layout:"project") x2 SEQUENTIALLY — first project, wait for result, then second
    - "Analyze..." → queryConnectors + showProgress (no canvas output)
    - "Synthesize..." → createZone(layout:"synthesis") — doc only
    - "Explore solutions..." → createZone(layout:"solution") x1 — with solutions array

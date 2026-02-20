@@ -40,35 +40,34 @@ function PlanProgressPanel({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header — close button handled by ChatPanel overlay */}
-      <div className="px-4 py-3 flex items-center gap-3 flex-shrink-0">
-        <div className="flex-1 text-left min-w-0">
-          <p className="text-xs font-medium text-gray-900">Plan</p>
-        </div>
-        {/* Spacer for the toggle button rendered by ChatPanel */}
-        <div className="w-7 h-7 flex-shrink-0" />
+      {/* Title */}
+      <div className="px-5 pt-4 pb-3 flex-shrink-0">
+        <p className="text-sm font-semibold text-gray-900">{plan.title}</p>
       </div>
 
-      {/* Steps */}
-      <div className="pl-6 pr-4 pb-6 overflow-y-auto flex-1">
+      {/* Steps with inset divider lines */}
+      <div className="overflow-y-auto flex-1 pb-4">
         {plan.steps.map((step, index) => {
           const status = getStepStatus(index);
           return (
-            <div key={index} className="flex items-center gap-2 py-1.5 text-xs">
-              {status === 'pending' && (
-                <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0" />
-              )}
-              {status === 'running' && (
-                <div className="w-4 h-4 flex-shrink-0 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
-              )}
-              {status === 'done' && (
-                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 text-white">
-                  <IconCheckMark css={{ width: 10, height: 10 }} />
-                </div>
-              )}
-              <span className={status === 'done' ? 'text-gray-400 line-through' : status === 'running' ? 'text-blue-700' : 'text-gray-600'}>
-                {index + 1}. {step}
-              </span>
+            <div key={index}>
+              <div className="mx-5 border-t border-gray-100" />
+              <div className="flex items-center gap-3 px-5 py-3 text-sm">
+                {status === 'pending' && (
+                  <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
+                )}
+                {status === 'running' && (
+                  <div className="w-5 h-5 flex-shrink-0 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
+                )}
+                {status === 'done' && (
+                  <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 text-white">
+                    <IconCheckMark css={{ width: 12, height: 12 }} />
+                  </div>
+                )}
+                <span className={status === 'done' ? 'text-gray-400' : status === 'running' ? 'text-gray-900' : 'text-gray-600'}>
+                  {step}
+                </span>
+              </div>
             </div>
           );
         })}
@@ -92,7 +91,7 @@ export function ChatShell() {
     navigateToFrames,
     navigateToCanvas,
   } = useChat();
-  const { navWidth: appSidebarWidth } = useSidebar();
+  const { navWidth: appSidebarWidth, toggleSidebar, isCollapsed } = useSidebar();
   const [isPlanPanelVisible, setIsPlanPanelVisible] = useState(true);
   const [shouldTransition, setShouldTransition] = useState(true);
 
@@ -144,6 +143,8 @@ export function ChatShell() {
       ) : undefined}
       isPlanPanelVisible={isPlanPanelVisible}
       onTogglePlanPanel={() => setIsPlanPanelVisible(!isPlanPanelVisible)}
+      onToggleSidebar={toggleSidebar}
+      isSidebarCollapsed={isCollapsed}
     />
   );
 

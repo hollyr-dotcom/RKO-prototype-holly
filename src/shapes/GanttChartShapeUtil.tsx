@@ -10,6 +10,8 @@ import {
   TLResizeInfo,
   TLShape,
   resizeBox,
+  createShapePropsMigrationSequence,
+  createShapePropsMigrationIds,
 } from "tldraw";
 import { IconArrowsOutSimple } from "@mirohq/design-system-icons";
 import { GanttInteractive } from "./GanttInteractive";
@@ -64,6 +66,7 @@ declare module "tldraw" {
       links: unknown;
       scales: unknown;
       columns: unknown;
+      colorScheme: string;
     };
   }
 }
@@ -161,10 +164,31 @@ function getDefaultColumns(): GanttColumn[] {
   ];
 }
 
+// ── Migration: add colorScheme prop to existing gantt shapes ──
+
+const ganttVersions = createShapePropsMigrationIds(GANTTCHART_SHAPE_TYPE, {
+  AddColorScheme: 1,
+});
+
+const ganttMigrations = createShapePropsMigrationSequence({
+  sequence: [
+    {
+      id: ganttVersions.AddColorScheme,
+      up(props: Record<string, unknown>) {
+        props.colorScheme = "";
+      },
+      down(props: Record<string, unknown>) {
+        delete props.colorScheme;
+      },
+    },
+  ],
+});
+
 // ── Shape Util ──
 
 export class GanttChartShapeUtil extends ShapeUtil<IGanttChartShape> {
   static override type = GANTTCHART_SHAPE_TYPE;
+  static override migrations = ganttMigrations;
   static override props: RecordProps<IGanttChartShape> = {
     w: T.number,
     h: T.number,
@@ -173,6 +197,7 @@ export class GanttChartShapeUtil extends ShapeUtil<IGanttChartShape> {
     links: T.jsonValue,
     scales: T.jsonValue,
     columns: T.jsonValue,
+    colorScheme: T.string,
   };
 
   getDefaultProps(): IGanttChartShape["props"] {
@@ -186,6 +211,7 @@ export class GanttChartShapeUtil extends ShapeUtil<IGanttChartShape> {
         getDefaultScales() as unknown as IGanttChartShape["props"]["scales"],
       columns:
         getDefaultColumns() as unknown as IGanttChartShape["props"]["columns"],
+      colorScheme: "",
     };
   }
 
@@ -333,6 +359,7 @@ export class GanttChartShapeUtil extends ShapeUtil<IGanttChartShape> {
               shapeId={shape.id}
               editor={this.editor}
               isEditing={isEditing}
+              colorScheme={(shape.props as any).colorScheme || ""}
               onEscape={() => this.editor.setEditingShape(null)}
             />
           </div>

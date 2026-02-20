@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   IconArrowUp,
-  IconSingleSparksFilled,
   IconCross,
 } from "@mirohq/design-system-icons";
 import Lottie, { type LottieRefCurrentProps } from "lottie-react";
@@ -189,12 +188,7 @@ export function ChatInput({
       {responseToast && !isLoading && (
         <div className="absolute bottom-full mb-4" style={{ right: -8, width: "calc(100% + 16px)" }}>
           <div className="w-full bg-white shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: 24 }}>
-            {/* Sticky icon */}
-            <div className="absolute top-4 left-4 z-10 bg-white">
-              <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center">
-                <IconSingleSparksFilled size="small" />
-              </div>
-            </div>
+            {/* spacer for removed icon */}
             {/* Sticky close button */}
             <div className="absolute top-4 right-4 z-10 bg-white">
               <div
@@ -214,7 +208,7 @@ export function ChatInput({
                 onOpenChat?.();
                 onDismissToast?.();
               }}
-              className="overflow-y-auto p-4 pl-14 pr-10 hover:bg-gray-50 transition-colors cursor-pointer"
+              className="overflow-y-auto p-4 pr-10 hover:bg-gray-50 transition-colors cursor-pointer"
             >
               <div className="text-sm text-gray-700">
                 <Markdown
