@@ -6,6 +6,7 @@ import Masonry from "react-masonry-css";
 import type { FeedItem } from "@/types/feed";
 import { FeedCard } from "./FeedCard";
 import { BoardEmoji } from "@/components/BoardEmoji";
+import { HomePromptInput } from "@/components/HomePromptInput";
 
 interface SpaceFeedProps {
   spaceId: string;
@@ -79,8 +80,8 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
   const unreadCount = items.filter((item) => !item.isRead).length;
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="max-w-[900px] mx-auto px-6 py-8">
+    <div className="h-full overflow-y-auto relative">
+      <div className="max-w-[900px] mx-auto px-6 py-8 pb-28">
         {/* Header */}
         <div className="mb-6">
           {space?.emoji && (
@@ -149,6 +150,11 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
           }
         }
       `}</style>
+
+      {/* Prompt bar — fixed to viewport bottom */}
+      <div className="fixed bottom-8 left-6 right-6 z-20">
+        <HomePromptInput onSubmit={() => {}} isLoading={false} />
+      </div>
     </div>
   );
 }
