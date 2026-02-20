@@ -46,28 +46,28 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
     color?: string;
   } | null>(null);
 
-  // Fetch space data
+  // Fetch space data first, then feed items (so the header renders before the feed)
   useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setSpace(null);
+    setItems([]);
+
     fetch(`/api/spaces/${spaceId}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
+        if (cancelled) return;
         if (data) setSpace(data);
+        // Now fetch the feed
+        return fetch(`/api/spaces/${spaceId}/feed`);
       })
-      .catch(() => {});
-  }, [spaceId]);
-
-  // Fetch feed items for this space
-  useEffect(() => {
-    let cancelled = false;
-
-    setIsLoading(true);
-    fetch(`/api/spaces/${spaceId}/feed`)
       .then((res) => {
+        if (!res || cancelled) return;
         if (!res.ok) throw new Error("Failed to fetch feed");
         return res.json();
       })
-      .then((data: FeedItem[]) => {
-        if (!cancelled) {
+      .then((data: FeedItem[] | undefined) => {
+        if (!cancelled && data) {
           setItems(data);
           setIsLoading(false);
         }
@@ -123,16 +123,22 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
       <div className="h-full overflow-y-auto">
         {/* Header — scrolls with content */}
         <div className="px-4 pt-4">
-          {space && (
+          {space ? (
             <SpaceHeader
               space={space}
               onNameChange={handleNameChange}
               onDescriptionChange={handleDescriptionChange}
             />
+          ) : (
+            <div
+              className="rounded-2xl bg-gray-100 animate-pulse mb-6"
+              style={{ minHeight: 230 }}
+            />
           )}
         </div>
 
-        {/* Feed + sidebar row */}
+        {/* Feed + sidebar row — only render once header data is loaded */}
+        {!space ? null : (
         <div className="flex justify-center">
           <div className={`flex ${sidebarPanels ? "gap-12" : ""} items-start`}>
             {/* Feed column */}
@@ -186,6 +192,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
             )}
           </div>
         </div>
+        )}
       </div>
 
       {/* Prompt bar — anchored to bottom */}
