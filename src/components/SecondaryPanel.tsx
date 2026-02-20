@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, Reorder } from "framer-motion";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { IconPlus, IconViewSideLeft } from "@mirohq/design-system-icons";
 import { useSidebar } from "@/hooks/useSidebar";
 import { SECONDARY_WIDTH } from "@/providers/SidebarProvider";
@@ -591,7 +591,6 @@ function GroupedBoardList({
       as="div"
     >
       {orderedSections.map((section) => {
-        const isCollapsed = collapsed[section.label] ?? false;
         const sectionCanvases = section.canvasIds
           .map((id) => canvasMap.get(id))
           .filter(Boolean) as Canvas[];
@@ -612,55 +611,107 @@ function GroupedBoardList({
         }));
 
         return (
-          <Reorder.Item
+          <BoardSectionItem
             key={section.label}
-            value={section}
-            as="div"
-            className="flex flex-col"
-            whileDrag={{ scale: 1.02, zIndex: 50 }}
-            style={{ position: "relative" }}
-          >
-            {/* Section header — drag handle */}
-            <button
-              onClick={() => toggle(section.label)}
-              className="flex items-center h-8 pl-3 pr-0 pt-2 text-xs font-bold cursor-grab active:cursor-grabbing bg-transparent border-none w-full"
-              style={{ color: "#AEB2C0" }}
-            >
-              <span className="flex-1 text-left">{section.label}</span>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                className={`flex-shrink-0 transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`}
-              >
-                <path
-                  d="M4 6L8 10L12 6"
-                  stroke="#AEB2C0"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-
-            {/* Board items — reorderable within section */}
-            {!isCollapsed && (
-              <div className="pt-[6px]">
-                <NavList
-                  items={sectionNavItems}
-                  isActive={(item) => activePath === item.href}
-                  onReorder={(orderedIds) => handleSectionItemReorder(section.label, orderedIds)}
-                  onRename={onRename}
-                  onDelete={onDelete}
-                  emptyMessage="No boards"
-                  itemColor="#222428"
-                />
-              </div>
-            )}
-          </Reorder.Item>
+            section={section}
+            isCollapsed={collapsed[section.label] ?? false}
+            onToggle={() => toggle(section.label)}
+            navItems={sectionNavItems}
+            activePath={activePath}
+            onReorderItems={(orderedIds) => handleSectionItemReorder(section.label, orderedIds)}
+            onRename={onRename}
+            onDelete={onDelete}
+          />
         );
       })}
     </Reorder.Group>
+  );
+}
+
+function BoardSectionItem({
+  section,
+  isCollapsed,
+  onToggle,
+  navItems,
+  activePath,
+  onReorderItems,
+  onRename,
+  onDelete,
+}: {
+  section: BoardSection;
+  isCollapsed: boolean;
+  onToggle: () => void;
+  navItems: NavListItem[];
+  activePath: string;
+  onReorderItems: (orderedIds: string[]) => void;
+  onRename?: (id: string, newName: string) => void;
+  onDelete?: (id: string) => void;
+}) {
+  const didDrag = useRef(false);
+
+  const contentTransition = { type: "spring" as const, stiffness: 400, damping: 30 };
+
+  return (
+    <Reorder.Item
+      value={section}
+      as="div"
+      className="flex flex-col"
+      layout
+      transition={contentTransition}
+      whileDrag={{ scale: 1.02, zIndex: 50 }}
+      style={{ position: "relative" }}
+      onDragStart={() => { didDrag.current = true; }}
+      onDragEnd={() => { setTimeout(() => { didDrag.current = false; }, 0); }}
+    >
+      {/* Section header — click to toggle, drag to reorder */}
+      <div
+        className="flex items-center h-8 pl-3 pr-0 pt-2 text-xs font-bold w-full cursor-pointer"
+        style={{ color: "#AEB2C0" }}
+        onPointerUp={() => { if (!didDrag.current) onToggle(); }}
+      >
+        <span className="flex-1 text-left">{section.label}</span>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          className={`flex-shrink-0 transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`}
+        >
+          <path
+            d="M4 6L8 10L12 6"
+            stroke="#AEB2C0"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+
+      {/* Board items — animated collapse/expand */}
+      <AnimatePresence initial={false}>
+        {!isCollapsed && (
+          <motion.div
+            key="content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={contentTransition}
+            className="overflow-hidden"
+          >
+            <div className="pt-[6px]">
+              <NavList
+                items={navItems}
+                isActive={(item) => activePath === item.href}
+                onReorder={onReorderItems}
+                onRename={onRename}
+                onDelete={onDelete}
+                emptyMessage="No boards"
+                itemColor="#222428"
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </Reorder.Item>
   );
 }
