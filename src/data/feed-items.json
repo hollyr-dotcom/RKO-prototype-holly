@@ -56,7 +56,7 @@
       }
     ],
     "payload": {
-      "videoSrc": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      "videoSrc": "/videos/marcus-talktrack.mp4",
       "artifact": {
         "type": "slides",
         "id": "talktrack-q2",
