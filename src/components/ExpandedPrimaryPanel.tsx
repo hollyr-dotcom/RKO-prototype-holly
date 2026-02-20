@@ -336,7 +336,7 @@ export function ExpandedPrimaryPanel() {
           {/* Logo in rounded-lg tonal container */}
           <Link href="/" className="flex-shrink-0">
             <div
-              className="w-10 h-10 flex items-center justify-center rounded-lg shadow-sm"
+              className="w-10 h-10 flex items-center justify-center rounded-[16px] shadow-sm"
               style={{ backgroundColor: "#7A2CDD" }}
             >
               <img src="/flexfund.svg" alt="FlexFund" width={24} height={24} />
@@ -433,7 +433,7 @@ export function ExpandedPrimaryPanel() {
               {isHighlighted && (
                 <motion.div
                   layoutId="expanded-nav-indicator"
-                  className="absolute inset-0 rounded-full"
+                  className="absolute inset-0 rounded-[16px]"
                   style={{ backgroundColor: navPalette.indicator }}
                   transition={indicatorTransition}
                 />

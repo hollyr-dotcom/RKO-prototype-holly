@@ -126,8 +126,8 @@
 
   background-image: radial-gradient(
     farthest-corner circle at var(--pointer-x) var(--pointer-y),
-    hsla(45, 8%, 80%, 0.5) 0%,
-    hsl(22, 15%, 12%) 80%
+    hsl(45deg 100% 55.71% / 50%) 0%,
+    hsl(35.45deg 70.88% 38.06%) 80%
   );
 
   filter: brightness(0.65) contrast(1.5);
