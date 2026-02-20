@@ -675,11 +675,11 @@ function SpaceSectionItem({
       onDragStart={() => { didDrag.current = true; }}
       onDragEnd={() => { setTimeout(() => { didDrag.current = false; }, 0); }}
     >
-      {/* Section header — click to toggle, drag to reorder */}
-      <div
+      {/* Section header — tap to toggle, drag to reorder */}
+      <motion.div
         className="flex items-center h-8 pl-3 pr-1 pt-2 text-xs font-bold w-full cursor-pointer"
         style={{ color: "#AEB2C0" }}
-        onPointerUp={() => { if (!didDrag.current) onToggle(); }}
+        onTap={() => { if (!didDrag.current) onToggle(); }}
       >
         <span className="flex-1 text-left">{section.label}</span>
         <svg
@@ -697,7 +697,7 @@ function SpaceSectionItem({
             strokeLinejoin="round"
           />
         </svg>
-      </div>
+      </motion.div>
 
       {/* Space items — animated collapse/expand */}
       <AnimatePresence initial={false}>
