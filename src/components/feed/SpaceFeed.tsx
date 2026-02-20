@@ -132,8 +132,8 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
     <div className="h-full relative">
       {/* Scrollable content */}
       <div className="h-full overflow-y-auto">
-        {/* Space header — full width with 16px padding */}
-        <div className="px-4 pt-4 sticky top-0 z-10">
+        {/* Space header — full width with 16px padding, bg covers gap above */}
+        <div className="px-4 pt-4 sticky top-0 z-10 bg-white">
           {space && (
             <SpaceHeader
               space={space}
