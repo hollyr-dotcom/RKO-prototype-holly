@@ -26,12 +26,17 @@ async function migrate() {
   const spacesPath = path.join(process.cwd(), 'src/data/spaces.json');
   const canvasesPath = path.join(process.cwd(), 'src/data/canvases.json');
 
-  // --- Cleanup: delete all existing data ---
+  // --- Cleanup: delete all existing data (order matters for FK constraints) ---
   console.log('Cleaning up existing data...');
   const { error: delCanvases } = await supabase.from('canvases').delete().neq('id', '');
   if (delCanvases) {
     console.error('Failed to delete canvases:', delCanvases);
     process.exit(1);
+  }
+  const { error: delSections } = await supabase.from('board_sections').delete().neq('id', '');
+  if (delSections) {
+    console.error('Failed to delete board_sections:', delSections);
+    // Non-fatal — table may not exist yet
   }
   const { error: delSpaces } = await supabase.from('spaces').delete().neq('id', '');
   if (delSpaces) {
@@ -94,7 +99,44 @@ async function migrate() {
     console.log(`Inserted canvases ${i + 1}-${Math.min(i + BATCH_SIZE, canvasRows.length)}`);
   }
 
-  console.log(`\nMigration complete: ${spaceRows.length} spaces, ${canvasRows.length} canvases`);
+  // --- Board Sections ---
+  const { BOARD_SECTIONS } = await import('../src/data/board-sections');
+
+  const sectionRows: { id: string; space_id: string; label: string; order: number }[] = [];
+  const canvasSectionUpdates: { canvasId: string; sectionId: string }[] = [];
+
+  for (const [spaceId, sections] of Object.entries(BOARD_SECTIONS)) {
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      const sectionId = `section-${spaceId.replace('space-', '')}-${section.label.toLowerCase().replace(/\s+/g, '-')}`;
+      sectionRows.push({
+        id: sectionId,
+        space_id: spaceId,
+        label: section.label,
+        order: i,
+      });
+      for (const canvasId of section.canvasIds) {
+        canvasSectionUpdates.push({ canvasId, sectionId });
+      }
+    }
+  }
+
+  if (sectionRows.length > 0) {
+    const { error } = await supabase.from('board_sections').upsert(sectionRows);
+    if (error) {
+      console.error('Failed to insert board_sections:', error);
+    } else {
+      console.log(`Inserted ${sectionRows.length} board sections`);
+    }
+
+    // Assign canvases to sections
+    for (const { canvasId, sectionId } of canvasSectionUpdates) {
+      await supabase.from('canvases').update({ section_id: sectionId }).eq('id', canvasId);
+    }
+    console.log(`Assigned ${canvasSectionUpdates.length} canvases to sections`);
+  }
+
+  console.log(`\nMigration complete: ${spaceRows.length} spaces, ${canvasRows.length} canvases, ${sectionRows.length} board sections`);
 }
 
 migrate();
