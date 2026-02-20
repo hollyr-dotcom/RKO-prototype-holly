@@ -11,13 +11,14 @@ import {
   IconCheckMark,
   IconChevronDown,
   IconArrowRight,
-  IconMinus,
   IconArrowsOutSimple,
   IconArrowsInSimple,
   IconCross,
   IconSquarePencil,
   IconSidebarGlobalOpen,
   IconSidebarGlobalClosed,
+  IconSwapHorizontal,
+  IconViewSideRight,
 } from "@mirohq/design-system-icons";
 import { ChatInput } from "./toolbar/ChatInput";
 import { VoiceStopButton } from "./toolbar/VoiceStopButton";
@@ -190,7 +191,8 @@ function PlanBlock({
   );
 }
 
-// Compact progress header - shows at top of panel during execution
+// Compact plan card - shows at top of sidepanel during execution
+// Matches fullscreen plan card style with gradient border, collapsible
 function TaskProgressHeader({
   title,
   steps,
@@ -205,91 +207,132 @@ function TaskProgressHeader({
   isFullscreen?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [gradientAngle, setGradientAngle] = useState(160);
 
   // Count completed steps
   const completedSteps = isExecuting ? currentStep : currentStep + 1;
   const progress = steps.length > 0 ? (completedSteps / steps.length) * 100 : 0;
   const isComplete = completedSteps >= steps.length;
 
-  // Get current/next step text
-  // When executing: show current step being worked on
-  // When paused: show next step to be done
-  const nextStepIndex = isExecuting ? currentStep : currentStep + 1;
-  const currentStepText = steps[nextStepIndex] || steps[steps.length - 1];
+  // Gradient follows cursor
+  useEffect(() => {
+    let targetAngle = 160;
+    let currentAngle = 160;
+    let rafId: number;
+    const onMove = (e: MouseEvent) => {
+      const el = cardRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      targetAngle = Math.atan2(e.clientY - rect.top - rect.height / 2, e.clientX - rect.left - rect.width / 2) * (180 / Math.PI) + 90;
+    };
+    const tick = () => {
+      let diff = targetAngle - currentAngle;
+      if (diff > 180) diff -= 360;
+      if (diff < -180) diff += 360;
+      currentAngle += diff * 0.08;
+      setGradientAngle(currentAngle);
+      rafId = requestAnimationFrame(tick);
+    };
+    window.addEventListener("mousemove", onMove);
+    rafId = requestAnimationFrame(tick);
+    return () => { window.removeEventListener("mousemove", onMove); cancelAnimationFrame(rafId); };
+  }, []);
 
   return (
-    <div className="border-b border-gray-200 bg-gray-50 overflow-hidden">
-      {/* Collapsed header */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-center justify-between cursor-pointer"
+    <div className="px-6 pt-4 pb-1">
+      <div
+        ref={cardRef}
+        className="rounded-2xl overflow-hidden"
+        style={{
+          border: "1px solid transparent",
+          backgroundImage: `linear-gradient(white, white), linear-gradient(${gradientAngle}deg, #e5e7eb 0%, #e5e7eb 60%, #93bbfd 85%, #3b82f6 100%)`,
+          backgroundOrigin: "border-box",
+          backgroundClip: "padding-box, border-box",
+        }}
       >
-        {/* Title and step count */}
-        <div className="flex items-center gap-2">
-          {!isExpanded && (
-            <div className="relative w-4 h-4 flex-shrink-0">
-              <svg className={`w-4 h-4 ${isExecuting ? 'animate-spin' : '-rotate-90'}`} viewBox="0 0 36 36">
-                <path
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="#e5e7eb"
-                  strokeWidth="3"
-                />
-                <path
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke={isComplete ? "#22c55e" : "#3b82f6"}
-                  strokeWidth="3"
-                  strokeDasharray={isExecuting ? "25, 100" : `${progress}, 100`}
-                  className="transition-all duration-300"
-                />
-              </svg>
+        {/* Collapsed header */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full px-4 py-3 flex items-center justify-between cursor-pointer bg-transparent border-none"
+        >
+          <div className="flex items-center gap-2.5">
+            {/* Progress ring / checkmark */}
+            <div className="relative w-5 h-5 flex-shrink-0">
+              {isComplete ? (
+                <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                  <IconCheckMark css={{ width: 12, height: 12 }} />
+                </div>
+              ) : (
+                <svg className={`w-5 h-5 ${isExecuting ? 'animate-spin' : '-rotate-90'}`} viewBox="0 0 36 36">
+                  <path
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth="3"
+                  />
+                  <path
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="#3b82f6"
+                    strokeWidth="3"
+                    strokeDasharray={isExecuting ? "25, 100" : `${progress}, 100`}
+                    className="transition-all duration-300"
+                  />
+                </svg>
+              )}
             </div>
-          )}
-          <p className="text-xs font-medium text-gray-900">Plan</p>
-          {!isExpanded && !isFullscreen && (
+            <span className="text-sm font-semibold text-gray-900">{title}</span>
             <span className="text-xs text-gray-400">{completedSteps}/{steps.length}</span>
-          )}
-        </div>
+          </div>
 
-        {/* Expand icon - positioned to align with X button icon */}
-        <div className={`pr-1.5 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`}>
-          <IconChevronDown css={{ width: 16, height: 16 }} />
-        </div>
-      </button>
+          <div className={`text-gray-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}>
+            <IconChevronDown css={{ width: 16, height: 16 }} />
+          </div>
+        </button>
 
-      {/* Expanded steps list */}
-      <AnimatePresence initial={false}>
-        {isExpanded && (
-          <motion.div
-            className="pl-6 pr-4 bg-gray-50 overflow-hidden"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{
-              height: { type: "tween", ease: [0.25, 0.1, 0.25, 1.0], duration: 0.2 },
-              opacity: { type: "tween", ease: [0.25, 0.1, 0.25, 1.0], duration: 0.15 }
-            }}
-          >
-            <div className="pb-3">
-              {steps.map((step, i) => {
-                const isDone = i < completedSteps;
-                const isRunning = i === currentStep && isExecuting;
-                return (
-                  <div key={i} className="flex gap-2 py-1.5 text-xs items-center">
-                    <div>
-                      <TaskStatusIcon status={isDone ? 'done' : isRunning ? 'running' : 'pending'} />
+        {/* Expanded steps list */}
+        <AnimatePresence initial={false}>
+          {isExpanded && (
+            <motion.div
+              className="overflow-hidden"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{
+                height: { type: "tween", ease: [0.25, 0.1, 0.25, 1.0], duration: 0.2 },
+                opacity: { type: "tween", ease: [0.25, 0.1, 0.25, 1.0], duration: 0.15 }
+              }}
+            >
+              <div className="pb-3">
+                {steps.map((step, i) => {
+                  const isDone = i < completedSteps;
+                  const isRunning = i === currentStep && isExecuting;
+                  return (
+                    <div key={i}>
+                      <div className="mx-4 border-t border-gray-100" />
+                      <div className="flex items-center gap-3 px-4 py-2.5 text-sm">
+                        {isDone ? (
+                          <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 text-white">
+                            <IconCheckMark css={{ width: 12, height: 12 }} />
+                          </div>
+                        ) : isRunning ? (
+                          <div className="w-5 h-5 flex-shrink-0 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
+                        )}
+                        <span className={isDone ? 'text-gray-400' : isRunning ? 'text-gray-900' : 'text-gray-600'}>
+                          {step}
+                        </span>
+                      </div>
                     </div>
-                    <span className={`${isDone ? 'text-gray-400 line-through' : isRunning ? 'text-blue-700' : 'text-gray-600'}`}>
-                      {i + 1}. {step}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
@@ -339,7 +382,7 @@ function ThinkingLottie({ size = 24, gray = false }: { size?: number; gray?: boo
 function ThinkingBlock({ status }: { status: string }) {
   return (
     <div className="flex items-center gap-2 text-sm text-gray-500">
-      <ThinkingLottie size={40} />
+      <ThinkingLottie size={28} />
       <span>{status}</span>
     </div>
   );
@@ -349,7 +392,7 @@ function ThinkingBlock({ status }: { status: string }) {
 function ProgressBlock({ status }: { status: string }) {
   return (
     <div className="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-lg">
-      <ThinkingLottie size={40} />
+      <ThinkingLottie size={28} />
       <span className="text-sm text-gray-700">{status}</span>
     </div>
   );
@@ -634,7 +677,7 @@ function ArtifactCard({
   if (!showBoard && visibleLines.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-gray-200 overflow-hidden">
+    <div className="rounded-2xl border border-gray-200 overflow-hidden">
       {/* Board row */}
       {showBoard && (() => {
         const isClickable = allDone;
@@ -677,7 +720,9 @@ function ArtifactCard({
               else if (onNavigateToCanvas) onNavigateToCanvas(canvasId);
             }}
             disabled={!isClickable}
-            className={`w-full flex items-center text-left transition-colors border-t border-gray-100 ${
+            className={`w-full flex items-center text-left transition-colors ${
+              (i > 0 || showBoard) ? "border-t border-gray-100" : ""
+            } ${
               isClickable ? "hover:bg-gray-50 cursor-pointer group" : "cursor-default"
             }`}
           >
@@ -692,7 +737,7 @@ function ArtifactCard({
                 {line.label}
               </span>
               {isClickable && (
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 flex items-center">
                   <IconArrowRight css={{ width: 12, height: 12, color: "#9ca3af" }} />
                 </span>
               )}
@@ -860,6 +905,8 @@ export function ChatPanel({
   isSidebarCollapsed = true,
 }: ChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const planCardRef = useRef<HTMLDivElement>(null);
+  const [planGradientAngle, setPlanGradientAngle] = useState(160);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questionAnswers, setQuestionAnswers] = useState<string[]>([]);
   const [lastAskUserId, setLastAskUserId] = useState<string | null>(null);
@@ -877,7 +924,46 @@ export function ChatPanel({
   // Auto-scroll to bottom when messages change or loading state changes
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Secondary scroll after layout settles (handles late-rendered content)
+    const t = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 150);
+    return () => clearTimeout(t);
   }, [messages, isLoading]);
+
+  // Plan card gradient follows cursor with smooth interpolation
+  useEffect(() => {
+    let targetAngle = 160;
+    let currentAngle = 160;
+    let rafId: number;
+    const lerp = 0.08; // smoothing factor — lower = smoother
+
+    const onMove = (e: MouseEvent) => {
+      const el = planCardRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      targetAngle = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI) + 90;
+    };
+
+    const tick = () => {
+      // Shortest-path angular interpolation (handles 359° → 1° wrap)
+      let diff = targetAngle - currentAngle;
+      if (diff > 180) diff -= 360;
+      if (diff < -180) diff += 360;
+      currentAngle += diff * lerp;
+      setPlanGradientAngle(currentAngle);
+      rafId = requestAnimationFrame(tick);
+    };
+
+    window.addEventListener("mousemove", onMove);
+    rafId = requestAnimationFrame(tick);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   const isVoiceActive = voiceState !== "idle";
 
@@ -1093,8 +1179,8 @@ export function ChatPanel({
   return (
     <div className="w-full h-full bg-white flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-2">
+      <div className="relative flex items-center justify-between px-5 py-4">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {isFullscreen && onToggleSidebar && (
             <button
               onClick={onToggleSidebar}
@@ -1108,9 +1194,19 @@ export function ChatPanel({
               )}
             </button>
           )}
-          <span className="text-sm font-medium text-gray-900">Sidekick</span>
+          <span className="text-md font-semibold text-gray-900">Sidekick</span>
         </div>
-        <div className="flex items-center gap-1">
+        {isFullscreen && onCollapse && (
+          <button
+            onClick={onCollapse}
+            className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors"
+            title="Switch to canvas"
+          >
+            <IconSwapHorizontal css={{ width: 18, height: 18 }} />
+            Switch to canvas
+          </button>
+        )}
+        <div className="flex items-center gap-1 flex-shrink-0">
           {onNewChat && (
             <button
               onClick={onNewChat}
@@ -1138,13 +1234,13 @@ export function ChatPanel({
               <IconArrowsOutSimple css={{ width: 18, height: 18 }} />
             </button>
           )}
-          {onCollapse && (
+          {!isFullscreen && onCollapse && (
             <button
               onClick={onCollapse}
               className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-              title="Minimize"
+              title="Close sidebar"
             >
-              <IconMinus css={{ width: 18, height: 18 }} />
+              <IconViewSideRight css={{ width: 18, height: 18 }} />
             </button>
           )}
         </div>
@@ -1167,7 +1263,7 @@ export function ChatPanel({
       )}
 
       {/* Messages */}
-      <div className={`flex-1 overflow-y-auto p-4 space-y-12 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
+      <div className={`flex-1 overflow-y-auto p-6 pr-7 pb-28 space-y-12 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 text-sm mt-8">
             <p className="mb-2">Ask me anything</p>
@@ -1251,7 +1347,7 @@ export function ChatPanel({
                     const questions = askArgs.questions || (askArgs.question ? [{ question: askArgs.question }] : []);
                     const answers = (message.content || '').split('\n');
                     return (
-                      <div className="max-w-[80%] rounded-2xl px-4 py-3 bg-gray-100 text-gray-900 space-y-2">
+                      <div className="max-w-[80%] rounded-3xl px-5 py-3.5 bg-gray-100 text-gray-900 space-y-2">
                         {questions.map((q, qi) => (
                           <div key={qi}>
                             <p className="text-sm text-gray-500">Q: {q.question}</p>
@@ -1261,8 +1357,8 @@ export function ChatPanel({
                       </div>
                     );
                   })() : (
-                    <div className="max-w-[80%] rounded-2xl px-4 py-2 bg-gray-100 text-gray-900">
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    <div className="max-w-[80%] rounded-3xl px-5 py-3 bg-gray-100 text-gray-900">
+                      <p className="text-sm whitespace-pre-wrap leading-[160%]">{message.content}</p>
                     </div>
                   )
                 ) : (
@@ -1286,29 +1382,34 @@ export function ChatPanel({
                       };
                       const stripSep = (s: string) => s.replace(/\n?---\n?/g, '\n').trim();
 
-                      // Split strategy:
-                      // 1. PRIMARY: Look for explicit "---" separator in the text (AI always adds it)
-                      // 2. FALLBACK: Use toolTextSplit (stream-timing based, works for creation ops)
+                      // Split strategy (two mechanisms, best one wins):
+                      // 1. PRIMARY: toolTextSplit from server dedup (exact boundary between ack and summary)
+                      // 2. FALLBACK: "---" separator in the text (for single-response ops where dedup doesn't fire)
                       // 3. DEFAULT: Show full text above cards
-                      const sepIdx = message.content.indexOf('\n---\n');
-                      const hasSeparator = sepIdx !== -1;
                       const split = message.toolTextSplit;
+                      const validToolSplit = hasArtifactTools && split !== undefined && split > 0 && split < message.content.length;
+                      const sepIdx = message.content.indexOf('\n---\n');
+                      // Also check for --- at very start (edge case)
+                      const sepIdxAlt = sepIdx === -1 ? message.content.indexOf('---\n') === 0 ? 0 : -1 : sepIdx;
+                      const hasSeparator = sepIdxAlt !== -1;
 
                       let ackText: string;
                       let summaryText: string;
 
-                      if (hasSeparator) {
-                        // Best case: AI included --- separator — reliable split regardless of tool ordering
-                        ackText = stripSep(message.content.slice(0, sepIdx));
-                        summaryText = stripSep(message.content.slice(sepIdx + 5));
-                      } else if (hasArtifactTools && split !== undefined && split > 0 && split < message.content.length) {
-                        // Fallback: toolTextSplit (works when model writes text → tools → text)
+                      if (validToolSplit) {
+                        // Best case: server dedup fired, exact boundary known
                         ackText = stripSep(message.content.slice(0, split));
                         const rawSummary = stripSep(message.content.slice(split));
                         // Suppress if AI repeated its ack text
                         summaryText = (rawSummary && ackText && rawSummary.startsWith(ackText))
                           ? rawSummary.slice(ackText.length).trim()
                           : rawSummary;
+                      } else if (hasSeparator) {
+                        // Fallback: AI included --- separator in text
+                        const actualSepIdx = sepIdxAlt === 0 ? 0 : sepIdx;
+                        const sepLen = sepIdxAlt === 0 ? 4 : 5; // "---\n" vs "\n---\n"
+                        ackText = stripSep(message.content.slice(0, actualSepIdx));
+                        summaryText = stripSep(message.content.slice(actualSepIdx + sepLen));
                       } else if (hasArtifactTools && split === 0) {
                         // All text came after tools
                         ackText = "";
@@ -1323,7 +1424,7 @@ export function ChatPanel({
                         <>
                           {/* Acknowledgment text (before tools) */}
                           {ackText && (
-                            <div className="text-sm text-gray-900">
+                            <div className="text-sm text-gray-900 leading-[160%]">
                               <Markdown components={mdComponents}>{ackText}</Markdown>
                             </div>
                           )}
@@ -1335,14 +1436,17 @@ export function ChatPanel({
                                 toolInvocations={message.toolInvocations}
                                 isStreaming={isLatestMessage && isLoading}
                                 onNavigateToCanvas={onNavigateToCanvas}
-                                onNavigateToFrames={onNavigateToFrames}
+                                onNavigateToFrames={isFullscreen ? (frameNames) => {
+                                  onNavigateToFrames?.(frameNames);
+                                  onCollapse?.();
+                                } : onNavigateToFrames}
                               />
                             </div>
                           )}
 
                           {/* Summary text (after tools) */}
                           {summaryText && (
-                            <div className="mt-4 text-sm text-gray-900">
+                            <div className="mt-4 text-sm text-gray-900 leading-[160%]">
                               <Markdown components={mdComponents}>{summaryText}</Markdown>
                             </div>
                           )}
@@ -1371,7 +1475,7 @@ export function ChatPanel({
                                 <p className="text-sm text-gray-900 mb-2">{q.question}</p>
                                 {answers[qi] && (
                                   <div className="flex justify-end mb-2">
-                                    <div className="max-w-[80%] rounded-2xl px-4 py-2 bg-gray-100 text-gray-900">
+                                    <div className="max-w-[80%] rounded-3xl px-5 py-3 bg-gray-100 text-gray-900">
                                       <p className="text-sm">{answers[qi]}</p>
                                     </div>
                                   </div>
@@ -1398,7 +1502,7 @@ export function ChatPanel({
                                     {/* Answered -static question text + answer bubble */}
                                     <p className="text-sm text-gray-900 mb-2">{q.question}</p>
                                     <div className="flex justify-end mb-2">
-                                      <div className="max-w-[80%] rounded-2xl px-4 py-2 bg-gray-100 text-gray-900">
+                                      <div className="max-w-[80%] rounded-3xl px-5 py-3 bg-gray-100 text-gray-900">
                                         <p className="text-sm">{questionAnswers[qi]}</p>
                                       </div>
                                     </div>
@@ -1628,7 +1732,7 @@ export function ChatPanel({
                 const icon = serviceIcons[src.key];
                 activityMsg = (
                   <span className="inline-flex items-center gap-1.5">
-                    {icon && <span className="inline-flex text-slate-400">{icon}</span>}
+                    {icon && <span className="inline-flex text-slate-400" style={{ WebkitTextFillColor: 'initial' }}>{icon}</span>}
                     Connecting to {src.name}...
                   </span>
                 );
@@ -1650,8 +1754,17 @@ export function ChatPanel({
 
             return (
               <div className="flex items-center gap-2">
-                <ThinkingLottie size={40} />
-                <span className="text-sm text-slate-400">{activityMsg}</span>
+                <ThinkingLottie size={28} />
+                <span
+                  className="text-sm text-slate-400 flex items-center gap-1.5"
+                  style={{
+                    background: 'linear-gradient(90deg, #9ca3af 0%, #9ca3af 40%, #d1d5db 50%, #9ca3af 60%, #9ca3af 100%)',
+                    backgroundSize: '200% 100%',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    animation: 'shimmer-text 2s ease-in-out infinite',
+                  }}
+                >{activityMsg}</span>
               </div>
             );
           })()
@@ -1709,7 +1822,7 @@ export function ChatPanel({
 
       {/* Input — hidden when fullscreen modal is showing */}
       {!(isFullscreen && (activeQuestion || pendingApproval) && !isLoading) && (
-        <div className={`relative p-4 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
+        <div className={`relative px-5 py-4 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
           {isVoiceActive ? (
             <VoiceStopButton
               voiceState={voiceState}
@@ -1744,8 +1857,15 @@ export function ChatPanel({
               style={{ overflow: "hidden" }}
             >
               <div
-                className="bg-white rounded-2xl overflow-hidden"
-                style={{ width: 340, border: "1px solid #e5e7eb" }}
+                ref={planCardRef}
+                className="rounded-3xl overflow-hidden"
+                style={{
+                  width: 340,
+                  border: "1px solid transparent",
+                  backgroundImage: `linear-gradient(white, white), linear-gradient(${planGradientAngle}deg, #e5e7eb 0%, #e5e7eb 60%, #93bbfd 85%, #3b82f6 100%)`,
+                  backgroundOrigin: "border-box",
+                  backgroundClip: "padding-box, border-box",
+                }}
               >
                 {planPanel}
               </div>

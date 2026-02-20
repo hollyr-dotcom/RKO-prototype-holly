@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useChat } from "@/hooks/useChat";
@@ -12,8 +12,10 @@ import {
   IconSingleSparksFilled,
 } from "@mirohq/design-system-icons";
 
-const PANEL_WIDTH = 384;
-const PANEL_GAP = 16;
+const DEFAULT_PANEL_WIDTH = 384;
+const MIN_PANEL_WIDTH = 300;
+const MAX_PANEL_WIDTH = 600;
+const PANEL_GAP = 8;
 const PLAN_SIDEBAR_WIDTH = 320;
 const TRANSITION = "0.25s cubic-bezier(0.25, 0.1, 0.25, 1)";
 
@@ -90,10 +92,46 @@ export function ChatShell() {
     activePlanDetails,
     navigateToFrames,
     navigateToCanvas,
+    setResizeHovered,
   } = useChat();
   const { navWidth: appSidebarWidth, toggleSidebar, isCollapsed } = useSidebar();
   const [isPlanPanelVisible, setIsPlanPanelVisible] = useState(true);
   const [shouldTransition, setShouldTransition] = useState(true);
+  const [panelWidth, setPanelWidth] = useState(DEFAULT_PANEL_WIDTH);
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
+  const dragStartWidth = useRef(DEFAULT_PANEL_WIDTH);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const onResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isDragging.current = true;
+    dragStartX.current = e.clientX;
+    dragStartWidth.current = panelWidth;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    // 50% of the wrapper (canvas + sidepanel area) as max
+    const parent = containerRef.current?.parentElement;
+    const maxWidth = parent ? Math.floor(parent.clientWidth / 2) : MAX_PANEL_WIDTH;
+
+    const onMove = (ev: MouseEvent) => {
+      if (!isDragging.current) return;
+      const delta = dragStartX.current - ev.clientX;
+      const newWidth = Math.min(maxWidth, Math.max(MIN_PANEL_WIDTH, dragStartWidth.current + delta));
+      setPanelWidth(newWidth);
+    };
+    const onUp = () => {
+      isDragging.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [panelWidth]);
 
   const handleSubmit = (text: string) => {
     append({ role: "user", content: text });
@@ -168,37 +206,43 @@ export function ChatShell() {
     );
   }
 
-  // Sidepanel: outer container animates width so canvas reflows,
-  // inner panel has fixed width and translates in/out
+  // Sidepanel: same pattern as AppSidebar — always in DOM, animate width, initial={false}
+  // Match AppSidebar's exact transition: 0.3s, same easing
+  const sidepanelTransition = isDragging.current
+    ? { duration: 0 }
+    : { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number] };
+
   return (
-    <AnimatePresence>
+    <motion.div
+      ref={containerRef}
+      className="h-full flex-shrink-0 relative"
+      initial={false}
+      animate={{ width: isSidePanel ? panelWidth : 0 }}
+      transition={sidepanelTransition}
+      style={{ overflow: "clip", overflowClipMargin: isSidePanel ? 12 : 0 }}
+    >
+      {/* Resize handle — sits on the canvas/panel border */}
       {isSidePanel && (
-        <motion.div
-          key="chat-sidepanel-container"
-          className="h-full flex-shrink-0 overflow-hidden"
-          initial={{ width: 0, marginLeft: 0 }}
-          animate={{ width: PANEL_WIDTH + PANEL_GAP, marginLeft: 0 }}
-          exit={{ width: 0, marginLeft: 0 }}
-          transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+        <div
+          onMouseDown={onResizeStart}
+          onMouseEnter={() => setResizeHovered(true)}
+          onMouseLeave={() => setResizeHovered(false)}
+          className="absolute top-0 bottom-0 z-[600] flex items-center justify-center cursor-col-resize group"
+          style={{ width: 20, left: -10 }}
         >
-          <motion.div
-            className="h-full bg-white overflow-hidden"
-            initial={{ x: PANEL_WIDTH + PANEL_GAP }}
-            animate={{ x: 0 }}
-            exit={{ x: PANEL_WIDTH + PANEL_GAP }}
-            transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
-            style={{
-              width: PANEL_WIDTH,
-              marginLeft: PANEL_GAP,
-              borderRadius: "1.5rem 0 0 1.5rem",
-              border: "1px solid #e5e7eb",
-              borderRight: "none",
-            }}
-          >
-            {chatPanel}
-          </motion.div>
-        </motion.div>
+          <div className="w-2 h-10 rounded-full bg-white border border-[#e5e7eb] transition-colors group-hover:bg-gray-100 group-hover:border-gray-300" />
+        </div>
       )}
-    </AnimatePresence>
+
+      <div
+        className="h-full bg-white overflow-hidden"
+        style={{
+          width: panelWidth,
+          borderRadius: "1.5rem 0 0 1.5rem",
+        }}
+      >
+        {chatPanel}
+      </div>
+    </motion.div>
   );
 }

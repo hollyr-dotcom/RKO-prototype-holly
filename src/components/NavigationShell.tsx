@@ -10,14 +10,14 @@ const contentTransition = "border-radius 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), 
 
 export function NavigationShell({ children }: { children: React.ReactNode }) {
   const { isCollapsed, showSecondary, navPalette } = useSidebar();
-  const { chatMode } = useChat();
+  const { chatMode, resizeHovered } = useChat();
 
   const isChatSidePanel = chatMode === "sidepanel";
   // Content surface gets rounding whenever the navigation is expanded
   const contentHasRounding = !isCollapsed;
 
   return (
-    <div className="flex h-screen" style={{ backgroundColor: navPalette.base }}>
+    <div className="flex h-screen overflow-x-hidden" style={{ backgroundColor: navPalette.base }}>
       {/* Navigation panels — stays mounted, animates width to 0 when collapsed */}
       <AppSidebar />
 
@@ -26,10 +26,12 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
         className="flex-1 flex relative z-10"
         style={{
           backgroundColor: !isCollapsed
-            ? showSecondary
+            ? (showSecondary || isChatSidePanel)
               ? "white"
               : navPalette.base
-            : undefined,
+            : isChatSidePanel
+              ? "white"
+              : undefined,
           transition: contentTransition,
         }}
       >
@@ -43,9 +45,9 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                 : isChatSidePanel
                   ? "0 1.5rem 1.5rem 0"
                   : "0",
-            border: "1px solid #e5e7eb",
+            border: `1px solid ${resizeHovered ? "#d1d5db" : "#e5e7eb"}`,
             boxShadow: "0 0 24px rgba(0, 0, 0, 0.02)",
-            transition: contentTransition,
+            transition: `${contentTransition}, border-color 0.15s ease`,
           }}
         >
           {children}
