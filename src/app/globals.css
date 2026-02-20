@@ -102,12 +102,6 @@ html, body {
   padding: 0;
 }
 
-/* Dotted canvas background */
-.tl-background {
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
 /* Custom animations for floating UI */
 @keyframes float-in {
   from {
@@ -195,6 +189,14 @@ html, body {
   animation: slideInFromLeft 0.3s ease-out both;
 }
 
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slideUp {
+  animation: slideUp 0.2s ease-out both;
+}
+
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
@@ -203,6 +205,21 @@ html, body {
 @keyframes shimmer-text {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* Horizontal feed card tilt — scroll-driven, tied to each card's position in the feed. */
+@keyframes card-tilt {
+  entry 0%   { opacity: 0.45; }
+  entry 100% { opacity: 1; }
+  exit  0%   { opacity: 1; }
+  exit  70%  { opacity: 1; }
+  exit  100% { opacity: 0.45; }
+}
+
+.card-tilt {
+  animation: card-tilt linear both;
+  animation-timeline: view(inline);
+  animation-range: entry exit;
 }
 
 /* Zone frames: dashed border, semi-transparent white background */

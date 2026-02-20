@@ -71,6 +71,15 @@ export function useStorageStore({
           return knownTypes.has((r as { type: string }).type);
         }
         return true;
+      }).map((r: TLRecord) => {
+        // Patch missing props for shapes that predate migrations
+        if (r.typeName === "shape" && (r as any).type === "peoplelist") {
+          const props = (r as any).props;
+          if (props && props.colorScheme === undefined) {
+            return { ...r, props: { ...props, colorScheme: "" } };
+          }
+        }
+        return r;
       });
 
       store.clear();

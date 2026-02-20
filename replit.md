@@ -1,4 +1,4 @@
-# My Canvas Prototype
+# My Canvas Prototype 
 
 ## Overview
 A Miro-like canvas collaboration prototype built with Next.js, React 19, tldraw, Liveblocks, and TailwindCSS v4. Features include AI chat, real-time collaboration, document editing, and data table editing.

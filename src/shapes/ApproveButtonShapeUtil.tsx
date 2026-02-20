@@ -84,7 +84,6 @@ function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
-      e.stopPropagation();
       if (hasTriggeredRef.current) return;
       isHoldingRef.current = true;
 
@@ -99,7 +98,6 @@ function ApproveButtonComponent({ shape }: { shape: IApproveButtonShape }) {
 
   const handleRelease = useCallback(
     (e: React.PointerEvent) => {
-      e.stopPropagation();
       isHoldingRef.current = false;
 
       // If not yet triggered, stop and reset the animation
@@ -175,14 +173,6 @@ export class ApproveButtonShapeUtil extends ShapeUtil<IApproveButtonShape> {
     return true;
   }
 
-  override hideSelectionBoundsBg() {
-    return true;
-  }
-
-  override hideSelectionBoundsFg() {
-    return true;
-  }
-
   getGeometry(shape: IApproveButtonShape): Geometry2d {
     return new Rectangle2d({
       width: shape.props.w,
@@ -195,7 +185,14 @@ export class ApproveButtonShapeUtil extends ShapeUtil<IApproveButtonShape> {
     return <ApproveButtonComponent shape={shape} />;
   }
 
-  indicator(_shape: IApproveButtonShape) {
-    return null;
+  indicator(shape: IApproveButtonShape) {
+    return (
+      <rect
+        width={shape.props.w}
+        height={shape.props.h}
+        rx={16}
+        ry={16}
+      />
+    );
   }
 }

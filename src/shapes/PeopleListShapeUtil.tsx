@@ -8,6 +8,8 @@ import {
   ShapeUtil,
   T,
   TLShape,
+  createShapePropsMigrationSequence,
+  createShapePropsMigrationIds,
 } from "tldraw";
 import { AutoSizeWrapper } from "./AutoSizeWrapper";
 
@@ -19,21 +21,29 @@ declare module "tldraw" {
       w: number;
       h: number;
       people: unknown;
+      colorScheme: string;
     };
   }
 }
 
 type IPeopleListShape = TLShape<typeof PEOPLELIST_SHAPE_TYPE>;
 
-// Avatar colors — deterministic assignment by name hash
-const AVATAR_COLORS = ["#4262FF", "#C8B6FF", "#B8F077", "#F48FB1", "#FFD02F", "#80DEEA"];
+// Avatar color palettes per zone
+const BLUE_AVATARS = ["#1D4792", "#3570CC", "#4A83E0", "#6DA4F6", "#86B4F9", "#B2D0FE"];
+const YELLOW_AVATARS = ["#6B4F0E", "#8E6A12", "#BA8A12", "#D4A80E", "#F0C830", "#FFE86D"];
+const DEFAULT_AVATARS = ["#3859FF", "#B8ACFB", "#6AE08D", "#FD9AE7", "#FFD02F", "#9CE6FF"];
 
-function getAvatarColor(name: string): string {
+function getAvatarColor(name: string, colorScheme: string): string {
+  const palette =
+    colorScheme === "green" ? BLUE_AVATARS :
+    colorScheme === "violet" ? YELLOW_AVATARS :
+    DEFAULT_AVATARS;
+
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
   }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  return palette[Math.abs(hash) % palette.length];
 }
 
 function getInitials(name: string): string {
@@ -44,12 +54,34 @@ function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
+// ── Migration: add colorScheme prop to existing people list shapes ──
+
+const peopleVersions = createShapePropsMigrationIds(PEOPLELIST_SHAPE_TYPE, {
+  AddColorScheme: 1,
+});
+
+const peopleMigrations = createShapePropsMigrationSequence({
+  sequence: [
+    {
+      id: peopleVersions.AddColorScheme,
+      up(props: Record<string, unknown>) {
+        props.colorScheme = "";
+      },
+      down(props: Record<string, unknown>) {
+        delete props.colorScheme;
+      },
+    },
+  ],
+});
+
 export class PeopleListShapeUtil extends ShapeUtil<IPeopleListShape> {
   static override type = PEOPLELIST_SHAPE_TYPE;
+  static override migrations = peopleMigrations;
   static override props: RecordProps<IPeopleListShape> = {
     w: T.number,
     h: T.number,
     people: T.jsonValue,
+    colorScheme: T.string,
   };
 
   getDefaultProps(): IPeopleListShape["props"] {
@@ -57,6 +89,7 @@ export class PeopleListShapeUtil extends ShapeUtil<IPeopleListShape> {
       w: 320,
       h: 120,
       people: [],
+      colorScheme: "",
     };
   }
 
@@ -86,6 +119,7 @@ export class PeopleListShapeUtil extends ShapeUtil<IPeopleListShape> {
 
   component(shape: IPeopleListShape) {
     const people = (shape.props.people ?? []) as Array<{ name: string; role: string }>;
+    const colorScheme = (shape.props as any).colorScheme || "";
 
     return (
       <HTMLContainer
@@ -129,7 +163,7 @@ export class PeopleListShapeUtil extends ShapeUtil<IPeopleListShape> {
                     width: 28,
                     height: 28,
                     borderRadius: "50%",
-                    backgroundColor: getAvatarColor(person.name),
+                    backgroundColor: getAvatarColor(person.name, colorScheme),
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",

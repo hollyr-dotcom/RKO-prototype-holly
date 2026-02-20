@@ -1,7 +1,10 @@
 "use client";
 
 import type { Message } from "@/hooks/useAgent";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import Lottie from "lottie-react";
+import type { LottieRefCurrentProps } from "lottie-react";
+import aiThinkingAnimation from "./toolbar/lottie/ai-thinking.json";
 import Markdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,9 +17,11 @@ import {
   IconCross,
   IconSquarePencil,
   IconSidebarGlobalOpen,
+  IconSidebarGlobalClosed,
 } from "@mirohq/design-system-icons";
 import { ChatInput } from "./toolbar/ChatInput";
 import { VoiceStopButton } from "./toolbar/VoiceStopButton";
+import { FloatingQuestionCard } from "./FloatingQuestionCard";
 
 // Shimmer animation for loading text (Claude-style glimmer)
 const shimmerStyle = {
@@ -49,6 +54,8 @@ interface ChatPanelProps {
   voiceState?: "idle" | "connecting" | "listening" | "speaking" | "error";
   onVoiceToggle?: () => void;
   canvasState?: { frames: any[]; orphans: any[]; arrows: any[] };
+  onToggleSidebar?: () => void;
+  isSidebarCollapsed?: boolean;
 }
 
 // Question block with clickable suggestions
@@ -64,7 +71,7 @@ function QuestionBlock({
   isLatest: boolean;
 }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <p className="text-sm text-gray-900">{question}</p>
       {isLatest && (
         <div className="flex flex-wrap gap-2">
@@ -72,7 +79,7 @@ function QuestionBlock({
             <button
               key={i}
               onClick={() => onSelect(suggestion)}
-              className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-full transition-colors text-gray-700 animate-slideInFromLeft"
+              className="px-4 py-2 text-sm border border-gray-200 hover:bg-gray-50 rounded-full transition-colors text-gray-500 animate-slideInFromLeft"
               style={{ animationDelay: `${i * 60}ms` }}
             >
               {suggestion}
@@ -287,15 +294,52 @@ function TaskProgressHeader({
   );
 }
 
+// Lottie thinking animation with intro → loop → outro phases
+// Frames: 0-30 intro, 30-75 loop, 75-105 outro
+function ThinkingLottie({ size = 24, gray = false }: { size?: number; gray?: boolean }) {
+  const lottieRef = useRef<LottieRefCurrentProps>(null);
+  const phaseRef = useRef<"intro" | "loop">("intro");
+
+  // Play intro on mount, then loop
+  useEffect(() => {
+    const anim = lottieRef.current;
+    if (!anim) return;
+    phaseRef.current = "intro";
+    anim.goToAndPlay(0, true);
+  }, []);
+
+  const handleFrame = useCallback(() => {
+    const anim = lottieRef.current;
+    if (!anim) return;
+    const frame = anim.animationItem?.currentFrame ?? 0;
+
+    if (phaseRef.current === "intro" && frame >= 29) {
+      phaseRef.current = "loop";
+      anim.goToAndPlay(30, true);
+    } else if (phaseRef.current === "loop" && frame >= 74) {
+      anim.goToAndPlay(30, true);
+    }
+  }, []);
+
+  return (
+    <div style={{ width: size, height: size, flexShrink: 0 }}>
+      <Lottie
+        lottieRef={lottieRef}
+        animationData={aiThinkingAnimation}
+        autoplay={true}
+        loop={false}
+        onEnterFrame={handleFrame}
+        style={{ width: size, height: size }}
+      />
+    </div>
+  );
+}
+
 // Thinking status block
 function ThinkingBlock({ status }: { status: string }) {
   return (
     <div className="flex items-center gap-2 text-sm text-gray-500">
-      <span className="flex gap-1">
-        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" />
-        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
-        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
-      </span>
+      <ThinkingLottie size={20} />
       <span>{status}</span>
     </div>
   );
@@ -305,17 +349,67 @@ function ThinkingBlock({ status }: { status: string }) {
 function ProgressBlock({ status }: { status: string }) {
   return (
     <div className="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-lg">
-      <span className="flex gap-1">
-        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" />
-        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
-        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
-      </span>
+      <ThinkingLottie size={20} />
       <span className="text-sm text-gray-700">{status}</span>
     </div>
   );
 }
 
 // Web search block removed - merged into activity indicator
+
+// Service icons for connector cycling (14x14, slate-400 fill)
+const serviceIcons: Record<string, React.ReactNode> = {
+  jira: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21.202 2H12c0 1.107.437 2.169 1.217 2.954a5.16 5.16 0 003.937 1.224h1.695v1.646C18.85 10.13 20.708 12 23 12V2.803A.803.803 0 0021.202 2z" fill="currentColor"/><path d="M16.202 7H7c0 1.107.437 2.169 1.217 2.954a5.16 5.16 0 003.937 1.224h1.695v1.646C13.85 15.13 15.708 17 18 17V7.803A.803.803 0 0016.202 7z" fill="currentColor"/><path d="M11.202 12H2c0 1.107.437 2.169 1.217 2.954a5.16 5.16 0 003.937 1.224h1.695v1.646C8.85 20.13 10.708 22 13 22v-9.197A.803.803 0 0011.202 12z" fill="currentColor"/></svg>,
+  github: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z"/></svg>,
+  linear: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.357 14.1a9.969 9.969 0 01-.354-2.197L12.9 21.8c-.745-.046-1.485-.17-2.197-.354L3.357 14.1zm-1.005 2.09l5.458 5.458A9.985 9.985 0 013.32 19.68a9.985 9.985 0 01-1.968-3.49zm2.553-6.67a10.016 10.016 0 011.31-2.76L14.24 14.785a10.016 10.016 0 01-2.76 1.31L4.905 9.52zm2.19-3.72A9.96 9.96 0 0112 3.003a9.998 9.998 0 019.997 9.998 9.96 9.96 0 01-2.798 4.905L7.095 5.8z"/></svg>,
+  looker: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16z"/></svg>,
+  amplitude: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 19h20L12 2zm0 4l7 11H5l7-11z"/></svg>,
+  salesforce: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 8.5c-.8 0-1.5.3-2.1.7-.5-.9-1.5-1.5-2.6-1.5-.5 0-1 .1-1.4.4-.5-.8-1.4-1.3-2.4-1.3-1.6 0-2.9 1.3-2.9 2.9 0 .2 0 .3.1.5C4.9 10.5 4 11.5 4 12.8c0 1.5 1.2 2.7 2.7 2.7h10.6c1.5 0 2.7-1.2 2.7-2.7 0-1.3-1-2.4-2.2-2.7.1-.5-.3-1.6-.3-1.6z"/></svg>,
+  gainsight: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z"/></svg>,
+  gong: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+  "miro-insights": <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path fillRule="evenodd" d="M15 2a3 3 0 013 3v1.618l2.105.371a3 3 0 012.434 3.476l-1.736 9.849a3 3 0 01-3.476 2.433L7.48 21.01A3 3 0 015.001 18 3 3 0 012 15V5a3 3 0 013-3h10zm3 13a3 3 0 01-3 3H7.003a1 1 0 00.824 1.041l9.848 1.736a1 1 0 001.158-.811l1.736-9.848a1 1 0 00-.81-1.159L18 8.649V15zM5 4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5z"/></svg>,
+  confluence: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2.7 17.2c-.2.3-.4.7-.6 1-.2.4-.1.8.3 1l3.4 2c.4.2.8.1 1-.3.2-.3.4-.7.6-1 1.7-3 3.6-3.4 7-1.6l3.3 1.7c.4.2.8.1 1-.3l2-3.4c.2-.4.1-.8-.3-1l-3.3-1.7c-5.7-3-8.7-2.4-14.4 3.6z"/><path d="M21.3 6.8c.2-.3.4-.7.6-1 .2-.4.1-.8-.3-1l-3.4-2c-.4-.2-.8-.1-1 .3-.2.3-.4.7-.6 1-1.7 3-3.6 3.4-7 1.6L6.3 4c-.4-.2-.8-.1-1 .3l-2 3.4c-.2.4-.1.8.3 1l3.3 1.7c5.7 3 8.7 2.4 14.4-3.6z"/></svg>,
+  slack: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 15a2 2 0 01-2 2 2 2 0 01-2-2 2 2 0 012-2h2v2zm1 0a2 2 0 012-2 2 2 0 012 2v5a2 2 0 01-2 2 2 2 0 01-2-2v-5zm2-8a2 2 0 01-2-2 2 2 0 012-2 2 2 0 012 2v2H9zm0 1a2 2 0 012 2 2 2 0 01-2 2H4a2 2 0 01-2-2 2 2 0 012-2h5zm8 2a2 2 0 012-2 2 2 0 012 2 2 2 0 01-2 2h-2v-2zm-1 0a2 2 0 01-2 2 2 2 0 01-2-2V5a2 2 0 012-2 2 2 0 012 2v5zm-2 8a2 2 0 012 2 2 2 0 01-2 2 2 2 0 01-2-2v-2h2zm0-1a2 2 0 01-2-2 2 2 0 012-2h5a2 2 0 012 2 2 2 0 01-2 2h-5z"/></svg>,
+  figma: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8.5 2h3v6h-3a3 3 0 010-6zm0 6h3v6h-3a3 3 0 010-6zm0 6h3v3a3 3 0 11-3-3zm7-12a3 3 0 110 6h-3V2h3zm-3.5 9a3 3 0 116 0 3 3 0 01-6 0z"/></svg>,
+  notion: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 3.5l9-1.5c.8-.1 1.9.1 2.3.4l3.2 2.3c.3.2.4.4.4.7V20c0 .6-.4 1.1-1 1.2l-9.5 1.5c-.6.1-1.2 0-1.6-.4l-2.8-3.3c-.4-.5-.5-.7-.5-1.2V4.5c0-.5.3-.9.8-1h.7z"/></svg>,
+  asana: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path fillRule="evenodd" d="M17.65 12.62a4.35 4.35 0 100 8.7 4.35 4.35 0 000-8.7zm-11.3 0a4.35 4.35 0 100 8.7 4.35 4.35 0 000-8.7zM16.35 7.183a4.35 4.35 0 11-8.7 0 4.35 4.35 0 018.7 0z"/></svg>,
+  productboard: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5" opacity=".5"/><rect x="3" y="13" width="8" height="8" rx="1.5" opacity=".5"/></svg>,
+  datadog: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1.5 5.5a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM8 13a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm4 4.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm4-4.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg>,
+  "google-docs": <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8 13h8v1.5H8V13zm0 3h8v1.5H8V16zm0-6h3v1.5H8V10z"/></svg>,
+  "google-sheets": <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM7 13h4v2H7v-2zm0 3h4v2H7v-2zm6-3h4v2h-4v-2zm0 3h4v2h-4v-2z"/></svg>,
+  "google-calendar": <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm0 16H5V8h14v11z"/></svg>,
+  workday: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M12 14c-4 0-8 2-8 4v2h16v-2c0-2-4-4-8-4z"/></svg>,
+  "stripe-benchmarks": <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 13h2v4H7v-4zm4-4h2v8h-2V9zm4 2h2v6h-2v-6z"/></svg>,
+};
+
+// Connector cycling animation — shows "Connecting to X..." cycling through services
+function ConnectorCycler({ services }: { services: string[] }) {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (services.length <= 1) return;
+    const id = setInterval(() => setIdx(i => (i + 1) % services.length), 3000);
+    return () => clearInterval(id);
+  }, [services.length]);
+
+  // Map service short names to display names
+  const displayNames: Record<string, string> = {
+    jira: "Jira", github: "GitHub", linear: "Linear", looker: "Looker",
+    amplitude: "Amplitude", productboard: "Productboard", salesforce: "Salesforce",
+    gainsight: "Gainsight", gong: "Gong", "miro-insights": "Miro Insights",
+    "stripe-benchmarks": "Stripe", "google-docs": "Google Docs", confluence: "Confluence",
+    notion: "Notion", slack: "Slack", figma: "Figma", "google-calendar": "Google Calendar",
+    datadog: "Datadog", "google-sheets": "Google Sheets", workday: "Workday", asana: "Asana",
+  };
+  const key = services[idx];
+  const name = displayNames[key] || key;
+  const icon = serviceIcons[key];
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      {icon && <span className="inline-flex text-slate-400">{icon}</span>}
+      Connecting to {name}...
+    </span>
+  );
+}
 
 // Progressive artifact card — loading states while streaming, clickable when done
 function ArtifactCard({
@@ -347,7 +441,7 @@ function ArtifactCard({
 
   // Build content lines with per-line completion tracking
   // Tools arrive sequentially from the SDK — if tool N+1 has arrived, tool N is done.
-  type ContentLine = { label: string; loadingLabel: string; onClick?: () => void; toolIndex: number };
+  type ContentLine = { label: string; loadingLabel: string | React.ReactNode; onClick?: () => void; toolIndex: number };
   const contentLines: ContentLine[] = [];
 
   // Track original indices in toolInvocations for per-line completion
@@ -407,6 +501,8 @@ function ArtifactCard({
       });
     }
   });
+
+  // queryConnectors — handled by the activity indicator (Lottie animation), not the card
 
   const indexedLayouts = indexedInvocations.filter(t => t.toolName === "createLayout");
   const indexedFrames = indexedInvocations.filter(t => t.toolName === "createFrame");
@@ -517,16 +613,31 @@ function ArtifactCard({
   // Sort all lines by execution order
   contentLines.sort((a, b) => a.toolIndex - b.toolIndex);
 
-  if (!hasBoard && contentLines.length === 0) return null;
-
   const allDone = !isStreaming;
+
+  // During streaming, hide the last content line UNLESS a later tool exists
+  // in toolInvocations (meaning its result was dispatched or another tool arrived).
+  // This prevents duplication with the activity indicator while still showing
+  // zones as "done" once their staggered result is dispatched.
+  const visibleLines = isStreaming
+    ? contentLines.filter((line, i) => {
+        if (i < contentLines.length - 1) return true; // not the last → always show
+        // Last line: show if any tool exists after it in toolInvocations
+        return line.toolIndex < lastToolIndex;
+      })
+    : contentLines;
+
+  // Board is visible once result arrives or stream ends
+  const showBoard = hasBoard && (boardReady || allDone);
+
+  // Hide card entirely if nothing to show yet
+  if (!showBoard && visibleLines.length === 0) return null;
 
   return (
     <div className="rounded-xl border border-gray-200 overflow-hidden">
       {/* Board row */}
-      {hasBoard && (() => {
-        const showName = boardReady || allDone;
-        const isClickable = showName && allDone;
+      {showBoard && (() => {
+        const isClickable = allDone;
         return (
           <button
             onClick={() => isClickable && onNavigateToCanvas?.(canvasId)}
@@ -535,19 +646,14 @@ function ArtifactCard({
               isClickable ? "hover:bg-gray-50 cursor-pointer group" : "cursor-default"
             }`}
           >
-            {showName && (
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0 text-gray-400">
-                <rect x="0.5" y="0.5" width="5.5" height="5.5" rx="1.25" fill="currentColor" />
-                <rect x="8" y="0.5" width="5.5" height="5.5" rx="1.25" fill="currentColor" opacity="0.5" />
-                <rect x="0.5" y="8" width="5.5" height="5.5" rx="1.25" fill="currentColor" opacity="0.5" />
-                <rect x="8" y="8" width="5.5" height="5.5" rx="1.25" fill="currentColor" opacity="0.3" />
-              </svg>
-            )}
-            <span
-              className={`text-sm flex-1 truncate ${showName ? "font-medium text-gray-900" : ""}`}
-              style={showName ? undefined : shimmerStyle}
-            >
-              {showName ? `Created ${boardName}` : `Creating ${boardName}...`}
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0 text-gray-400">
+              <rect x="0.5" y="0.5" width="5.5" height="5.5" rx="1.25" fill="currentColor" />
+              <rect x="8" y="0.5" width="5.5" height="5.5" rx="1.25" fill="currentColor" opacity="0.5" />
+              <rect x="0.5" y="8" width="5.5" height="5.5" rx="1.25" fill="currentColor" opacity="0.5" />
+              <rect x="8" y="8" width="5.5" height="5.5" rx="1.25" fill="currentColor" opacity="0.3" />
+            </svg>
+            <span className="text-sm flex-1 truncate font-medium text-gray-900">
+              Created {boardName}
             </span>
             {isClickable && (
               <span className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -558,12 +664,10 @@ function ArtifactCard({
         );
       })()}
 
-      {/* Nested content lines with tree connectors */}
-      {contentLines.map((line, i) => {
-        const isLastLine = i === contentLines.length - 1;
-        // A line is done if: stream ended, OR a later tool has arrived (sequential execution)
-        const lineDone = allDone || line.toolIndex < lastToolIndex;
-        const isClickable = lineDone && !!(line.onClick || onNavigateToCanvas);
+      {/* Completed content lines — items appear here once done */}
+      {visibleLines.map((line, i) => {
+        const isLastLine = i === visibleLines.length - 1;
+        const isClickable = !!(line.onClick || onNavigateToCanvas);
         return (
           <button
             key={i}
@@ -578,17 +682,14 @@ function ArtifactCard({
             }`}
           >
             {/* Tree connector when nested under a board */}
-            {hasBoard && (
+            {showBoard && (
               <span className="text-gray-300 pl-3 text-sm select-none w-7 flex-shrink-0 font-mono">
-                {isLastLine ? "\u2514" : "\u251C"}
+                {isLastLine && allDone ? "\u2514" : "\u251C"}
               </span>
             )}
-            <div className={`flex items-center gap-2 py-2 flex-1 min-w-0 ${hasBoard ? "pr-3" : "px-3"}`}>
-              <span
-                className={`text-sm flex-1 truncate ${lineDone ? "text-gray-600" : ""}`}
-                style={lineDone ? undefined : shimmerStyle}
-              >
-                {lineDone ? line.label : line.loadingLabel}
+            <div className={`flex items-center gap-2 py-2 flex-1 min-w-0 ${showBoard ? "pr-3" : "px-3"}`}>
+              <span className="text-sm flex-1 truncate text-gray-600">
+                {line.label}
               </span>
               {isClickable && (
                 <span className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
@@ -755,6 +856,8 @@ export function ChatPanel({
   voiceState = "idle",
   onVoiceToggle,
   canvasState = { frames: [], orphans: [], arrows: [] },
+  onToggleSidebar,
+  isSidebarCollapsed = true,
 }: ChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -777,6 +880,145 @@ export function ChatPanel({
   }, [messages, isLoading]);
 
   const isVoiceActive = voiceState !== "idle";
+
+  // ── Activity indicator state ──
+  const [activityStart, setActivityStart] = useState(0);
+  const [, setActivityTick] = useState(0);
+
+  // Track last zone dispatch — indicator lingers for 1.5s after zone appears
+  const lastZoneRef = useRef<{ title: string; resultCount: number; timestamp: number } | null>(null);
+
+  // Connector sources — exact same list and order as Canvas.tsx toast
+  const connectorSourcesRef = useRef([
+    { name: "Jira", key: "jira" },
+    { name: "Miro Insights", key: "miro-insights" },
+    { name: "Salesforce", key: "salesforce" },
+    { name: "Asana", key: "asana" },
+    { name: "Google Drive", key: "google-docs" },
+    { name: "Looker", key: "looker" },
+    { name: "Amplitude", key: "amplitude" },
+    { name: "GitHub", key: "github" },
+  ]);
+
+  // Start connector timer when plan execution begins
+  useEffect(() => {
+    const lastMsg = messages[messages.length - 1];
+    const tools = lastMsg?.role === "assistant" ? lastMsg.toolInvocations || [] : [];
+    const hasPlanExecution = tools.some(t => t.toolName === "showProgress");
+    if (isLoading && hasPlanExecution && activityStart === 0) {
+      setActivityStart(Date.now());
+    }
+    if (!isLoading) {
+      setActivityStart(0);
+      lastZoneRef.current = null;
+    }
+  }, [isLoading, messages, activityStart]);
+
+  // Tick every 500ms for indicator updates (connector cycling + zone linger)
+  useEffect(() => {
+    if (activityStart === 0) return;
+    const id = setInterval(() => {
+      if (Date.now() - activityStart < 21000) {
+        setActivityTick(t => t + 1);
+      } else {
+        clearInterval(id);
+      }
+    }, 500);
+    return () => clearInterval(id);
+  }, [activityStart]);
+
+  // Extract the latest unanswered askUser question for the fullscreen modal
+  const activeQuestion = useMemo(() => {
+    if (!isFullscreen) return null;
+    const latestAskUser = messages.findLast(m =>
+      m.toolInvocations?.some(t => t.toolName === 'askUser')
+    );
+    if (!latestAskUser) return null;
+
+    // Check if already answered (a user message follows the askUser)
+    const askIdx = messages.indexOf(latestAskUser);
+    const nextUserMsg = messages.slice(askIdx + 1).find(m => m.role === 'user');
+    if (nextUserMsg) return null;
+
+    const tool = latestAskUser.toolInvocations!.find(t => t.toolName === 'askUser')!;
+    const args = tool.args as { questions?: Array<{question: string; suggestions: string[]}>; question?: string; suggestions?: string[] };
+    const questions = args.questions || (args.question ? [{ question: args.question, suggestions: args.suggestions || [] }] : []);
+    const currentQ = questions[currentQuestionIndex];
+    if (!currentQ) return null;
+
+    // Don't show modal if this question already has an answer in progress
+    if (questionAnswers[currentQuestionIndex] !== undefined) return null;
+
+    return {
+      question: currentQ.question,
+      suggestions: currentQ.suggestions,
+      questionIndex: currentQuestionIndex,
+      totalQuestions: questions.length,
+      questions,
+    };
+  }, [messages, isFullscreen, currentQuestionIndex, questionAnswers]);
+
+  // Handler for modal answer selection (shared with inline QuestionBlock)
+  const handleQuestionAnswer = useCallback((answer: string) => {
+    if (!activeQuestion) return;
+    const newAnswers = [...questionAnswers, answer];
+    setQuestionAnswers(newAnswers);
+    if (activeQuestion.questionIndex < activeQuestion.totalQuestions - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      // Last question — submit all answers
+      onSubmit(newAnswers.join("\n"));
+    }
+  }, [activeQuestion, questionAnswers, onSubmit]);
+
+  // Handler for skipping/dismissing the modal
+  const handleQuestionDismiss = useCallback(() => {
+    if (!activeQuestion) return;
+    // Skip = submit "skip" for remaining questions
+    const newAnswers = [...questionAnswers];
+    for (let i = currentQuestionIndex; i < activeQuestion.totalQuestions; i++) {
+      if (newAnswers[i] === undefined) newAnswers.push("skip");
+    }
+    onSubmit(newAnswers.join("\n"));
+  }, [activeQuestion, questionAnswers, currentQuestionIndex, onSubmit]);
+
+  // Detect pending plan approval in fullscreen (plan proposed but not yet approved/rejected)
+  const pendingApproval = useMemo(() => {
+    if (!isFullscreen) return null;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (msg.role !== 'assistant') continue;
+      const planTool = msg.toolInvocations?.find(t => t.toolName === 'confirmPlan');
+      if (!planTool) continue;
+
+      // Check if user has responded
+      const nextUserMsg = messages.slice(i + 1).find(m => m.role === 'user');
+      if (nextUserMsg) return null; // Already responded
+
+      // Check it's the latest message and not loading
+      const isLatest = i === messages.length - 1;
+      if (!isLatest || isLoading) return null;
+
+      return true;
+    }
+    return null;
+  }, [messages, isFullscreen, isLoading]);
+
+  // Keyboard shortcuts for plan approval modal
+  useEffect(() => {
+    if (!pendingApproval || activeQuestion) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        onSubmit("Approved! Go ahead.");
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        onSubmit("I'd like to make some changes.");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [pendingApproval, activeQuestion, onSubmit]);
 
   // Extract active plan from messages for the header
   const activePlan = (() => {
@@ -850,6 +1092,19 @@ export function ChatPanel({
       {/* Header */}
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-2">
+          {isFullscreen && onToggleSidebar && (
+            <button
+              onClick={onToggleSidebar}
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+              title={isSidebarCollapsed ? "Open sidebar" : "Close sidebar"}
+            >
+              {isSidebarCollapsed ? (
+                <IconSidebarGlobalClosed css={{ width: 18, height: 18 }} />
+              ) : (
+                <IconSidebarGlobalOpen css={{ width: 18, height: 18 }} />
+              )}
+            </button>
+          )}
           <span className="text-sm font-medium text-gray-900">Sidekick</span>
         </div>
         <div className="flex items-center gap-1">
@@ -860,15 +1115,6 @@ export function ChatPanel({
               title="New chat"
             >
               <IconSquarePencil css={{ width: 18, height: 18 }} />
-            </button>
-          )}
-          {onCollapse && (
-            <button
-              onClick={onCollapse}
-              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-              title="Minimize to toast"
-            >
-              <IconMinus css={{ width: 18, height: 18 }} />
             </button>
           )}
           {isFullscreen && onExitFullscreen && (
@@ -889,18 +1135,20 @@ export function ChatPanel({
               <IconArrowsOutSimple css={{ width: 18, height: 18 }} />
             </button>
           )}
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-            title="Close"
-          >
-            <IconCross css={{ width: 18, height: 18 }} />
-          </button>
+          {onCollapse && (
+            <button
+              onClick={onCollapse}
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+              title="Minimize"
+            >
+              <IconMinus css={{ width: 18, height: 18 }} />
+            </button>
+          )}
         </div>
       </div>
 
       {/* Content area: chat + plan side by side, below header */}
-      <div className="flex flex-1 min-h-0">
+      <div className={`flex flex-1 min-h-0 gap-6 ${isFullscreen && planPanel ? 'mx-auto' : ''}`} style={isFullscreen && planPanel ? { maxWidth: '1100px', width: '100%' } : undefined}>
         {/* Chat column */}
         <div className="flex-1 flex flex-col min-w-0">
 
@@ -916,7 +1164,7 @@ export function ChatPanel({
       )}
 
       {/* Messages */}
-      <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
+      <div className={`flex-1 overflow-y-auto p-4 space-y-12 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 text-sm mt-8">
             <p className="mb-2">Ask me anything</p>
@@ -955,6 +1203,36 @@ export function ChatPanel({
             );
             const isLatestMessage = index === messages.length - 1;
 
+            // Check if this user message is a response to askUser
+            // Look back up to 3 messages for an askUser assistant (handles duplicate user messages)
+            let isAskUserResponse = false;
+            let askUserAssistantMsg: Message | null = null;
+            if (message.role === 'user') {
+              for (let lookback = 1; lookback <= Math.min(3, index); lookback++) {
+                const candidate = messages[index - lookback];
+                if (candidate.role === 'assistant' && candidate.toolInvocations?.some(t => t.toolName === 'askUser')) {
+                  // Verify no non-askUser-response user messages in between
+                  const between = messages.slice(index - lookback + 1, index);
+                  const allUserBetween = between.every(m => m.role === 'user');
+                  if (allUserBetween || between.length === 0) {
+                    isAskUserResponse = true;
+                    askUserAssistantMsg = candidate;
+                  }
+                  break;
+                }
+                // Stop looking back if we hit another assistant message
+                if (candidate.role === 'assistant') break;
+              }
+            }
+
+            // In sidepanel: hide entirely (shown inline in Q&A).
+            // In fullscreen: show first response as Q&A bubble, hide duplicates.
+            if (isAskUserResponse && !isFullscreen) return null;
+            // In fullscreen: only show the FIRST user message after askUser as Q&A bubble
+            const prevMsg = index > 0 ? messages[index - 1] : null;
+            const isFirstAskUserResponse = isAskUserResponse && prevMsg?.role === 'assistant' && prevMsg?.toolInvocations?.some(t => t.toolName === 'askUser');
+            if (isAskUserResponse && isFullscreen && !isFirstAskUserResponse) return null;
+
             return (
               <div
                 key={message.id}
@@ -962,25 +1240,36 @@ export function ChatPanel({
                   message.role === "user" ? "flex justify-end" : ""
                 }`}
               >
-                {message.role === "user" ? (() => {
-                  // Hide the combined answer message that follows an askUser tool
-                  const prevMsg = index > 0 ? messages[index - 1] : null;
-                  const isAskUserResponse = prevMsg?.role === 'assistant' && prevMsg?.toolInvocations?.some(t => t.toolName === 'askUser');
-                  if (isAskUserResponse) return null;
-
-                  return (
+                {message.role === "user" ? (
+                  isFirstAskUserResponse && isFullscreen ? (() => {
+                    // Compact Q&A summary bubble
+                    const askTool = askUserAssistantMsg!.toolInvocations!.find(t => t.toolName === 'askUser')!;
+                    const askArgs = askTool.args as { questions?: Array<{ question: string }>; question?: string };
+                    const questions = askArgs.questions || (askArgs.question ? [{ question: askArgs.question }] : []);
+                    const answers = (message.content || '').split('\n');
+                    return (
+                      <div className="max-w-[80%] rounded-2xl px-4 py-3 bg-gray-100 text-gray-900 space-y-2">
+                        {questions.map((q, qi) => (
+                          <div key={qi}>
+                            <p className="text-sm text-gray-500">Q: {q.question}</p>
+                            <p className="text-sm font-medium">{answers[qi] ? `A: ${answers[qi]}` : ''}</p>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })() : (
                     <div className="max-w-[80%] rounded-2xl px-4 py-2 bg-gray-100 text-gray-900">
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                     </div>
-                  );
-                })() : (
+                  )
+                ) : (
                   /* AI message: full width, no bg */
                   <div className="w-full">
                     {/* Text + artifact cards — split at tool boundary for correct ordering */}
                     {(() => {
                       const hasText = message.content && !message.content.trim().startsWith('{');
                       const hasArtifactTools = message.toolInvocations?.some(t =>
-                        ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "createZone", "webSearch"].includes(t.toolName)
+                        ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "createZone", "webSearch", "queryConnectors"].includes(t.toolName)
                       );
 
                       const mdComponents = {
@@ -1039,6 +1328,9 @@ export function ChatPanel({
 
                     {/* askUser tool - render as sequential Q&A conversation */}
                     {askUserTool && (() => {
+                      // Fullscreen: hide all Q&A inline — the floating modal handles it
+                      if (isFullscreen) return null;
+
                       const args = askUserTool.args as { questions?: Array<{ question: string; suggestions: string[] }>; question?: string; suggestions?: string[] };
                       const questions = args.questions || (args.question ? [{ question: args.question, suggestions: args.suggestions || [] }] : []);
 
@@ -1066,7 +1358,7 @@ export function ChatPanel({
                         );
                       }
 
-                      // Active Q&A -show questions one at a time
+                      // Active Q&A -show questions one at a time (sidepanel only)
                       return (
                         <div className={message.content ? "mt-5" : ""}>
                           {questions.map((q, qi) => {
@@ -1088,7 +1380,6 @@ export function ChatPanel({
                                     </div>
                                   </>
                                 ) : (
-                                  /* Current unanswered -QuestionBlock renders question text internally */
                                   <QuestionBlock
                                     question={q.question}
                                     suggestions={q.suggestions}
@@ -1167,28 +1458,8 @@ export function ChatPanel({
                       // Hide inline plan block once execution starts (shown in header instead)
                       if (executionStarted) return null;
 
-                      // In fullscreen: only show approve/reject buttons (steps are in sidebar)
-                      if (isFullscreen) {
-                        if (!isLatestMessage) return null;
-                        return (
-                          <div className={message.content ? "mt-5" : ""}>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => onSubmit("I'd like to make some changes.")}
-                                className="flex-1 px-3 py-2 text-sm bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                              >
-                                Modify
-                              </button>
-                              <button
-                                onClick={() => onSubmit("Approved! Go ahead.")}
-                                className="flex-1 px-3 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
-                              >
-                                Approve & Start
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      }
+                      // In fullscreen: hide inline — floating modal handles approval
+                      if (isFullscreen) return null;
 
                       return (
                         <div className={message.content ? "mt-5" : ""}>
@@ -1286,67 +1557,77 @@ export function ChatPanel({
             const lastMsg = messages[messages.length - 1];
             const recentTools = lastMsg.role === "assistant" ? lastMsg.toolInvocations || [] : [];
 
-            // During plan execution with artifact tools, the ArtifactCard shows progress
-            // But we still want to show web searches and other non-canvas activities
-            const hasArtifactTools = recentTools.some(t =>
-              ["createCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "createZone", "webSearch"].includes(t.toolName)
+            // ── Activity indicator: zone progress → connectors → fallback ──
+            const elapsed = activityStart > 0 ? Date.now() - activityStart : 0;
+            const sources = connectorSourcesRef.current;
+
+            let activityMsg: string | React.ReactNode = "Thinking...";
+
+            // Count zone calls vs results (works because results are staggered in useAgent)
+            const zoneCalls = recentTools.filter(t => t.toolName === 'createZone');
+            const zoneResults = recentTools.filter(t => t.toolName === 'createZone_result');
+
+            const hasCanvasTools = recentTools.some(t =>
+              ["createZone", "createDocument", "createDataTable", "createLayout", "createFrame", "createSources"].includes(t.toolName)
             );
 
-            // ArtifactCard handles all progress display (including web search)
-            if (hasArtifactTools) return null;
-
-            // Fallback: non-artifact tool activity (arrows, working notes, etc.)
-            const lastCanvasTool = [...recentTools].reverse().find(t =>
-              ["createSticky", "createShape", "createText", "createFrame", "createArrow", "createWorkingNote", "createDocument", "createDataTable"].includes(t.toolName)
-            );
-            const confirmPlanTool = [...recentTools].reverse().find(t => t.toolName === "confirmPlan");
-
-            // Generate activity message based on what's happening
-            const getActivityMessage = () => {
-              // Plan being created
-              if (confirmPlanTool) {
-                return "Creating plan...";
+            // Track zone dispatches — when a new result appears, record timestamp
+            if (zoneResults.length > 0 && zoneCalls.length > 0) {
+              const prevCount = lastZoneRef.current?.resultCount || 0;
+              if (zoneResults.length > prevCount) {
+                // New result just appeared — record which zone and when
+                const matchIdx = zoneResults.length - 1;
+                const matchingCall = zoneCalls[matchIdx];
+                const title = matchingCall ? (matchingCall.args as { title?: string }).title || "zone" : "zone";
+                lastZoneRef.current = { title, resultCount: zoneResults.length, timestamp: Date.now() };
               }
-              // Canvas tools - show what's being created
-              if (lastCanvasTool) {
-                switch (lastCanvasTool.toolName) {
-                  case "createFrame": return `Creating "${(lastCanvasTool.args as {name?: string}).name || "frame"}"...`;
-                  case "createSticky": {
-                    const text = (lastCanvasTool.args as {text?: string}).text || "";
-                    return `Adding "${text.slice(0, 25)}${text.length > 25 ? '...' : ''}"`;
-                  }
-                  case "createShape": return `Creating ${(lastCanvasTool.args as {type?: string}).type || "shape"}...`;
-                  case "createText": {
-                    const text = (lastCanvasTool.args as {text?: string}).text || "";
-                    return `Adding "${text.slice(0, 25)}${text.length > 25 ? '...' : ''}"`;
-                  }
-                  case "createArrow": return "Connecting...";
-                  case "createDocument": return `Creating document "${(lastCanvasTool.args as {title?: string}).title || "document"}"...`;
-                  case "createDataTable": return `Creating table "${(lastCanvasTool.args as {title?: string}).title || "table"}"...`;
-                  default: return "Working...";
-                }
+            }
+
+            // Priority 1A: Zone being created (calls > results due to staggering)
+            if (zoneCalls.length > zoneResults.length) {
+              const inProgress = zoneCalls[zoneResults.length]; // first unmatched call
+              const title = (inProgress.args as { title?: string }).title || "zone";
+              activityMsg = `Creating zone ${title}...`;
+            }
+            // Priority 1B: Zone just appeared — linger for 1.5s so indicator
+            // stays in sync while the zone is visible on canvas
+            else if (lastZoneRef.current && Date.now() - lastZoneRef.current.timestamp < 1500) {
+              activityMsg = `Creating zone ${lastZoneRef.current.title}...`;
+            }
+            // Priority 2: Fake connector cycling (before any canvas tool appears)
+            else if (elapsed > 0 && elapsed < 20000 && !hasCanvasTools) {
+              if (elapsed < 2000) {
+                activityMsg = "Finding relevant data...";
+              } else {
+                const idx = Math.floor((elapsed - 2000) / 4000) % sources.length;
+                const src = sources[idx];
+                const icon = serviceIcons[src.key];
+                activityMsg = (
+                  <span className="inline-flex items-center gap-1.5">
+                    {icon && <span className="inline-flex text-slate-400">{icon}</span>}
+                    Connecting to {src.name}...
+                  </span>
+                );
               }
-              return "Thinking...";
-            };
-
-            // Count canvas items being created
-            const canvasItemCount = recentTools.filter(t =>
-              ["createSticky", "createShape", "createText", "createFrame", "createArrow", "createDocument", "createDataTable"].includes(t.toolName)
-            ).length;
-
-            const activityMsg = getActivityMessage();
+            }
+            // Priority 3: Plan confirmation
+            else if (recentTools.some(t => t.toolName === 'confirmPlan') && !hasCanvasTools) {
+              activityMsg = "Creating plan...";
+            }
+            // Priority 4: Latest step title as fallback
+            else {
+              const showProgressTools = recentTools.filter(t => t.toolName === 'showProgress');
+              if (showProgressTools.length > 0) {
+                const latest = showProgressTools[showProgressTools.length - 1];
+                const pargs = latest.args as { stepTitle?: string };
+                if (pargs.stepTitle) activityMsg = `${pargs.stepTitle}...`;
+              }
+            }
 
             return (
-              <div className="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-lg">
-                <span className="flex gap-1">
-                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
-                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
-                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
-                </span>
-                <span className="text-sm text-gray-600">{activityMsg}</span>
-                {canvasItemCount > 1 && (
-                  <span className="text-xs text-gray-400">({canvasItemCount} items)</span>
-                )}
+              <div className="flex items-center gap-2">
+                <ThinkingLottie size={20} />
+                <span className="text-sm text-slate-400">{activityMsg}</span>
               </div>
             );
           })()
@@ -1358,69 +1639,95 @@ export function ChatPanel({
 
       {/* Floating progress indicator - removed (was dead code) */}
 
-      {/* Input */}
-      <div className={`relative p-4 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
-        {isVoiceActive ? (
-          <VoiceStopButton
-            voiceState={voiceState}
-            onStop={() => onVoiceToggle?.()}
+      {/* Fullscreen question modal — floats above input */}
+      {isFullscreen && activeQuestion && !isLoading && (
+        <div className="flex justify-center px-4 pb-2 mx-auto w-full" style={{ maxWidth: 720 }}>
+          <FloatingQuestionCard
+            question={activeQuestion.question}
+            options={activeQuestion.suggestions}
+            onSelect={handleQuestionAnswer}
+            onSkip={handleQuestionDismiss}
           />
-        ) : (
-          <ChatInput
-            onSubmit={onSubmit}
-            onFocusChange={() => {}}
-            onVoiceStart={onVoiceToggle}
-            isLoading={isLoading}
-            hasMessages={messages.length > 0}
-            hasPendingQuestion={false}
-            canvasState={canvasState}
-            voiceState={voiceState}
-          />
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Fullscreen plan approval modal — floats above input */}
+      {isFullscreen && pendingApproval && !activeQuestion && (
+        <div className="flex justify-center px-4 pb-2 mx-auto w-full" style={{ maxWidth: 720 }}>
+          <div className="w-full">
+            <div className="bg-white text-gray-900 shadow-2xl overflow-hidden border border-gray-200" style={{ borderRadius: 24 }}>
+              <div className="px-5 pt-4 pb-2">
+                <p className="text-base font-medium">Ready to start?</p>
+              </div>
+              <div className="px-4 pb-4 flex gap-2">
+                <button
+                  onClick={() => onSubmit("I'd like to make some changes.")}
+                  className="flex-1 px-4 py-3 text-sm bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                  style={{ borderRadius: 14 }}
+                >
+                  Modify
+                </button>
+                <button
+                  onClick={() => onSubmit("Approved! Go ahead.")}
+                  className="flex-1 px-4 py-3 text-sm bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+                  style={{ borderRadius: 14 }}
+                >
+                  Approve & Start
+                </button>
+              </div>
+            </div>
+            <div className="py-2 text-xs text-gray-400 text-center">
+              Enter to approve · Esc to modify
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Input — hidden when fullscreen modal is showing */}
+      {!(isFullscreen && (activeQuestion || pendingApproval) && !isLoading) && (
+        <div className={`relative p-4 ${isFullscreen ? 'mx-auto w-full max-w-3xl' : ''}`}>
+          {isVoiceActive ? (
+            <VoiceStopButton
+              voiceState={voiceState}
+              onStop={() => onVoiceToggle?.()}
+            />
+          ) : (
+            <ChatInput
+              onSubmit={onSubmit}
+              onFocusChange={() => {}}
+              onVoiceStart={onVoiceToggle}
+              isLoading={isLoading}
+              hasMessages={messages.length > 0}
+              hasPendingQuestion={false}
+              canvasState={canvasState}
+              voiceState={voiceState}
+            />
+          )}
+        </div>
+      )}
 
         </div>{/* end chat column */}
 
-        {/* Plan panel — animates width, content right-aligned so it clips from left */}
-        <div
-          className="flex-shrink-0 overflow-hidden relative"
-          style={{
-            width: planPanel ? (isPlanPanelVisible ? 320 : 46) : 0,
-            transition: "width 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)",
-          }}
-        >
-          {/* Plan content — pinned to the right so collapsing clips from the left */}
-          {planPanel && (
-            <div
-              className="absolute top-0 right-0 bottom-0 bg-gray-50"
-              style={{
-                width: 320,
-                borderLeft: "1px solid #e5e7eb",
-                opacity: isPlanPanelVisible ? 1 : 0,
-                transition: "opacity 0.15s ease",
-                pointerEvents: isPlanPanelVisible ? "auto" : "none",
-              }}
+        {/* Plan panel — card style, slides in from right */}
+        <AnimatePresence>
+          {planPanel && isPlanPanelVisible && (
+            <motion.div
+              className="flex-shrink-0 self-start relative mt-4"
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 340, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              style={{ overflow: "hidden" }}
             >
-              {planPanel}
-            </div>
+              <div
+                className="bg-white rounded-2xl overflow-hidden"
+                style={{ width: 340, border: "1px solid #e5e7eb" }}
+              >
+                {planPanel}
+              </div>
+            </motion.div>
           )}
-
-          {/* Toggle button — always in same position: top-right of the wrapper */}
-          {planPanel && onTogglePlanPanel && (
-            <button
-              onClick={onTogglePlanPanel}
-              className="absolute top-3 right-3 z-10 p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-              title={isPlanPanelVisible ? "Hide plan" : "Show plan"}
-            >
-              <IconSidebarGlobalOpen css={{
-                width: 18,
-                height: 18,
-                transform: isPlanPanelVisible ? 'none' : 'rotate(180deg)',
-                transition: 'transform 0.25s ease',
-              }} />
-            </button>
-          )}
-        </div>
+        </AnimatePresence>
 
       </div>{/* end content area */}
     </div>

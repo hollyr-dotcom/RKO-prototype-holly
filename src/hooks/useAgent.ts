@@ -139,6 +139,39 @@ export function useAgent(
         let bufferedTools: Array<{ toolName: string; args: Record<string, unknown> }> = [];
         let toolTextSplit: number | undefined; // text length when first tool arrived
 
+        // Queue for staggering createZone results so the UI can show progress.
+        // Without this, call + result arrive in the same SSE chunk and React
+        // batches them into one render — the indicator never shows "Creating zone X..."
+        const pendingZoneResults: Array<{ toolName: string; result: Record<string, unknown> }> = [];
+        let zoneDispatchTimer: ReturnType<typeof setTimeout> | null = null;
+
+        function dispatchNextZone() {
+          if (pendingZoneResults.length === 0) {
+            zoneDispatchTimer = null;
+            return;
+          }
+          const next = pendingZoneResults.shift()!;
+
+          // Add result to UI + create zone on canvas simultaneously.
+          // The indicator lingering is handled by ChatPanel (tracks dispatch timestamp).
+          bufferedTools.push({ toolName: next.toolName, args: next.result });
+          setMessages(prev => prev.map(m =>
+            m.id === assistantId
+              ? { ...m, content: bufferedText, toolInvocations: [...bufferedTools], toolTextSplit }
+              : m
+          ));
+          if (onToolCall) {
+            onToolCall(next.toolName, next.result);
+          }
+
+          // Schedule next zone dispatch
+          if (pendingZoneResults.length > 0) {
+            zoneDispatchTimer = setTimeout(dispatchNextZone, 1200);
+          } else {
+            zoneDispatchTimer = null;
+          }
+        }
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -186,7 +219,7 @@ export function useAgent(
                   // - showProgress: step tracking
                   // - checkpoint: feedback pause points
                   // - webSearch: show "Searching..." indicator
-                  const immediateTools = ["askUser", "confirmPlan", "showProgress", "checkpoint", "webSearch", "createCanvas", "navigateToCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "createZone"];
+                  const immediateTools = ["askUser", "confirmPlan", "showProgress", "checkpoint", "webSearch", "queryConnectors", "createCanvas", "navigateToCanvas", "createLayout", "createFrame", "createSticky", "createShape", "createText", "createDocument", "createDataTable", "createSources", "createZone"];
                   if (immediateTools.includes(data.toolName)) {
                     setMessages((prev) =>
                       prev.map((m) =>
@@ -216,28 +249,41 @@ export function useAgent(
                     try { result = JSON.parse(result.text); } catch {}
                   }
 
-                  // Add tool_result to toolInvocations for UI (e.g., createCanvas_result with canvasId)
                   const resultToolName = `${data.toolName}_result`;
-                  bufferedTools.push({ toolName: resultToolName, args: result || {} });
 
-                  // Update UI immediately for navigation-critical and canvas-creation results
-                  if (data.toolName === "createCanvas" || data.toolName === "createZone") {
-                    setMessages((prev) =>
-                      prev.map((m) =>
-                        m.id === assistantId
-                          ? {
-                              ...m,
-                              content: bufferedText,
-                              toolInvocations: [...bufferedTools],
-                              toolTextSplit,
-                            }
-                          : m
-                      )
-                    );
-                  }
+                  if (data.toolName === "createZone") {
+                    // DON'T add to bufferedTools yet — queue for staggered dispatch.
+                    // This creates an artificial gap so React can render "Creating zone X..."
+                    // before the zone actually appears on the canvas.
+                    pendingZoneResults.push({ toolName: resultToolName, result: result || {} });
+                    if (!zoneDispatchTimer) {
+                      // First zone: 800ms delay — enough for React to show the indicator
+                      zoneDispatchTimer = setTimeout(dispatchNextZone, 800);
+                    }
+                    // Skip the normal bufferedTools push and UI update
+                  } else {
+                    // Normal handling for all other tools
+                    bufferedTools.push({ toolName: resultToolName, args: result || {} });
 
-                  if (onToolCall) {
-                    onToolCall(resultToolName, result);
+                    // Update UI immediately for navigation-critical results
+                    if (data.toolName === "createCanvas") {
+                      setMessages((prev) =>
+                        prev.map((m) =>
+                          m.id === assistantId
+                            ? {
+                                ...m,
+                                content: bufferedText,
+                                toolInvocations: [...bufferedTools],
+                                toolTextSplit,
+                              }
+                            : m
+                        )
+                      );
+                    }
+
+                    if (onToolCall) {
+                      onToolCall(resultToolName, result);
+                    }
                   }
                 }
 

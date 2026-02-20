@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
+import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import type { FeedItem, FeedItemType } from "@/types/feed";
+import { formatTimeAgo } from "@/lib/formatTimeAgo";
 import { getUser } from "@/lib/users";
 import { FeedActions } from "./FeedActions";
 import { AgentOpportunityContent } from "./content/AgentOpportunity";
@@ -10,6 +12,7 @@ import { CollaborationRequestContent } from "./content/CollaborationRequest";
 import { WorkflowChangeContent } from "./content/WorkflowChange";
 import { AlertFYIContent } from "./content/AlertFYI";
 import { GenericVisualPreview } from "./visuals/GenericVisualPreview";
+import "./holo-card.css";
 
 /* ------------------------------------------------------------------ */
 /*  Card icon type system                                              */
@@ -152,7 +155,6 @@ function CardTypeIcon({ itemType, itemId }: { itemType: FeedItemType; itemId?: s
   return <Icon />;
 }
 
-
 function CardVisual({ item }: { item: FeedItem }) {
   switch (item.type) {
     case "agent-opportunity": {
@@ -175,7 +177,7 @@ function CardVisual({ item }: { item: FeedItem }) {
       return <AlertFYIContent item={item} />;
     case "talktrack":
     case "decision":
-      return null;
+      return null; // video overlay covers this area
   }
   if (item.visualPreview) {
     return <GenericVisualPreview type={item.visualPreview.type} data={item.visualPreview.data} />;
@@ -183,8 +185,10 @@ function CardVisual({ item }: { item: FeedItem }) {
   return null;
 }
 
+const TILT_MAX = 4;
+const TILT_SPRING = { stiffness: 300, damping: 25 };
+
 const EASE = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
-const DECISION_BASE_BG = "linear-gradient(160deg, rgba(255,235,130,0.18) 0%, rgba(255,215,70,0.10) 50%, rgba(255,200,60,0.06) 100%)";
 const VIDEO_TRANSITION = `top 220ms ${EASE}, left 220ms ${EASE}, right 220ms ${EASE}, height 220ms ${EASE}, border-radius 220ms ${EASE}, opacity 200ms ease-out`;
 
 // Pixel positions within the 480px card
@@ -193,6 +197,10 @@ const VIDEO_TRANSITION = `top 220ms ${EASE}, left 220ms ${EASE}, right 220ms ${E
 // Footer top: 196 + h-[180px](180) + mt-6(24) = 400px
 const VIDEO_DEFAULT = { top: 196, left: 32, right: 32, height: 180, borderRadius: 16, opacity: 1 };
 const VIDEO_EXPANDED = { top: 0, left: 0, right: 0, height: 480, borderRadius: 24, opacity: 1 };
+
+/** Map a value from one range to another (used for CSS custom property calculation). */
+const adjust = (v: number, fMin: number, fMax: number, tMin: number, tMax: number) =>
+  ((v - fMin) / (fMax - fMin)) * (tMax - tMin) + tMin;
 
 type VideoState = "idle" | "loading" | "playing";
 
@@ -205,19 +213,48 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
   const isDecision = item.type === "decision";
 
   const [videoState, setVideoState] = useState<VideoState>("idle");
+  const [isHovered, setIsHovered] = useState(false);
+  const [floatingEmojis, setFloatingEmojis] = useState<{ id: number; emoji: string; x: number }[]>([]);
+  const emojiIdRef = useRef(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDecision || !cardRef.current) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
-    cardRef.current.style.background = `radial-gradient(ellipse 280px 280px at ${x * 100}% ${y * 100}%, rgba(255,225,80,0.30) 0%, rgba(255,210,60,0.12) 50%, transparent 75%), ${DECISION_BASE_BG}`;
-  };
+  // 3D tilt parallax (decision cards only)
+  const mouseX = useMotionValue(0.5);
+  const mouseY = useMotionValue(0.5);
+  const rawRotateX = useTransform(mouseY, [0, 1], isHovered && isDecision ? [TILT_MAX, -TILT_MAX] : [0, 0]);
+  const rawRotateY = useTransform(mouseX, [0, 1], isHovered && isDecision ? [-TILT_MAX, TILT_MAX] : [0, 0]);
+  const rotateX = useSpring(rawRotateX, TILT_SPRING);
+  const rotateY = useSpring(rawRotateY, TILT_SPRING);
 
-  const handleMouseEnter = () => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const nx = (e.clientX - rect.left) / rect.width;
+    const ny = (e.clientY - rect.top) / rect.height;
+    mouseX.set(nx);
+    mouseY.set(ny);
+
+    if (isDecision && cardRef.current) {
+      const px = nx * 100;
+      const py = ny * 100;
+      const el = cardRef.current;
+      el.style.setProperty("--pointer-x", `${px}%`);
+      el.style.setProperty("--pointer-y", `${py}%`);
+      el.style.setProperty("--background-x", `${adjust(px, 0, 100, 37, 63)}%`);
+      el.style.setProperty("--background-y", `${adjust(py, 0, 100, 33, 67)}%`);
+      const fromCenter = Math.min(
+        Math.sqrt((py - 50) ** 2 + (px - 50) ** 2) / 50,
+        1
+      );
+      el.style.setProperty("--pointer-from-center", String(fromCenter));
+      el.style.setProperty("--pointer-from-top", String(py / 100));
+      el.style.setProperty("--pointer-from-left", String(px / 100));
+    }
+  }, [isDecision, mouseX, mouseY]);
+
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
     if (!videoSrc) return;
     setVideoState("loading");
     timerRef.current = setTimeout(() => {
@@ -227,9 +264,12 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
         videoRef.current.play().catch(() => {});
       }
     }, 1000);
-  };
+  }, [videoSrc]);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+    mouseX.set(0.5);
+    mouseY.set(0.5);
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -240,32 +280,71 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
       videoRef.current.currentTime = 0;
     }
     if (isDecision && cardRef.current) {
-      cardRef.current.style.background = DECISION_BASE_BG;
+      const el = cardRef.current;
+      el.style.setProperty("--pointer-x", "50%");
+      el.style.setProperty("--pointer-y", "50%");
+      el.style.setProperty("--background-x", "50%");
+      el.style.setProperty("--background-y", "50%");
+      el.style.setProperty("--pointer-from-center", "0");
+      el.style.setProperty("--pointer-from-top", "0.5");
+      el.style.setProperty("--pointer-from-left", "0.5");
     }
-  };
+  }, [isDecision, mouseX, mouseY]);
 
   const videoPos = videoState === "playing" ? VIDEO_EXPANDED : VIDEO_DEFAULT;
 
   return (
     <div
-      className={`card-tilt relative flex-shrink-0 group rounded-3xl hover:scale-[1.05] [transition:scale_300ms_ease-out,box-shadow_300ms_ease-out] ${
+      className="card-tilt flex-shrink-0"
+      style={{
+        perspective: isDecision ? 800 : undefined,
+        scrollSnapAlign: "center",
+        scrollSnapStop: "always",
+      }}
+    >
+   
+    <motion.div
+      className={`relative group rounded-3xl [transition:box-shadow_300ms_ease-out] ${
         isDecision
           ? "hover:shadow-[0_8px_28px_rgba(212,175,55,0.45)]"
           : "hover:shadow-[0_8px_28px_rgba(0,0,0,0.10)]"
       }`}
+      animate={{
+        scale: !isDecision && isHovered ? 1.02 : 1,
+      }}
+      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
       style={{
-        scrollSnapAlign: "center",
-        scrollSnapStop: "always",
+        rotateX: isDecision ? rotateX : 0,
+        rotateY: isDecision ? rotateY : 0,
+        transformStyle: isDecision ? "preserve-3d" : undefined,
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onMouseMove={isDecision ? handleMouseMove : undefined}
+      onMouseMove={handleMouseMove}
     >
+       {/* HDR grain video — first child of card-tilt, behind everything */}
+    {isDecision && (
+      <>
+        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+        {/* <video
+           poster="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQAAAAA3iMLMAAAAAXNSR0IArs4c6QAAAA5JREFUeNpj+P+fgRQEAP1OH+HeyHWXAAAAAElFTkSuQmCC"
+           src="data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAAvG1kYXQAAAAfTgEFGkdWStxcTEM/lO/FETzRQ6gD7gAA7gIAA3EYgAAAAEgoAa8iNjAkszOL+e58c//cEe//0TT//scp1n/381P/RWP/zOW4QtxorfVogeh8nQDbQAAAAwAQMCcWUTAAAAMAAAMAAAMA84AAAAAVAgHQAyu+KT35E7gAADFgAAADABLQAAAAEgIB4AiS76MTkNbgAAF3AAAPSAAAABICAeAEn8+hBOTXYAADUgAAHRAAAAPibW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAAKcAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAw10cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAAKcAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAACnAAAAAAABAAAAAAKFbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABdwAAAD6BVxAAAAAAAMWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABDb3JlIE1lZGlhIFZpZGVvAAAAAixtaW5mAAAAFHZtaGQAAAABAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAHsc3RibAAAARxzdHNkAAAAAAAAAAEAAAEMaHZjMQAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAQABAASAAAAEgAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABj//wAAAHVodmNDAQIgAAAAsAAAAAAAPPAA/P36+gAACwOgAAEAGEABDAH//wIgAAADALAAAAMAAAMAPBXAkKEAAQAmQgEBAiAAAAMAsAAAAwAAAwA8oBQgQcCTDLYgV7kWVYC1CRAJAICiAAEACUQBwChkuNBTJAAAAApmaWVsAQAAAAATY29scm5jbHgACQAQAAkAAAAAEHBhc3AAAAABAAAAAQAAABRidHJ0AAAAAAAALPwAACz8AAAAKHN0dHMAAAAAAAAAAwAAAAIAAAPoAAAAAQAAAAEAAAABAAAD6AAAABRzdHNzAAAAAAAAAAEAAAABAAAAEHNkdHAAAAAAIBAQGAAAAChjdHRzAAAAAAAAAAMAAAABAAAAAAAAAAEAAAfQAAAAAgAAAAAAAAAcc3RzYwAAAAAAAAABAAAAAQAAAAQAAAABAAAAJHN0c3oAAAAAAAAAAAAAAAQAAABvAAAAGQAAABYAAAAWAAAAFHN0Y28AAAAAAAAAAQAAACwAAABhdWR0YQAAAFltZXRhAAAAAAAAACFoZGxyAAAAAAAAAABtZGlyYXBwbAAAAAAAAAAAAAAAACxpbHN0AAAAJKl0b28AAAAcZGF0YQAAAAEAAAAATGF2ZjYwLjMuMTAw"
+           muted
+           autoPlay
+           playsInline
+           loop
+           className="absolute inset-0 w-full h-full rounded-3xl pointer-events-none z-[5] object-cover transition-opacity duration-300"
+           style={{ mixBlendMode: "multiply", opacity: isHovered ? 0.15 : 0, zIndex:1000 }}
+         /> */}
+       
+      </>
+    )}
+
       {/* Gradient border — gold only, decision cards only */}
       {isDecision && (
         <div
           className="absolute -inset-[1px] rounded-[25px] pointer-events-none transition-opacity opacity-70 group-hover:opacity-100 duration-300"
-          style={{ background: "linear-gradient(135deg, #f6d365, #d4af37, #ffa040, #d4af37, #f6d365)" }}
+          style={{ background: "linear-gradient(135deg, rgb(255 232 158), rgb(238 193 47), rgb(255 163 70), rgb(212, 175, 55), rgb(246, 211, 101))" }}
         />
       )}
 
@@ -273,99 +352,135 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
       <div
         ref={cardRef}
         className={`relative w-[360px] rounded-3xl overflow-hidden flex flex-col border transition-[border-color] duration-300 h-[480px] ${
-          isDecision ? "border-transparent" : "bg-gray-50 border-neutral-200"
+          isDecision
+            ? `border-transparent holo-card${isHovered ? " holo-active" : ""}`
+            : "bg-gray-50 border-neutral-200"
         }`}
-        style={{ transitionTimingFunction: EASE, background: isDecision ? DECISION_BASE_BG : undefined }}
+        style={{ transitionTimingFunction: EASE }}
       >
-        {/* Header icon — typed SVG, avatar for human sources, sits above video overlay */}
-        <div className="px-8 pt-8 relative z-10">
-          {item.type === "decision" ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src="/approved.svg"
-              alt="Decision"
-              className="w-12 h-12 flex-shrink-0"
-              style={{
-                filter: videoState === "playing" ? "brightness(0) invert(1)" : "none",
-                transition: "filter 300ms ease-out",
-              }}
-            />
-          ) : (() => {
-            const sourceUser = !item.source.isAgent ? getUser(item.source.userId) : undefined;
-            if (sourceUser?.avatar) {
-              return (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={sourceUser.avatar}
-                  alt={sourceUser.name}
-                  className="w-12 h-12 rounded-full object-cover flex-shrink-0 overflow-hidden"
-                />
-              );
-            }
-            return <CardTypeIcon itemType={item.type} itemId={item.id} />;
-          })()}
-        </div>
-
-        {/* Title — fades out on hover when video is present */}
+        {/* Gold card face — wraps content, equivalent to <img> in pokemon-cards-css */}
         <div
-          className="px-8 pt-4"
+          className="w-full h-full flex flex-col"
           style={{
-            transition: "opacity 250ms ease-out",
-            opacity: videoSrc && videoState === "playing" ? 0 : 1,
+            background: isDecision
+              ? "linear-gradient(135deg, rgb(255 232 158), rgb(238 193 47), rgb(255 163 70), rgb(212, 175, 55), rgb(246, 211, 101))"
+              : undefined,
           }}
         >
-          <h3 className="text-xl font-semibold tracking-tight text-gray-900 leading-snug line-clamp-3 h-[5.25rem] whitespace-pre-line">
-            {item.title}
-          </h3>
-        </div>
+          {/* Header icon — typed SVG, avatar for human sources, sits above video overlay */}
+          <div className="px-8 pt-8 relative z-10">
+            {item.type === "decision" ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src="/approved.svg"
+                alt="Decision"
+                className="w-12 h-12 flex-shrink-0"
+                style={{
+                  filter: videoState === "playing" ? "brightness(0) invert(1)" : "none",
+                  transition: "filter 300ms ease-out",
+                }}
+              />
+            ) : (() => {
+              const sourceUser = !item.source.isAgent ? getUser(item.source.userId) : undefined;
+              if (sourceUser?.avatar) {
+                return (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={sourceUser.avatar}
+                    alt={sourceUser.name}
+                    className="w-12 h-12 rounded-full object-cover flex-shrink-0 overflow-hidden"
+                  />
+                );
+              }
+              return <CardTypeIcon itemType={item.type} itemId={item.id} />;
+            })()}
+          </div>
 
+          {/* Title — fades out on hover when video is present */}
+          <div
+            className="px-8 pt-4"
+            style={{
+              transition: "opacity 250ms ease-out",
+              opacity: videoSrc && videoState === "playing" ? 0 : 1,
+            }}
+          >
+            <h3 className="text-xl font-semibold tracking-tight text-gray-900 leading-snug line-clamp-3 h-[5.25rem] whitespace-pre-line">
+              {item.title}
+            </h3>
+          </div>
+
+         
         {/* Visual area — fills remaining space, vertically centers content */}
         <div className="mx-8 mt-4 flex-1 min-h-0 rounded-2xl overflow-hidden flex items-center justify-center">
           <CardVisual item={item} />
         </div>
 
-        {/* Footer — action buttons, 48px tall, 24px from card bottom */}
-        <div className="relative flex-shrink-0 mb-6 h-12 z-10">
-          {item.type === "decision" ? (
-            <div
-              className="absolute inset-y-0 inset-x-8 flex items-center"
-              style={{ opacity: videoState === "playing" ? 1 : 0, transition: "opacity 200ms ease-out" }}
-            >
+
+
+          {/* Footer — sits above video overlay */}
+          <div className="relative mt-6 mb-6 h-12 overflow-hidden z-10">
+           
+            {/* Hover reveal: emoji reactions (decision) or action buttons */}
+            {item.type === "decision" ? (
               <div
-                className="flex items-center rounded-full px-2 w-full"
-                style={{ height: 44, backgroundColor: "white" }}
+                className="absolute inset-y-0 inset-x-8 flex items-center"
+                style={{ opacity: videoState === "playing" ? 1 : 0, pointerEvents: videoState === "playing" ? "auto" : "none", transition: "opacity 200ms ease-out" }}
               >
-                {["\u2764\uFE0F", "\uD83D\uDC4D", "\uD83D\uDD25", "\uD83D\uDC4F", "\uD83D\uDE4C", "\uD83D\uDC40"].map((emoji) => (
-                  <button
-                    key={emoji}
-                    className="flex-1 h-9 flex items-center justify-center text-xl hover:scale-110 transition-transform"
-                  >
-                    {emoji}
-                  </button>
-                ))}
+                <div
+                  className="flex items-center rounded-full px-2 w-full"
+                  style={{ height: 44, backgroundColor: "white" }}
+                >
+                  {["❤️", "👍", "🔥", "👏", "🙌", "👀"].map((emoji, i) => (
+                    <button
+                      key={emoji}
+                      className="flex-1 h-9 flex items-center justify-center text-xl hover:scale-110 transition-transform pointer-events-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const id = ++emojiIdRef.current;
+                        const btnRect = e.currentTarget.getBoundingClientRect();
+                        const cardRect = cardRef.current?.getBoundingClientRect();
+                        const x = cardRect ? btnRect.left - cardRect.left + btnRect.width / 2 : 180;
+                        setFloatingEmojis((prev) => [...prev, { id, emoji, x }]);
+                        setTimeout(() => {
+                          setFloatingEmojis((prev) => prev.filter((e) => e.id !== id));
+                        }, 900);
+                      }}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : (
-            item.actions.length > 0 && (
-              <div className="absolute inset-y-0 inset-x-6 flex items-center opacity-0 group-hover:opacity-100">
-                <FeedActions
-                  actions={item.actions.map((a) => ({
-                    ...a,
-                    label:
-                      item.type === "collaboration-request" || item.type === "talktrack"
-                        ? a.label
-                        : a.variant === "primary"
-                        ? "Resolve"
-                        : "Ignore",
-                  }))}
-                  size="large"
-                  fill
-                  onDark={!!videoSrc && videoState === "playing"}
-                />
-              </div>
-            )
-          )}
+            ) : (
+              item.actions.length > 0 && (
+                <div className="absolute inset-y-0 inset-x-6 flex items-center translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out">
+                  <FeedActions
+                    actions={item.actions.map((a) => ({
+                      ...a,
+                      label:
+                        item.type === "collaboration-request" || item.type === "talktrack"
+                          ? a.label
+                          : a.variant === "primary"
+                          ? "Resolve"
+                          : "Ignore",
+                    }))}
+                    size="large"
+                    fill
+                    onDark={!!videoSrc && videoState === "playing"}
+                  />
+                </div>
+              )
+            )}
+          </div>
         </div>
+
+        {/* Holographic overlay — shine → glare on top of gold face (pokemon-cards-css structure) */}
+        {isDecision && (
+          <>
+            <div className="holo-shine" />
+            <div className="holo-glare" />
+          </>
+        )}
 
         {/* Video overlay — talk track cards only */}
         {videoSrc && (
@@ -412,7 +527,28 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
             </div>
           </div>
         )}
+
       </div>
+
+      {/* Floating emoji bubbles — outside overflow-hidden card */}
+      {floatingEmojis.map(({ id, emoji, x }) => (
+        <motion.span
+          key={id}
+          className="absolute pointer-events-none text-3xl select-none"
+          style={{ left: x, bottom: 60, translateX: "-50%", zIndex: 20 }}
+          initial={{ opacity: 1, y: 0, scale: 0.4, rotate: 0 }}
+          animate={{
+            opacity: [1, 1, 0],
+            y: -120,
+            scale: [0.4, 1.3, 1],
+            rotate: [0, -12, 10, -6, 0],
+          }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          {emoji}
+        </motion.span>
+      ))}
+    </motion.div>
     </div>
   );
 }

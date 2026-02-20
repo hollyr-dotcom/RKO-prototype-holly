@@ -3,12 +3,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   IconArrowUp,
-  IconSingleSparksFilled,
   IconCross,
 } from "@mirohq/design-system-icons";
+import Lottie, { type LottieRefCurrentProps } from "lottie-react";
 import Markdown from "react-markdown";
 import { PromptSuggestions } from "../PromptSuggestions";
 import { ICON_SIZE } from "./toolbar-constants";
+import aiListeningAnimation from "./lottie/ai-listening.json";
 
 function BlobIcon({ style }: { style?: React.CSSProperties }) {
   return (
@@ -24,6 +25,37 @@ function BlobIcon({ style }: { style?: React.CSSProperties }) {
       <ellipse cx="13.1158" cy="12.857" rx="3.53571" ry="12.2207" fill="currentColor" />
       <ellipse cx="19.6737" cy="12.8569" rx="3.53571" ry="10.1568" fill="currentColor" />
     </svg>
+  );
+}
+
+function VoiceHoverButton({ onClick }: { onClick?: () => void }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const lottieRef = useRef<LottieRefCurrentProps>(null);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onMouseEnter={() => {
+        setIsHovered(true);
+        lottieRef.current?.goToAndPlay(0);
+      }}
+      onMouseLeave={() => setIsHovered(false)}
+      className="flex shrink-0 items-center justify-center rounded-lg w-[36px] h-[36px] text-[#222428]"
+    >
+      {isHovered ? (
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={aiListeningAnimation}
+          loop={false}
+          autoplay
+          style={{ width: 20, height: 23 }}
+          onComplete={() => setIsHovered(false)}
+        />
+      ) : (
+        <BlobIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+      )}
+    </button>
   );
 }
 
@@ -156,12 +188,7 @@ export function ChatInput({
       {responseToast && !isLoading && (
         <div className="absolute bottom-full mb-4" style={{ right: -8, width: "calc(100% + 16px)" }}>
           <div className="w-full bg-white shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: 24 }}>
-            {/* Sticky icon */}
-            <div className="absolute top-4 left-4 z-10 bg-white">
-              <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center">
-                <IconSingleSparksFilled size="small" />
-              </div>
-            </div>
+            {/* spacer for removed icon */}
             {/* Sticky close button */}
             <div className="absolute top-4 right-4 z-10 bg-white">
               <div
@@ -181,7 +208,7 @@ export function ChatInput({
                 onOpenChat?.();
                 onDismissToast?.();
               }}
-              className="overflow-y-auto p-4 pl-14 pr-10 hover:bg-gray-50 transition-colors cursor-pointer"
+              className="overflow-y-auto p-4 pr-10 hover:bg-gray-50 transition-colors cursor-pointer"
             >
               <div className="text-sm text-gray-700">
                 <Markdown
@@ -271,13 +298,7 @@ export function ChatInput({
               <IconArrowUp size="small" />
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={onVoiceStart}
-              className="flex shrink-0 items-center justify-center rounded-lg w-[36px] h-[36px] text-[#222428]"
-            >
-              <BlobIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
-            </button>
+            <VoiceHoverButton onClick={onVoiceStart} />
           )}
         </div>
       </form>

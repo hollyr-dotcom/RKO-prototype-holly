@@ -1,6 +1,5 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
 import Lottie from "lottie-react";
 import aiListeningAnimation from "./lottie/ai-listening.json";
 import aiSpeakingAnimation from "./lottie/ai-speaking.json";
@@ -11,23 +10,6 @@ import {
   ICON_SIZE,
 } from "./toolbar-constants";
 
-function BlobIcon({ style }: { style?: React.CSSProperties }) {
-  return (
-    <svg
-      width="27"
-      height="26"
-      viewBox="0 0 27 26"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      style={style}
-    >
-      <ellipse cx="6.55805" cy="12.8569" rx="3.53571" ry="8.59625" fill="currentColor" />
-      <ellipse cx="13.1158" cy="12.857" rx="3.53571" ry="12.2207" fill="currentColor" />
-      <ellipse cx="19.6737" cy="12.8569" rx="3.53571" ry="10.1568" fill="currentColor" />
-    </svg>
-  );
-}
-
 interface VoiceStopButtonProps {
   voiceState: "idle" | "connecting" | "listening" | "speaking" | "error";
   onStop: () => void;
@@ -36,8 +18,6 @@ interface VoiceStopButtonProps {
 export function VoiceStopButton({ voiceState, onStop }: VoiceStopButtonProps) {
   const buttonWidth = 160 - CONTAINER_PADDING * 2;
   const buttonHeight = TOOLBAR_HEIGHT - CONTAINER_PADDING * 2;
-
-  console.log(`[VoiceStopButton] voiceState: ${voiceState}`, voiceState === "speaking" ? "ai-speaking.json" : voiceState === "listening" ? "ai-listening.json" : "static blob");
 
   return (
     <button
@@ -50,31 +30,11 @@ export function VoiceStopButton({ voiceState, onStop }: VoiceStopButtonProps) {
       }}
       className="flex shrink-0 items-center justify-center text-[#222428] hover:brightness-95"
     >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={voiceState}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          transition={{ duration: 0.15 }}
-        >
-          {voiceState === "speaking" ? (
-            <Lottie
-              animationData={aiSpeakingAnimation}
-              loop
-              style={{ width: ICON_SIZE, height: ICON_SIZE }}
-            />
-          ) : voiceState === "listening" ? (
-            <Lottie
-              animationData={aiListeningAnimation}
-              loop
-              style={{ width: ICON_SIZE, height: ICON_SIZE }}
-            />
-          ) : (
-            <BlobIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
-          )}
-        </motion.div>
-      </AnimatePresence>
+      <Lottie
+        animationData={voiceState === "speaking" ? aiSpeakingAnimation : aiListeningAnimation}
+        loop
+        style={{ width: ICON_SIZE, height: ICON_SIZE }}
+      />
     </button>
   );
 }
