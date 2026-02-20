@@ -77,13 +77,28 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
     [onDescriptionChange]
   );
 
+  // Per-space gradient overrides: { gradient, buttonBg, buttonFg }
+  const GRADIENT_OVERRIDES: Record<string, { gradient: string; buttonBg: string; buttonFg: string }> = {
+    "space-firstflex": {
+      gradient: "linear-gradient(151deg, #05747C, #116E85)",
+      buttonBg: "#4DD4D8",
+      buttonFg: "#222428",
+    },
+    "space-ff26": {
+      gradient: "linear-gradient(151deg, #5A1DB8, #7B2FE0)",
+      buttonBg: "#C9A0FF",
+      buttonFg: "#222428",
+    },
+  };
+
+  const override = GRADIENT_OVERRIDES[space.id];
   const hue = hueFromId(space.id);
   const gradientStyle = {
-    background: `linear-gradient(151deg, hsl(${hue}, 65%, 43%), hsl(${hue + 12}, 65%, 43%))`,
+    background: override?.gradient ?? `linear-gradient(151deg, hsl(${hue}, 65%, 43%), hsl(${hue + 12}, 65%, 43%))`,
   };
   const buttonHue = hue + 6;
-  const buttonBg = `hsl(${buttonHue}, 100%, 69%)`;
-  const buttonFg = needsDarkText(buttonHue, 100, 69) ? "#222428" : "white";
+  const buttonBg = override?.buttonBg ?? `hsl(${buttonHue}, 100%, 69%)`;
+  const buttonFg = override?.buttonFg ?? (needsDarkText(buttonHue, 100, 69) ? "#222428" : "white");
 
   return (
     <div
