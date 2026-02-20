@@ -40,6 +40,7 @@
     "name": "FirstFlex Youth Banking",
     "description": "Teen banking product for 13-17 year olds across UK, DE, NL, FR markets",
     "emoji": "🏦",
+    "hasSidebar": true,
     "createdAt": "2026-01-05T13:00:00Z",
     "updatedAt": "2026-02-16T11:00:00Z",
     "order": 4
@@ -112,6 +113,7 @@
     "name": "FlexForward 26",
     "description": "Annual company conference and all-hands — RAI Amsterdam, June 12-13 2026",
     "emoji": "🎪",
+    "hasSidebar": true,
     "createdAt": "2025-12-01T14:00:00Z",
     "updatedAt": "2026-02-15T13:00:00Z",
     "order": 12

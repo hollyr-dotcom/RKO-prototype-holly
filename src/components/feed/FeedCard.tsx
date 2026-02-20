@@ -7,6 +7,7 @@ import { formatTimeAgo } from "@/lib/formatTimeAgo";
 import { FeedSourceIndicator } from "./FeedSourceIndicator";
 import { FeedActions } from "./FeedActions";
 import { FeedReactions } from "./FeedReactions";
+import { CardTypeIcon } from "./FeedTypeIcon";
 import { GenericVisualPreview } from "./visuals/GenericVisualPreview";
 import { AgentOpportunityContent } from "./content/AgentOpportunity";
 import { AgentCompletedContent } from "./content/AgentCompleted";
@@ -76,6 +77,19 @@ function FeedContentRenderer({ item }: { item: FeedItem }) {
   }
 }
 
+/** Extract a single action-word from a multi-word label */
+function simplifyLabel(label: string): string {
+  const first = label.split(/\s+/)[0];
+  const verbs = new Set([
+    "Review","Join","View","Read","Start","Approve","Dismiss","Open",
+    "Explore","Check","Watch","Redesign","Resolve","Ignore","Accept",
+    "Reject","Share","Download","Edit","Comment","Assign","Schedule",
+    "Plan","Assess","Audit","Evaluate","Investigate","Escalate",
+    "Compare","Align","Propose","Draft","Submit","Launch","Deploy",
+  ]);
+  return verbs.has(first) ? first : first;
+}
+
 const REACTABLE_TYPES = new Set([
   "workflow-change",
   "agent-completed",
@@ -102,28 +116,37 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
   if (isHorizontal) {
     const sourceUser = !item.source.isAgent ? getUser(item.source.userId) : undefined;
     const hasVisual = !!item.visualPreview;
+    // Show person avatar only when the title explicitly mentions the source user
+    const titleMentionsPerson =
+      sourceUser && (item.title.includes(sourceUser.name) || item.title.includes(sourceUser.firstName));
 
     return (
       <motion.div
         variants={staggerItem}
-        className="relative rounded-2xl overflow-hidden transition-shadow duration-200 hover:shadow-md border border-gray-200 bg-white"
+        className="group relative rounded-2xl overflow-hidden transition-shadow duration-200 hover:shadow-md border border-gray-200 bg-white"
         style={{ width: 712 }}
       >
         <div className="flex">
           {/* Left: text content */}
-          <div className={`flex flex-col flex-1 min-w-0 p-6 ${hasVisual ? "pr-0" : ""}`}>
-            {/* Avatar + name + timestamp */}
+          <div className={`flex flex-col flex-1 min-w-0 p-6 ${hasVisual ? "pr-0" : ""}`} style={{ paddingBottom: item.actions.length > 0 ? 104 : 24 }}>
+            {/* Icon or avatar + timestamp */}
             <div className="flex items-center gap-3 mb-3">
-              <FeedSourceIndicator source={item.source} />
+              {titleMentionsPerson && sourceUser?.avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={sourceUser.avatar}
+                  alt={sourceUser.name}
+                  className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                  <CardTypeIcon itemType={item.type} itemId={item.id} />
+                </div>
+              )}
               <div className="flex items-center gap-2 min-w-0">
-                {sourceUser && (
+                {titleMentionsPerson && sourceUser && (
                   <span className="text-sm font-medium text-gray-900 truncate">
                     {sourceUser.name}
-                  </span>
-                )}
-                {isAgent && (
-                  <span className="text-sm font-medium text-gray-900">
-                    AI Assistant
                   </span>
                 )}
                 <span className="text-xs text-gray-400 flex-shrink-0">
@@ -142,17 +165,11 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
 
             {/* Body */}
             {item.body && (
-              <p className="text-sm text-gray-500 leading-relaxed mb-4 line-clamp-2">
+              <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
                 {item.body}
               </p>
             )}
 
-            {/* Actions — pushed to bottom */}
-            {item.actions.length > 0 && (
-              <div className="mt-auto pt-2">
-                <FeedActions actions={item.actions} />
-              </div>
-            )}
           </div>
 
           {/* Right: visual preview */}
@@ -164,6 +181,20 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
             </div>
           )}
         </div>
+
+        {/* Hover-reveal actions — bottom-right */}
+        {item.actions.length > 0 && (
+          <div
+            className="absolute bottom-6 left-6 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out"
+            style={{ width: item.actions.length === 1 ? 194 : 396 }}
+          >
+            <FeedActions
+              actions={item.actions.map((a) => ({ ...a, label: simplifyLabel(a.label) }))}
+              size="large"
+              fill
+            />
+          </div>
+        )}
       </motion.div>
     );
   }

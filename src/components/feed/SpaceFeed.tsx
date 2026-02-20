@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import type { FeedItem } from "@/types/feed";
 import { FeedCard } from "./FeedCard";
 import { SpaceHeader } from "./SpaceHeader";
@@ -17,6 +18,21 @@ const staggerContainer = {
     opacity: 1,
     transition: { staggerChildren: 0.04 },
   },
+};
+
+/** Sidebar panel config — maps spaceId → ordered list of PNG image paths */
+const SIDEBAR_PANELS: Record<string, string[]> = {
+  "space-firstflex": [
+    "/feed-viz/FirstFlex-Youth-Banking/Single number-2.png",
+    "/feed-viz/FirstFlex-Youth-Banking/Single number.png",
+    "/feed-viz/FirstFlex-Youth-Banking/Single number-1.png",
+  ],
+  "space-ff26": [
+    "/feed-viz/FlexForward-26/Single number.png",
+    "/feed-viz/FlexForward-26/Single number-1.png",
+    "/feed-viz/FlexForward-26/Single number-2.png",
+    "/feed-viz/FlexForward-26/Single number-3.png",
+  ],
 };
 
 export function SpaceFeed({ spaceId }: SpaceFeedProps) {
@@ -99,69 +115,92 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
     [spaceId]
   );
 
-  return (
-    <div className="h-full relative">
-      {/* Scrollable content */}
-      <div className="h-full overflow-y-auto">
-        {/* Space header — full width with 16px padding, bg covers gap above */}
-        <div className="px-4 pt-4 sticky top-0 z-10 bg-white">
-          {space && (
-            <SpaceHeader
-              space={space}
-              onNameChange={handleNameChange}
-              onDescriptionChange={handleDescriptionChange}
-            />
-          )}
-        </div>
+  const sidebarPanels = SIDEBAR_PANELS[spaceId];
 
-        {/* Vertical feed — single column, centered */}
-        <div className="flex flex-col items-center pb-28 px-6">
-          {isLoading ? (
-            <div className="flex flex-col gap-4" style={{ width: 712 }}>
-              {[1, 2, 3].map((i) => (
-                <div
+  return (
+    <div className="h-full relative flex flex-col">
+      {/* Header — full width with 16px padding */}
+      <div className="flex-shrink-0 px-4 pt-4">
+        {space && (
+          <SpaceHeader
+            space={space}
+            onNameChange={handleNameChange}
+            onDescriptionChange={handleDescriptionChange}
+          />
+        )}
+      </div>
+
+      {/* Below header: feed scrolls, sidebar is pinned */}
+      <div className="flex-1 min-h-0 flex justify-center">
+        <div className={`flex ${sidebarPanels ? "gap-5" : ""}`}>
+          {/* Feed column — scrollable */}
+          <div className="h-full overflow-y-auto" style={{ width: 712 }}>
+            <div className="pb-28">
+              {isLoading ? (
+                <div className="flex flex-col gap-4" style={{ width: 712 }}>
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="h-32 rounded-2xl bg-gray-100 animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : items.length === 0 ? (
+                <div className="text-center py-16" style={{ width: 712 }}>
+                  <p className="text-sm text-gray-400">No items to show</p>
+                </div>
+              ) : (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    variants={staggerContainer}
+                    initial="hidden"
+                    animate="visible"
+                    className="flex flex-col gap-4"
+                  >
+                    {items.map((item) => (
+                      <FeedCard key={item.id} item={item} variant="horizontal" />
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
+              )}
+            </div>
+          </div>
+
+          {/* Sidebar panels — pinned, does not scroll with feed */}
+          {sidebarPanels && (
+            <div className="flex flex-col gap-3 flex-shrink-0 overflow-y-auto" style={{ width: 240 }}>
+              {sidebarPanels.map((src, i) => (
+                <Image
                   key={i}
-                  className="h-32 rounded-2xl bg-gray-100 animate-pulse"
+                  src={src}
+                  alt=""
+                  width={480}
+                  height={480}
+                  className="w-full h-auto rounded-xl"
+                  priority={i === 0}
                 />
               ))}
             </div>
-          ) : items.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-sm text-gray-400">No items to show</p>
-            </div>
-          ) : (
-            <AnimatePresence mode="wait">
-              <motion.div
-                variants={staggerContainer}
-                initial="hidden"
-                animate="visible"
-                className="flex flex-col gap-4"
-              >
-                {items.map((item) => (
-                  <FeedCard key={item.id} item={item} variant="horizontal" />
-                ))}
-              </motion.div>
-            </AnimatePresence>
           )}
         </div>
-
-        {/* Global shimmer keyframes for AI avatars */}
-        <style jsx global>{`
-          @keyframes feed-shimmer {
-            0% {
-              background-position: 200% 0;
-            }
-            100% {
-              background-position: -200% 0;
-            }
-          }
-        `}</style>
       </div>
 
-      {/* Prompt bar — anchored to bottom of right panel */}
+      {/* Prompt bar — anchored to bottom */}
       <div className="absolute bottom-8 left-6 right-6 z-20">
         <HomePromptInput onSubmit={() => {}} isLoading={false} />
       </div>
+
+      {/* Global shimmer keyframes for AI avatars */}
+      <style jsx global>{`
+        @keyframes feed-shimmer {
+          0% {
+            background-position: 200% 0;
+          }
+          100% {
+            background-position: -200% 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }

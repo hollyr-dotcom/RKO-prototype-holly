@@ -87,27 +87,26 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
 
   return (
     <div
-      className="rounded-2xl overflow-hidden mb-6 flex flex-col justify-between"
-      style={{ ...gradientStyle, minHeight: 260, padding: "32px 48px 48px" }}
+      className="rounded-2xl overflow-hidden mb-6 flex flex-col justify-end"
+      style={{ ...gradientStyle, minHeight: 380, padding: "32px 48px 48px" }}
     >
-      {/* Emoji container — top left */}
-      <div
-        className="bg-white flex items-center justify-center flex-shrink-0"
-        style={{
-          width: 64,
-          height: 64,
-          borderRadius: 20,
-          boxShadow:
-            "0 0 12px rgba(34,36,40,0.04), 0 2px 8px rgba(34,36,40,0.12)",
-        }}
-      >
-        <BoardEmoji emoji={space.emoji} size={38} />
-      </div>
-
       {/* Bottom row: title+description on left, button on right */}
       <div className="flex items-end justify-between gap-8">
-        {/* Title + description */}
+        {/* Emoji + Title + description */}
         <div className="flex flex-col gap-2 min-w-0">
+          {/* Emoji — 10px above title */}
+          <div
+            className="bg-white flex items-center justify-center flex-shrink-0 mb-1"
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 20,
+              boxShadow:
+                "0 0 12px rgba(34,36,40,0.04), 0 2px 8px rgba(34,36,40,0.12)",
+            }}
+          >
+            <BoardEmoji emoji={space.emoji} size={38} />
+          </div>
           <input
             type="text"
             value={name}
