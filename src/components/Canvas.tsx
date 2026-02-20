@@ -3840,11 +3840,12 @@ export function Canvas() {
         );
         if (shapeToUpdate && shapeToUpdate.type === "note") {
           // Map AI color names to tldraw color values
-          const stickyColorMap: Record<string, string> = {
+          type NoteColor = "yellow" | "blue" | "green" | "orange" | "violet" | "black" | "red" | "grey" | "light-blue" | "light-green" | "light-red" | "light-violet" | "white";
+          const stickyColorMap: Record<string, NoteColor> = {
             yellow: "yellow", blue: "blue", green: "green",
             red: "red", pink: "red", orange: "orange", violet: "violet",
           };
-          const mappedColor = stickyColorMap[newColor] || newColor || "yellow";
+          const mappedColor: NoteColor = stickyColorMap[newColor] || stickyColorMap[newColor?.toLowerCase()] || "yellow";
 
           editor.updateShape({
             id: shapeToUpdate.id,
