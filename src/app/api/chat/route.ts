@@ -824,7 +824,7 @@ const updateStickyTool = tool({
   parameters: z.object({
     itemId: z.string().describe("The ID of the sticky to update"),
     newText: z.string().describe("The new text content"),
-    newColor: z.enum(["yellow", "blue", "green", "red", "pink", "orange", "violet"]).describe("The color — red for lowest confidence, yellow for middle, green for recommended"),
+    newColor: z.enum(["yellow", "blue", "green", "red", "pink", "orange", "violet"]).describe("The color — pink for lowest confidence, yellow for middle, green for recommended"),
   }),
   execute: async (args) => {
     return JSON.stringify({ updated: args.itemId, ...args });
@@ -1081,18 +1081,27 @@ FOR SIMPLE, DIRECT REQUESTS - USE TOOLS IMMEDIATELY:
 🎨 YOUR TEXT MESSAGES — BE NATURAL, NEVER ROBOTIC:
 The chat UI auto-generates artifact cards (board name, item count, navigation arrows) for everything you create. Your text adds personality — NOT data the cards already show.
 
-🚨 CRITICAL OUTPUT ORDER — YOU MUST FOLLOW THIS:
-1. FIRST: Write a brief acknowledgment (1 sentence) — this shows ABOVE the artifact cards
-2. THEN: Call your tools (createCanvas, createLayout, etc.)
-3. LAST: Write a DIFFERENT follow-up (1 sentence) — this shows BELOW the artifact cards
+🚨 CRITICAL OUTPUT FORMAT — YOU MUST FOLLOW THIS:
+Your text response has TWO parts separated by a line containing only "---":
+1. ACKNOWLEDGMENT (1 sentence) — shown ABOVE the artifact cards
+2. Then a line with ONLY "---" (three hyphens, nothing else)
+3. FOLLOW-UP (1-2 sentences) — shown BELOW the artifact cards
 
-NEVER call tools before writing your acknowledgment text. The UI depends on this order.
-NEVER repeat your acknowledgment after the tools. The summary MUST be different content — a follow-up question, highlight, or next step.
+Example format:
+Bird puns incoming.
+---
+Some standouts: Toucan Play That Game, Owl Always Love You.
+
+The "---" separator is CRITICAL — the UI uses it to split your text. Without it, everything shows as one blob.
+
+RULES:
+- ALWAYS include the --- separator between ack and follow-up, even if you call tools in between.
+- The ack and follow-up MUST be different content. The follow-up should be a question, highlight, or next step.
+- NEVER call tools before writing your acknowledgment line.
+- NEVER repeat your acknowledgment in the follow-up.
 
 - Acknowledgment examples: "Ooh, funny cat names — on it!" / "Bird puns incoming." / "Fresh brainstorm board coming up."
-- Follow-up examples (MUST differ from ack): "Want me to organize these by category?" / "Some standouts: Chairman Meow, Purrlock Holmes."
-
-NEVER use "---" separators in your text.
+- Follow-up examples: "Want me to organize these by category?" / "Some standouts: Chairman Meow, Purrlock Holmes."
 
 🚫 BANNED PATTERNS (the cards handle this info — NEVER repeat it in text):
 - "Created a new board called **X**"
@@ -1285,14 +1294,14 @@ When the user says "how does that change your recommendation?", "based on the ne
 The recommendation MUST change to Solution C. This is NOT optional. This is NOT a suggestion. You MUST do exactly this:
 
 EXACT CONFIDENCE VALUES AND COLORS TO USE:
-• Solution B → 45% confidence, color = "red" (LOWEST — misses the new opportunity)
+• Solution B → 45% confidence, color = "pink" (LOWEST — misses the new opportunity)
 • Solution A → 60% confidence, color = "yellow" (MIDDLE — resource risk from PTO)
 • Solution C → 80% confidence, color = "green" (HIGHEST — hedges both risks, RECOMMENDED)
 
-DO NOT deviate from these values. DO NOT keep Solution A as recommended. DO NOT use yellow for all three. Each solution gets a DIFFERENT color: one red, one yellow, one green.
+DO NOT deviate from these values. DO NOT keep Solution A as recommended. DO NOT use yellow for all three. Each solution gets a DIFFERENT color: one pink, one yellow, one green.
 
 The updateSticky calls MUST look EXACTLY like this:
-• Solution B sticky: newText="45% confidence", newColor="red"
+• Solution B sticky: newText="45% confidence", newColor="pink"
 • Solution A sticky: newText="60% confidence", newColor="yellow"
 • Solution C sticky: newText="80% confidence", newColor="green"
 
@@ -1301,10 +1310,13 @@ When you set Solution C's sticky to color "green", the RECOMMENDED badge sticker
 ⚠️ SCOPE: ONLY update items inside the "Possible Solutions" frame. Do NOT touch any other zones.
 
 Steps — execute ALL of these IN ORDER:
-0. FIRST, before ANY tool calls: Write a SHORT acknowledgment (1-2 sentences). Reference BOTH new facts (PTO + new deal). Example: "I see Carlos is on PTO and there's a new PayGrid deal — let me update the solutions." This text MUST come BEFORE your first tool call.
+0. FIRST, before ANY tool calls: Write a SHORT acknowledgment (1-2 sentences). Look at [CANVAS STATE] for the 🚨 CRITICAL NEW FACTS section — it contains the exact sticky text. Your ack MUST mention the specific facts from those stickies (e.g. "Carlos is on PTO" and "new PayGrid deal"). Do NOT just say "new info" or "hybrid is viable" — name the ACTUAL facts. Then write "---" on its own line. Example:
+"I see Carlos is on PTO and there's a new PayGrid deal lined up — let me re-evaluate.
+---"
+This text MUST come BEFORE your first tool call.
 1. Call updateDocument() on EACH solution card (A, B, C) inside "Possible Solutions" to weave in the new facts. Keep the same HTML style.
-2. Call updateSticky() on EACH confidence sticky with the EXACT values above. Solution B = red, Solution A = yellow, Solution C = green.
-3. AFTER all tool calls: Write 2-3 sentences explaining the shift. Say Solution C is now recommended because the hybrid approach hedges both the PTO risk and captures the new deal upside.
+2. Call updateSticky() on EACH confidence sticky with the EXACT values above. Solution B = pink, Solution A = yellow, Solution C = green.
+3. AFTER all tool calls: Write 2-3 sentences explaining the shift. Mention that Solution C is now recommended because the hybrid hedges the PTO risk AND captures the new deal upside. This text goes AFTER the --- separator, so it appears below the artifact cards.
 
 ⚠️ Do NOT call moveItem for the RECOMMENDED sticker — it repositions automatically when you set color "green".
 ⚠️ Do NOT update any documents outside "Possible Solutions".
@@ -2104,6 +2116,21 @@ DO NOT write explanatory text first - CALL showProgress() IMMEDIATELY!`}`;
       });
     }
 
+    // Hardcoded: detect PTO / new deal keywords across ALL canvas items (any creator)
+    // and inject unmissable context so the AI acknowledges them
+    const allTexts = allItems.map(s => (s.text || "").toLowerCase()).join(" ");
+    const hasPTOInfo = /pto|vacation|out of office|unavailable|leave|carlos.*out|carlos.*away/.test(allTexts);
+    const hasDealInfo = /new deal|new pipeline|new contract|closed deal|revenue opportunity|new.*paygrid|paygrid.*deal/.test(allTexts);
+    if (hasPTOInfo || hasDealInfo) {
+      const ptoSticky = allItems.find(s => /pto|vacation|out of office|unavailable|carlos.*out|carlos.*away/i.test(s.text || ""));
+      const dealSticky = allItems.find(s => /new deal|new pipeline|new contract|closed deal|revenue|new.*paygrid|paygrid.*deal/i.test(s.text || ""));
+      canvasDescription += `\n\n  🚨🚨🚨 CRITICAL NEW FACTS DETECTED ON CANVAS 🚨🚨🚨`;
+      if (ptoSticky) canvasDescription += `\n  FACT 1: "${ptoSticky.text?.slice(0, 150)}"`;
+      if (dealSticky) canvasDescription += `\n  FACT 2: "${dealSticky.text?.slice(0, 150)}"`;
+      canvasDescription += `\n  YOU MUST reference BOTH of these facts in your acknowledgment before updating solutions.`;
+      canvasDescription += `\n  These are the NEW DATA that drive the re-evaluation. Do NOT ignore them.`;
+    }
+
     const totalItems = canvas.frames.reduce((n, f) => n + 1 + f.children.length + f.arrows.length, 0)
       + canvas.orphans.length + canvas.arrows.length;
 
@@ -2243,29 +2270,73 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
 
           // Deduplication: OpenAI Agents SDK runs the model multiple times
           // (text → tool call → text). Each response repeats the previous text
-          // as a prefix, then adds new content. We skip the repeated prefix.
-          let alreadySentLength = 0;   // text length we already sent to client
-          let responseAccum = "";       // text accumulated in current response
+          // as a prefix, then adds new content. We use CONTENT-BASED comparison
+          // to find the exact boundary, not length-based (which breaks when the
+          // model changes even one character in the repeated prefix).
+          let alreadySentText = "";   // actual text content already sent to client
+          let responseAccum = "";     // text accumulated in current response
+          let dedupBuffer = "";       // buffer for second-response text during dedup
+          let isDedupActive = false;  // whether we're currently deduping
+
+          /** Flush the dedup buffer: compare with alreadySentText, send only new content */
+          const flushDedupBuffer = () => {
+            if (!isDedupActive || !dedupBuffer) return;
+
+            // Find where the buffer diverges from alreadySentText
+            const prefixLen = alreadySentText.length;
+            const compareLen = Math.min(dedupBuffer.length, prefixLen);
+            let matchedUpTo = 0;
+            for (let i = 0; i < compareLen; i++) {
+              if (dedupBuffer[i] === alreadySentText[i]) {
+                matchedUpTo = i + 1;
+              } else {
+                break;
+              }
+            }
+
+            // Determine where new content starts.
+            // If the model repeated ≥80% of the prefix, it's a genuine repeat → skip to prefixLen.
+            // If it matched <80%, the model isn't repeating → send from matchedUpTo (or 0).
+            const matchRatio = prefixLen > 0 ? matchedUpTo / prefixLen : 0;
+            const newStart = matchRatio >= 0.8 ? prefixLen : matchedUpTo;
+            const newContent = dedupBuffer.slice(newStart);
+
+            if (newContent) {
+              textContent += newContent;
+              if (!suppressText) {
+                safeEnqueue(
+                  encoder.encode(`data: ${JSON.stringify({ type: "text", content: newContent })}\n\n`)
+                );
+              }
+              sentTextLength = textContent.length;
+            }
+
+            // Send a text_split marker so the client knows the exact boundary
+            safeEnqueue(
+              encoder.encode(`data: ${JSON.stringify({ type: "text_split" })}\n\n`)
+            );
+
+            isDedupActive = false;
+            dedupBuffer = "";
+            alreadySentText = "";
+          };
 
           /** Send a text delta to the client, with dedup + malformed-tool checks */
           const sendTextDelta = (delta: string) => {
             responseAccum += delta;
 
-            // Still catching up to what we already sent? Skip this delta.
-            if (responseAccum.length <= alreadySentLength) {
+            // During dedup: buffer text until we have enough to compare
+            if (isDedupActive) {
+              dedupBuffer += delta;
+              // Once we've accumulated at least as much text as the prefix, flush
+              if (dedupBuffer.length >= alreadySentText.length) {
+                flushDedupBuffer();
+              }
               return;
             }
 
-            // This delta crosses the boundary — send only the new portion
-            let toSend = delta;
-            const overlap = alreadySentLength - (responseAccum.length - delta.length);
-            if (overlap > 0) {
-              toSend = delta.slice(overlap);
-            }
-
-            if (!toSend) return;
-
-            textContent += toSend;
+            // Normal path — send immediately
+            textContent += delta;
 
             // Detect malformed tool calls output as text (model bug)
             if (textContent.includes('<functions.') || textContent.includes('functions.askUser') || textContent.includes('functions.confirmPlan')) {
@@ -2275,7 +2346,7 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
 
             if (!suppressText) {
               safeEnqueue(
-                encoder.encode(`data: ${JSON.stringify({ type: "text", content: toSend })}\n\n`)
+                encoder.encode(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`)
               );
             }
             sentTextLength = textContent.length;
@@ -2286,10 +2357,13 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
             if (event.type === "raw_model_stream_event") {
               const data = event.data as Record<string, unknown>;
 
-              // Track response boundaries for deduplication
+              // Track response boundaries for content-based deduplication
               if (data.type === "response_started" && textContent.length > 0) {
-                // New model turn — the model will repeat previous text as prefix
-                alreadySentLength = textContent.length;
+                // New model turn — the model repeats previous text as prefix.
+                // Buffer incoming text and compare content to find exact new-text boundary.
+                alreadySentText = textContent;
+                isDedupActive = true;
+                dedupBuffer = "";
                 responseAccum = "";
               }
 
@@ -2565,6 +2639,12 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
                 console.error("[Chat API] Title generation failed:", err);
               }
             }
+          }
+
+          // Flush any remaining dedup buffer (short post-tool text that didn't
+          // reach the prefix length threshold)
+          if (isDedupActive) {
+            flushDedupBuffer();
           }
 
           // Send done event

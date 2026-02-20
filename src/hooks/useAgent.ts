@@ -208,6 +208,19 @@ export function useAgent(
                   );
                 }
 
+                // Server sends text_split when the post-tool text starts
+                // (after content-based dedup). This is the authoritative split point.
+                if (data.type === "text_split") {
+                  toolTextSplit = bufferedText.length;
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantId
+                        ? { ...m, toolTextSplit }
+                        : m
+                    )
+                  );
+                }
+
                 if (data.type === "tool") {
                   // Record where in the text the first tool call happened
                   if (toolTextSplit === undefined) {
