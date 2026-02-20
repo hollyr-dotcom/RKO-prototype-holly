@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { RoomProvider, useStorage, useMutation } from "@/liveblocks.config";
+import { RoomProvider, useStatus, useStorage, useMutation } from "@/liveblocks.config";
 import { LiveMap } from "@liveblocks/client";
 import {
   useLiveblocksExtension,
@@ -51,6 +51,7 @@ function TiptapEditor({
   onEscape?: () => void;
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
+  const status = useStatus();
 
   // Portal: check if this doc is in focus mode and a portal target exists
   const focusedDocId = useFocusedDocId();
@@ -107,11 +108,14 @@ function TiptapEditor({
     }
   }, [editor, effectivelyEditing, isInFocusMode]);
 
-  // Apply initial content when document is first created
+  // Apply initial content when document is first created.
+  // Wait for room to be connected so Yjs has a chance to sync first —
+  // applying content before Yjs sync causes CRDT merge duplication.
   const appliedInitialRef = useRef(false);
 
   useEffect(() => {
     if (!editor || !initialContent || appliedInitialRef.current) return;
+    if (status !== "connected") return;
 
     const timer = setTimeout(() => {
       if (appliedInitialRef.current) return;
@@ -134,7 +138,7 @@ function TiptapEditor({
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [editor, initialContent, tldrawEditor, shapeId, resizeShapeToFit]);
+  }, [editor, initialContent, tldrawEditor, shapeId, resizeShapeToFit, status]);
 
   // Apply pending content updates from AI (updateDocument tool)
   const appliedPendingRef = useRef<string | null>(null);
@@ -197,17 +201,27 @@ function TiptapEditor({
     };
   }, [editor, saveToStorage]);
 
-  // If Yjs doc is empty but Storage has content, restore immediately
+  // If Yjs doc is empty but Storage has content, restore from backup.
+  // CRITICAL: Wait for room to be connected + delay so Yjs can sync first.
+  // Without this, setContent fires before Yjs sync, Yjs then merges the
+  // local write with the remote doc, and content gets duplicated for every
+  // user who joins.
   const restoredRef = useRef(false);
 
   useEffect(() => {
     if (!editor || !savedHtml || restoredRef.current) return;
-    const isEmpty = !editor.getText().trim();
-    if (isEmpty) {
-      editor.commands.setContent(savedHtml);
-      restoredRef.current = true;
-    }
-  }, [editor, savedHtml]);
+    if (status !== "connected") return;
+
+    const timer = setTimeout(() => {
+      if (restoredRef.current) return;
+      const isEmpty = !editor.getText().trim();
+      if (isEmpty) {
+        editor.commands.setContent(savedHtml);
+        restoredRef.current = true;
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [editor, savedHtml, status]);
 
   // The actual editor content block
   const editorContent = (
