@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Masonry from "react-masonry-css";
 import type { FeedItem } from "@/types/feed";
 import { FeedCard } from "./FeedCard";
 import { SpaceHeader } from "./SpaceHeader";
@@ -115,14 +114,14 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
           )}
         </div>
 
-        {/* Vertical feed — centered in right panel */}
-        <div className="max-w-[900px] mx-auto px-6 pb-28">
+        {/* Vertical feed — single column, centered */}
+        <div className="flex flex-col items-center pb-28 px-6">
           {isLoading ? (
-            <div className="grid grid-cols-2 gap-4">
-              {[1, 2, 3, 4].map((i) => (
+            <div className="flex flex-col gap-4" style={{ width: 712 }}>
+              {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-40 rounded-xl bg-gray-100 animate-pulse"
+                  className="h-32 rounded-2xl bg-gray-100 animate-pulse"
                 />
               ))}
             </div>
@@ -136,18 +135,11 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
                 variants={staggerContainer}
                 initial="hidden"
                 animate="visible"
+                className="flex flex-col gap-4"
               >
-                <Masonry
-                  breakpointCols={2}
-                  className="flex gap-8 w-auto"
-                  columnClassName="bg-clip-padding"
-                >
-                  {items.map((item) => (
-                    <div key={item.id} className="mb-8">
-                      <FeedCard item={item} />
-                    </div>
-                  ))}
-                </Masonry>
+                {items.map((item) => (
+                  <FeedCard key={item.id} item={item} variant="horizontal" />
+                ))}
               </motion.div>
             </AnimatePresence>
           )}

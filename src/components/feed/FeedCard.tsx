@@ -27,7 +27,7 @@ import { BudgetNotificationContent } from "./content/BudgetNotification";
 interface FeedCardProps {
   item: FeedItem;
   spaceName?: string;
-  variant?: "default" | "stack";
+  variant?: "default" | "stack" | "horizontal";
 }
 
 const staggerItem = {
@@ -94,6 +94,83 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
     (item.reactions.length > 0 || (item.viewCount != null && item.viewCount > 0));
 
   const isStack = variant === "stack";
+  const isHorizontal = variant === "horizontal";
+
+  /* ------------------------------------------------------------------ */
+  /*  Horizontal variant — side-by-side layout                           */
+  /* ------------------------------------------------------------------ */
+  if (isHorizontal) {
+    const sourceUser = !item.source.isAgent ? getUser(item.source.userId) : undefined;
+    const hasVisual = !!item.visualPreview;
+
+    return (
+      <motion.div
+        variants={staggerItem}
+        className="relative rounded-2xl overflow-hidden transition-shadow duration-200 hover:shadow-md border border-gray-200 bg-white"
+        style={{ width: 712 }}
+      >
+        <div className="flex">
+          {/* Left: text content */}
+          <div className={`flex flex-col flex-1 min-w-0 p-6 ${hasVisual ? "pr-0" : ""}`}>
+            {/* Avatar + name + timestamp */}
+            <div className="flex items-center gap-3 mb-3">
+              <FeedSourceIndicator source={item.source} />
+              <div className="flex items-center gap-2 min-w-0">
+                {sourceUser && (
+                  <span className="text-sm font-medium text-gray-900 truncate">
+                    {sourceUser.name}
+                  </span>
+                )}
+                {isAgent && (
+                  <span className="text-sm font-medium text-gray-900">
+                    AI Assistant
+                  </span>
+                )}
+                <span className="text-xs text-gray-400 flex-shrink-0">
+                  {formatTimeAgo(item.timestamp)}
+                </span>
+                {!item.isRead && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                )}
+              </div>
+            </div>
+
+            {/* Title */}
+            <h3 className="text-lg font-semibold text-gray-900 leading-snug mb-1">
+              {item.title}
+            </h3>
+
+            {/* Body */}
+            {item.body && (
+              <p className="text-sm text-gray-500 leading-relaxed mb-4 line-clamp-2">
+                {item.body}
+              </p>
+            )}
+
+            {/* Actions — pushed to bottom */}
+            {item.actions.length > 0 && (
+              <div className="mt-auto pt-2">
+                <FeedActions actions={item.actions} />
+              </div>
+            )}
+          </div>
+
+          {/* Right: visual preview */}
+          {hasVisual && item.visualPreview && (
+            <div className="w-[280px] flex-shrink-0 p-4 pl-2 flex items-center">
+              <div className="w-full rounded-xl bg-gray-50 border border-gray-100 overflow-hidden p-4">
+                <GenericVisualPreview type={item.visualPreview.type} data={item.visualPreview.data} />
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    );
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Default / stack variants — vertical layout                         */
+  /* ------------------------------------------------------------------ */
   const px = isStack ? "px-8" : "px-6";
   const pt = isStack ? "pt-8" : "pt-6";
   const pbActions = isStack ? "pb-10" : "pb-8";
