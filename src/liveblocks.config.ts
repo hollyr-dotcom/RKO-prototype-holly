@@ -11,6 +11,7 @@ const client = createClient({
 export const {
   RoomProvider,
   useRoom,
+  useStatus,
   useSelf,
   useOthers,
   useStorage,

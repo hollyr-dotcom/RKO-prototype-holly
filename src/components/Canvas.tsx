@@ -3880,7 +3880,7 @@ export function Canvas() {
           type NoteColor = "yellow" | "blue" | "green" | "orange" | "violet" | "black" | "red" | "grey" | "light-blue" | "light-green" | "light-red" | "light-violet" | "white";
           const stickyColorMap: Record<string, NoteColor> = {
             yellow: "yellow", blue: "blue", green: "green",
-            red: "red", pink: "red", orange: "orange", violet: "violet",
+            red: "light-red", pink: "light-red", orange: "orange", violet: "violet",
           };
           const mappedColor: NoteColor = stickyColorMap[newColor] || stickyColorMap[newColor?.toLowerCase()] || "yellow";
 
@@ -3931,48 +3931,42 @@ export function Canvas() {
               });
 
               // If color is green → this is the new recommended solution
-              // Move (or create) the RECOMMENDED sticker image on this sticky
+              // Delete ALL existing recommended sticker images, then create a fresh one
               if (mappedColor === "green") {
                 const CONF_STICKY = 200;
-                const frame = editor.getShape(shapeToUpdate.parentId as any);
-                const frameX = frame?.x || 0;
-                const frameY = frame?.y || 0;
 
-                const images = allShapes.filter(s => s.type === "image");
-                const recSticker = images.find(img => {
-                  const assetId = (img.props as any).assetId || "";
-                  return assetId.includes("sticker-recommended");
+                // Get absolute position of the sticky (sticky coords are relative to parent frame)
+                const pageBounds = editor.getShapePageBounds(shapeToUpdate.id);
+                const absX = pageBounds ? pageBounds.x : 0;
+                const absY = pageBounds ? pageBounds.y : 0;
+
+                // Delete ALL existing recommended sticker images anywhere on canvas
+                const freshShapes = editor.getCurrentPageShapes();
+                freshShapes.forEach(s => {
+                  if (s.type === "image") {
+                    const aid = (s.props as any).assetId || "";
+                    if (aid.includes("sticker-recommended")) {
+                      editor.deleteShape(s.id);
+                    }
+                  }
                 });
 
-                const stickerX = frameX + newX + CONF_STICKY - 140 + 20;
-                const stickerY = frameY + newY + CONF_STICKY - 50;
-
-                if (recSticker) {
-                  // Move existing sticker
-                  editor.updateShape({
-                    id: recSticker.id,
-                    type: "image",
-                    x: stickerX,
-                    y: stickerY,
-                  });
-                } else {
-                  // Sticker doesn't exist — create it
-                  const stickerUrl = "https://mirostatic.com/stickers/general-task-tacklers__2/task_tacklers_recommended.svg";
-                  const dW = 140, dH = 140;
-                  const assetId = `asset:sticker-recommended-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
-                  editor.createAssets([{
-                    id: assetId, type: "image", typeName: "asset",
-                    props: { name: "recommended", src: stickerUrl, w: 200, h: 200, mimeType: "image/svg+xml", isAnimated: false },
-                    meta: {},
-                  }]);
-                  editor.createShape({
-                    id: createShapeId(), type: "image",
-                    x: stickerX,
-                    y: stickerY,
-                    props: { assetId, w: dW, h: dH },
-                    meta: { createdBy: "ai" },
-                  });
-                }
+                // Create fresh sticker at absolute position overlapping the green sticky
+                const stickerUrl = "https://mirostatic.com/stickers/general-task-tacklers__2/task_tacklers_recommended.svg";
+                const dW = 140, dH = 140;
+                const stickerAssetId = `asset:sticker-recommended-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
+                editor.createAssets([{
+                  id: stickerAssetId, type: "image", typeName: "asset",
+                  props: { name: "recommended", src: stickerUrl, w: 200, h: 200, mimeType: "image/svg+xml", isAnimated: false },
+                  meta: {},
+                }]);
+                editor.createShape({
+                  id: createShapeId(), type: "image",
+                  x: absX + CONF_STICKY - dW + 20,
+                  y: absY + CONF_STICKY - 50,
+                  props: { assetId: stickerAssetId, w: dW, h: dH },
+                  meta: { createdBy: "ai" },
+                });
               }
             }
           }
@@ -4820,30 +4814,33 @@ export function Canvas() {
       return isLoading ? null : lastMsg.content.trim() || null;
     }
 
+    // Split strategy: look for "---" separator first (reliable), then fall back to toolTextSplit
+    const sepIdx = lastMsg.content.indexOf('\n---\n');
+    const hasSeparator = sepIdx !== -1;
+    const stripSep = (s: string) => s.replace(/\n?---\n?/g, '\n').trim();
+
     if (isLoading) {
-      // Streaming: show only the ack portion (text before first tool), or all text if no tools yet
+      // Streaming: show the ack portion (before --- or before first tool)
+      if (hasSeparator) {
+        return stripSep(lastMsg.content.slice(0, sepIdx)) || null;
+      }
       return (split !== undefined && split > 0)
         ? lastMsg.content.slice(0, split).trim() || null
-        : lastMsg.content.trim() || null;
+        : stripSep(lastMsg.content) || null;
     }
 
-    // Done — show only the post-tool text (final summary), not the ack
-    if (hasTools) {
-      const ackText = (split !== undefined && split > 0)
-        ? lastMsg.content.slice(0, split).trim()
-        : "";
+    // Done — show only the summary (after ---), not the ack
+    if (hasSeparator) {
+      const summary = stripSep(lastMsg.content.slice(sepIdx + 5));
+      return summary || null;
+    }
 
-      // Get the raw post-tool text (everything after the last tool call)
+    if (hasTools) {
+      // Fallback: toolTextSplit-based splitting
       const rawPostTool = (split !== undefined && split > 0 && split < lastMsg.content.length)
         ? lastMsg.content.slice(split).trim()
         : "";
-
-      // If there's post-tool text, show it as-is (no stripping)
-      if (rawPostTool) {
-        return rawPostTool;
-      }
-
-      // No post-tool text — if there's ack text only, don't re-show it when done
+      if (rawPostTool) return rawPostTool;
       return null;
     }
 

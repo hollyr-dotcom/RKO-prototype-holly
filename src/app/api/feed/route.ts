@@ -27,7 +27,10 @@ function readSpaces(): SpaceRaw[] {
   return JSON.parse(fs.readFileSync(SPACES_PATH, "utf-8"));
 }
 
-/** GET /api/feed — all feed items across all spaces */
+/** Prefixes for duplicate items that only belong in their specific spaces */
+const DUPLICATE_PREFIXES = ["feed-org27-", "feed-revops-", "feed-ff26-", "feed-epd-"];
+
+/** GET /api/feed — all feed items across all spaces (excludes space-only duplicates) */
 export async function GET() {
   try {
     await requireAuth();
@@ -36,6 +39,7 @@ export async function GET() {
     const spaceNameMap = new Map(spaces.map((s) => [s.id, s.name]));
 
     const items = readFeedItems()
+      .filter((item) => !DUPLICATE_PREFIXES.some((p) => item.id.startsWith(p)))
       .map((item) => ({
         ...item,
         spaceName: spaceNameMap.get(item.spaceId) ?? "Unknown",
