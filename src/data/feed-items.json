@@ -1,46 +1,101 @@
 [
   {
-    "id": "feed-decision-jeff-01",
-    "type": "decision",
-    "spaceId": "space-launch-q3",
-    "spaceName": "Product Launch Q3",
-    "title": "Jeff Chow and team just untangled some roadmap questions",
-    "body": "Jeff's team resolved three open roadmap questions around prioritisation, timing, and scope. The decisions are now locked in.",
-    "timestamp": "2026-02-19T08:45:00Z",
+    "id": "feed-core-01",
+    "type": "agent-opportunity",
+    "spaceId": "space-core",
+    "title": "FirstFlex and PayGrid are competing for the same team capacity",
+    "body": "",
+    "timestamp": "2026-02-20T10:00:00Z",
     "priority": "high",
     "source": {
-      "userId": "user-jeff",
-      "isAgent": false
+      "userId": "agent-product-leader",
+      "isAgent": true
     },
     "isRead": false,
-    "reactions": [],
-    "actions": [],
-    "payload": {
-      "status": "made",
-      "options": [
-        "PayGrid partner expansion first",
-        "FirstFlex DE launch in Q2",
-        "Core Banking Phase 3 deferred to Q3"
-      ],
-      "chosenOption": "FirstFlex DE launch in Q2",
-      "decidedBy": "Jeff Chow",
-      "videoSrc": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-      "participants": [
-        "user-marcus",
-        "user-priya",
-        "user-james",
-        "agent-product-leader"
-      ]
-    }
+    "reactions": [
+      {
+        "emoji": "⚠️",
+        "count": 3,
+        "users": [
+          "CTO",
+          "Tom A.",
+          "Migration Lead"
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-mitigation-plan",
+        "label": "View plan",
+        "variant": "primary"
+      },
+      {
+        "id": "escalate-to-board",
+        "label": "Escalate to board",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {},
+    "visualPreview": {
+      "type": "TimelinePreview",
+      "data": {
+        "title": "Core Banking Migration — Schedule vs Actual",
+        "startDate": "2025-10-01",
+        "endDate": "2026-06-30",
+        "tracks": [
+          {
+            "label": "Planned",
+            "color": "#6366f1",
+            "bars": [
+              {
+                "start": "2025-10-01",
+                "end": "2025-12-31",
+                "label": "Phase 1: Data migration"
+              },
+              {
+                "start": "2026-01-01",
+                "end": "2026-03-31",
+                "label": "Phase 2: System integration"
+              },
+              {
+                "start": "2026-04-01",
+                "end": "2026-06-30",
+                "label": "Phase 3: Cutover"
+              }
+            ]
+          },
+          {
+            "label": "Actual",
+            "color": "#ef4444",
+            "bars": [
+              {
+                "start": "2025-10-01",
+                "end": "2026-01-21",
+                "label": "Phase 1: +3 weeks (validation failures)",
+                "conflict": true
+              },
+              {
+                "start": "2026-01-22",
+                "end": "2026-04-25",
+                "label": "Phase 2: projected slip",
+                "conflict": true
+              }
+            ]
+          }
+        ],
+        "today": "2026-02-18"
+      }
+    },
+    "spaceName": "Core Banking Migration"
   },
   {
     "id": "feed-roadmap-talktrack-01",
     "type": "talktrack",
     "spaceId": "space-roadmaps",
     "spaceName": "Roadmaps",
-    "title": "Marcus shared his Q2 roadmap Talktrack for your sign-off",
+    "title": "Marcus shared the FlexFund Q2 roadmap Talktrack for your sign-off",
     "body": "Marcus has prepared a talk track walking through the Q2 roadmap priorities. He's requesting your sign-off before the all-hands on Friday.",
-    "timestamp": "2026-02-17T11:30:00Z",
+    "timestamp": "2026-02-19T08:45:00Z",
     "priority": "high",
     "source": {
       "userId": "user-marcus",
@@ -3716,93 +3771,38 @@
     "spaceName": "Embedded Finance"
   },
   {
-    "id": "feed-core-01",
-    "type": "agent-opportunity",
-    "spaceId": "space-core",
-    "title": "Core banking migration 3 weeks behind — data validation failing on legacy accounts",
-    "body": "Phase 1 data migration ran 3 weeks over schedule due to unexpected validation failures in legacy account structures. 2,847 accounts with non-standard field formats. Phase 2 start has been pushed and Phase 3 cutover now at risk.",
-    "timestamp": "2026-02-17T10:00:00Z",
+    "id": "feed-decision-jeff-01",
+    "type": "decision",
+    "spaceId": "space-launch-q3",
+    "spaceName": "Product Launch Q3",
+    "title": "The PayGrid team aligned on a plan for shipping smart budgeting by Q3 2026",
+    "body": "Jeff's team resolved three open roadmap questions around prioritisation, timing, and scope. The decisions are now locked in.",
+    "timestamp": "2026-02-19T08:45:00Z",
     "priority": "high",
     "source": {
-      "userId": "agent-product-leader",
-      "isAgent": true
+      "userId": "user-jeff",
+      "isAgent": false
     },
     "isRead": false,
-    "reactions": [
-      {
-        "emoji": "⚠️",
-        "count": 3,
-        "users": [
-          "CTO",
-          "Tom A.",
-          "Migration Lead"
-        ]
-      }
-    ],
-    "actions": [
-      {
-        "id": "view-mitigation-plan",
-        "label": "View plan",
-        "variant": "primary"
-      },
-      {
-        "id": "escalate-to-board",
-        "label": "Escalate to board",
-        "variant": "secondary"
-      }
-    ],
-    "payload": {},
-    "visualPreview": {
-      "type": "TimelinePreview",
-      "data": {
-        "title": "Core Banking Migration — Schedule vs Actual",
-        "startDate": "2025-10-01",
-        "endDate": "2026-06-30",
-        "tracks": [
-          {
-            "label": "Planned",
-            "color": "#6366f1",
-            "bars": [
-              {
-                "start": "2025-10-01",
-                "end": "2025-12-31",
-                "label": "Phase 1: Data migration"
-              },
-              {
-                "start": "2026-01-01",
-                "end": "2026-03-31",
-                "label": "Phase 2: System integration"
-              },
-              {
-                "start": "2026-04-01",
-                "end": "2026-06-30",
-                "label": "Phase 3: Cutover"
-              }
-            ]
-          },
-          {
-            "label": "Actual",
-            "color": "#ef4444",
-            "bars": [
-              {
-                "start": "2025-10-01",
-                "end": "2026-01-21",
-                "label": "Phase 1: +3 weeks (validation failures)",
-                "conflict": true
-              },
-              {
-                "start": "2026-01-22",
-                "end": "2026-04-25",
-                "label": "Phase 2: projected slip",
-                "conflict": true
-              }
-            ]
-          }
-        ],
-        "today": "2026-02-18"
-      }
-    },
-    "spaceName": "Core Banking Migration"
+    "reactions": [],
+    "actions": [],
+    "payload": {
+      "status": "made",
+      "options": [
+        "PayGrid partner expansion first",
+        "FirstFlex DE launch in Q2",
+        "Core Banking Phase 3 deferred to Q3"
+      ],
+      "chosenOption": "FirstFlex DE launch in Q2",
+      "decidedBy": "Jeff Chow",
+      "videoSrc": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+      "participants": [
+        "user-marcus",
+        "user-priya",
+        "user-james",
+        "agent-product-leader"
+      ]
+    }
   },
   {
     "id": "feed-core-02",

@@ -6,7 +6,7 @@ import Image from "next/image";
 import type { FeedItem } from "@/types/feed";
 import { FeedCard } from "./FeedCard";
 import { SpaceHeader } from "./SpaceHeader";
-import { HomePromptInput } from "@/components/HomePromptInput";
+import { ChatInput } from "@/components/toolbar/ChatInput";
 
 interface SpaceFeedProps {
   spaceId: string;
@@ -186,8 +186,16 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
       </div>
 
       {/* Prompt bar — anchored to bottom */}
-      <div className="absolute bottom-8 left-6 right-6 z-20">
-        <HomePromptInput onSubmit={() => {}} isLoading={false} />
+      <div className="absolute bottom-8 left-0 right-0 mx-auto w-full max-w-3xl px-6 z-20">
+        <ChatInput
+          onSubmit={() => {}}
+          onFocusChange={() => {}}
+          isLoading={false}
+          hasMessages={false}
+          hasPendingQuestion={false}
+          canvasState={{ frames: [], orphans: [], arrows: [] }}
+          voiceState="idle"
+        />
       </div>
 
       {/* Global shimmer keyframes for AI avatars */}
