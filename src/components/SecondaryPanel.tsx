@@ -10,6 +10,7 @@ import { SECONDARY_WIDTH } from "@/providers/SidebarProvider";
 import { NavList, NavListItem } from "@/components/NavList";
 import { BoardEmoji } from "@/components/BoardEmoji";
 import { generateAndSetEmoji } from "@/lib/canvasUtils";
+import { BOARD_SECTIONS } from "@/data/board-sections";
 
 type Canvas = {
   id: string;
@@ -432,7 +433,7 @@ export function SecondaryPanel() {
 
               {/* Boards section */}
               <div className="flex items-center h-8 px-3">
-                <span className="flex-1 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                <span className="flex-1 text-sm font-bold text-gray-900">
                   Boards
                 </span>
                 <button
@@ -444,15 +445,25 @@ export function SecondaryPanel() {
                 </button>
               </div>
 
-              {/* Board items — double-click to rename */}
-              <NavList
-                items={canvasNavItems}
-                isActive={(item) => pathname === item.href}
-                onReorder={handleReorderCanvases}
-                onRename={handleRenameCanvas}
-                onDelete={handleDeleteCanvas}
-                emptyMessage="No boards yet"
-              />
+              {/* Board items — grouped by section or flat list */}
+              {params.spaceId && BOARD_SECTIONS[params.spaceId] ? (
+                <GroupedBoardList
+                  sections={BOARD_SECTIONS[params.spaceId]}
+                  canvases={canvases}
+                  spaceId={params.spaceId}
+                  activePath={pathname}
+                  generatingEmojiForCanvas={generatingEmojiForCanvas}
+                />
+              ) : (
+                <NavList
+                  items={canvasNavItems}
+                  isActive={(item) => pathname === item.href}
+                  onReorder={handleReorderCanvases}
+                  onRename={handleRenameCanvas}
+                  onDelete={handleDeleteCanvas}
+                  emptyMessage="No boards yet"
+                />
+              )}
             </>
           )}
         </div>
@@ -490,5 +501,112 @@ function CapabilityItem({
     <button onClick={onClick} className={className}>
       <span className="truncate text-left">{label}</span>
     </button>
+  );
+}
+
+/* ── Grouped board list with collapsible sections ──────────────── */
+
+import type { BoardSection } from "@/data/board-sections";
+
+function GroupedBoardList({
+  sections,
+  canvases,
+  spaceId,
+  activePath,
+  generatingEmojiForCanvas,
+}: {
+  sections: BoardSection[];
+  canvases: Canvas[];
+  spaceId: string;
+  activePath: string;
+  generatingEmojiForCanvas: string | null;
+}) {
+  // All sections start expanded
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+
+  const toggle = useCallback((label: string) => {
+    setCollapsed((prev) => ({ ...prev, [label]: !prev[label] }));
+  }, []);
+
+  // Build a lookup for canvases by ID
+  const canvasMap = new Map(canvases.map((c) => [c.id, c]));
+
+  return (
+    <div className="flex flex-col gap-3">
+      {sections.map((section) => {
+        const isCollapsed = collapsed[section.label] ?? false;
+        const sectionCanvases = section.canvasIds
+          .map((id) => canvasMap.get(id))
+          .filter(Boolean) as Canvas[];
+
+        if (sectionCanvases.length === 0) return null;
+
+        return (
+          <div key={section.label} className="flex flex-col">
+            {/* Section header */}
+            <button
+              onClick={() => toggle(section.label)}
+              className="flex items-center gap-2 h-8 px-3 pt-2 text-sm text-gray-900 cursor-pointer bg-transparent border-none"
+            >
+              {/* Chevron */}
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                className={`flex-shrink-0 transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`}
+              >
+                <path
+                  d="M4 6L8 10L12 6"
+                  stroke="#222428"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="text-sm text-gray-900">{section.label}</span>
+            </button>
+
+            {/* Board items */}
+            {!isCollapsed && (
+              <div className="flex flex-col gap-0.5 pl-9 pr-2">
+                {sectionCanvases.map((canvas) => {
+                  const href = `/space/${spaceId}/canvas/${canvas.id}`;
+                  const isActive = activePath === href;
+
+                  return (
+                    <Link
+                      key={canvas.id}
+                      href={href}
+                      className="flex items-center gap-3 h-10 px-2 rounded text-sm transition-colors duration-200"
+                      style={{
+                        color: isActive ? "#222428" : "#222428",
+                        fontWeight: isActive ? 500 : 400,
+                        backgroundColor: isActive ? "#f3f4f6" : "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                    >
+                      <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+                        <BoardEmoji
+                          emoji={canvas.emoji}
+                          size={16}
+                          loading={generatingEmojiForCanvas === canvas.id}
+                        />
+                      </span>
+                      <span className="truncate">{canvas.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
 }
