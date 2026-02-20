@@ -326,7 +326,7 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
     {isDecision && (
       <>
         {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-        <video
+        {/* <video
            poster="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQAAAAA3iMLMAAAAAXNSR0IArs4c6QAAAA5JREFUeNpj+P+fgRQEAP1OH+HeyHWXAAAAAElFTkSuQmCC"
            src="data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAAvG1kYXQAAAAfTgEFGkdWStxcTEM/lO/FETzRQ6gD7gAA7gIAA3EYgAAAAEgoAa8iNjAkszOL+e58c//cEe//0TT//scp1n/381P/RWP/zOW4QtxorfVogeh8nQDbQAAAAwAQMCcWUTAAAAMAAAMAAAMA84AAAAAVAgHQAyu+KT35E7gAADFgAAADABLQAAAAEgIB4AiS76MTkNbgAAF3AAAPSAAAABICAeAEn8+hBOTXYAADUgAAHRAAAAPibW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAAKcAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAw10cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAAKcAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAACnAAAAAAABAAAAAAKFbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABdwAAAD6BVxAAAAAAAMWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABDb3JlIE1lZGlhIFZpZGVvAAAAAixtaW5mAAAAFHZtaGQAAAABAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAHsc3RibAAAARxzdHNkAAAAAAAAAAEAAAEMaHZjMQAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAQABAASAAAAEgAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABj//wAAAHVodmNDAQIgAAAAsAAAAAAAPPAA/P36+gAACwOgAAEAGEABDAH//wIgAAADALAAAAMAAAMAPBXAkKEAAQAmQgEBAiAAAAMAsAAAAwAAAwA8oBQgQcCTDLYgV7kWVYC1CRAJAICiAAEACUQBwChkuNBTJAAAAApmaWVsAQAAAAATY29scm5jbHgACQAQAAkAAAAAEHBhc3AAAAABAAAAAQAAABRidHJ0AAAAAAAALPwAACz8AAAAKHN0dHMAAAAAAAAAAwAAAAIAAAPoAAAAAQAAAAEAAAABAAAD6AAAABRzdHNzAAAAAAAAAAEAAAABAAAAEHNkdHAAAAAAIBAQGAAAAChjdHRzAAAAAAAAAAMAAAABAAAAAAAAAAEAAAfQAAAAAgAAAAAAAAAcc3RzYwAAAAAAAAABAAAAAQAAAAQAAAABAAAAJHN0c3oAAAAAAAAAAAAAAAQAAABvAAAAGQAAABYAAAAWAAAAFHN0Y28AAAAAAAAAAQAAACwAAABhdWR0YQAAAFltZXRhAAAAAAAAACFoZGxyAAAAAAAAAABtZGlyYXBwbAAAAAAAAAAAAAAAACxpbHN0AAAAJKl0b28AAAAcZGF0YQAAAAEAAAAATGF2ZjYwLjMuMTAw"
            muted
@@ -335,7 +335,7 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
            loop
            className="absolute inset-0 w-full h-full rounded-3xl pointer-events-none z-[5] object-cover transition-opacity duration-300"
            style={{ mixBlendMode: "multiply", opacity: isHovered ? 0.15 : 0, zIndex:1000 }}
-         />
+         /> */}
        
       </>
     )}
@@ -409,26 +409,17 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
             </h3>
           </div>
 
-          {/* Visual area */}
-          <div className="mx-8 mt-4 h-[180px] rounded-2xl bg-gray-100 flex-shrink-0 overflow-hidden flex justify-center">
-            <CardVisual item={item} />
-          </div>
+         
+        {/* Visual area — fills remaining space, vertically centers content */}
+        <div className="mx-8 mt-4 flex-1 min-h-0 rounded-2xl overflow-hidden flex items-center justify-center">
+          <CardVisual item={item} />
+        </div>
+
+
 
           {/* Footer — sits above video overlay */}
           <div className="relative mt-6 mb-6 h-12 overflow-hidden z-10">
-            {/* Space + timestamp — slides up and out on hover */}
-            <div className="absolute inset-y-0 inset-x-8 flex items-center transition-[transform,opacity] duration-300 ease-out group-hover:-translate-y-full group-hover:opacity-0 pointer-events-none">
-              <p className={`text-sm ${isDecision ? "" : "text-gray-400"}`} style={isDecision ? { color: "rgba(0,0,0,0.6)" } : undefined}>
-                {item.spaceName && (
-                  <>
-                    {item.spaceName}
-                    <span className="mx-1.5 opacity-40">·</span>
-                  </>
-                )}
-                {formatTimeAgo(item.timestamp)}
-              </p>
-            </div>
-
+           
             {/* Hover reveal: emoji reactions (decision) or action buttons */}
             {item.type === "decision" ? (
               <div
@@ -462,7 +453,7 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
               </div>
             ) : (
               item.actions.length > 0 && (
-                <div className="absolute inset-y-0 inset-x-6 flex items-center opacity-0 group-hover:opacity-100">
+                <div className="absolute inset-y-0 inset-x-6 flex items-center translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out">
                   <FeedActions
                     actions={item.actions.map((a) => ({
                       ...a,
