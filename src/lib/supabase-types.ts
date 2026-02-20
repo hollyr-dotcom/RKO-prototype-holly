@@ -4,6 +4,7 @@ export type SpaceRow = {
   description: string;
   emoji: string | null;
   color: string | null;
+  section_id: string | null;
   created_at: string;
   updated_at: string;
   order: number;
@@ -29,6 +30,14 @@ export type BoardSectionRow = {
   updated_at: string;
 };
 
+export type SpaceSectionRow = {
+  id: string;
+  label: string;
+  order: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export function spaceRowToApi(row: SpaceRow) {
   return {
     id: row.id,
@@ -36,6 +45,7 @@ export function spaceRowToApi(row: SpaceRow) {
     description: row.description,
     emoji: row.emoji ?? undefined,
     color: row.color ?? undefined,
+    sectionId: row.section_id ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     order: row.order,
@@ -59,6 +69,14 @@ export function boardSectionRowToApi(row: BoardSectionRow) {
   return {
     id: row.id,
     spaceId: row.space_id,
+    label: row.label,
+    order: row.order,
+  };
+}
+
+export function spaceSectionRowToApi(row: SpaceSectionRow) {
+  return {
+    id: row.id,
     label: row.label,
     order: row.order,
   };

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/serverAuth";
 import { supabase } from "@/lib/supabase";
-import { spaceRowToApi } from "@/lib/supabase-types";
+import { spaceRowToApi, spaceSectionRowToApi } from "@/lib/supabase-types";
 
-/** GET /api/spaces — list all spaces with canvas counts */
+/** GET /api/spaces — list all spaces with canvas counts and space sections */
 export async function GET() {
   try {
     await requireAuth();
@@ -26,12 +26,21 @@ export async function GET() {
       countMap[row.space_id] = (countMap[row.space_id] || 0) + 1;
     }
 
+    // Fetch space sections for Home sidebar groupings
+    const { data: sections } = await supabase
+      .from('space_sections')
+      .select('*')
+      .order('order', { ascending: true });
+
     const result = (spaces || []).map(row => ({
       ...spaceRowToApi(row),
       canvasCount: countMap[row.id] || 0,
     }));
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      spaces: result,
+      spaceSections: (sections || []).map(spaceSectionRowToApi),
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     if (message === 'Unauthorized') {

@@ -33,9 +33,9 @@ async function migrate() {
     console.error('Failed to delete canvases:', delCanvases);
     process.exit(1);
   }
-  const { error: delSections } = await supabase.from('board_sections').delete().neq('id', '');
-  if (delSections) {
-    console.error('Failed to delete board_sections:', delSections);
+  const { error: delBoardSections } = await supabase.from('board_sections').delete().neq('id', '');
+  if (delBoardSections) {
+    console.error('Failed to delete board_sections:', delBoardSections);
     // Non-fatal — table may not exist yet
   }
   const { error: delSpaces } = await supabase.from('spaces').delete().neq('id', '');
@@ -43,7 +43,39 @@ async function migrate() {
     console.error('Failed to delete spaces:', delSpaces);
     process.exit(1);
   }
+  const { error: delSpaceSections } = await supabase.from('space_sections').delete().neq('id', '');
+  if (delSpaceSections) {
+    console.error('Failed to delete space_sections:', delSpaceSections);
+    // Non-fatal — table may not exist yet
+  }
   console.log('Existing data cleared');
+
+  // --- Space Sections (Home sidebar groups) ---
+  const { SPACE_SECTIONS } = await import('../src/data/space-sections');
+
+  const spaceSectionRows = SPACE_SECTIONS.map((section, i) => ({
+    id: `space-section-${section.label.toLowerCase()}`,
+    label: section.label,
+    order: i,
+  }));
+
+  if (spaceSectionRows.length > 0) {
+    const { error } = await supabase.from('space_sections').upsert(spaceSectionRows);
+    if (error) {
+      console.error('Failed to insert space_sections:', error);
+    } else {
+      console.log(`Inserted ${spaceSectionRows.length} space sections`);
+    }
+  }
+
+  // Build a map of spaceId → space section id
+  const spaceToSectionMap = new Map<string, string>();
+  for (const section of SPACE_SECTIONS) {
+    const sectionId = `space-section-${section.label.toLowerCase()}`;
+    for (const spaceId of section.spaceIds) {
+      spaceToSectionMap.set(spaceId, sectionId);
+    }
+  }
 
   // --- Spaces ---
   const spaces = JSON.parse(fs.readFileSync(spacesPath, 'utf-8'));
@@ -53,6 +85,7 @@ async function migrate() {
     description: (s.description as string) || '',
     emoji: (s.emoji as string) || null,
     color: (s.color as string) || null,
+    section_id: spaceToSectionMap.get(s.id as string) || null,
     created_at: s.createdAt,
     updated_at: s.updatedAt,
     order: (s.order as number) ?? 0,
@@ -136,7 +169,7 @@ async function migrate() {
     console.log(`Assigned ${canvasSectionUpdates.length} canvases to sections`);
   }
 
-  console.log(`\nMigration complete: ${spaceRows.length} spaces, ${canvasRows.length} canvases, ${sectionRows.length} board sections`);
+  console.log(`\nMigration complete: ${spaceSectionRows.length} space sections, ${spaceRows.length} spaces, ${canvasRows.length} canvases, ${sectionRows.length} board sections`);
 }
 
 migrate();
