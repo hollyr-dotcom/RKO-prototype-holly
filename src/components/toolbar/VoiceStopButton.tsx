@@ -30,32 +30,11 @@ export function VoiceStopButton({ voiceState, onStop }: VoiceStopButtonProps) {
       }}
       className="flex shrink-0 items-center justify-center text-[#222428] hover:brightness-95"
     >
-      {voiceState === "speaking" ? (
-        <Lottie
-          animationData={aiSpeakingAnimation}
-          loop
-          style={{ width: ICON_SIZE, height: ICON_SIZE }}
-        />
-      ) : voiceState === "listening" ? (
-        <Lottie
-          animationData={aiListeningAnimation}
-          loop
-          style={{ width: ICON_SIZE, height: ICON_SIZE }}
-        />
-      ) : (
-        <svg
-          width="27"
-          height="26"
-          viewBox="0 0 27 26"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          style={{ width: ICON_SIZE, height: ICON_SIZE }}
-        >
-          <ellipse cx="6.55805" cy="12.8569" rx="3.53571" ry="8.59625" fill="currentColor" />
-          <ellipse cx="13.1158" cy="12.857" rx="3.53571" ry="12.2207" fill="currentColor" />
-          <ellipse cx="19.6737" cy="12.8569" rx="3.53571" ry="10.1568" fill="currentColor" />
-        </svg>
-      )}
+      <Lottie
+        animationData={voiceState === "speaking" ? aiSpeakingAnimation : aiListeningAnimation}
+        loop
+        style={{ width: ICON_SIZE, height: ICON_SIZE }}
+      />
     </button>
   );
 }
