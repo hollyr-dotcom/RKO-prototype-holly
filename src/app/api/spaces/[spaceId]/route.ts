@@ -67,6 +67,9 @@ export async function PATCH(
     if (body.color !== undefined) {
       updates.color = body.color;
     }
+    if (body.description !== undefined && typeof body.description === "string") {
+      updates.description = body.description;
+    }
 
     const { data, error } = await supabase
       .from('spaces')
