@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, Reorder } from "framer-motion";
 import { IconPlus, IconViewSideLeft } from "@mirohq/design-system-icons";
 import { useSidebar } from "@/hooks/useSidebar";
 import { SECONDARY_WIDTH } from "@/providers/SidebarProvider";
@@ -432,13 +432,13 @@ export function SecondaryPanel() {
               <div className="my-8  border-gray-200" />
 
               {/* Boards section */}
-              <div className="flex items-center h-8 px-3">
+              <div className="flex items-center h-8 pl-3 pr-0">
                 <span className="flex-1 text-sm font-bold text-gray-900">
                   Boards
                 </span>
                 <button
                   onClick={handleCreateBoard}
-                  className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200/60 transition-colors duration-200"
+                  className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200/60 transition-colors duration-200 -mr-1"
                   title="Add board"
                 >
                   <IconPlus css={{ width: 16, height: 16 }} />
@@ -453,6 +453,9 @@ export function SecondaryPanel() {
                   spaceId={params.spaceId}
                   activePath={pathname}
                   generatingEmojiForCanvas={generatingEmojiForCanvas}
+                  onReorder={handleReorderCanvases}
+                  onRename={handleRenameCanvas}
+                  onDelete={handleDeleteCanvas}
                 />
               ) : (
                 <NavList
@@ -509,31 +512,85 @@ function CapabilityItem({
 import type { BoardSection } from "@/data/board-sections";
 
 function GroupedBoardList({
-  sections,
+  sections: initialSections,
   canvases,
   spaceId,
   activePath,
   generatingEmojiForCanvas,
+  onReorder,
+  onRename,
+  onDelete,
 }: {
   sections: BoardSection[];
   canvases: Canvas[];
   spaceId: string;
   activePath: string;
   generatingEmojiForCanvas: string | null;
+
+  onReorder: (orderedIds: string[]) => void;
+  onRename?: (id: string, newName: string) => void;
+  onDelete?: (id: string) => void;
 }) {
-  // All sections start expanded
+  const { navPalette } = useSidebar();
+  const [orderedSections, setOrderedSections] = useState(initialSections);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    setOrderedSections(initialSections);
+  }, [initialSections]);
 
   const toggle = useCallback((label: string) => {
     setCollapsed((prev) => ({ ...prev, [label]: !prev[label] }));
   }, []);
 
-  // Build a lookup for canvases by ID
   const canvasMap = new Map(canvases.map((c) => [c.id, c]));
 
+  // Rebuild global canvas order from current section arrangement
+  const rebuildGlobalOrder = useCallback(
+    (currentSections: BoardSection[]) => {
+      const allIds: string[] = [];
+      for (const section of currentSections) {
+        allIds.push(...section.canvasIds.filter((id) => canvasMap.has(id)));
+      }
+      // Include any canvases not in any section
+      const sectionedIds = new Set(currentSections.flatMap((s) => s.canvasIds));
+      const unsectioned = canvases.filter((c) => !sectionedIds.has(c.id));
+      allIds.push(...unsectioned.map((c) => c.id));
+      return allIds;
+    },
+    [canvases, canvasMap]
+  );
+
+  // When items within a section are reordered
+  const handleSectionItemReorder = useCallback(
+    (sectionLabel: string, sectionOrderedIds: string[]) => {
+      const updated = orderedSections.map((s) =>
+        s.label === sectionLabel ? { ...s, canvasIds: sectionOrderedIds } : s
+      );
+      setOrderedSections(updated);
+      onReorder(rebuildGlobalOrder(updated));
+    },
+    [orderedSections, onReorder, rebuildGlobalOrder]
+  );
+
+  // When sections themselves are reordered
+  const handleSectionsReorder = useCallback(
+    (newOrder: BoardSection[]) => {
+      setOrderedSections(newOrder);
+      onReorder(rebuildGlobalOrder(newOrder));
+    },
+    [onReorder, rebuildGlobalOrder]
+  );
+
   return (
-    <div className="flex flex-col gap-3">
-      {sections.map((section) => {
+    <Reorder.Group
+      axis="y"
+      values={orderedSections}
+      onReorder={handleSectionsReorder}
+      className="flex flex-col gap-3"
+      as="div"
+    >
+      {orderedSections.map((section) => {
         const isCollapsed = collapsed[section.label] ?? false;
         const sectionCanvases = section.canvasIds
           .map((id) => canvasMap.get(id))
@@ -541,14 +598,35 @@ function GroupedBoardList({
 
         if (sectionCanvases.length === 0) return null;
 
+        const sectionNavItems: NavListItem[] = sectionCanvases.map((canvas) => ({
+          id: canvas.id,
+          label: canvas.name,
+          href: `/space/${spaceId}/canvas/${canvas.id}`,
+          icon: (
+            <BoardEmoji
+              emoji={canvas.emoji}
+              size={16}
+              loading={generatingEmojiForCanvas === canvas.id}
+            />
+          ),
+        }));
+
         return (
-          <div key={section.label} className="flex flex-col">
-            {/* Section header */}
+          <Reorder.Item
+            key={section.label}
+            value={section}
+            as="div"
+            className="flex flex-col"
+            whileDrag={{ scale: 1.02, zIndex: 50 }}
+            style={{ position: "relative" }}
+          >
+            {/* Section header — drag handle */}
             <button
               onClick={() => toggle(section.label)}
-              className="flex items-center gap-2 h-8 px-3 pt-2 text-sm text-gray-900 cursor-pointer bg-transparent border-none"
+              className="flex items-center h-8 pl-3 pr-0 pt-2 text-xs font-bold cursor-grab active:cursor-grabbing bg-transparent border-none w-full"
+              style={{ color: "#AEB2C0" }}
             >
-              {/* Chevron */}
+              <span className="flex-1 text-left">{section.label}</span>
               <svg
                 width="16"
                 height="16"
@@ -558,55 +636,31 @@ function GroupedBoardList({
               >
                 <path
                   d="M4 6L8 10L12 6"
-                  stroke="#222428"
+                  stroke="#AEB2C0"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="text-sm text-gray-900">{section.label}</span>
             </button>
 
-            {/* Board items */}
+            {/* Board items — reorderable within section */}
             {!isCollapsed && (
-              <div className="flex flex-col gap-0.5 pl-9 pr-2 pt-[6px]">
-                {sectionCanvases.map((canvas) => {
-                  const href = `/space/${spaceId}/canvas/${canvas.id}`;
-                  const isActive = activePath === href;
-
-                  return (
-                    <Link
-                      key={canvas.id}
-                      href={href}
-                      className="flex items-center gap-3 h-10 px-2 rounded text-sm transition-colors duration-200"
-                      style={{
-                        color: isActive ? "#222428" : "#222428",
-                        fontWeight: isActive ? 500 : 400,
-                        backgroundColor: isActive ? "#f3f4f6" : "transparent",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isActive) e.currentTarget.style.backgroundColor = "#f3f4f6";
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
-                      }}
-                    >
-                      <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
-                        <BoardEmoji
-                          emoji={canvas.emoji}
-                          size={16}
-                          loading={generatingEmojiForCanvas === canvas.id}
-                        />
-                      </span>
-                      <span className="truncate">{canvas.name}</span>
-                    </Link>
-                  );
-                })}
+              <div className="pt-[6px]">
+                <NavList
+                  items={sectionNavItems}
+                  isActive={(item) => activePath === item.href}
+                  onReorder={(orderedIds) => handleSectionItemReorder(section.label, orderedIds)}
+                  onRename={onRename}
+                  onDelete={onDelete}
+                  emptyMessage="No boards"
+                  itemColor="#222428"
+                />
               </div>
             )}
-          </div>
+          </Reorder.Item>
         );
       })}
-    </div>
+    </Reorder.Group>
   );
 }
