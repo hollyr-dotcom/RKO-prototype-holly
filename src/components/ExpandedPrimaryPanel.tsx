@@ -473,7 +473,7 @@ export function ExpandedPrimaryPanel() {
       <div className="mx-1 my-3 border-t" style={{ borderColor: navPalette.divider }} />
 
       {/* Spaces section */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
         {/* Header */}
         <div className="flex items-center h-8 pl-3 pr-1 mb-1">
           <span

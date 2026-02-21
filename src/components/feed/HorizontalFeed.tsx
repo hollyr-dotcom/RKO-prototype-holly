@@ -39,10 +39,12 @@ export function HorizontalFeed() {
       .then((data: FeedItem[]) => {
         if (!cancelled) {
           const pile = selectDeskPile(data);
-          // Append the FirstFlex market sizing card at the end
-          const extraCard = data.find((i) => i.id === "feed-ff-youth-04");
-          if (extraCard && !pile.some((i) => i.id === extraCard.id)) {
-            pile.push(extraCard);
+          // Append extra cards at the end
+          for (const id of ["feed-ff-youth-04", "feed-ff-05", "feed-cross-06"]) {
+            const card = data.find((i) => i.id === id);
+            if (card && !pile.some((i) => i.id === card.id)) {
+              pile.push(card);
+            }
           }
           setItems(pile);
           setIsLoading(false);
