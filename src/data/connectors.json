@@ -1580,6 +1580,216 @@
               "unresolved": true,
               "pendingAction": "Kyra writing trade-off analysis, Marcus and Priya preparing data-backed cases"
             }
+          },
+          {
+            "id": "slack-dm-ak-jc-01",
+            "type": "direct-message",
+            "label": "DM: Andrey Kushid → Jeff Chow — Dreamer OS launch",
+            "url": "https://flexfund.slack.com/archives/D0AK-JC/p1706140800",
+            "fetchedAt": "2026-02-10T09:22:30Z",
+            "usedInElements": [],
+            "data": {
+              "conversationType": "dm",
+              "from": "Andrey Kushid",
+              "to": "Jeff Chow",
+              "messages": [
+                {
+                  "from": "Andrey Kushid",
+                  "timestamp": "2026-01-25T10:00:00Z",
+                  "text": "You seen this? Singleton launched Dreamer — lets non-technical users build and deploy AI agents through natural language. Composable agent functions, cross-device. Validates the direction we've been discussing.",
+                  "url": "https://blog.singleton.io/posts/2026-02-17-introducing-dreamer/"
+                }
+              ]
+            }
+          },
+          {
+            "id": "slack-dm-ak-jc-02",
+            "type": "direct-message",
+            "label": "DM: Andrey Kushid → Jeff Chow — AI process documentation tools",
+            "url": "https://flexfund.slack.com/archives/D0AK-JC/p1706313600",
+            "fetchedAt": "2026-02-10T09:22:31Z",
+            "usedInElements": [],
+            "data": {
+              "conversationType": "dm",
+              "from": "Andrey Kushid",
+              "to": "Jeff Chow",
+              "messages": [
+                {
+                  "from": "Andrey Kushid",
+                  "timestamp": "2026-01-27T09:15:00Z",
+                  "text": "One for the landscape doc. AI-assisted documentation is becoming table stakes — Waybook positioning AI as the core of SOP management, not just a feature.",
+                  "url": "https://www.waybook.com/blog/scribe-alternatives-the-best-tools-for-process-documentation"
+                }
+              ]
+            }
+          },
+          {
+            "id": "slack-dm-ak-jc-03",
+            "type": "direct-message",
+            "label": "DM: Andrey Kushid → Jeff Chow — AI agent frameworks 2026",
+            "url": "https://flexfund.slack.com/archives/D0AK-JC/p1706486400",
+            "fetchedAt": "2026-02-10T09:22:32Z",
+            "usedInElements": [],
+            "data": {
+              "conversationType": "dm",
+              "from": "Andrey Kushid",
+              "to": "Jeff Chow",
+              "messages": [
+                {
+                  "from": "Andrey Kushid",
+                  "timestamp": "2026-01-29T14:30:00Z",
+                  "text": "Worth a scan. Top 9 agent frameworks for 2026 — CrewAI, AutoGen, LlamaIndex, LangChain, LangGraph. Ecosystem is maturing fast. Good to know what infra our partners are building on.",
+                  "url": "https://www.capsolver.com/blog/AI/top-9-ai-agent-frameworks-in-2026"
+                }
+              ]
+            }
+          },
+          {
+            "id": "slack-dm-ak-jc-04",
+            "type": "direct-message",
+            "label": "DM: Andrey Kushid → Jeff Chow — ByteDance Doubao 2.0",
+            "url": "https://flexfund.slack.com/archives/D0AK-JC/p1706659200",
+            "fetchedAt": "2026-02-10T09:22:33Z",
+            "usedInElements": [],
+            "data": {
+              "conversationType": "dm",
+              "from": "Andrey Kushid",
+              "to": "Jeff Chow",
+              "messages": [
+                {
+                  "from": "Andrey Kushid",
+                  "timestamp": "2026-01-31T11:00:00Z",
+                  "text": "Keep an eye on this. ByteDance shipped Doubao 2.0 — full shift from chatbot to task-executing agent. Massive adoption in China already.",
+                  "url": "https://www.reuters.com/world/asia-pacific/chinas-bytedance-releases-doubao-20-ai-chatbot-2026-02-14/"
+                }
+              ]
+            }
+          },
+          {
+            "id": "slack-dm-ak-jc-05",
+            "type": "direct-message",
+            "label": "DM: Andrey Kushid → Jeff Chow — OpenClaw open-source agents",
+            "url": "https://flexfund.slack.com/archives/D0AK-JC/p1706832000",
+            "fetchedAt": "2026-02-10T09:22:34Z",
+            "usedInElements": [],
+            "data": {
+              "conversationType": "dm",
+              "from": "Andrey Kushid",
+              "to": "Jeff Chow",
+              "messages": [
+                {
+                  "from": "Andrey Kushid",
+                  "timestamp": "2026-02-02T08:45:00Z",
+                  "text": "Check this out. FT piece on OpenClaw — open-source personal AI agents moving beyond tool-use into genuine autonomous workflows. Paywalled but worth it.",
+                  "url": "https://www.ft.com/content/f9ff060d-63b0-44f4-b46e-31a5545468db"
+                }
+              ]
+            }
+          },
+          {
+            "id": "slack-dm-ak-jc-06",
+            "type": "direct-message",
+            "label": "DM: Andrey Kushid → Jeff Chow — Moltbook AI-native social",
+            "url": "https://flexfund.slack.com/archives/D0AK-JC/p1707004800",
+            "fetchedAt": "2026-02-10T09:22:35Z",
+            "usedInElements": [],
+            "data": {
+              "conversationType": "dm",
+              "from": "Andrey Kushid",
+              "to": "Jeff Chow",
+              "messages": [
+                {
+                  "from": "Andrey Kushid",
+                  "timestamp": "2026-02-04T15:20:00Z",
+                  "text": "This is wild. Moltbook is an AI-native social platform where bots interact autonomously. Not directly competitive but signals where user expectations are heading.",
+                  "url": "https://www.theweek.com/tech/moltbook-ai-only-social-network"
+                }
+              ]
+            }
+          },
+          {
+            "id": "slack-dm-ak-jc-07",
+            "type": "direct-message",
+            "label": "DM: Andrey Kushid → Jeff Chow — Vibe coding tools",
+            "url": "https://flexfund.slack.com/archives/D0AK-JC/p1707177600",
+            "fetchedAt": "2026-02-10T09:22:36Z",
+            "usedInElements": [],
+            "data": {
+              "conversationType": "dm",
+              "from": "Andrey Kushid",
+              "to": "Jeff Chow",
+              "messages": [
+                {
+                  "from": "Andrey Kushid",
+                  "timestamp": "2026-02-06T10:10:00Z",
+                  "text": "Thought of you on this one. v0, Replit Agent, Wix Harmony — the 'vibe coding' trend. Describe what you want, the platform builds it. Relevant to our canvas tools thinking.",
+                  "url": "https://www.techradar.com/pro/best-vibe-coding-tools"
+                }
+              ]
+            }
+          },
+          {
+            "id": "slack-dm-ak-jc-08",
+            "type": "direct-message",
+            "label": "DM: Andrey Kushid → Jeff Chow — Second-wave AI startups",
+            "url": "https://flexfund.slack.com/archives/D0AK-JC/p1707350400",
+            "fetchedAt": "2026-02-10T09:22:37Z",
+            "usedInElements": [],
+            "data": {
+              "conversationType": "dm",
+              "from": "Andrey Kushid",
+              "to": "Jeff Chow",
+              "messages": [
+                {
+                  "from": "Andrey Kushid",
+                  "timestamp": "2026-02-08T13:00:00Z",
+                  "text": "Good framing here. BI on second-wave AI startups — Particle, Luvu, Higgsfield. Thesis is the next wave goes beyond cost-cutting into genuinely new consumer experiences.",
+                  "url": "https://www.businessinsider.com/second-wave-startups-list-ai-era-beyond-cost-cutting-2026-2"
+                }
+              ]
+            }
+          },
+          {
+            "id": "slack-dm-ak-jc-09",
+            "type": "direct-message",
+            "label": "DM: Andrey Kushid → Jeff Chow — Agent builder platforms guide",
+            "url": "https://flexfund.slack.com/archives/D0AK-JC/p1707523200",
+            "fetchedAt": "2026-02-10T09:22:38Z",
+            "usedInElements": [],
+            "data": {
+              "conversationType": "dm",
+              "from": "Andrey Kushid",
+              "to": "Jeff Chow",
+              "messages": [
+                {
+                  "from": "Andrey Kushid",
+                  "timestamp": "2026-02-10T09:00:00Z",
+                  "text": "Useful reference. Vellum's guide to agent-builder platforms — full stack from low-code builders to enterprise orchestration. Helps frame the build-vs-buy question for us.",
+                  "url": "https://www.vellum.ai/blog/top-ai-agent-builder-platforms-complete-guide"
+                }
+              ]
+            }
+          },
+          {
+            "id": "slack-dm-ak-jc-10",
+            "type": "direct-message",
+            "label": "DM: Andrey Kushid → Jeff Chow — AI agent ecosystem map 2026",
+            "url": "https://flexfund.slack.com/archives/D0AK-JC/p1707609600",
+            "fetchedAt": "2026-02-10T09:22:39Z",
+            "usedInElements": [],
+            "data": {
+              "conversationType": "dm",
+              "from": "Andrey Kushid",
+              "to": "Jeff Chow",
+              "messages": [
+                {
+                  "from": "Andrey Kushid",
+                  "timestamp": "2026-02-11T16:30:00Z",
+                  "text": "Bookmark this one. StackOne's map of the 2026 AI-agent ecosystem — infrastructure, builders, orchestration. Best single-page overview I've seen of how it all fits together.",
+                  "url": "https://www.stackone.com/blog/ai-agent-tools-landscape-2026"
+                }
+              ]
+            }
           }
         ]
       },

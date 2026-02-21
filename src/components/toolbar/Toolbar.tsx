@@ -52,6 +52,7 @@ interface ToolbarProps {
     screenPos?: { x: number; y: number }
   ) => void;
   onCreateTaskCard?: () => void;
+  onCreateSlackCard?: () => void;
   onCreateGanttChart?: () => void;
   onCreateKanbanBoard?: () => void;
   onCreateApproveButton?: () => void;
@@ -85,6 +86,7 @@ export function Toolbar({
   onCreateDataTable,
   onPlaceSticker,
   onCreateTaskCard,
+  onCreateSlackCard,
   onCreateGanttChart,
   onCreateKanbanBoard,
   onCreateApproveButton,
@@ -141,6 +143,7 @@ export function Toolbar({
   const overflowActions = useMemo<Record<string, (() => void) | undefined>>(
     () => ({
       "task-card": onCreateTaskCard,
+      "slack-card": onCreateSlackCard,
       approve: onCreateApproveButton,
       document: onCreateDocument,
       "data-table": onCreateDataTable,
@@ -149,6 +152,7 @@ export function Toolbar({
     }),
     [
       onCreateTaskCard,
+      onCreateSlackCard,
       onCreateApproveButton,
       onCreateDocument,
       onCreateDataTable,

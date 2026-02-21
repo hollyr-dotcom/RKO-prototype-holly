@@ -84,6 +84,12 @@ export function useStorageStore({
             return { ...r, props: { ...props, colorScheme: "" } };
           }
         }
+        if (r.typeName === "shape" && (r as any).type === "connector-line") {
+          const props = (r as any).props;
+          if (props && (props.fromId === undefined || props.toId === undefined)) {
+            return { ...r, props: { ...props, fromId: props.fromId ?? "", toId: props.toId ?? "" } };
+          }
+        }
         return r;
       });
 

@@ -80,16 +80,18 @@ export class DocumentShapeUtil extends ShapeUtil<IDocumentShape> {
     const isEditing = this.editor.getEditingShapeId() === shape.id;
     const isSelected = this.editor.getSelectedShapeIds().includes(shape.id);
     const meta = shape.meta as Record<string, unknown>;
+    const isConnected = !!meta?.isConnected;
     const initialContent = meta?.initialContent as string | undefined;
     const pendingContent = meta?.pendingContent as string | undefined;
     return (
       <HTMLContainer
+        className={isConnected ? "connected-shape-glow" : undefined}
         style={{
           width: shape.props.w,
           height: shape.props.h,
           overflow: "hidden",
           borderRadius: 16,
-          border: "1px solid #d0d5dd",
+          border: `1.5px solid ${isConnected ? "#7C3AED" : "#d0d5dd"}`,
           background: "#ffffff",
           pointerEvents: "all",
         }}
