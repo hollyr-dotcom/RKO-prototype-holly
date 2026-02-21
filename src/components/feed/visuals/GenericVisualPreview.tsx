@@ -223,26 +223,30 @@ function TimelineShape({ data }: { data: Record<string, unknown> }) {
   const todayPos = todayDate ? pct(todayDate) : null;
   const showToday = todayPos !== null && todayPos >= 0 && todayPos <= 100;
 
+  const showMonths = displayMonths.length > 1;
+
   return (
     <div>
-      {/* Month labels */}
-      <div className="relative h-4 mb-2">
-        {displayMonths.map((m, i) => (
-          <span
-            key={i}
-            className="absolute text-gray-400"
-            style={{
-              left: `${m.pos}%`,
-              fontSize: "11px",
-              fontWeight: 500,
-              lineHeight: 1,
-              transform: i > 0 ? "translateX(-50%)" : undefined,
-            }}
-          >
-            {m.label}
-          </span>
-        ))}
-      </div>
+      {/* Month labels — hide when range fits a single month */}
+      {showMonths && (
+        <div className="relative h-4 mb-2">
+          {displayMonths.map((m, i) => (
+            <span
+              key={i}
+              className="absolute text-gray-400"
+              style={{
+                left: `${m.pos}%`,
+                fontSize: "11px",
+                fontWeight: 500,
+                lineHeight: 1,
+                transform: i > 0 ? "translateX(-50%)" : undefined,
+              }}
+            >
+              {m.label}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Tracks + today line */}
       <div className="relative" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -298,7 +302,7 @@ function BrainstormShape() {
   return (
     <div className="flex flex-wrap gap-2 justify-center">
       {[1, 2, 3, 4, 5, 6].map((i) => (
-        <div key={i} className="w-14 h-10 rounded-lg bg-gray-200/70" style={{ opacity: 0.5 + (i % 3) * 0.15 }} />
+        <div key={i} className="w-14 h-10 rounded-lg" style={{ backgroundColor: i === 3 || i === 4 ? '#F9E05C' : '#FCF4C8' }} />
       ))}
     </div>
   );
@@ -445,7 +449,7 @@ export function GenericVisualPreview({ type, data }: GenericVisualPreviewProps) 
   // Other preview types still use the gray container (to be migrated per visual-system-home.md).
   if (isFrameless) {
     return (
-      <div className="mt-3 px-1">
+      <div className={`${title ? "mt-3" : ""} px-1`}>
         {title && (
           <div className="text-xs font-medium text-gray-500 mb-3">{title}</div>
         )}
@@ -457,15 +461,13 @@ export function GenericVisualPreview({ type, data }: GenericVisualPreviewProps) 
   }
 
   return (
-    <div className="mt-3 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden">
-      <div className="p-6">
-        {title && (
-          <div className="text-xs font-medium text-gray-500 mb-4">{title}</div>
-        )}
-        <div className="flex items-center justify-center">
-          <div className="w-full max-w-sm">
-            {getShapeForType(type, data)}
-          </div>
+    <div className={title ? "mt-3" : ""}>
+      {title && (
+        <div className="text-xs font-medium text-gray-500 mb-4">{title}</div>
+      )}
+      <div className="flex items-center justify-center">
+        <div className="w-full max-w-sm">
+          {getShapeForType(type, data)}
         </div>
       </div>
     </div>

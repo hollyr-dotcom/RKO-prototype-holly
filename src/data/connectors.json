@@ -630,7 +630,7 @@
             ],
             "data": {
               "dashboardName": "Cost of Delay Model \u2014 Side-by-Side Comparison",
-              "createdBy": "James Holloway",
+              "createdBy": "James Rodriguez",
               "lastModified": "2026-02-09T16:00:00Z",
               "methodology": "Cost of delay calculated as weekly opportunity cost of not shipping, using pipeline data (PayGrid) and LTV modeling (FirstFlex)",
               "payGridDelayModel": {
@@ -1005,7 +1005,7 @@
             "data": {
               "title": "FlexFund \u2014 Q3 2026 Board & Investor Update",
               "lastModified": "2026-02-07T14:00:00Z",
-              "lastModifiedBy": "Tom Andersen",
+              "lastModifiedBy": "Tom Rodriguez",
               "status": "Draft \u2014 Board review Feb 28",
               "relevantSlides": [
                 {
@@ -1053,7 +1053,7 @@
             "data": {
               "studyName": "FirstFlex Onboarding \u2014 Drop-off & Activation Research",
               "methodology": "12 moderated usability sessions + 2,400 survey responses",
-              "conductedBy": "Raj Patel, Amara Okafor",
+              "conductedBy": "David Kim, Amara Okafor",
               "dateRange": "2026-01-06 to 2026-01-24",
               "keyFindings": [
                 {
@@ -1155,7 +1155,7 @@
             "data": {
               "studyName": "Enterprise Advisory Board \u2014 Q4 2025 Session",
               "methodology": "90-minute facilitated session with 12 enterprise treasury leaders",
-              "conductedBy": "Elena Vasquez, Priya Sharma",
+              "conductedBy": "Jordan Lee, Priya Sharma",
               "date": "2025-12-12",
               "keyFindings": [
                 {
@@ -1234,8 +1234,8 @@
                 "headquarters": "Frankfurt, Germany",
                 "currentContractValue": "$480K ARR",
                 "expansionPipeline": "$3.2M ARR",
-                "accountOwner": "Elena Vasquez",
-                "executiveSponsor": "Tom Andersen",
+                "accountOwner": "Jordan Lee",
+                "executiveSponsor": "Tom Rodriguez",
                 "healthScore": 78,
                 "healthTrend": "stable",
                 "riskFlags": [
@@ -1261,7 +1261,7 @@
                   "type": "call",
                   "subject": "Pilot scope confirmation \u2014 3 payment rails",
                   "participants": [
-                    "Elena Vasquez",
+                    "Jordan Lee",
                     "Rachel Torres"
                   ],
                   "notes": "Rachel confirmed SWIFT, SEPA, RTP as pilot scope. Flagged that their internal deadline is firm \u2014 CFO has committed to board that consolidation decision happens in Q3."
@@ -1283,7 +1283,7 @@
                   "type": "event",
                   "subject": "Enterprise Advisory Board session",
                   "participants": [
-                    "Elena Vasquez",
+                    "Jordan Lee",
                     "Priya Sharma",
                     "Rachel Torres"
                   ],
@@ -1480,7 +1480,7 @@
                 "Marcus Chen",
                 "Priya Sharma",
                 "Daniel Park",
-                "James Holloway",
+                "James Rodriguez",
                 "Amara Okafor"
               ],
               "sentiment": "escalating \u2014 started factual, became positional",
@@ -1491,7 +1491,7 @@
                   "timestamp": "2026-02-09T17:02:00Z"
                 },
                 {
-                  "from": "James Holloway",
+                  "from": "James Rodriguez",
                   "signal": "Escalation request \u2014 'This feels like something we need to escalate. @kyra'",
                   "timestamp": "2026-02-09T17:25:00Z"
                 },
@@ -1528,8 +1528,8 @@
                 "Kyra Osei",
                 "Marcus Chen",
                 "Priya Sharma",
-                "Tom Andersen",
-                "James Holloway"
+                "Tom Rodriguez",
+                "James Rodriguez"
               ],
               "sentiment": "constructive but unresolved \u2014 two clear camps",
               "threadSummary": "Kyra framed the core question: 'We keep calling this a resource conflict, but it's really a strategic choice \u2014 do we optimise for time to market or maximum customer impact?' Marcus argues FirstFlex impact (retention, LTV, user volume). Priya argues PayGrid urgency (competitive window, contractual deadline). Tom wants both but acknowledges something has to give.",
@@ -1559,13 +1559,13 @@
                   "reactions": ["3 \ud83e\udd14"]
                 },
                 {
-                  "from": "Tom Andersen",
+                  "from": "Tom Rodriguez",
                   "timestamp": "2026-02-08T12:00:00Z",
                   "text": "Both are board commitments. Slide 7 says September for FirstFlex, slide 9 says August pilot for PayGrid. I need to present to the board on Feb 28. If we're going to miss either date, I need to know now so I can manage expectations. What's the realistic scenario where we deliver both at reduced scope?",
                   "reactions": ["2 \ud83d\udc4d"]
                 },
                 {
-                  "from": "James Holloway",
+                  "from": "James Rodriguez",
                   "timestamp": "2026-02-08T12:20:00Z",
                   "text": "From an engineering perspective, the cost of delay is asymmetric. PayGrid's cost of delay accelerates \u2014 each week we wait, Stripe signs more enterprise clients and the competitive gap widens non-linearly. FirstFlex's cost of delay is more linear \u2014 it's painful but doesn't compound the same way. That said, if we rush PayGrid and cut too much scope, the pilot won't be convincing enough to win Meridian anyway.",
                   "reactions": ["5 \ud83d\udca1"]
@@ -1604,7 +1604,7 @@
               "fileName": "FirstFlex \u2014 Onboarding Flow v3",
               "project": "FirstFlex",
               "lastModified": "2026-02-09T14:00:00Z",
-              "lastModifiedBy": "Raj Patel",
+              "lastModifiedBy": "David Kim",
               "pages": [
                 {
                   "name": "Flows \u2014 Progressive Onboarding",
@@ -1636,7 +1636,7 @@
               "openComments": 7,
               "resolvedComments": 34,
               "activeContributors": [
-                "Raj Patel",
+                "David Kim",
                 "Amara Okafor"
               ],
               "designReviewStatus": "Approved with conditions \u2014 design system alignment pending for 3 components"
@@ -1684,7 +1684,7 @@
               "resolvedComments": 28,
               "activeContributors": [
                 "Amara Okafor",
-                "Elena Vasquez"
+                "Jordan Lee"
               ],
               "note": "Amara's team is actively working both FirstFlex and PayGrid design workstreams in parallel"
             }
@@ -2005,7 +2005,7 @@
                 },
                 {
                   "userId": "user-james",
-                  "name": "James Holloway",
+                  "name": "James Rodriguez",
                   "timezone": "America/New_York",
                   "availableSlots": [
                     {
@@ -2063,7 +2063,7 @@
               "duration": "47 minutes",
               "participants": {
                 "flexfund": [
-                  "Elena Vasquez",
+                  "Jordan Lee",
                   "Priya Sharma"
                 ],
                 "meridianBank": [
@@ -2126,7 +2126,7 @@
               "participants": {
                 "flexfund": [
                   "Marcus Chen",
-                  "Elena Vasquez"
+                  "Jordan Lee"
                 ],
                 "neoBanq": [
                   "Sophie Andersson (Head of Partnerships)",
@@ -2319,7 +2319,7 @@
                 {
                   "id": "okr-platform-reliability",
                   "objective": "Maintain platform reliability while scaling engineering output",
-                  "owner": "James Holloway",
+                  "owner": "James Rodriguez",
                   "quarter": "Q3 2026",
                   "boardLevel": false,
                   "keyResults": [
@@ -2568,7 +2568,7 @@
             "data": {
               "sheetName": "Q4 2025 \u2014 Enterprise Win/Loss",
               "lastModified": "2026-01-18T09:30:00Z",
-              "lastModifiedBy": "Elena Vasquez",
+              "lastModifiedBy": "Jordan Lee",
               "totalDeals": 23,
               "summary": {
                 "won": 9,
@@ -2826,7 +2826,7 @@
               },
               "scenarioModeling": {
                 "title": "Strategic Scenario Comparison \u2014 Time to Market vs Customer Impact",
-                "modeledBy": "James Holloway",
+                "modeledBy": "James Rodriguez",
                 "modeledAt": "2026-02-09T14:00:00Z",
                 "scenarios": [
                   {
@@ -3325,12 +3325,12 @@
                   "recentCSMNotes": [
                     {
                       "date": "2026-02-07",
-                      "csm": "Elena Vasquez",
+                      "csm": "Jordan Lee",
                       "note": "Rachel asked directly whether PayGrid pilot is still on track for August. She's hearing good things from Stripe's account team and is getting pressure from procurement to shortlist by mid-Q3. We need to demonstrate capability soon or risk losing champion support."
                     },
                     {
                       "date": "2026-01-28",
-                      "csm": "Elena Vasquez",
+                      "csm": "Jordan Lee",
                       "note": "Positive meeting with CTO office on architecture. But Rachel mentioned 'we love the relationship but at some point capability has to win.' Clear signal that goodwill alone won't hold this account."
                     }
                   ],
@@ -3404,7 +3404,7 @@
                   "status": "in-progress",
                   "assignedDesigners": [
                     {
-                      "name": "Raj Patel",
+                      "name": "David Kim",
                       "allocation": 0.8,
                       "focus": "Onboarding flow design + smart document capture"
                     },
@@ -3479,7 +3479,7 @@
                       "handoffTo": "Engineering",
                       "date": "2026-03-08",
                       "status": "on-track",
-                      "note": "Elena Vasquez reviewing with Meridian CTO office \u2014 feedback expected Feb 14"
+                      "note": "Jordan Lee reviewing with Meridian CTO office \u2014 feedback expected Feb 14"
                     }
                   ],
                   "designCompletion": 0.62
