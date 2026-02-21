@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import type { FeedItem } from "@/types/feed";
 import { formatTimeAgo } from "@/lib/formatTimeAgo";
@@ -122,7 +122,7 @@ const adjust = (v: number, fMin: number, fMax: number, tMin: number, tMax: numbe
 
 type VideoState = "idle" | "loading" | "playing";
 
-export function ScrollFeedCard({ item }: { item: FeedItem }) {
+export function ScrollFeedCard({ item, isActive = false }: { item: FeedItem; isActive?: boolean }) {
   const videoSrc =
     item.type === "talktrack" || item.type === "decision"
       ? item.payload.videoSrc
@@ -137,6 +137,41 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const activeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isEngaged = isHovered || isActive;
+
+  // Trigger video loading/cleanup when isActive changes (keyboard nav)
+  // Only when not already hovered — mouse hover takes priority
+  useEffect(() => {
+    if (isHovered || !videoSrc) return;
+    if (isActive) {
+      setVideoState("loading");
+      activeTimerRef.current = setTimeout(() => {
+        setVideoState("playing");
+        if (videoRef.current) {
+          videoRef.current.currentTime = 0;
+          videoRef.current.play().catch(() => {});
+        }
+      }, 1000);
+    } else {
+      if (activeTimerRef.current) {
+        clearTimeout(activeTimerRef.current);
+        activeTimerRef.current = null;
+      }
+      setVideoState("idle");
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+      }
+    }
+    return () => {
+      if (activeTimerRef.current) {
+        clearTimeout(activeTimerRef.current);
+        activeTimerRef.current = null;
+      }
+    };
+  }, [isActive, isHovered, videoSrc]);
 
   // 3D tilt parallax (decision cards only)
   const mouseX = useMotionValue(0.5);
@@ -213,25 +248,24 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
 
   return (
     <div
-      className="card-tilt flex-shrink-0"
+      className="flex-shrink-0"
       style={{
         perspective: isDecision ? 800 : undefined,
-        scrollSnapAlign: "center",
-        scrollSnapStop: "always",
       }}
     >
    
     <motion.div
-      className={`relative group rounded-3xl [transition:box-shadow_300ms_ease-out] ${
-        isDecision
-          ? "hover:shadow-[0_8px_28px_rgba(212,175,55,0.45)]"
-          : "hover:shadow-[0_8px_28px_rgba(0,0,0,0.10)]"
-      }`}
+      className="relative group rounded-3xl [transition:box-shadow_300ms_ease-out]"
       animate={{
-        scale: !isDecision && isHovered ? 1.02 : 1,
+        scale: !isDecision && isEngaged ? 1.02 : 1,
       }}
       transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
       style={{
+        boxShadow: isEngaged
+          ? isDecision
+            ? "0 8px 28px rgba(212,175,55,0.45)"
+            : "0 8px 28px rgba(0,0,0,0.10)"
+          : "none",
         rotateX: isDecision ? rotateX : 0,
         rotateY: isDecision ? rotateY : 0,
         transformStyle: isDecision ? "preserve-3d" : undefined,
@@ -245,7 +279,7 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
       {/* Gradient border — gold only, decision cards only */}
       {isDecision && (
         <div
-          className="absolute -inset-[1px] rounded-[25px] pointer-events-none transition-opacity opacity-70 group-hover:opacity-100 duration-300"
+          className={`absolute -inset-[1px] rounded-[25px] pointer-events-none transition-opacity duration-300 ${isEngaged ? "opacity-100" : "opacity-70"}`}
           style={{ background: "linear-gradient(135deg, rgb(255 232 158), rgb(238 193 47), rgb(255 163 70), rgb(212, 175, 55), rgb(246, 211, 101))" }}
         />
       )}
@@ -255,7 +289,7 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
         ref={cardRef}
         className={`relative w-[360px] rounded-3xl overflow-hidden flex flex-col border transition-[border-color] duration-300 h-[480px] ${
           isDecision
-            ? `border-transparent holo-card${isHovered ? " holo-active" : ""}`
+            ? `border-transparent holo-card${isEngaged ? " holo-active" : ""}`
             : "bg-gray-50 border-neutral-200"
         }`}
         style={{ transitionTimingFunction: EASE }}
@@ -355,7 +389,7 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
               </div>
             ) : (
               item.actions.length > 0 && (
-                <div className="absolute inset-y-0 inset-x-6 flex items-center translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out">
+                <div className={`absolute inset-y-0 inset-x-6 flex items-center transition-[transform,opacity] duration-300 ease-out ${isEngaged ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}>
                   <FeedActions
                     actions={item.actions.map((a) => ({
                       ...a,
