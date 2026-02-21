@@ -38,7 +38,13 @@ export function HorizontalFeed() {
       })
       .then((data: FeedItem[]) => {
         if (!cancelled) {
-          setItems(selectDeskPile(data));
+          const pile = selectDeskPile(data);
+          // Append the FirstFlex market sizing card at the end
+          const extraCard = data.find((i) => i.id === "feed-ff-youth-04");
+          if (extraCard && !pile.some((i) => i.id === extraCard.id)) {
+            pile.push(extraCard);
+          }
+          setItems(pile);
           setIsLoading(false);
         }
       })

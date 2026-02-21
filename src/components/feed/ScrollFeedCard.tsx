@@ -28,6 +28,17 @@ function CardVisual({ item }: { item: FeedItem }) {
       break; // fall through to visualPreview
     }
     case "agent-completed":
+      if (item.id === "feed-ff-youth-04") {
+        return (
+          <div className="flex items-center gap-4">
+            <svg width="108" height="115" viewBox="0 0 108 115" fill="none">
+              <path d="M54.9697 9.61279C83.9022 9.61279 107.357 33.0671 107.357 61.9995C107.357 90.9321 83.9023 114.387 54.9697 114.387C26.0373 114.387 2.58301 90.932 2.58301 61.9995C2.58305 55.4151 3.79701 49.1141 6.01465 43.3091L52.2568 60.9634C53.566 61.463 54.9697 60.4965 54.9697 59.0952V11.6128C54.9697 10.6157 54.2397 9.79156 53.2852 9.64014C53.8445 9.62246 54.4061 9.6128 54.9697 9.61279Z" fill="#E9EAEF" />
+              <path d="M48.3578 49.4462C48.3578 50.8477 46.9538 51.8145 45.6445 51.3147L1.27256 34.3737C0.240495 33.9797 -0.280194 32.8216 0.153425 31.8055C7.89531 13.6645 25.5783 0.781464 46.3578 0.00137677C47.4616 -0.040061 48.3578 0.859329 48.3578 1.9639V49.4462Z" fill="#04BBEE" />
+            </svg>
+            <span className="font-bold text-gray-800 tracking-tight leading-none" style={{ fontSize: '20pt' }}>$ 4.2M</span>
+          </div>
+        );
+      }
       return <AgentCompletedContent item={item} />;
     case "collaboration-request":
       if (item.id === "feed-ff-06") {
@@ -317,7 +328,7 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
                     actions={item.actions.map((a) => ({
                       ...a,
                       label:
-                        item.type === "collaboration-request" || item.type === "talktrack"
+                        item.type === "collaboration-request" || item.type === "talktrack" || item.id === "feed-ff-youth-04"
                           ? a.label
                           : a.variant === "primary"
                           ? "Resolve"
