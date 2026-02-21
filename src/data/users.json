@@ -25,6 +25,17 @@
       "timezone": "America/New_York"
     },
     {
+      "id": "user-marcus-webb",
+      "name": "Marcus Webb",
+      "firstName": "Marcus",
+      "role": "Product Lead — FlexFund",
+      "department": "Product",
+      "email": "marcus.webb@flexfund.com",
+      "avatar": "/avatars/marcus-webb.png",
+      "status": "online",
+      "timezone": "America/New_York"
+    },
+    {
       "id": "user-priya",
       "name": "Priya Sharma",
       "firstName": "Priya",
