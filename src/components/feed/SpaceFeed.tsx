@@ -6,7 +6,7 @@ import Image from "next/image";
 import type { FeedItem } from "@/types/feed";
 import { FeedCard } from "./FeedCard";
 import { SpaceHeader } from "./SpaceHeader";
-import { ChatInput } from "@/components/toolbar/ChatInput";
+import { PromptBar } from "@/components/PromptBar";
 
 interface SpaceFeedProps {
   spaceId: string;
@@ -23,15 +23,15 @@ const staggerContainer = {
 /** Sidebar panel config — maps spaceId → ordered list of PNG image paths */
 const SIDEBAR_PANELS: Record<string, string[]> = {
   "space-firstflex": [
-    "/feed-viz/FirstFlex-Youth-Banking/Single number-2.png",
-    "/feed-viz/FirstFlex-Youth-Banking/Single number.png",
-    "/feed-viz/FirstFlex-Youth-Banking/Single number-1.png",
+    "/feed-viz/FirstFlex-Youth-Banking/Single%20number-2.png",
+    "/feed-viz/FirstFlex-Youth-Banking/Single%20number.png",
+    "/feed-viz/FirstFlex-Youth-Banking/Single%20number-1.png",
   ],
   "space-ff26": [
-    "/feed-viz/FlexForward-26/Single number.png",
-    "/feed-viz/FlexForward-26/Single number-1.png",
-    "/feed-viz/FlexForward-26/Single number-2.png",
-    "/feed-viz/FlexForward-26/Single number-3.png",
+    "/feed-viz/FlexForward-26/Single%20number.png",
+    "/feed-viz/FlexForward-26/Single%20number-1.png",
+    "/feed-viz/FlexForward-26/Single%20number-2.png",
+    "/feed-viz/FlexForward-26/Single%20number-3.png",
   ],
 };
 
@@ -139,7 +139,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
 
         {/* Feed + sidebar row — only render once header data is loaded */}
         {!space ? null : (
-        <div className="flex justify-center">
+        <div className="flex justify-center px-4">
           <div className={`flex ${sidebarPanels ? "gap-12" : ""} items-start`}>
             {/* Feed column */}
             <div style={{ width: 712 }}>
@@ -197,14 +197,8 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
 
       {/* Prompt bar — anchored to bottom */}
       <div className="absolute bottom-8 left-0 right-0 mx-auto w-full max-w-3xl px-6 z-20">
-        <ChatInput
+        <PromptBar
           onSubmit={() => {}}
-          onFocusChange={() => {}}
-          isLoading={false}
-          hasMessages={false}
-          hasPendingQuestion={false}
-          canvasState={{ frames: [], orphans: [], arrows: [] }}
-          voiceState="idle"
         />
       </div>
 

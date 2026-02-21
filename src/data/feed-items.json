@@ -2989,7 +2989,7 @@
     "spaceId": "space-firstflex",
     "title": "FirstFlex activation 12% below target — drop-off at parental consent",
     "body": "FirstFlex activation rate is 61% lower than benchmarks for the 13–17 segment. The parental consent step has a 47% drop-off — parents are not completing the ID verification flow. Consent flow redesign or alternative verification method recommended.",
-    "timestamp": "2026-02-16T11:00:00Z",
+    "timestamp": "2026-02-16T16:00:00Z",
     "priority": "high",
     "source": {
       "userId": "agent-product-leader",
@@ -3162,7 +3162,7 @@
     "spaceId": "space-firstflex",
     "title": "Product Lead needs review: FirstFlex spend controls feature spec",
     "body": "First pass at the parental spend controls spec. Key design decision needed: should limits be set by the teen or parent, or both with overrides? Research suggests teens disengage if parents have unconstrained control.",
-    "timestamp": "2026-02-15T09:30:00Z",
+    "timestamp": "2026-02-16T14:00:00Z",
     "priority": "medium",
     "source": {
       "userId": "user-marcus",
@@ -5564,7 +5564,7 @@
     "spaceId": "space-firstflex",
     "title": "PSD3 draft published — impacts 4 active FlexFund initiatives",
     "body": "European Parliament published PSD3 draft text. Affects 4 active FlexFund initiatives across authentication, data sharing, TPSP liability, and data portability. Legal and Compliance review recommended within 2 weeks.",
-    "timestamp": "2026-02-16T16:00:00Z",
+    "timestamp": "2026-02-16T11:00:00Z",
     "priority": "high",
     "source": {
       "userId": "agent-product-leader",
