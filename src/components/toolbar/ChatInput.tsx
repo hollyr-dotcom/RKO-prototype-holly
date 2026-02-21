@@ -263,7 +263,7 @@ export function ChatInput({
 
       {/* Input pill */}
       <form onSubmit={handleSubmit}>
-        <div className="flex w-full items-center gap-1.5 rounded-[18px] h-[44px] border-none bg-[#f1f2f5] pl-4 pr-1">
+        <div className="flex w-full items-center gap-1.5 rounded-[18px] h-[44px] border-none bg-[#f1f2f5] pl-4 pr-2">
           <input
             ref={inputRef}
             type="text"
@@ -293,7 +293,7 @@ export function ChatInput({
           {value.trim() ? (
             <button
               type="submit"
-              className="w-[28px] h-[28px] shrink-0 text-[#222428] hover:text-[#222428]/70 rounded-lg flex items-center justify-center transition-colors"
+              className="w-[28px] h-[28px] shrink-0 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-full flex items-center justify-center transition-colors"
             >
               <IconArrowUp size="small" />
             </button>
