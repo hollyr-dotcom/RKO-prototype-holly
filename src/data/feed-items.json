@@ -3251,7 +3251,7 @@
     "actions": [
       {
         "id": "view-analysis",
-        "label": "View analysis",
+        "label": "Review",
         "variant": "primary"
       },
       {
