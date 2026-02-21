@@ -30,6 +30,21 @@ function CardVisual({ item }: { item: FeedItem }) {
     case "agent-completed":
       return <AgentCompletedContent item={item} />;
     case "collaboration-request":
+      if (item.id === "feed-ff-06") {
+        return (
+          <div className="flex gap-2 justify-between w-full px-2">
+            {["keynote-Carla", "keynote-Lisa", "keynote-Nina", "keynote-Tom"].map((name) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={name}
+                src={`/avatars/${name}.png`}
+                alt=""
+                className="rounded-full object-cover flex-1 min-w-0 aspect-square"
+              />
+            ))}
+          </div>
+        );
+      }
       return <CollaborationRequestContent item={item} />;
     case "workflow-change":
       return <WorkflowChangeContent item={item} />;

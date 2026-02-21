@@ -98,7 +98,7 @@
     "timestamp": "2026-02-19T08:45:00Z",
     "priority": "high",
     "source": {
-      "userId": "user-marcus",
+      "userId": "user-marcus-webb",
       "isAgent": false
     },
     "isRead": false,
@@ -5144,12 +5144,12 @@
     "actions": [
       {
         "id": "approve-jamie-liu",
-        "label": "Approve Jamie Liu",
+        "label": "Approve",
         "variant": "primary"
       },
       {
         "id": "suggest-alternative",
-        "label": "Suggest alternative",
+        "label": "Review",
         "variant": "secondary"
       }
     ],
