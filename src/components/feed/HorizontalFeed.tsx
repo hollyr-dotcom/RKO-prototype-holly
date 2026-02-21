@@ -65,6 +65,8 @@ export function HorizontalFeed() {
         style={{
           paddingLeft: EDGE_PADDING,
           paddingRight: EDGE_PADDING,
+          paddingTop: 24,
+          paddingBottom: 40,
           scrollbarWidth: "none",
         }}
       >
