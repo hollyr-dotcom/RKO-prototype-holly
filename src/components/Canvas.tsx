@@ -1,6 +1,6 @@
 "use client";
 
-import { Tldraw, Editor, createShapeId, toRichText, renderHtmlFromRichTextForMeasurement, TLShapeId, DefaultFontStyle, DefaultSizeStyle, DefaultDashStyle, DefaultFillStyle, TLGridProps, DefaultColorStyle, DefaultColorThemePalette } from "tldraw";
+import { Tldraw, Editor, createShapeId, toRichText, renderHtmlFromRichTextForMeasurement, TLShapeId, DefaultFontStyle, DefaultSizeStyle, DefaultDashStyle, DefaultFillStyle, TLGridProps, DefaultColorStyle, DefaultColorThemePalette, TLCursorProps, useTransform } from "tldraw";
 import "tldraw/tldraw.css";
 
 // ── Override tldraw sticky colors with Miro DS canvas sticky tokens ──
@@ -19,13 +19,13 @@ light["light-red"].noteFill   = "#81E7DE"; light["light-red"].noteText   = "#0E4
 light.grey.noteFill      = "#CFCFCF"; light.grey.noteText      = "#333333";   // coal-400 / coal-900
 light.black.noteFill     = "#151515"; light.black.noteText     = "#FFFFFF";   // black / white
 light.white.noteFill     = "#FFFFFF"; light.white.noteText     = "#34363E";   // white / gray-800
-import { useState, useCallback, useRef, useMemo, useEffect } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect, memo } from "react";
 import { Message } from "@/hooks/useAgent";
 import { useChat } from "@/hooks/useChat";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useRealtimeVoice } from "@/hooks/useRealtimeVoice";
 import { useStorageStore } from "@/hooks/useStorageStore";
-import { generateId, getSessionUser, getLocalDevUser } from "@/lib/userIdentity";
+import { generateId, getSessionUser, getLocalDevUser, getCursorColorByFill } from "@/lib/userIdentity";
 import { useAuth } from "@/hooks/useAuth";
 import { DocumentShapeUtil } from "@/shapes/DocumentShapeUtil";
 import { DataTableShapeUtil } from "@/shapes/DataTableShapeUtil";
@@ -769,7 +769,45 @@ function CustomBackground() {
   return <div style={{ position: 'absolute', inset: 0, backgroundColor: '#f8f8f8' }} />;
 }
 
-const tldrawComponents = { Grid: CustomGrid, Background: CustomBackground };
+// Custom Miro-style cursor with fill + stroke matching DS palette
+const CustomCursor = memo(function CustomCursor({ className, zoom, point, color, name, chatMessage }: TLCursorProps) {
+  const rCursor = useRef<HTMLDivElement>(null);
+  useTransform(rCursor, point?.x, point?.y, 1 / zoom);
+
+  if (!point) return null;
+
+  const cursorColor = getCursorColorByFill(color || "");
+  const fill = cursorColor?.fill || color || "#DAD8D8";
+  const stroke = cursorColor?.stroke || "#888888";
+
+  return (
+    <div ref={rCursor} className={["tl-overlays__item", className].filter(Boolean).join(" ")}>
+      <svg className="tl-cursor" width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ overflow: "visible", marginLeft: -2 }}>
+        <path
+          d="M22.001 8.936v2.045l-.003.019C15.977 11 11 15.977 11 21.998l-.012.002H8.935L2 3.178V3l1-1h.179L22 8.936Z"
+          fill={fill}
+        />
+        <path
+          d="M22.001 8.936v2.045l-.003.019C15.977 11 11 15.977 11 21.998l-.012.002H8.935L2 3.178V3l1-1h.179L22 8.936Z"
+          fill="none"
+          stroke={stroke}
+          strokeWidth={1}
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      {chatMessage ? (
+        <>
+          {name && <div className="tl-nametag-title" style={{ color }}>{name}</div>}
+          <div className="tl-nametag-chat" style={{ backgroundColor: color }}>{chatMessage}</div>
+        </>
+      ) : (
+        name && <div className="tl-nametag" style={{ backgroundColor: color }}>{name}</div>
+      )}
+    </div>
+  );
+});
+
+const tldrawComponents = { Grid: CustomGrid, Background: CustomBackground, Cursor: CustomCursor, CollaboratorCursor: CustomCursor };
 
 export function Canvas() {
   // Get authenticated user
