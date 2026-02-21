@@ -122,7 +122,7 @@ const adjust = (v: number, fMin: number, fMax: number, tMin: number, tMax: numbe
 
 type VideoState = "idle" | "loading" | "playing";
 
-export function ScrollFeedCard({ item, isActive = false }: { item: FeedItem; isActive?: boolean }) {
+export function ScrollFeedCard({ item, isActive = false, suppressHover = false }: { item: FeedItem; isActive?: boolean; suppressHover?: boolean }) {
   const videoSrc =
     item.type === "talktrack" || item.type === "decision"
       ? item.payload.videoSrc
@@ -139,12 +139,13 @@ export function ScrollFeedCard({ item, isActive = false }: { item: FeedItem; isA
   const cardRef = useRef<HTMLDivElement>(null);
   const activeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isEngaged = isHovered || isActive;
+  const effectiveHover = isHovered && !suppressHover;
+  const isEngaged = effectiveHover || isActive;
 
   // Trigger video loading/cleanup when isActive changes (keyboard nav)
   // Only when not already hovered — mouse hover takes priority
   useEffect(() => {
-    if (isHovered || !videoSrc) return;
+    if (effectiveHover || !videoSrc) return;
     if (isActive) {
       setVideoState("loading");
       activeTimerRef.current = setTimeout(() => {
@@ -171,13 +172,13 @@ export function ScrollFeedCard({ item, isActive = false }: { item: FeedItem; isA
         activeTimerRef.current = null;
       }
     };
-  }, [isActive, isHovered, videoSrc]);
+  }, [isActive, effectiveHover, videoSrc]);
 
   // 3D tilt parallax (decision cards only)
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
-  const rawRotateX = useTransform(mouseY, [0, 1], isHovered && isDecision ? [TILT_MAX, -TILT_MAX] : [0, 0]);
-  const rawRotateY = useTransform(mouseX, [0, 1], isHovered && isDecision ? [-TILT_MAX, TILT_MAX] : [0, 0]);
+  const rawRotateX = useTransform(mouseY, [0, 1], effectiveHover && isDecision ? [TILT_MAX, -TILT_MAX] : [0, 0]);
+  const rawRotateY = useTransform(mouseX, [0, 1], effectiveHover && isDecision ? [-TILT_MAX, TILT_MAX] : [0, 0]);
   const rotateX = useSpring(rawRotateX, TILT_SPRING);
   const rotateY = useSpring(rawRotateY, TILT_SPRING);
 
