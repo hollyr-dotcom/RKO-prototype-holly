@@ -15,6 +15,7 @@ export function HorizontalFeed() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [keyboardActive, setKeyboardActive] = useState(false);
+  const lastMousePos = useRef<{ x: number; y: number } | null>(null);
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
     {
@@ -166,6 +167,14 @@ export function HorizontalFeed() {
       className="embla__viewport"
       ref={emblaRef}
       style={{ paddingTop: 24, paddingBottom: 40 }}
+      onMouseMove={(e) => {
+        const prev = lastMousePos.current;
+        lastMousePos.current = { x: e.clientX, y: e.clientY };
+        // Only clear keyboard focus when mouse actually moved (not just DOM shifting under cursor)
+        if (keyboardActive && prev && (Math.abs(e.clientX - prev.x) > 2 || Math.abs(e.clientY - prev.y) > 2)) {
+          setKeyboardActive(false);
+        }
+      }}
     >
       <div
         className="flex gap-8"
@@ -181,7 +190,7 @@ export function HorizontalFeed() {
             className="flex-shrink-0"
             style={{ width: CARD_WIDTH }}
           >
-            <ScrollFeedCard item={item} isActive={keyboardActive && i === selectedIndex} />
+            <ScrollFeedCard item={item} isActive={keyboardActive && i === selectedIndex} suppressHover={keyboardActive} />
           </div>
         ))}
       </div>
