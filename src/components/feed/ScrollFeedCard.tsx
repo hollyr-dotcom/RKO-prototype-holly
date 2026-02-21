@@ -28,6 +28,22 @@ function CardVisual({ item }: { item: FeedItem }) {
       break; // fall through to visualPreview
     }
     case "agent-completed":
+      if (item.id === "feed-ff-05") {
+        return (
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex gap-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="w-14 h-10 rounded-lg" style={{ backgroundColor: i === 2 ? '#F9E05C' : '#FCF4C8' }} />
+              ))}
+            </div>
+            <div className="flex gap-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="w-14 h-10 rounded-lg" style={{ backgroundColor: i === 2 ? '#F9E05C' : '#FCF4C8' }} />
+              ))}
+            </div>
+          </div>
+        );
+      }
       if (item.id === "feed-ff-youth-04") {
         return (
           <div className="flex items-center gap-4">
@@ -60,6 +76,22 @@ function CardVisual({ item }: { item: FeedItem }) {
     case "workflow-change":
       return <WorkflowChangeContent item={item} />;
     case "alert-fyi":
+      if (item.id === "feed-cross-06") {
+        return (
+          <div className="flex flex-col items-center" style={{ marginTop: -8 }}>
+            <div className="flex gap-1.5 mb-2">
+              {["M", "T", "W", "T", "F"].map((d, i) => (
+                <div key={i} className="w-12 text-center text-xs text-gray-400">{d}</div>
+              ))}
+            </div>
+            <div className="grid grid-cols-5 gap-1.5">
+              {[...Array(15)].map((_, i) => (
+                <div key={i} className="w-12 h-6 rounded-sm" style={{ backgroundColor: i === 7 ? '#DB4F4F' : '#FFC6C6' }} />
+              ))}
+            </div>
+          </div>
+        );
+      }
       return <AlertFYIContent item={item} />;
     case "talktrack":
     case "decision":
@@ -328,7 +360,7 @@ export function ScrollFeedCard({ item }: { item: FeedItem }) {
                     actions={item.actions.map((a) => ({
                       ...a,
                       label:
-                        item.type === "collaboration-request" || item.type === "talktrack" || item.id === "feed-ff-youth-04"
+                        item.type === "collaboration-request" || item.type === "talktrack" || item.id === "feed-ff-youth-04" || item.id === "feed-ff-05" || item.id === "feed-cross-06"
                           ? a.label
                           : a.variant === "primary"
                           ? "Resolve"

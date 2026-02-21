@@ -4399,12 +4399,12 @@
     "actions": [
       {
         "id": "review-outline",
-        "label": "Review outline",
+        "label": "Review",
         "variant": "primary"
       },
       {
         "id": "set-reminder",
-        "label": "Set reminder",
+        "label": "Remind me",
         "variant": "secondary"
       }
     ],
@@ -5049,7 +5049,7 @@
     "id": "feed-ff-05",
     "type": "agent-completed",
     "spaceId": "space-ff26",
-    "title": "FlexForward 26 session schedule draft ready — 24 sessions across 2 days",
+    "title": "FlexForward 26 session schedule draft ready 24 sessions across 2 days",
     "body": "",
     "timestamp": "2026-02-17T15:00:00Z",
     "priority": "medium",
@@ -5072,12 +5072,12 @@
     "actions": [
       {
         "id": "review-schedule",
-        "label": "Review schedule",
+        "label": "Review",
         "variant": "primary"
       },
       {
         "id": "share-with-speakers",
-        "label": "Share with speakers",
+        "label": "Share",
         "variant": "secondary"
       }
     ],
@@ -5085,7 +5085,7 @@
       "artifact": {
         "type": "canvas",
         "id": "artifact-ff-05",
-        "name": "FlexForward 26 session schedule draft ready — 24 sessions across 2 days"
+        "name": "FlexForward 26 session schedule draft ready 24 sessions across 2 days"
       },
       "completionSummary": "24 sessions scheduled across 2 days: 14 keynotes, 6 breakout tracks, 4 workshops. Speaker slots for 5 confirmed speakers filled. 2 panel slots pending confirmation.",
       "timeSpent": "1.1h",
@@ -7823,12 +7823,12 @@
     "actions": [
       {
         "id": "review-outline",
-        "label": "Review outline",
+        "label": "Review",
         "variant": "primary"
       },
       {
         "id": "set-reminder",
-        "label": "Set reminder",
+        "label": "Remind me",
         "variant": "secondary"
       }
     ],
