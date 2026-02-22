@@ -2,8 +2,8 @@
 @import "@liveblocks/react-tiptap/styles.css";
 @import "@liveblocks/react-ui/styles.css";
 
-/* Hide scrollbar on horizontal feed carousel */
-.horizontal-feed::-webkit-scrollbar { display: none; }
+/* Embla carousel viewport */
+.embla__viewport { overflow: hidden; }
 
 /* Prevent trackpad swipe-to-navigate (Chrome/Edge) */
 html, body {
@@ -69,10 +69,20 @@ html, body {
   margin-top: 0;
 }
 
-.document-editor-content .tiptap ul,
-.document-editor-content .tiptap ol {
+.document-editor-content .tiptap ul {
+  list-style-type: disc;
   padding-left: 1.2em;
   margin: 0 0 0.6em;
+}
+
+.document-editor-content .tiptap ol {
+  list-style-type: decimal;
+  padding-left: 1.2em;
+  margin: 0 0 0.6em;
+}
+
+.document-editor-content .tiptap li {
+  display: list-item;
 }
 
 .document-editor-content .tiptap blockquote {
@@ -221,20 +231,6 @@ html, body {
   100% { background-position: -200% 0; }
 }
 
-/* Horizontal feed card tilt — scroll-driven, tied to each card's position in the feed. */
-@keyframes card-tilt {
-  entry 0%   { opacity: 0.45; }
-  entry 100% { opacity: 1; }
-  exit  0%   { opacity: 1; }
-  exit  70%  { opacity: 1; }
-  exit  100% { opacity: 0.45; }
-}
-
-.card-tilt {
-  animation: card-tilt linear both;
-  animation-timeline: view(inline);
-  animation-range: entry exit;
-}
 
 /* Zone frames: dashed border, semi-transparent white background */
 .tl-frame__body {
@@ -255,6 +251,37 @@ html, body {
 .tl-frame-label {
   display: none !important;
 }
+
+/* Miro DS cursor nametags — pill shape with gradient border & text */
+.tl-nametag {
+  border-radius: 999px !important;
+  padding: 2px 8px !important;
+  border: 1px solid transparent !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+}
+/* Coral   #FFB4B4 → rgb(255, 180, 180) */
+.tl-nametag[style*="255, 180, 180"] { background-image: linear-gradient(#FFB4B4, #FFB4B4), linear-gradient(160deg, #C52C2C 0%, rgba(197, 44, 44, 0.12) 100%) !important; color: #600000 !important; }
+/* Orange  #FFC795 → rgb(255, 199, 149) */
+.tl-nametag[style*="255, 199, 149"] { background-image: linear-gradient(#FFC795, #FFC795), linear-gradient(160deg, #D76F1A 0%, rgba(215, 111, 26, 0.12) 100%) !important; color: #5C2000 !important; }
+/* Sunshine #FFF09A → rgb(255, 240, 154) */
+.tl-nametag[style*="255, 240, 154"] { background-image: linear-gradient(#FFF09A, #FFF09A), linear-gradient(160deg, #E2BC1A 0%, rgba(226, 188, 26, 0.12) 100%) !important; color: #503A03 !important; }
+/* Lime    #C6EF88 → rgb(198, 239, 136) */
+.tl-nametag[style*="198, 239, 136"] { background-image: linear-gradient(#C6EF88, #C6EF88), linear-gradient(160deg, #759F38 0%, rgba(117, 159, 56, 0.12) 100%) !important; color: #21370B !important; }
+/* Moss    #8AE9A8 → rgb(138, 233, 168) */
+.tl-nametag[style*="138, 233, 168"] { background-image: linear-gradient(#8AE9A8, #8AE9A8), linear-gradient(160deg, #069330 0%, rgba(6, 147, 48, 0.12) 100%) !important; color: #02400F !important; }
+/* Teal    #A8F7F0 → rgb(168, 247, 240) */
+.tl-nametag[style*="168, 247, 240"] { background-image: linear-gradient(#A8F7F0, #A8F7F0), linear-gradient(160deg, #0A9285 0%, rgba(10, 146, 133, 0.12) 100%) !important; color: #0E4343 !important; }
+/* Cyan    #B5ECFF → rgb(181, 236, 255) */
+.tl-nametag[style*="181, 236, 255"] { background-image: linear-gradient(#B5ECFF, #B5ECFF), linear-gradient(160deg, #049BCD 0%, rgba(4, 155, 205, 0.12) 100%) !important; color: #003E57 !important; }
+/* Ocean   #A7C9FC → rgb(167, 201, 252) */
+.tl-nametag[style*="167, 201, 252"] { background-image: linear-gradient(#A7C9FC, #A7C9FC), linear-gradient(160deg, #4978C0 0%, rgba(73, 120, 192, 0.12) 100%) !important; color: #001D66 !important; }
+/* Lilac   #BBB4FF → rgb(187, 180, 255) */
+.tl-nametag[style*="187, 180, 255"] { background-image: linear-gradient(#BBB4FF, #BBB4FF), linear-gradient(160deg, #7C59DF 0%, rgba(124, 89, 223, 0.12) 100%) !important; color: #20084F !important; }
+/* Pink    #FBBEEA → rgb(251, 190, 234) */
+.tl-nametag[style*="251, 190, 234"] { background-image: linear-gradient(#FBBEEA, #FBBEEA), linear-gradient(160deg, #C851C3 0%, rgba(200, 81, 195, 0.12) 100%) !important; color: #55055C !important; }
+/* Coal    #DAD8D8 → rgb(218, 216, 216) */
+.tl-nametag[style*="218, 216, 216"] { background-image: linear-gradient(#DAD8D8, #DAD8D8), linear-gradient(160deg, #888888 0%, rgba(136, 136, 136, 0.12) 100%) !important; color: #333333 !important; }
 
 /* Hide Liveblocks badge */
 #liveblocks-badge, .tl-watermark_SEE-LICENSE {

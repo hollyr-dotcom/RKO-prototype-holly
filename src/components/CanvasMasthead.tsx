@@ -15,6 +15,8 @@ import {
   IconDotsThreeVertical,
   IconSidebarGlobalClosed,
   IconSidebarGlobalOpen,
+  IconViewSideLeft,
+  IconViewSideRight,
   IconOffice,
   IconTrash,
 } from "@mirohq/design-system-icons";
@@ -239,7 +241,7 @@ export function CanvasMasthead() {
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             onPress={() => toggleSidebar()}
           >
-            {isCollapsed ? <IconSidebarGlobalClosed /> : <IconSidebarGlobalOpen />}
+            <IconViewSideLeft />
           </IconButton>
 
           <div className="relative flex items-center gap-1.5 min-w-0">
@@ -345,23 +347,48 @@ export function CanvasMasthead() {
       </div>
 
       {/* ── Right bar: Actions & presence ── */}
-      <div
-        className="h-12 bg-white border border-gray-200 flex items-center pointer-events-auto p-1.5"
-        style={{ borderRadius: 16, boxShadow: barShadow }}
-      >
-        <div className="flex items-center gap-2 pl-1.5 pr-0">
-          {/* Avatars */}
-          <MastheadAvatars />
+      <div className="flex items-center gap-2 pointer-events-auto">
+        <div
+          className="h-12 bg-white border border-gray-200 flex items-center p-1.5"
+          style={{ borderRadius: 16, boxShadow: barShadow }}
+        >
+          <div className={`flex items-center gap-2 pl-1.5 ${isChatMinimized ? "pr-0.5" : "pr-px"}`}>
+            {/* Avatars */}
+            <MastheadAvatars />
 
-          {/* Share button — opens chat sidepanel */}
-          <button
-            onClick={() => setChatMode(chatMode === "sidepanel" ? "minimized" : "sidepanel")}
-            className="h-8 px-4 flex items-center gap-1.5 bg-[#4262ff] hover:bg-[#3b58e0] text-white text-sm font-medium transition-colors cursor-pointer border-none"
-            style={{ borderRadius: 8, marginRight: 1 }}
-          >
-            <IconOffice css={{ width: 16, height: 16 }} />
-            Share
-          </button>
+            {/* Share button — opens chat sidepanel */}
+            <button
+              onClick={() => setChatMode(chatMode === "sidepanel" ? "minimized" : "sidepanel")}
+              className="h-8 px-4 flex items-center gap-1.5 bg-[#4262ff] hover:bg-[#3b58e0] text-white text-sm font-medium transition-colors cursor-pointer border-none"
+              style={{ borderRadius: 8 }}
+            >
+              <IconOffice css={{ width: 16, height: 16 }} />
+              Share
+            </button>
+
+            {/* Open side chat button — animates in/out */}
+            <AnimatePresence initial={false}>
+              {isChatMinimized && (
+                <motion.div
+                  key="side-chat-btn"
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: "auto", opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                  style={{ overflow: "hidden", flexShrink: 0 }}
+                >
+                  <IconButton
+                    variant="ghost"
+                    size="medium"
+                    aria-label="Open side chat"
+                    onPress={() => setChatMode("sidepanel")}
+                  >
+                    <IconViewSideRight />
+                  </IconButton>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>

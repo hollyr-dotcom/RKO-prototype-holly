@@ -83,6 +83,8 @@ interface ChatContextType {
   setActiveCanvas: (canvas: { canvasId: string; spaceId: string } | null) => void;
   openFullscreen: (immediate?: boolean) => void;
   closeFullscreen: () => void;
+  resizeHovered: boolean;
+  setResizeHovered: (hovered: boolean) => void;
 }
 
 export const ChatContext = createContext<ChatContextType | null>(null);
@@ -100,6 +102,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   const [chatMode, setChatModeState] = useState<ChatMode>("minimized");
+  const [resizeHovered, setResizeHovered] = useState(false);
 
   // Restore chatMode from localStorage after hydration (but not on home page)
   useEffect(() => {
@@ -506,6 +509,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setActiveCanvas,
     openFullscreen,
     closeFullscreen,
+    resizeHovered,
+    setResizeHovered,
   };
 
   return (

@@ -103,7 +103,7 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
   return (
     <div
       className="rounded-2xl overflow-hidden mb-6 flex flex-col justify-end"
-      style={{ ...gradientStyle, minHeight: 380, padding: "32px 48px 48px" }}
+      style={{ ...gradientStyle, minHeight: 230, padding: "32px 48px 48px" }}
     >
       {/* Bottom row: title+description on left, button on right */}
       <div className="flex items-end justify-between gap-8">

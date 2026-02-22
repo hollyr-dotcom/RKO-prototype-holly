@@ -98,7 +98,7 @@
     "timestamp": "2026-02-19T08:45:00Z",
     "priority": "high",
     "source": {
-      "userId": "user-marcus",
+      "userId": "user-marcus-webb",
       "isAgent": false
     },
     "isRead": false,
@@ -315,7 +315,7 @@
       },
       {
         "id": "open-in-space",
-        "label": "Open in Space",
+        "label": "Open",
         "variant": "secondary"
       }
     ],
@@ -504,7 +504,7 @@
         "title": "Phase 1 Rollout Decision",
         "approvals": [
           {
-            "name": "Tom Andersen",
+            "name": "Tom Rodriguez",
             "role": "CFO",
             "status": "approved",
             "condition": null
@@ -516,7 +516,7 @@
             "condition": "Compliance sign-off required before rollout"
           },
           {
-            "name": "Sofia Reyes",
+            "name": "Sarah Chen",
             "role": "Initiative Lead",
             "status": "approved",
             "condition": null
@@ -581,7 +581,7 @@
       },
       {
         "id": "open-in-space",
-        "label": "Open in Space",
+        "label": "Open",
         "variant": "secondary"
       }
     ],
@@ -878,7 +878,7 @@
     "id": "feed-kyc-10",
     "type": "collaboration-request",
     "spaceId": "space-kyc",
-    "title": "Sofia Reyes needs your decision: Phase 2 self-service portal scope",
+    "title": "Sarah Chen needs your decision: Phase 2 self-service portal scope",
     "body": "Phase 2 approval would unlock a self-service portal targeting <10 day onboarding. APAC runs at 16 days with the same framework using a portal. This directly addresses the Q4 deal losses. Scoping starts March 1 if approved.",
     "timestamp": "2026-02-14T09:00:00Z",
     "priority": "high",
@@ -1203,7 +1203,7 @@
     "id": "feed-kyc-14",
     "type": "collaboration-request",
     "spaceId": "space-kyc",
-    "title": "Sofia Reyes needs Legal review on revised KYC template — 6 EU jurisdictions",
+    "title": "Sarah Chen needs Legal review on revised KYC template — 6 EU jurisdictions",
     "body": "Revised risk assessment template needs Legal review against current regulations across all 6 EU jurisdictions. Key areas: source-of-funds criteria, UBO documentation per market, and new trust/foundation entity type handling.",
     "timestamp": "2026-01-25T14:00:00Z",
     "priority": "high",
@@ -1421,7 +1421,7 @@
         "title": "Phase 1 Approval",
         "approvals": [
           {
-            "name": "Tom Andersen",
+            "name": "Tom Rodriguez",
             "role": "CFO",
             "status": "approved",
             "condition": "Pilot low/medium-risk EU clients first"
@@ -1443,7 +1443,7 @@
     "id": "feed-kyc-17",
     "type": "collaboration-request",
     "spaceId": "space-kyc",
-    "title": "Sofia Reyes wants your input: quarterly review agenda — three issues flagged",
+    "title": "Sarah Chen wants your input: quarterly review agenda — three issues flagged",
     "body": "Three items flagged for the quarterly review. First-pass approval dipped — likely new analyst training issue. Italian resubmission trending up. Your input on prioritisation before the session would help.",
     "timestamp": "2026-02-16T09:00:00Z",
     "priority": "medium",
@@ -1584,7 +1584,7 @@
     "id": "feed-ff-01",
     "type": "workflow-change",
     "spaceId": "space-ff26",
-    "title": "Tom Andersen approved FlexForward 26 event budget",
+    "title": "Tom Rodriguez approved FlexForward 26 event budget",
     "body": "",
     "timestamp": "2026-02-13T14:00:00Z",
     "priority": "high",
@@ -1629,16 +1629,15 @@
     "visualPreview": {
       "type": "ApprovalPreview",
       "data": {
-        "title": "FlexForward 26 Event Budget",
         "approvals": [
           {
-            "name": "Tom Andersen",
+            "name": "Tom Rodriguez",
             "role": "CFO",
             "status": "approved",
             "condition": null
           },
           {
-            "name": "Nina Johansson",
+            "name": "Amy Chen",
             "role": "COO",
             "status": "approved",
             "condition": null
@@ -1680,7 +1679,6 @@
     "visualPreview": {
       "type": "PeoplePreview",
       "data": {
-        "title": "Speaker Confirmation Status",
         "people": [
           {
             "name": "Dr. Amara Osei",
@@ -1722,7 +1720,7 @@
     "id": "feed-ff-03",
     "type": "collaboration-request",
     "spaceId": "space-ff26",
-    "title": "Liam O'Brien wants feedback on attendee survey design",
+    "title": "Jeff Chow wants feedback on attendee survey design",
     "body": "Survey draft covers 5 dimensions across 28 questions. Looking for feedback on section weighting — particularly whether networking gets enough coverage given our hybrid format this year.",
     "timestamp": "2026-02-15T13:00:00Z",
     "priority": "low",
@@ -1790,7 +1788,7 @@
     "id": "feed-ff-04",
     "type": "workflow-change",
     "spaceId": "space-ff26",
-    "title": "Sofia Reyes moved venue contract to Signed",
+    "title": "Sarah Chen moved venue contract to Signed",
     "body": "",
     "timestamp": "2026-02-11T09:00:00Z",
     "priority": "high",
@@ -2038,12 +2036,12 @@
     "actions": [
       {
         "id": "review-matrix",
-        "label": "Review matrix",
+        "label": "Review",
         "variant": "primary"
       },
       {
         "id": "open-in-space",
-        "label": "Open in Space",
+        "label": "Open",
         "variant": "secondary"
       }
     ],
@@ -2146,7 +2144,7 @@
     "id": "feed-pq3-04",
     "type": "workflow-change",
     "spaceId": "space-launch-q3",
-    "title": "Nina Johansson approved Q3 product development budget",
+    "title": "Amy Chen approved Q3 product development budget",
     "body": "",
     "timestamp": "2026-02-13T16:00:00Z",
     "priority": "high",
@@ -2192,13 +2190,13 @@
         "title": "Q3 Product Budget",
         "approvals": [
           {
-            "name": "Nina Johansson",
+            "name": "Amy Chen",
             "role": "COO",
             "status": "approved",
             "condition": null
           },
           {
-            "name": "Tom Andersen",
+            "name": "Tom Rodriguez",
             "role": "CFO",
             "status": "approved",
             "condition": null
@@ -2214,7 +2212,7 @@
     "id": "feed-pq3-05",
     "type": "collaboration-request",
     "spaceId": "space-paygrid",
-    "title": "Elena Vasquez needs your decision: PayGrid EU scope — 3 vs 6 markets at launch",
+    "title": "Jordan Lee needs your decision: PayGrid EU scope — 3 vs 6 markets at launch",
     "body": "Need a decision on launch scope before the compliance and engineering teams finalise their plans. Option B doubles the revenue opportunity but adds ~6 weeks of compliance work for ES and IT. Recommend deciding by Feb 20.",
     "timestamp": "2026-02-15T11:00:00Z",
     "priority": "high",
@@ -3231,9 +3229,9 @@
     "id": "feed-ff-youth-04",
     "type": "agent-completed",
     "spaceId": "space-firstflex",
-    "title": "FirstFlex market sizing analysis ready — 4.2M addressable teens in target markets",
+    "title": "FirstFlex market sizing analysis ready with a breakdown of addressable teens in target markets",
     "body": "",
-    "timestamp": "2026-02-09T14:00:00Z",
+    "timestamp": "2026-02-16T16:00:00Z",
     "priority": "medium",
     "source": {
       "userId": "agent-product-leader",
@@ -3253,12 +3251,12 @@
     "actions": [
       {
         "id": "view-analysis",
-        "label": "View analysis",
+        "label": "Review",
         "variant": "primary"
       },
       {
         "id": "open-in-space",
-        "label": "Open in Space",
+        "label": "Open",
         "variant": "secondary"
       }
     ],
@@ -3266,7 +3264,7 @@
       "artifact": {
         "type": "document",
         "id": "artifact-ff-youth-04",
-        "name": "FirstFlex market sizing analysis ready — 4.2M addressable teens in target markets"
+        "name": "FirstFlex market sizing analysis ready with a breakdown of addressable teens in target markets"
       },
       "completionSummary": "4.2M addressable teens across 4 launch markets. UK is largest at 1.6M. Penetration benchmarks from Starling Kite and GoHenry suggest 3–5% in Y2 is achievable = 126K–210K accounts.",
       "timeSpent": "1.5h",
@@ -3419,41 +3417,6 @@
       "completionSummary": "24 interviews synthesised across UK, DE, NL. 3 main clusters: teen desires, parent priorities, and shared pain points. Top insight: teens want peer-to-peer instantly — current incumbents all have 1-day delays.",
       "timeSpent": "1.9h",
       "changesCount": 24
-    },
-    "visualPreview": {
-      "type": "BrainstormPreview",
-      "data": {
-        "title": "Teen Banking Research — Key Themes",
-        "clusters": [
-          {
-            "label": "What teens want",
-            "color": "#10b981",
-            "notes": [
-              "Instant peer-to-peer payments",
-              "Clear savings goals with visual progress",
-              "No lecture-y financial education"
-            ]
-          },
-          {
-            "label": "What parents want",
-            "color": "#4262FF",
-            "notes": [
-              "Visibility without surveillance feel",
-              "Easy freeze/unfreeze",
-              "Automatic savings rules"
-            ]
-          },
-          {
-            "label": "Pain points (both)",
-            "color": "#ef4444",
-            "notes": [
-              "Parental consent friction",
-              "Confusing fee structures",
-              "Poor customer support for teens"
-            ]
-          }
-        ]
-      }
     },
     "spaceName": "FirstFlex Youth Banking"
   },
@@ -4198,7 +4161,7 @@
     "id": "feed-cross-03",
     "type": "collaboration-request",
     "spaceId": "space-epd",
-    "title": "Nina Johansson needs your input: engineering hiring plan — 4 senior roles",
+    "title": "Amy Chen needs your input: engineering hiring plan — 4 senior roles",
     "body": "4 senior engineering roles currently open. Two are blocking deliverables on Embedded Finance and AI Claims. Input needed on priority order and whether to use agency headhunters for the urgent roles to compress the timeline from 12 to 6 weeks.",
     "timestamp": "2026-02-15T10:00:00Z",
     "priority": "medium",
@@ -4436,12 +4399,12 @@
     "actions": [
       {
         "id": "review-outline",
-        "label": "Review outline",
+        "label": "Review",
         "variant": "primary"
       },
       {
         "id": "set-reminder",
-        "label": "Set reminder",
+        "label": "Remind me",
         "variant": "secondary"
       }
     ],
@@ -4567,7 +4530,7 @@
     "id": "feed-cross-08",
     "type": "collaboration-request",
     "spaceId": "space-paygrid",
-    "title": "Tom Andersen needs your input: H2 2026 technology investment priorities",
+    "title": "Tom Rodriguez needs your input: H2 2026 technology investment priorities",
     "body": "Working through H2 budget allocation. Three funding scenarios prepared — each makes different trade-offs between Core Banking completion, new product launches, and infrastructure scaling. Your priorities as CPTO are the key input for the board recommendation.",
     "timestamp": "2026-02-16T11:00:00Z",
     "priority": "high",
@@ -4822,7 +4785,6 @@
     "visualPreview": {
       "type": "BrainstormPreview",
       "data": {
-        "title": "Q4 2025 Retrospective — Key Themes",
         "clusters": [
           {
             "label": "What went well",
@@ -5087,9 +5049,9 @@
     "id": "feed-ff-05",
     "type": "agent-completed",
     "spaceId": "space-ff26",
-    "title": "FlexForward 26 session schedule draft ready — 24 sessions across 2 days",
+    "title": "FlexForward 26 session schedule draft ready 24 sessions across 2 days",
     "body": "",
-    "timestamp": "2026-02-08T14:00:00Z",
+    "timestamp": "2026-02-17T15:00:00Z",
     "priority": "medium",
     "source": {
       "userId": "agent-product-leader",
@@ -5110,12 +5072,12 @@
     "actions": [
       {
         "id": "review-schedule",
-        "label": "Review schedule",
+        "label": "Review",
         "variant": "primary"
       },
       {
         "id": "share-with-speakers",
-        "label": "Share with speakers",
+        "label": "Share",
         "variant": "secondary"
       }
     ],
@@ -5123,64 +5085,44 @@
       "artifact": {
         "type": "canvas",
         "id": "artifact-ff-05",
-        "name": "FlexForward 26 session schedule draft ready — 24 sessions across 2 days"
+        "name": "FlexForward 26 session schedule draft ready 24 sessions across 2 days"
       },
       "completionSummary": "24 sessions scheduled across 2 days: 14 keynotes, 6 breakout tracks, 4 workshops. Speaker slots for 5 confirmed speakers filled. 2 panel slots pending confirmation.",
       "timeSpent": "1.1h",
       "changesCount": 24
     },
     "visualPreview": {
-      "type": "TimelinePreview",
+      "type": "BrainstormPreview",
       "data": {
-        "title": "FlexForward 26 — Session Schedule",
-        "startDate": "2026-06-12",
-        "endDate": "2026-06-13",
-        "tracks": [
+        "clusters": [
           {
-            "label": "Main Stage",
-            "color": "#8b5cf6",
-            "bars": [
-              {
-                "start": "2026-06-12",
-                "end": "2026-06-12",
-                "label": "8 keynotes"
-              },
-              {
-                "start": "2026-06-13",
-                "end": "2026-06-13",
-                "label": "6 keynotes"
-              }
-            ]
-          },
-          {
-            "label": "Breakouts (x3)",
-            "color": "#4262FF",
-            "bars": [
-              {
-                "start": "2026-06-12",
-                "end": "2026-06-12",
-                "label": "6 sessions"
-              },
-              {
-                "start": "2026-06-13",
-                "end": "2026-06-13",
-                "label": "6 sessions"
-              }
-            ]
-          },
-          {
-            "label": "Workshops",
+            "label": "What went well",
             "color": "#10b981",
-            "bars": [
-              {
-                "start": "2026-06-12",
-                "end": "2026-06-13",
-                "label": "4 hands-on workshops"
-              }
+            "notes": [
+              "AI Claims automation exceeded targets",
+              "KYC pilot results strong",
+              "Team collaboration on FlexForward 26"
+            ]
+          },
+          {
+            "label": "What to improve",
+            "color": "#ef4444",
+            "notes": [
+              "Core banking timeline slipped",
+              "Legal bandwidth a recurring constraint",
+              "Cross-initiative visibility was manual"
+            ]
+          },
+          {
+            "label": "Action items",
+            "color": "#4262FF",
+            "notes": [
+              "Legal resource planning → Nina (Q1)",
+              "Portfolio dashboard automate → Agent",
+              "Engineering hiring front-loaded → HR"
             ]
           }
-        ],
-        "today": "2026-02-18"
+        ]
       }
     },
     "spaceName": "FlexForward 26"
@@ -5189,9 +5131,9 @@
     "id": "feed-ff-06",
     "type": "collaboration-request",
     "spaceId": "space-ff26",
-    "title": "Sofia Reyes needs your decision: FlexForward 26 keynote speaker lineup",
+    "title": "Sarah Chen needs your decision: FlexForward 26 keynote speaker lineup",
     "body": "Day 1 opener slot is still vacant. Recommending Jamie Liu from BIS on digital assets — relevant given the EU MiCA discussion that's likely to dominate H2. Need your approval to extend the invitation.",
-    "timestamp": "2026-02-15T12:00:00Z",
+    "timestamp": "2026-02-19T09:00:00Z",
     "priority": "high",
     "source": {
       "userId": "user-sofia",
@@ -5202,12 +5144,12 @@
     "actions": [
       {
         "id": "approve-jamie-liu",
-        "label": "Approve Jamie Liu",
+        "label": "Approve",
         "variant": "primary"
       },
       {
         "id": "suggest-alternative",
-        "label": "Suggest alternative",
+        "label": "Review",
         "variant": "secondary"
       }
     ],
@@ -5219,7 +5161,6 @@
     "visualPreview": {
       "type": "PeoplePreview",
       "data": {
-        "title": "Keynote Speaker Shortlist",
         "people": [
           {
             "name": "Dr. Amara Osei",
@@ -5263,7 +5204,7 @@
     "spaceId": "space-ff26",
     "title": "Hybrid format preference at 62% — venue AV setup needs revision",
     "body": "Pre-registration survey shows 62% of respondents want some form of hybrid access. Current RAI Amsterdam AV setup only supports in-person broadcast to overflow rooms. Adding streaming capability requires contract amendment — cost estimated at €45K.",
-    "timestamp": "2026-02-12T11:00:00Z",
+    "timestamp": "2026-02-18T06:00:00Z",
     "priority": "medium",
     "source": {
       "userId": "agent-product-leader",
@@ -5399,7 +5340,7 @@
     "id": "feed-kyc-20",
     "type": "workflow-change",
     "spaceId": "space-kyc",
-    "title": "KYC onboarding initiative launched — Sofia Reyes assigned as lead",
+    "title": "KYC onboarding initiative launched — Sarah Chen assigned as lead",
     "body": "",
     "timestamp": "2025-12-18T15:00:00Z",
     "priority": "high",
@@ -5445,7 +5386,7 @@
         "title": "Initiative Team — KYC Onboarding Optimisation",
         "people": [
           {
-            "name": "Sofia Reyes",
+            "name": "Sarah Chen",
             "role": "Senior PM · Initiative Lead",
             "status": "confirmed",
             "color": "#10b981"
@@ -5564,7 +5505,7 @@
     "spaceId": "space-firstflex",
     "title": "PSD3 draft published — impacts 4 active FlexFund initiatives",
     "body": "European Parliament published PSD3 draft text. Affects 4 active FlexFund initiatives across authentication, data sharing, TPSP liability, and data portability. Legal and Compliance review recommended within 2 weeks.",
-    "timestamp": "2026-02-16T16:00:00Z",
+    "timestamp": "2026-02-09T14:00:00Z",
     "priority": "high",
     "source": {
       "userId": "agent-product-leader",
@@ -5757,54 +5698,37 @@
       "changesCount": 47
     },
     "visualPreview": {
-      "type": "TablePreview",
+      "type": "BrainstormPreview",
       "data": {
-        "title": "Speaker Travel Summary — FlexForward 26",
-        "columns": [
-          "City",
-          "Speakers",
-          "Hotel",
-          "Status"
-        ],
-        "rows": [
-          [
-            "Amsterdam (venue)",
-            "12",
-            "Waldorf Astoria",
-            "✅ Booked"
-          ],
-          [
-            "London",
-            "8",
-            "The Hoxton Southwark",
-            "✅ Booked"
-          ],
-          [
-            "Berlin",
-            "7",
-            "Soho House",
-            "🟡 Pending"
-          ],
-          [
-            "Paris",
-            "6",
-            "Hotel du Collectionneur",
-            "✅ Booked"
-          ],
-          [
-            "Stockholm",
-            "4",
-            "Berns Hotel",
-            "🟡 Pending"
-          ],
-          [
-            "Zurich",
-            "3",
-            "Park Hyatt",
-            "✅ Booked"
-          ]
-        ],
-        "highlightColumn": 3
+        "clusters": [
+          {
+            "label": "What went well",
+            "color": "#10b981",
+            "notes": [
+              "AI Claims automation exceeded targets",
+              "KYC pilot results strong",
+              "Team collaboration on FlexForward 26"
+            ]
+          },
+          {
+            "label": "What to improve",
+            "color": "#ef4444",
+            "notes": [
+              "Core banking timeline slipped",
+              "Legal bandwidth a recurring constraint",
+              "Cross-initiative visibility was manual"
+            ]
+          },
+          {
+            "label": "Action items",
+            "color": "#4262FF",
+            "notes": [
+              "Legal resource planning → Nina (Q1)",
+              "Portfolio dashboard automate → Agent",
+              "Engineering hiring front-loaded → HR"
+            ]
+          }
+        ]
       }
     },
     "spaceName": "FlexForward 26"
@@ -6310,7 +6234,7 @@
         "Increase to £1,500"
       ],
       "chosenOption": "Increase to £1,000",
-      "decidedBy": "Tom Andersen"
+      "decidedBy": "Tom Rodriguez"
     },
     "spaceName": "AI Claims"
   },
@@ -6351,7 +6275,7 @@
     ],
     "payload": {
       "status": "needed",
-      "approver": "Nina Johansson",
+      "approver": "Amy Chen",
       "subject": "FlexForward 26 speaker budget increase (€85K)",
       "conditions": [
         "Confirmed speaker contracts required",
@@ -6395,7 +6319,7 @@
     ],
     "payload": {
       "status": "given",
-      "approver": "Tom Andersen",
+      "approver": "Tom Rodriguez",
       "subject": "Core Banking Phase 2 kickoff"
     },
     "spaceName": "Core Banking Migration"
@@ -6515,7 +6439,7 @@
       "sessionType": "workshop",
       "participants": [
         "Migration Lead",
-        "Tom Andersen",
+        "Tom Rodriguez",
         "CTO",
         "Risk Team"
       ],
@@ -6548,7 +6472,7 @@
       "sessionType": "brainstorm",
       "participants": [
         "Amara Okafor",
-        "Raj Patel",
+        "David Kim",
         "UX Research"
       ],
       "startedAt": "2026-02-18T09:20:00Z"
@@ -6701,7 +6625,7 @@
     ],
     "payload": {
       "requestType": "input",
-      "from": "Sofia Reyes",
+      "from": "Sarah Chen",
       "dueDate": "2026-02-19"
     },
     "spaceName": "EU KYC Optimisation"
@@ -6738,7 +6662,7 @@
     ],
     "payload": {
       "requestType": "feedback",
-      "from": "Raj Patel",
+      "from": "David Kim",
       "dueDate": "2026-02-24"
     },
     "spaceName": "FirstFlex Youth Banking"
@@ -6782,7 +6706,7 @@
       "amount": "€450K",
       "category": "Engineering Hiring",
       "status": "pending",
-      "requestedBy": "Nina Johansson"
+      "requestedBy": "Amy Chen"
     },
     "spaceName": "Product Launch Q3"
   },
@@ -6815,7 +6739,7 @@
       "amount": "€85K",
       "category": "FlexForward 26 Event",
       "status": "approved",
-      "requestedBy": "Liam O'Brien"
+      "requestedBy": "Jeff Chow"
     },
     "spaceName": "FlexForward 26"
   },
@@ -6857,7 +6781,7 @@
       "amount": "£180K",
       "category": "AI Infrastructure",
       "status": "pending",
-      "requestedBy": "James Holloway"
+      "requestedBy": "James Rodriguez"
     },
     "spaceName": "AI Claims"
   },
@@ -7120,7 +7044,6 @@
     "visualPreview": {
       "type": "BrainstormPreview",
       "data": {
-        "title": "Q4 2025 Retrospective — Key Themes",
         "clusters": [
           {
             "label": "What went well",
@@ -7209,7 +7132,7 @@
     "id": "feed-org27-04",
     "type": "collaboration-request",
     "spaceId": "space-org27",
-    "title": "Tom Andersen needs your input: H2 2026 technology investment priorities",
+    "title": "Tom Rodriguez needs your input: H2 2026 technology investment priorities",
     "body": "Working through H2 budget allocation. Three funding scenarios prepared — each makes different trade-offs between Core Banking completion, new product launches, and infrastructure scaling. Your priorities as CPTO are the key input for the board recommendation.",
     "timestamp": "2026-02-16T11:00:00Z",
     "priority": "high",
@@ -7396,7 +7319,7 @@
       "amount": "€450K",
       "category": "Engineering Hiring",
       "status": "pending",
-      "requestedBy": "Nina Johansson"
+      "requestedBy": "Amy Chen"
     },
     "spaceName": "Org Plan 2027"
   },
@@ -7900,12 +7823,12 @@
     "actions": [
       {
         "id": "review-outline",
-        "label": "Review outline",
+        "label": "Review",
         "variant": "primary"
       },
       {
         "id": "set-reminder",
-        "label": "Set reminder",
+        "label": "Remind me",
         "variant": "secondary"
       }
     ],
@@ -8052,7 +7975,7 @@
         "title": "Phase 1 Approval",
         "approvals": [
           {
-            "name": "Tom Andersen",
+            "name": "Tom Rodriguez",
             "role": "CFO",
             "status": "approved",
             "condition": "Pilot low/medium-risk EU clients first"
@@ -8097,12 +8020,12 @@
     "actions": [
       {
         "id": "review-matrix",
-        "label": "Review matrix",
+        "label": "Review",
         "variant": "primary"
       },
       {
         "id": "open-in-space",
-        "label": "Open in Space",
+        "label": "Open",
         "variant": "secondary"
       }
     ],
@@ -8205,7 +8128,7 @@
     "id": "feed-epd-04",
     "type": "workflow-change",
     "spaceId": "space-epd",
-    "title": "KYC onboarding initiative launched — Sofia Reyes assigned as lead",
+    "title": "KYC onboarding initiative launched — Sarah Chen assigned as lead",
     "body": "",
     "timestamp": "2025-12-18T15:00:00Z",
     "priority": "high",
@@ -8251,7 +8174,7 @@
         "title": "Initiative Team — KYC Onboarding Optimisation",
         "people": [
           {
-            "name": "Sofia Reyes",
+            "name": "Sarah Chen",
             "role": "Senior PM · Initiative Lead",
             "status": "confirmed",
             "color": "#10b981"

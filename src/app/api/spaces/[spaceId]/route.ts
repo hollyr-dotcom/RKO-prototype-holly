@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/serverAuth";
 import { supabase } from "@/lib/supabase";
-import { spaceRowToApi, canvasRowToApi } from "@/lib/supabase-types";
+import { spaceRowToApi, canvasRowToApi, boardSectionRowToApi } from "@/lib/supabase-types";
 
 /** GET /api/spaces/[spaceId] — single space with its canvases */
 export async function GET(
@@ -31,9 +31,17 @@ export async function GET(
 
     if (canvasError) throw canvasError;
 
+    // Fetch board sections for this space
+    const { data: sections } = await supabase
+      .from('board_sections')
+      .select('*')
+      .eq('space_id', spaceId)
+      .order('order', { ascending: true });
+
     return NextResponse.json({
       ...spaceRowToApi(space),
       canvases: (canvases || []).map(canvasRowToApi),
+      boardSections: (sections || []).map(boardSectionRowToApi),
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown error';

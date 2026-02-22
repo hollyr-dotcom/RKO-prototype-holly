@@ -1,39 +1,12 @@
 [
   {
-    "id": "space-roadmaps",
-    "name": "Roadmaps",
-    "description": "Product roadmap planning, OKR tracking, and cross-portfolio prioritisation",
-    "emoji": "🗺️",
-    "createdAt": "2025-10-01T10:00:00Z",
-    "updatedAt": "2026-02-18T08:00:00Z",
-    "order": 0
-  },
-  {
-    "id": "space-launch-q3",
-    "name": "Product Launch Q3",
-    "description": "PayGrid launch strategy, GTM planning, and competitive positioning for Q3 2026",
-    "emoji": "🚀",
-    "createdAt": "2026-01-10T10:00:00Z",
-    "updatedAt": "2026-02-18T08:00:00Z",
-    "order": 1
-  },
-  {
-    "id": "space-brand",
-    "name": "Brand Refresh",
-    "description": "Visual identity exploration and design system updates",
-    "emoji": "😍",
-    "createdAt": "2025-11-01T10:00:00Z",
-    "updatedAt": "2026-02-18T08:00:00Z",
-    "order": 2
-  },
-  {
     "id": "space-paygrid",
     "name": "PayGrid",
     "description": "Real-time multi-rail payment orchestration and Meridian Bank pilot",
     "emoji": "💳",
     "createdAt": "2025-09-15T10:00:00Z",
     "updatedAt": "2026-02-18T08:00:00Z",
-    "order": 3
+    "order": 0
   },
   {
     "id": "space-firstflex",
@@ -43,25 +16,7 @@
     "hasSidebar": true,
     "createdAt": "2026-01-05T13:00:00Z",
     "updatedAt": "2026-02-16T11:00:00Z",
-    "order": 4
-  },
-  {
-    "id": "space-kyc",
-    "name": "EU KYC Optimisation",
-    "description": "Reducing enterprise onboarding from 24 to 10 days across 6 EU jurisdictions",
-    "emoji": "🔐",
-    "createdAt": "2025-11-15T09:00:00Z",
-    "updatedAt": "2026-02-18T08:14:00Z",
-    "order": 5
-  },
-  {
-    "id": "space-claims",
-    "name": "AI Claims",
-    "description": "Intelligent claims processing automation and ML model governance",
-    "emoji": "🤖",
-    "createdAt": "2025-10-01T10:00:00Z",
-    "updatedAt": "2026-02-17T09:00:00Z",
-    "order": 6
+    "order": 1
   },
   {
     "id": "space-core",
@@ -70,7 +25,7 @@
     "emoji": "🏗️",
     "createdAt": "2025-09-15T10:00:00Z",
     "updatedAt": "2026-02-17T10:00:00Z",
-    "order": 7
+    "order": 2
   },
   {
     "id": "space-embed",
@@ -79,6 +34,51 @@
     "emoji": "🔌",
     "createdAt": "2025-11-01T10:00:00Z",
     "updatedAt": "2026-02-16T08:30:00Z",
+    "order": 3
+  },
+  {
+    "id": "space-launch-q3",
+    "name": "Product Launch Q3",
+    "description": "PayGrid launch strategy, GTM planning, and competitive positioning for Q3 2026",
+    "emoji": "🚀",
+    "createdAt": "2026-01-10T10:00:00Z",
+    "updatedAt": "2026-02-18T08:00:00Z",
+    "order": 4
+  },
+  {
+    "id": "space-brand",
+    "name": "Brand Refresh",
+    "description": "Visual identity exploration and design system updates",
+    "emoji": "😍",
+    "createdAt": "2025-11-01T10:00:00Z",
+    "updatedAt": "2026-02-18T08:00:00Z",
+    "order": 5
+  },
+  {
+    "id": "space-kyc",
+    "name": "EU KYC Optimisation",
+    "description": "Reducing enterprise onboarding from 24 to 10 days across 6 EU jurisdictions",
+    "emoji": "🔐",
+    "createdAt": "2025-11-15T09:00:00Z",
+    "updatedAt": "2026-02-18T08:14:00Z",
+    "order": 6
+  },
+  {
+    "id": "space-claims",
+    "name": "AI Claims",
+    "description": "Intelligent claims processing automation and ML model governance",
+    "emoji": "🤖",
+    "createdAt": "2025-10-01T10:00:00Z",
+    "updatedAt": "2026-02-17T09:00:00Z",
+    "order": 7
+  },
+  {
+    "id": "space-roadmaps",
+    "name": "Roadmaps",
+    "description": "Product roadmap planning, OKR tracking, and cross-portfolio prioritisation",
+    "emoji": "🗺️",
+    "createdAt": "2025-10-01T10:00:00Z",
+    "updatedAt": "2026-02-18T08:00:00Z",
     "order": 8
   },
   {

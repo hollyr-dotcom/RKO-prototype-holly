@@ -80,8 +80,8 @@ When user asks "add Option C", "create another solution", "what about a third op
 - Use addSolutionCard() — this adds a new card INSIDE the existing "Possible Solutions" frame
 - Do NOT use createZone — that creates a separate frame. addSolutionCard extends the existing one.
 - Title MUST follow the naming pattern: "Solution C: [Name]" (not "Option C"). Always use "Solution" + the next letter.
-- Content MUST match the style of existing solutions: 2-3 paragraphs with bold metrics using <strong> tags. Example:
-  "<p>Make [X] the priority to capture <strong>$47M</strong> in pipeline. The delay cost is flat at <strong>4-6 weeks</strong> — manageable without material impact.</p><p>Accept the trade-off: [Y] slips past the Q3 window, risking <strong>$3.2M</strong> in partner revenue. Competitors gain ground but our moat holds for one quarter.</p>"
+- Content MUST match Solution A and B cards. Structure: <p>1 sentence summary (max 20 words)</p>, then <h3>Pros</h3><ul> 4 <li>, then <h3>Cons</h3><ul> 4 <li>. Bullets are SHORT FRAGMENTS (8-12 words max), not full sentences. One metric per bullet. Example:
+  "<p>Blend both priorities — capture <strong>$30M</strong> PayGrid pipeline + <strong>70%</strong> FirstFlex lift.</p><h3>Pros</h3><ul><li>Preserves <strong>$30M</strong> pipeline via flexible Sep window</li><li>Keeps <strong>70%+</strong> FirstFlex activation momentum</li><li>Win-rate path holds: <strong>42%→55%</strong> vs stalling</li><li>Lower burnout: phased vs full pivot (Squad 3 at <strong>94%</strong>)</li></ul><h3>Cons</h3><ul><li>PayGrid slips <strong>3-4 weeks</strong> — Meridian targets late Sep</li><li>FirstFlex surge reduced: <strong>180K→140K</strong> activations</li><li>Cross-squad sync required — <strong>3-4x</strong> more touchpoints</li><li>Split focus: neither outcome fully optimized</li></ul>"
 - Include a confidence percentage
 - ALWAYS set isRecommended to false. In voice mode you are ONLY adding the option — never change the recommendation. Do NOT touch existing solutions' confidence stickies or colors either. Just add the new card.
 
@@ -339,12 +339,12 @@ The canvas speaks for itself. Point to it, don't describe it.`,
             {
               type: "function",
               name: "addSolutionCard",
-              description: "Add a new solution card to the EXISTING 'Possible Solutions' frame on the canvas. Use when user asks to add another option/solution. This extends the existing frame — does NOT create a new one. IMPORTANT: Title must be 'Solution C: [Name]' (use 'Solution', not 'Option'). Content must be 2-3 paragraphs with <strong> bold metrics, matching the style of Solution A and B.",
+              description: "Add a new solution card to the EXISTING 'Possible Solutions' frame on the canvas. Use when user asks to add another option/solution. This extends the existing frame — does NOT create a new one. IMPORTANT: Title must be 'Solution C: [Name]' (use 'Solution', not 'Option'). Content MUST use Summary + Pros + Cons format matching Solution A and B.",
               parameters: {
                 type: "object",
                 properties: {
                   title: { type: "string", description: "MUST use format 'Solution C: [Name]' — always 'Solution' not 'Option', always the next letter" },
-                  content: { type: "string", description: "2-3 paragraphs in HTML matching existing solution style. Use <p> tags and <strong> for key metrics/numbers. Example: '<p>Focus on X to capture <strong>$47M</strong> pipeline...</p><p>Accept trade-off: Y slips, risking <strong>$3.2M</strong>...</p>'" },
+                  content: { type: "string", description: "HTML: <p>2-sentence summary with metrics</p> + <h3>Pros</h3><ul> with exactly 4 <li> + <h3>Cons</h3><ul> with exactly 4 <li>. CRITICAL: Every bullet MUST include specific $, %, or numbers. Match the LENGTH and detail of Solution A and B — no short/generic bullets." },
                   confidence: { type: "string", description: "Confidence level, e.g. '75%'" },
                   isRecommended: { type: "boolean", description: "True if this should be the recommended option" }
                 },

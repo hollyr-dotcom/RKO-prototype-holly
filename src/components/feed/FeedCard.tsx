@@ -131,7 +131,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
     };
     const illustrationImage = IMAGE_ILLUSTRATIONS[item.id];
     // Items with custom inline illustrations in the standard 240x184 frame
-    const CUSTOM_ILLUSTRATION_IDS = new Set(["feed-ff-youth-03", "feed-cross-06", "feed-ff26-02"]);
+    const CUSTOM_ILLUSTRATION_IDS = new Set(["feed-ff-youth-03", "feed-ff-youth-04", "feed-cross-06", "feed-ff26-02", "feed-ff-07", "feed-ff-06"]);
     const hasCustomIllustration = CUSTOM_ILLUSTRATION_IDS.has(item.id);
 
     return (
@@ -142,7 +142,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
       >
         <div className="flex">
           {/* Left: text content */}
-          <div className={`flex flex-col flex-1 min-w-0 p-6 ${hasVisual || hasIllustration || illustrationImage || hasCustomIllustration ? "pr-0" : ""}`} style={{ paddingBottom: item.actions.length > 0 ? 104 : 24 }}>
+          <div className={`flex flex-col flex-1 min-w-0 p-6 ${hasVisual || hasIllustration || illustrationImage || hasCustomIllustration ? "pr-4" : ""}`} style={{ paddingBottom: item.actions.length > 0 ? 104 : 24 }}>
             {/* Icon or avatar + timestamp */}
             <div className="flex items-center gap-3 mb-3">
               {titleMentionsPerson && sourceUser?.avatar ? (
@@ -157,17 +157,17 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
                   <CardTypeIcon itemType={item.type} itemId={item.id} />
                 </div>
               )}
-              <div className="flex items-center gap-2 min-w-0">
+              <div className={`flex items-center gap-2 min-w-0 transition-opacity duration-200 ${item.type === "live-session" ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
                 {titleMentionsPerson && sourceUser && (
                   <span className="text-sm font-medium text-gray-900 truncate">
                     {sourceUser.name}
                   </span>
                 )}
-                <span className="text-xs text-gray-400 flex-shrink-0">
-                  {formatTimeAgo(item.timestamp)}
+                <span className="flex-shrink-0" style={{ fontSize: 14, color: "#656B81" }}>
+                  {item.type === "live-session" ? "Now" : formatTimeAgo(item.timestamp)}
                 </span>
-                {!item.isRead && (
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                {item.type === "live-session" && (
+                  <div className="rounded-full flex-shrink-0" style={{ width: 8, height: 8, backgroundColor: "#FF0909" }} />
                 )}
               </div>
             </div>
@@ -188,7 +188,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
 
           {/* Right: visual preview or bespoke illustration */}
           {hasCustomIllustration ? (
-            <div className="flex-shrink-0 flex items-center justify-center" style={{ padding: 32 }}>
+            <div className="w-[280px] flex-shrink-0 p-4 pl-2 flex items-center justify-center">
               <div className="overflow-hidden flex-shrink-0" style={{ width: 240, height: 184, borderRadius: 24 }}>
                 {(item.id === "feed-cross-06" || item.id === "feed-ff26-02") && (
                   <div className="w-full h-full flex flex-col justify-center" style={{ padding: 20 }}>
@@ -204,6 +204,24 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
                     </div>
                   </div>
                 )}
+                {item.id === "feed-ff-youth-04" && (
+                  <div className="w-full h-full relative bg-white flex items-center" style={{ padding: '0 24px 0 16px' }}>
+                    <svg width="108" height="115" viewBox="0 0 108 115" fill="none" style={{ transform: 'scaleX(-1)' }}>
+                      <path d="M54.9697 9.61279C83.9022 9.61279 107.357 33.0671 107.357 61.9995C107.357 90.9321 83.9023 114.387 54.9697 114.387C26.0373 114.387 2.58301 90.932 2.58301 61.9995C2.58305 55.4151 3.79701 49.1141 6.01465 43.3091L52.2568 60.9634C53.566 61.463 54.9697 60.4965 54.9697 59.0952V11.6128C54.9697 10.6157 54.2397 9.79156 53.2852 9.64014C53.8445 9.62246 54.4061 9.6128 54.9697 9.61279Z" fill="#E9EAEF" />
+                      <path d="M48.3578 49.4462C48.3578 50.8477 46.9538 51.8145 45.6445 51.3147L1.27256 34.3737C0.240495 33.9797 -0.280194 32.8216 0.153425 31.8055C7.89531 13.6645 25.5783 0.781464 46.3578 0.00137677C47.4616 -0.040061 48.3578 0.859329 48.3578 1.9639V49.4462Z" fill="#04BBEE" />
+                    </svg>
+                    <span className="absolute font-semibold" style={{ fontSize: 20, color: '#222428', zIndex: 1, right: 24, top: '50%', transform: 'translateY(-50%)' }}>$ 4.2M</span>
+                  </div>
+                )}
+                {item.id === "feed-ff-07" && (
+                  <div className="w-full h-full relative bg-white flex items-center" style={{ padding: '0 24px 0 16px' }}>
+                    <svg width="108" height="115" viewBox="0 0 108 115" fill="none" style={{ transform: 'scaleX(-1)' }}>
+                      <path d="M54.9697 9.61279C83.9022 9.61279 107.357 33.0671 107.357 61.9995C107.357 90.9321 83.9023 114.387 54.9697 114.387C26.0373 114.387 2.58301 90.932 2.58301 61.9995C2.58305 55.4151 3.79701 49.1141 6.01465 43.3091L52.2568 60.9634C53.566 61.463 54.9697 60.4965 54.9697 59.0952V11.6128C54.9697 10.6157 54.2397 9.79156 53.2852 9.64014C53.8445 9.62246 54.4061 9.6128 54.9697 9.61279Z" fill="#E9EAEF" />
+                      <path d="M48.3578 49.4462C48.3578 50.8477 46.9538 51.8145 45.6445 51.3147L1.27256 34.3737C0.240495 33.9797 -0.280194 32.8216 0.153425 31.8055C7.89531 13.6645 25.5783 0.781464 46.3578 0.00137677C47.4616 -0.040061 48.3578 0.859329 48.3578 1.9639V49.4462Z" fill="#04BBEE" />
+                    </svg>
+                    <span className="absolute font-semibold" style={{ fontSize: 20, color: '#222428', zIndex: 1, right: 24, top: '50%', transform: 'translateY(-50%)' }}>62%</span>
+                  </div>
+                )}
                 {item.id === "feed-ff-youth-03" && (
                   <div className="w-full h-full flex flex-col justify-end" style={{ backgroundColor: '#e4f9ff', padding: 24 }}>
                     <div className="flex items-center justify-center rounded-lg bg-white" style={{ width: 36, height: 36 }}>
@@ -214,10 +232,25 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
                     <p className="mt-2 text-xl font-semibold" style={{ color: '#001d66' }}>Feature Spec</p>
                   </div>
                 )}
+                {item.id === "feed-ff-06" && (
+                  <div className="w-full h-full bg-white flex items-center justify-center">
+                    <div className="flex gap-2">
+                      {["keynote-Carla", "keynote-Lisa", "keynote-Nina", "keynote-Tom"].map((name) => (
+                        <img
+                          key={name}
+                          src={`/avatars/${name}.png`}
+                          alt=""
+                          className="rounded-full object-cover"
+                          style={{ width: 54, height: 54 }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ) : illustrationImage ? (
-            <div className="flex-shrink-0 flex items-center justify-center" style={{ padding: 32 }}>
+            <div className="w-[280px] flex-shrink-0 p-4 pl-2 flex items-center justify-center">
               <div className="overflow-hidden flex-shrink-0" style={{ width: 240, height: 184, borderRadius: 24 }}>
                 <Image src={illustrationImage} alt="" width={480} height={368} className="w-full h-full object-cover" />
               </div>
@@ -228,7 +261,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
             </div>
           ) : hasVisual && item.visualPreview ? (
             <div className="w-[280px] flex-shrink-0 p-4 pl-2 flex items-center">
-              <div className="w-full rounded-xl bg-gray-50 border border-gray-100 overflow-hidden p-4">
+              <div className="w-full overflow-hidden p-4">
                 <GenericVisualPreview type={item.visualPreview.type} data={item.visualPreview.data} />
               </div>
             </div>
@@ -264,28 +297,28 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
       variants={staggerItem}
       className={
         isStack
-          ? "relative overflow-hidden bg-white h-full flex flex-col"
-          : "relative rounded-xl overflow-hidden transition-shadow duration-200 hover:shadow-md border border-gray-200 bg-white"
+          ? "group relative overflow-hidden bg-white h-full flex flex-col"
+          : "group relative rounded-xl overflow-hidden transition-shadow duration-200 hover:shadow-md border border-gray-200 bg-white"
       }
     >
       <div className={isStack ? "relative flex flex-col flex-1" : "relative"}>
         {/* Avatar + timestamp */}
         <div className={`flex items-center justify-between ${px} ${pt} pb-3`}>
           <FeedSourceIndicator source={item.source} />
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 transition-opacity duration-200 ${item.type === "live-session" ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
             {spaceName && (
               <>
-                <span className="text-xs text-gray-400 flex-shrink-0">
+                <span className="flex-shrink-0" style={{ fontSize: 14, color: "#656B81" }}>
                   {spaceName}
                 </span>
-                <span className="text-gray-300">&middot;</span>
+                <span style={{ color: "#656B81" }}>&middot;</span>
               </>
             )}
-            <span className="text-xs text-gray-400 flex-shrink-0">
-              {formatTimeAgo(item.timestamp)}
+            <span className="flex-shrink-0" style={{ fontSize: 14, color: "#656B81" }}>
+              {item.type === "live-session" ? "Now" : formatTimeAgo(item.timestamp)}
             </span>
-            {!item.isRead && (
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+            {item.type === "live-session" && (
+              <div className="rounded-full flex-shrink-0" style={{ width: 8, height: 8, backgroundColor: "#FF0909" }} />
             )}
           </div>
         </div>

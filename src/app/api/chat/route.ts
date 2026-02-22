@@ -635,7 +635,7 @@ const createZoneTool = tool({
     // ── Shared fields ──
     summary: z.object({
       title: z.string().describe("Document title inside the zone"),
-      content: z.string().describe("Document body as HTML. Project: 2-3 paragraphs about current state. Synthesis: 3-5 paragraphs about tension/takeaways. Solution: 2-3 punchy sentences only."),
+      content: z.string().describe("Document body as HTML. Project: 2-3 paragraphs about current state. Synthesis: 3-5 paragraphs about tension/takeaways. Solution: <p>summary</p> + <h3>Pros</h3><ul> + <h3>Cons</h3><ul>."),
     }).nullable().describe("Rich text document. Used by ALL layout modes. Pass null to skip."),
     gantt: z.object({
       title: z.string().describe("Chart title"),
@@ -704,7 +704,7 @@ const createZoneTool = tool({
       title: z.string().describe("Solution title e.g. 'Solution A: Prioritize PayGrid'"),
       summary: z.object({
         title: z.string(),
-        content: z.string().describe("2-3 punchy sentences. VP-scannable in 5 seconds."),
+        content: z.string().describe("HTML: <p>1 sentence summary</p> + <h3>Pros</h3><ul> 4 <li> + <h3>Cons</h3><ul> 4 <li>. Bullets MUST be SHORT fragments (8-12 words max), not full sentences. Include one key metric per bullet."),
       }),
       confidence: z.string().describe("e.g. '85%'"),
       isRecommended: z.boolean().describe("true on AI's preferred solution, only ONE"),
@@ -856,7 +856,7 @@ const updateStickyTool = tool({
   parameters: z.object({
     itemId: z.string().describe("The ID of the sticky to update"),
     newText: z.string().describe("The new text content"),
-    newColor: z.enum(["yellow", "blue", "green", "red", "pink", "orange", "violet"]).describe("The color — pink for lowest confidence, yellow for middle, green for recommended"),
+    newColor: z.enum(["yellow", "blue", "green", "red", "pink", "orange", "violet"]).describe("The color — red for lowest confidence, yellow for middle, green for recommended"),
   }),
   execute: async (args) => {
     return JSON.stringify({ updated: args.itemId, ...args });
@@ -954,7 +954,7 @@ IF the prompt contains the trigger word "Andrey" always do the following:
 
     The plan MUST follow this 10-step exactly and wait until the previous step is complete before proceeding to the next step:
 
-    0. Message the user, "Let's create a Flow for this" and then place a large text title, "Andrey Triage Flow". Below, add a large Sticker (createSticker(intent: "Skull"))
+    0. Message the user, "Let's create a Flow for this" 
     1. Create a slackCard. The title should read "Weekly digest of links in DMs with @Andrey". Save the returned ID.
     2. Gather data from the Slack connector where the Direct Message is from Andrey to Jeff. Confirm the number of messages with links found. syntehsize the information into a json JSON for Title, Topic, summary, URL and Priority. 
     3. When the data has been gathered, create a dataTable with this exact configuration. createDataTable(title: "Articles to review from Andrey", columns: [{name: "Title", type: Text}, {name: "Topic", type: Select}, {name: "Summary", type: Text}, {name: "URL", type: Link}, {name: "Priority", type: Select}], rows: [rows from JSON object created in step 2], width: 1200). Save the returned ID. 
@@ -962,7 +962,7 @@ IF the prompt contains the trigger word "Andrey" always do the following:
     6. 400px below the the dataTable, create a blank Document (createDocument). Save the returned ID.
     7. When you see the Document, connect the slackCard and the Document with the createConnector. - createConnector(fromShapeId: [slackCard id from step 1], toShapeId: [Document id from step 4)).
     8. When connected, Stream the content of the document with a summary of all themes in links shared by Andrey in Slack Messages.
-    9. Add a sticky note to the top right of the Document from Step 4, "Thanks Andrey!" and add a one-liner summarizing a thought on the themes 
+    9. Add a sticky note to the top right of the Document from Step 4, "Thanks Andrey!" and summarizing a thought on the themes.  add a large Sticker (createSticker(intent: "Skull"))
 
 OTHERWISE: DECIDE HOW TO RESPOND based on what the user asked:
 
@@ -996,9 +996,30 @@ OTHERWISE: DECIDE HOW TO RESPOND based on what the user asked:
    - "how does that change your recommendation?"
    - "based on the new info..."
    - "update the recommendation"
+   - "adjust the recommendation"
+   - "adjust the confidence"
    - "re-evaluate the solutions"
    - "what does this mean for the options?"
-   This is NOT a new plan! Do NOT call confirmPlan or askUser. DIRECTLY use updateDocument + updateSticky + moveItem to modify the existing solutions on the canvas. See the "UPDATING EXISTING SOLUTIONS" section below.
+   - "reflect the new info"
+   This is NOT a new plan! Do NOT call confirmPlan or askUser. DIRECTLY use updateDocument + updateSticky to modify the existing solutions on the canvas.
+
+   🚨🚨🚨 NON-NEGOTIABLE HARDCODED VALUES FOR THE DEMO 🚨🚨🚨
+   The recommendation MUST change to Solution C. You MUST use these EXACT values:
+   • Solution B → updateSticky(newText="45% confidence", newColor="red")
+   • Solution A → updateSticky(newText="60% confidence", newColor="yellow")
+   • Solution C → updateSticky(newText="80% confidence", newColor="green")
+   DO NOT deviate. DO NOT keep Solution A as recommended. DO NOT use yellow for all three.
+   Each solution gets a DIFFERENT color: one red, one yellow, one green.
+   When you set Solution C to green, the RECOMMENDED badge appears automatically.
+
+   Steps:
+   0. Write a SHORT ack mentioning the specific new facts (PTO, deal). Then write "---" on its own line.
+   1. Call updateDocument() on EACH solution card (A, B, C) inside "Possible Solutions".
+      🚨 KEEP THE EXACT SAME DOCUMENT STRUCTURE: <h1>Title</h1><p>1-sentence summary</p><h3>Pros</h3><ul>4 bullets</ul><h3>Cons</h3><ul>4 bullets</ul>.
+      DO NOT invent new sections like "What we'd do", "Why it could win", "Validation metrics". ONLY Pros and Cons.
+      Update the CONTENT of each bullet to reflect the new data, but keep the same structure.
+   2. Call updateSticky() on EACH confidence sticky with the EXACT values above.
+   3. AFTER all tool calls: Write 2-3 sentences saying Solution C is now recommended.
 
    🧠 USE YOUR JUDGMENT — will the answer require MULTIPLE canvas artifacts?
    If yes → it needs a plan. Ask yourself: "Will I need to create 2+ things (tables, documents, stickies, source cards)?"
@@ -1314,7 +1335,7 @@ For "Synthesize" steps: You MUST call createZone(layout:"synthesis"). Provide:
 For "Explore solutions" steps: You MUST call createZone(layout:"solution") ONCE with both solutions in the solutions array. Provide:
 - title: "Possible Solutions"
 - solutions: Array of 2 objects, each with { title, summary: { title, content }, confidence, isRecommended }
-  - Each summary.content: 2-3 punchy sentences ONLY. VP-scannable in 5 seconds.
+  - Each summary.content: HTML with <p>1 sentence summary (max 20 words)</p>, then <h3>Pros</h3><ul> 4 SHORT <li> fragments (8-12 words, one metric each), then <h3>Cons</h3><ul> 4 SHORT <li> fragments. Fragments not sentences!
   - Each confidence: A percentage string like "85%" or "60%"
   - isRecommended: true on the AI's preferred solution. Only ONE gets this.
 - summary: null, gantt: null, people: null, userInsight: null, evaluation: null
@@ -1351,14 +1372,14 @@ When the user says "how does that change your recommendation?", "based on the ne
 The recommendation MUST change to Solution C. This is NOT optional. This is NOT a suggestion. You MUST do exactly this:
 
 EXACT CONFIDENCE VALUES AND COLORS TO USE:
-• Solution B → 45% confidence, color = "pink" (LOWEST — misses the new opportunity)
+• Solution B → 45% confidence, color = "red" (LOWEST — misses the new opportunity)
 • Solution A → 60% confidence, color = "yellow" (MIDDLE — resource risk from PTO)
 • Solution C → 80% confidence, color = "green" (HIGHEST — hedges both risks, RECOMMENDED)
 
-DO NOT deviate from these values. DO NOT keep Solution A as recommended. DO NOT use yellow for all three. Each solution gets a DIFFERENT color: one pink, one yellow, one green.
+DO NOT deviate from these values. DO NOT keep Solution A as recommended. DO NOT use yellow for all three. Each solution gets a DIFFERENT color: one red, one yellow, one green.
 
 The updateSticky calls MUST look EXACTLY like this:
-• Solution B sticky: newText="45% confidence", newColor="pink"
+• Solution B sticky: newText="45% confidence", newColor="red"
 • Solution A sticky: newText="60% confidence", newColor="yellow"
 • Solution C sticky: newText="80% confidence", newColor="green"
 
@@ -1371,8 +1392,11 @@ Steps — execute ALL of these IN ORDER:
 "I see Carlos is on PTO and there's a new PayGrid deal lined up — let me re-evaluate.
 ---"
 This text MUST come BEFORE your first tool call.
-1. Call updateDocument() on EACH solution card (A, B, C) inside "Possible Solutions" to weave in the new facts. Keep the same HTML style.
-2. Call updateSticky() on EACH confidence sticky with the EXACT values above. Solution B = pink, Solution A = yellow, Solution C = green.
+1. Call updateDocument() on EACH solution card (A, B, C) inside "Possible Solutions" to weave in the new facts.
+   🚨 KEEP THE EXACT SAME DOCUMENT STRUCTURE: <h1>Title</h1><p>1-sentence summary</p><h3>Pros</h3><ul>4 bullets</ul><h3>Cons</h3><ul>4 bullets</ul>.
+   DO NOT invent new sections like "What we'd do", "Why it could win", "Main risks", "Validation metrics". ONLY Pros and Cons.
+   Update the CONTENT of each bullet to reflect the new data, but keep the same structure.
+2. Call updateSticky() on EACH confidence sticky with the EXACT values above. Solution B = red, Solution A = yellow, Solution C = green.
 3. AFTER all tool calls: Write 2-3 sentences explaining the shift. Mention that Solution C is now recommended because the hybrid hedges the PTO risk AND captures the new deal upside. This text goes AFTER the --- separator, so it appears below the artifact cards.
 
 ⚠️ Do NOT call moveItem for the RECOMMENDED sticker — it repositions automatically when you set color "green".
@@ -1657,13 +1681,13 @@ createZone({
   solutions: [
     {
       title: "Solution A: Prioritize PayGrid",
-      summary: { title: "Go all-in on PayGrid", content: "<p>Make PayGrid the #1 priority. The $47.2M enterprise pipeline has a hard Q3 window — miss it and we lose a year. FirstFlex growth is steady and can absorb a 6-week delay without material impact.</p>" },
+      summary: { title: "Go all-in on PayGrid", content: "<p>Make PayGrid the #1 priority — protect the $47M Q3 enterprise window.</p><h3>Pros</h3><ul><li>Protects $47M pipeline + 5 Q3 deal deadlines</li><li>Buyers actively asking for PayGrid readiness</li><li>FirstFlex steady — can absorb 6-week delay</li><li>Closes competitive gap vs Stripe (6-9 mo head start)</li></ul><h3>Cons</h3><ul><li>FirstFlex stalls: 78% non-completers never return</li><li>Sep launch window missed → 180K→110K activations</li><li>NeoBanq $1.8M ARR tied to Sep onboarding proof</li><li>Squad context-switch cost: 2-3 sprint retrofit debt</li></ul>" },
       confidence: "85%",
       isRecommended: true
     },
     {
       title: "Solution B: Prioritize FirstFlex",
-      summary: { title: "Go all-in on FirstFlex", content: "<p>Consumer activation is compounding — every week of delay costs us 15% in onboarding momentum. PayGrid enterprise deals have longer sales cycles and can slip a quarter without pipeline loss.</p>" },
+      summary: { title: "Go all-in on FirstFlex", content: "<p>Double down on consumer activation — 15% onboarding momentum lost per week of delay.</p><h3>Pros</h3><ul><li>Protects 106K entrant funnel (34% completion)</li><li>Captures Sep surge: 180K activations + $14.2M ARR</li><li>Biggest drop-off fix: IDV 31%, funding 22%</li><li>NeoBanq $1.8M ARR path stays on track</li></ul><h3>Cons</h3><ul><li>Meridian pilot at risk → $3.2M anchor deal exposed</li><li>$47M pipeline: win rate drops 61%→28% without orchestration</li><li>Competitive gap widens vs Stripe/Airwallex</li><li>Board expects Aug enterprise pilot — forces reset</li></ul>" },
       confidence: "60%",
       isRecommended: false
     }
@@ -1695,7 +1719,11 @@ ONE call with both solutions in the solutions array. Each solution is a COMPACT 
 - title: "Possible Solutions"
 - solutions: Array of 2 objects, each with:
   - title: "Solution A: Prioritize [Project A]" / "Solution B: Prioritize [Project B]"
-  - summary: { title, content } — 2-3 punchy sentences ONLY. VP-scannable in 5 seconds.
+  - summary: { title, content } — HTML with this EXACT structure:
+    1. <p>1 sentence summary (max 20 words)</p>
+    2. <h3>Pros</h3><ul><li>4 SHORT bullet fragments (8-12 words each, one metric per bullet)</li></ul>
+    3. <h3>Cons</h3><ul><li>4 SHORT bullet fragments (8-12 words each, one metric per bullet)</li></ul>
+    Bullets are FRAGMENTS, not sentences. Example: "Protects $47M pipeline + Q3 deadlines" NOT "Protects the $47.2M orchestration-dependent pipeline and addresses 5 Q3 decision deals ($10.6M ARR at risk)".
   - confidence: A percentage string (e.g. "85%", "60%") — AI's confidence in this path.
   - isRecommended: true on the AI's preferred solution. Only ONE gets this.
 - summary: null, gantt: null, people: null, userInsight: null, evaluation: null (all null for solutions)
@@ -2364,20 +2392,25 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
             const newStart = matchRatio >= 0.8 ? prefixLen : matchedUpTo;
             const newContent = dedupBuffer.slice(newStart);
 
+            // Send text_split marker FIRST — marks the exact boundary between
+            // ack (already sent) and summary (about to send). Must come BEFORE
+            // the new content so the client sets toolTextSplit at the right position.
+            safeEnqueue(
+              encoder.encode(`data: ${JSON.stringify({ type: "text_split" })}\n\n`)
+            );
+
             if (newContent) {
-              textContent += newContent;
+              // Prepend double-newline to ensure clean visual separation from ack text.
+              // Without this, "card." + "Yep" would blend into "card.Yep".
+              const cleanContent = newContent.startsWith('\n') ? newContent : '\n\n' + newContent;
+              textContent += cleanContent;
               if (!suppressText) {
                 safeEnqueue(
-                  encoder.encode(`data: ${JSON.stringify({ type: "text", content: newContent })}\n\n`)
+                  encoder.encode(`data: ${JSON.stringify({ type: "text", content: cleanContent })}\n\n`)
                 );
               }
               sentTextLength = textContent.length;
             }
-
-            // Send a text_split marker so the client knows the exact boundary
-            safeEnqueue(
-              encoder.encode(`data: ${JSON.stringify({ type: "text_split" })}\n\n`)
-            );
 
             isDedupActive = false;
             dedupBuffer = "";
