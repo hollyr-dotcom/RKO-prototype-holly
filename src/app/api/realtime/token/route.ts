@@ -151,6 +151,19 @@ FLOW:
 4. FEEDBACK: "Sure thing!" → call tool → brief confirmation.
 5. GOODBYE: "Catch you later!" — keep it warm and brief.
 
+FLOW TRIGGERS:
+IF the user mentions "Andrey" (e.g. "Help me organize the links Andrey sends me in Slack"), always execute this flow sequentially. Wait for each step to complete before proceeding to the next:
+
+0. Say "Let's create a Flow for this!" then create a large text title "Andrey Triage Flow". Below it, add a large Sticker with createSticker(intent: "Skull").
+1. Create a slackCard. Title: "Weekly digest of links in DMs with @Andrey". Note the returned ID from the canvas state.
+2. Call queryConnectors for slack data — DMs from Andrey to Jeff that contain links. Count the messages with links found.
+3. Synthesize the data into rows with columns: Title, Topic, Summary, URL, Priority. Then call createDataTable(title: "Articles to review from Andrey", columns: [{name:"Title",type:"text"},{name:"Topic",type:"select"},{name:"Summary",type:"text"},{name:"URL",type:"link"},{name:"Priority",type:"select"}], rows: [the rows you built], width: 1200). Note the returned ID.
+4. Connect the slackCard and DataTable: createConnector(fromShapeId: [slackCard ID from step 1], toShapeId: [DataTable ID from step 3]).
+5. Create a blank Document below the DataTable: createDocument(title: "Theme Summary", content: ""). Note the returned ID.
+6. Connect the slackCard and Document: createConnector(fromShapeId: [slackCard ID], toShapeId: [Document ID from step 5]).
+7. Now create the document again with full content — a summary of all themes found in the links Andrey shared.
+8. Add a sticky note with createSticky(text: "Thanks Andrey! [one-liner about the themes]", color: "yellow").
+
 ANTI-PATTERNS (never do these):
 - Describing every detail of what you put on the canvas — let them look at it
 - Reading lists out loud — "first X, second Y, third Z..."
@@ -384,6 +397,112 @@ The canvas speaks for itself. Point to it, don't describe it.`,
                   layout: { type: "string", enum: ["row", "column", "grid"], description: "How to arrange: row (side by side), column (top to bottom), grid" }
                 },
                 required: ["frameName", "itemIds", "layout"]
+              }
+            },
+            {
+              type: "function",
+              name: "createSlackCard",
+              description: "Create a Slack card on the canvas. Use for Slack messages, thread summaries, or Slack-sourced content. Shows as a compact card with the Slack logo. Returns an ID you can use with createConnector.",
+              parameters: {
+                type: "object",
+                properties: {
+                  title: { type: "string", description: "Card title — the Slack message or thread summary" }
+                },
+                required: ["title"]
+              }
+            },
+            {
+              type: "function",
+              name: "createSticker",
+              description: "Place a Miro sticker on the canvas. Describe what you want (e.g. 'thumbs up', 'heart', 'skull', 'celebrate') and the best matching sticker will be found.",
+              parameters: {
+                type: "object",
+                properties: {
+                  intent: { type: "string", description: "What the sticker should express (e.g. 'thumbs up', 'skull', 'heart', 'celebrate')" }
+                },
+                required: ["intent"]
+              }
+            },
+            {
+              type: "function",
+              name: "createConnector",
+              description: "Create a styled connector line between two shapes. Connectors are violet curved arcs showing relationships between elements. Both shapes must already exist — get IDs from canvas state updates after tool calls.",
+              parameters: {
+                type: "object",
+                properties: {
+                  fromShapeId: { type: "string", description: "ID of the source shape (from canvas state, e.g. 'shape:abc123')" },
+                  toShapeId: { type: "string", description: "ID of the target shape (from canvas state)" }
+                },
+                required: ["fromShapeId", "toShapeId"]
+              }
+            },
+            {
+              type: "function",
+              name: "createDataTable",
+              description: "Create an interactive data table on the canvas. Use for structured data: comparisons, feature matrices, timelines. ALWAYS fill ALL cells with meaningful data. Returns an ID you can use with createConnector.",
+              parameters: {
+                type: "object",
+                properties: {
+                  title: { type: "string", description: "Table title" },
+                  columns: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string", description: "Column header name" },
+                        type: { type: "string", enum: ["text", "number", "select", "date", "link"], description: "Column type" }
+                      },
+                      required: ["name", "type"]
+                    },
+                    description: "Column definitions"
+                  },
+                  rows: {
+                    type: "array",
+                    items: { type: "array", items: { type: "string" } },
+                    description: "Row data — each inner array must match column count"
+                  },
+                  width: { type: "number", description: "Width in pixels (e.g. 1200)" }
+                },
+                required: ["title", "columns", "rows"]
+              }
+            },
+            {
+              type: "function",
+              name: "createDocument",
+              description: "Create a rich text document on the canvas. Use for written content: briefs, specs, summaries. Content is HTML with <h2>, <p>, <ul>/<li>, <strong>, <em> tags. Returns an ID you can use with createConnector.",
+              parameters: {
+                type: "object",
+                properties: {
+                  title: { type: "string", description: "Document title" },
+                  content: { type: "string", description: "Document body as HTML" }
+                },
+                required: ["title", "content"]
+              }
+            },
+            {
+              type: "function",
+              name: "queryConnectors",
+              description: "Query internal workplace tool connectors for real company data. Available services: jira, github, linear, looker, amplitude, productboard, salesforce, gainsight, gong, miro-insights, stripe-benchmarks, google-docs, confluence, notion, slack, figma, google-calendar, datadog, google-sheets, workday. Be selective — only query services relevant to the question.",
+              parameters: {
+                type: "object",
+                properties: {
+                  services: { type: "array", items: { type: "string" }, description: "Which services to query, e.g. ['slack', 'jira']" },
+                  purpose: { type: "string", description: "What you're trying to find out" }
+                },
+                required: ["services", "purpose"]
+              }
+            },
+            {
+              type: "function",
+              name: "createSticky",
+              description: "Create a single post-it note on the canvas. Use for adding ONE sticky note. For multiple stickies use createLayout instead.",
+              parameters: {
+                type: "object",
+                properties: {
+                  text: { type: "string", description: "Sticky note text" },
+                  color: { type: "string", enum: ["yellow", "blue", "green", "pink", "orange", "violet"], description: "Sticky color" }
+                },
+                required: ["text", "color"]
               }
             }
           ]
