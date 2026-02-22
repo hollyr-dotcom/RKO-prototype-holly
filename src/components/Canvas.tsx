@@ -1,6 +1,6 @@
 "use client";
 
-import { Tldraw, Editor, createShapeId, toRichText, renderHtmlFromRichTextForMeasurement, TLShapeId, DefaultFontStyle, DefaultSizeStyle, DefaultDashStyle, DefaultFillStyle, TLGridProps, DefaultColorStyle, DefaultColorThemePalette } from "tldraw";
+import { Tldraw, Editor, createShapeId, toRichText, renderHtmlFromRichTextForMeasurement, TLShapeId, DefaultFontStyle, DefaultSizeStyle, DefaultDashStyle, DefaultFillStyle, TLGridProps, DefaultColorStyle, DefaultColorThemePalette, TLCursorProps, useTransform } from "tldraw";
 import "tldraw/tldraw.css";
 
 // ── Override tldraw sticky colors with Miro DS canvas sticky tokens ──
@@ -19,13 +19,13 @@ light["light-red"].noteFill   = "#81E7DE"; light["light-red"].noteText   = "#0E4
 light.grey.noteFill      = "#CFCFCF"; light.grey.noteText      = "#333333";   // coal-400 / coal-900
 light.black.noteFill     = "#151515"; light.black.noteText     = "#FFFFFF";   // black / white
 light.white.noteFill     = "#FFFFFF"; light.white.noteText     = "#34363E";   // white / gray-800
-import { useState, useCallback, useRef, useMemo, useEffect } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect, memo } from "react";
 import { Message } from "@/hooks/useAgent";
 import { useChat } from "@/hooks/useChat";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useRealtimeVoice } from "@/hooks/useRealtimeVoice";
 import { useStorageStore } from "@/hooks/useStorageStore";
-import { generateId, getSessionUser, getLocalDevUser } from "@/lib/userIdentity";
+import { generateId, getSessionUser, getLocalDevUser, getCursorColorByFill } from "@/lib/userIdentity";
 import { useAuth } from "@/hooks/useAuth";
 import { DocumentShapeUtil } from "@/shapes/DocumentShapeUtil";
 import { DataTableShapeUtil } from "@/shapes/DataTableShapeUtil";
@@ -467,12 +467,7 @@ function FloatingProgressIndicator({
           className="bg-blue-600 text-white shadow-lg overflow-hidden w-[420px] hover:bg-blue-700 transition-colors cursor-pointer"
           style={{ borderRadius: 24 }}
         >
-          {/* Progress bar at top */}
-          <div className="h-1 w-full bg-blue-800">
-            <div className="h-full bg-blue-300 transition-all duration-300" style={{ width: `${progress}%` }} />
-          </div>
-
-          <div className="flex items-center gap-2 px-4" style={{ paddingTop: '12px', paddingBottom: '16px' }}>
+          <div className="flex items-center gap-2 px-4 py-3.5">
             {/* Progress circle */}
             <div className="relative w-8 h-8 flex-shrink-0">
               <svg className="w-8 h-8 -rotate-90">
@@ -529,15 +524,7 @@ function FloatingProgressIndicator({
         className="flex flex-col bg-gray-100 text-gray-900 shadow-md hover:bg-gray-200 transition-colors overflow-hidden w-[420px]"
         style={{ borderRadius: 24 }}
       >
-        {/* Progress bar at top */}
-        <div className="h-1 w-full bg-gray-200">
-          <div
-            className={`h-full transition-all duration-300 ${isComplete ? 'bg-green-500' : 'bg-blue-500'}`}
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        <div className="flex items-center gap-3 px-4 py-3 pb-3.5">
+        <div className="flex items-center gap-3 px-4 py-3.5">
           {/* Progress circle with spinner */}
           <div className="relative w-8 h-8 flex-shrink-0">
             <svg className={`w-8 h-8 ${isLoading ? 'animate-spin' : '-rotate-90'}`}>
@@ -650,6 +637,74 @@ function noteRotation(): number {
   return (Math.random() * 6 - 3) * (Math.PI / 180);
 }
 
+/**
+ * Ensure the RECOMMENDED sticker sits on the green sticky in the solutions frame.
+ * Debounced — multiple rapid calls (e.g. 3 updateSticky calls) coalesce into one.
+ * Only the final execution matters, after all stickies have their final colors.
+ */
+let _stickerTimer: ReturnType<typeof setTimeout> | null = null;
+
+function ensureRecommendedSticker(editor: Editor) {
+  if (_stickerTimer) clearTimeout(_stickerTimer);
+  _stickerTimer = setTimeout(() => {
+    _stickerTimer = null;
+    _placeRecommendedSticker(editor);
+  }, 300);
+}
+
+function _placeRecommendedSticker(editor: Editor) {
+  const allShapes = editor.getCurrentPageShapes();
+
+  // Find the solutions frame
+  const frame = allShapes.find(s => {
+    if (s.type !== "frame") return false;
+    const name = ((s.props as any).name || "").toLowerCase();
+    return name.includes("solution") || name.includes("possible");
+  }) || allShapes.find(s => {
+    if (s.type !== "frame") return false;
+    const children = allShapes.filter(c => c.parentId === s.id && c.type === "document");
+    return children.length >= 2;
+  });
+  if (!frame) return;
+
+  // Find the green note (= recommended) inside the frame
+  const frameChildren = allShapes.filter(s => s.parentId === frame.id);
+  const greenNote = frameChildren.find(
+    s => s.type === "note" && (s.props as any).color === "green"
+  );
+
+  // Delete ALL existing recommended sticker images (anywhere on canvas)
+  allShapes.forEach(s => {
+    if (s.type === "image") {
+      const aid = (s.props as any).assetId || "";
+      if (aid.includes("sticker-recommended")) {
+        editor.deleteShape(s.id);
+      }
+    }
+  });
+
+  // If no green note, nothing to attach to
+  if (!greenNote) return;
+
+  // Place sticker as a frame child, overlapping the green note's bottom-right
+  const CONF_STICKY = 200;
+  const dW = 140, dH = 140;
+  const stickerAssetId = `asset:sticker-recommended-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
+  editor.createAssets([{
+    id: stickerAssetId, type: "image", typeName: "asset",
+    props: { name: "recommended", src: "https://mirostatic.com/stickers/general-task-tacklers__2/task_tacklers_recommended.svg", w: 200, h: 200, mimeType: "image/svg+xml", isAnimated: false },
+    meta: {},
+  }]);
+  editor.createShape({
+    id: createShapeId(), type: "image",
+    x: greenNote.x + CONF_STICKY - dW + 20,
+    y: greenNote.y + CONF_STICKY - 50,
+    parentId: frame.id,
+    props: { assetId: stickerAssetId, w: dW, h: dH },
+    meta: { createdBy: "ai" },
+  });
+}
+
 // Uses the exact same styles as the document component (74px padding, 13px font, 1.6 line-height).
 // This is synchronous and pixel-accurate — no estimation.
 function measureDocumentHeight(html: string, shapeWidth: number = 780, minHeight: number = 200): number {
@@ -714,7 +769,45 @@ function CustomBackground() {
   return <div style={{ position: 'absolute', inset: 0, backgroundColor: '#f8f8f8' }} />;
 }
 
-const tldrawComponents = { Grid: CustomGrid, Background: CustomBackground };
+// Custom Miro-style cursor with fill + stroke matching DS palette
+const CustomCursor = memo(function CustomCursor({ className, zoom, point, color, name, chatMessage }: TLCursorProps) {
+  const rCursor = useRef<HTMLDivElement>(null);
+  useTransform(rCursor, point?.x, point?.y, 1 / zoom);
+
+  if (!point) return null;
+
+  const cursorColor = getCursorColorByFill(color || "");
+  const fill = cursorColor?.fill || color || "#DAD8D8";
+  const stroke = cursorColor?.stroke || "#888888";
+
+  return (
+    <div ref={rCursor} className={["tl-overlays__item", className].filter(Boolean).join(" ")}>
+      <svg className="tl-cursor" width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ overflow: "visible", marginLeft: -2 }}>
+        <path
+          d="M22.001 8.936v2.045l-.003.019C15.977 11 11 15.977 11 21.998l-.012.002H8.935L2 3.178V3l1-1h.179L22 8.936Z"
+          fill={fill}
+        />
+        <path
+          d="M22.001 8.936v2.045l-.003.019C15.977 11 11 15.977 11 21.998l-.012.002H8.935L2 3.178V3l1-1h.179L22 8.936Z"
+          fill="none"
+          stroke={stroke}
+          strokeWidth={1}
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      {chatMessage ? (
+        <>
+          {name && <div className="tl-nametag-title" style={{ color }}>{name}</div>}
+          <div className="tl-nametag-chat" style={{ backgroundColor: color }}>{chatMessage}</div>
+        </>
+      ) : (
+        name && <div className="tl-nametag" style={{ backgroundColor: color }}>{name}</div>
+      )}
+    </div>
+  );
+});
+
+const tldrawComponents = { Grid: CustomGrid, Background: CustomBackground, Cursor: CustomCursor, CollaboratorCursor: CustomCursor };
 
 export function Canvas() {
   // Get authenticated user
@@ -1971,28 +2064,9 @@ export function Canvas() {
                 });
                 maxChildBottom = Math.max(maxChildBottom, newY + stickyW);
 
-                // Also reposition RECOMMENDED sticker if this is a green sticky
-                const stickyColor = (sticky.props as any).color;
-                if (stickyColor === "green") {
-                  const allShapes = editor.getCurrentPageShapes();
-                  const images = allShapes.filter(s => s.type === "image");
-                  const recSticker = images.find(img => {
-                    const assetId = (img.props as any).assetId || "";
-                    return assetId.includes("sticker-recommended");
-                  });
-                  if (recSticker) {
-                    const frame = editor.getShape(freshDoc.parentId as any);
-                    const frameX = frame?.x || 0;
-                    const frameY = frame?.y || 0;
-                    const dW = (recSticker.props as any).w || 140;
-                    editor.updateShape({
-                      id: recSticker.id,
-                      type: "image",
-                      x: frameX + newX + stickyW - dW + 20,
-                      y: frameY + newY + stickyW - 50,
-                    });
-                    maxChildBottom = Math.max(maxChildBottom, newY + stickyW);
-                  }
+                // Reposition RECOMMENDED sticker if needed (debounced helper)
+                if ((sticky.props as any).color === "green") {
+                  ensureRecommendedSticker(editor);
                 }
               }
             }
@@ -2455,7 +2529,7 @@ export function Canvas() {
         if (layout === "synthesis") {
           const FW = 750;
           const PAD = 72;
-          const TITLE_H = 160;
+          const TITLE_H = 120;
           const contentWidth = FW - PAD * 2;
 
           // Pre-calculate total height
@@ -2470,14 +2544,15 @@ export function Canvas() {
           editor.createShape({
             id: frameId, type: "frame",
             x: framePos.x, y: framePos.y,
-            props: { name: "", w: FW, h: frameHeight },
+            props: { name: title || "Synthesis", w: FW, h: frameHeight },
             meta: { createdBy: "ai" },
           });
           engine.recordPlacement(frameId as unknown as string, { category: "format", width: FW, height: frameHeight }, framePos);
 
           let cy = PAD;
 
-          // Title text
+          // Title text (nudged down for breathing room below frame header)
+          cy += 24;
           editor.createShape({
             id: createShapeId(), type: "text",
             x: PAD, y: cy, parentId: frameId,
@@ -2506,11 +2581,25 @@ export function Canvas() {
           const PAD = 72;
           const CARD_GAP = 48;
           const CARD_W = Math.floor((FW - PAD * 2 - CARD_GAP) / 2); // ~504px each
-          const TITLE_H = 160;
+          const TITLE_H = 120;
           const CONF_STICKY = 200;       // "s" note size
           const CONF_OVERLAP = 60;       // how far the sticky overlaps the doc bottom
 
           const solArr = (solutions || []).filter(sol => sol && sol.summary);
+
+          // Auto-detect recommended: if AI didn't set isRecommended on any,
+          // pick the one with the highest confidence percentage
+          const hasExplicitRec = solArr.some(s => s.isRecommended);
+          if (!hasExplicitRec && solArr.length > 0) {
+            const parseConf = (s: string) => parseFloat((s || "0").replace(/[^0-9.]/g, "")) || 0;
+            let bestIdx = 0;
+            let bestConf = 0;
+            solArr.forEach((s, i) => {
+              const c = parseConf(s.confidence || "0");
+              if (c > bestConf) { bestConf = c; bestIdx = i; }
+            });
+            solArr[bestIdx].isRecommended = true;
+          }
 
           // Pre-calculate card heights from data
           // Doc gets an h1 with the solution title prepended, so measure with that
@@ -2521,7 +2610,8 @@ export function Canvas() {
             return docH + (CONF_STICKY - CONF_OVERLAP) + 24;
           });
           const maxCardH = cardHeights.length > 0 ? Math.max(...cardHeights) : 400;
-          const totalH = PAD + TITLE_H + maxCardH + PAD;
+          const STICKER_OVERHANG = 80; // RECOMMENDED sticker hangs below the confidence sticky
+          const totalH = PAD + TITLE_H + maxCardH + STICKER_OVERHANG + PAD;
 
           // Create frame at full calculated size
           const engine = getPlacementEngine();
@@ -2530,15 +2620,15 @@ export function Canvas() {
           editor.createShape({
             id: frameId, type: "frame",
             x: framePos.x, y: framePos.y,
-            props: { name: "", w: FW, h: totalH },
+            props: { name: title || "Possible Solutions", w: FW, h: totalH },
             meta: { createdBy: "ai" },
           });
           engine.recordPlacement(frameId as unknown as string, { category: "format", width: FW, height: totalH }, framePos);
 
-          // Frame title
+          // Frame title (nudged down for breathing room below frame header)
           editor.createShape({
             id: createShapeId(), type: "text",
-            x: PAD, y: PAD, parentId: frameId,
+            x: PAD, y: PAD + 24, parentId: frameId,
             props: { richText: toRichText(title || "Possible Solutions"), size: "xl", font: "sans", color: "black" },
             meta: { createdBy: "ai" },
           });
@@ -2562,6 +2652,21 @@ export function Canvas() {
             });
 
             // Confidence sticky — overlaps bottom of doc, centered horizontally on the card
+            // Color by ranking: highest=green, lowest=red, middle=yellow
+            const parseConf2 = (s: string) => parseFloat((s || "0").replace(/[^0-9.]/g, "")) || 0;
+            const confValues = solArr.map(s => parseConf2(s.confidence || "0"));
+            const maxConf = Math.max(...confValues);
+            const minConf = Math.min(...confValues);
+            const thisConf = parseConf2(sol.confidence || "0");
+            let confColor: string;
+            if (sol.isRecommended || (thisConf === maxConf && solArr.length > 1)) {
+              confColor = colorMap["green"] || "green";
+            } else if (thisConf === minConf && solArr.length > 2 && minConf !== maxConf) {
+              confColor = colorMap["red"] || "red";
+            } else {
+              confColor = colorMap["yellow"] || "yellow";
+            }
+
             const confText = `${sol.confidence || "?"} confidence`;
             const confX = cardX + Math.floor((CARD_W - CONF_STICKY) / 2); // center on card
             const confY = cy + docH - CONF_OVERLAP; // overlap bottom of doc
@@ -2571,7 +2676,7 @@ export function Canvas() {
               x: confX, y: confY, rotation: noteRotation(), parentId: frameId,
               props: {
                 richText: toRichText(confText),
-                color: sol.isRecommended ? (colorMap["green"] || "green") : (colorMap["yellow"] || "yellow"),
+                color: confColor,
                 font: "sans", size: "s", fontSizeAdjustment: 14,
               } as any,
               meta: { createdBy: "ai" },
@@ -2583,25 +2688,8 @@ export function Canvas() {
             }
           }
 
-          // Recommended sticker — on the green confidence sticky, bottom-right
-          const recSol = solArr.find(s => s.isRecommended);
-          if (recSol) {
-            const stickerUrl = "https://mirostatic.com/stickers/general-task-tacklers__2/task_tacklers_recommended.svg";
-            const dW = 140, dH = 140;
-            const assetId = `asset:sticker-recommended-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
-            editor.createAssets([{
-              id: assetId, type: "image", typeName: "asset",
-              props: { name: "recommended", src: stickerUrl, w: 200, h: 200, mimeType: "image/svg+xml", isAnimated: false },
-              meta: {},
-            }]);
-            editor.createShape({
-              id: createShapeId(), type: "image",
-              x: framePos.x + recStickyX + CONF_STICKY - dW + 20,
-              y: framePos.y + recStickyY + CONF_STICKY - 50,
-              props: { assetId, w: dW, h: dH },
-              meta: { createdBy: "ai" },
-            });
-          }
+          // Recommended sticker — single helper places it on the green sticky
+          ensureRecommendedSticker(editor);
 
           shapeId = frameId;
 
@@ -2618,7 +2706,7 @@ export function Canvas() {
           const CARD_GAP = 14;
           const METRIC_GAP = 16;
           const METRIC_W = 200;                // matches "s" note width
-          const TITLE_H = 160;                 // zone title text height + big gap below
+          const TITLE_H = 120;                 // zone title text height + big gap below
           const CX = PAD + 200 + HGAP;        // content start X
           const CW = FW - CX - PAD;           // content width
 
@@ -2696,7 +2784,8 @@ export function Canvas() {
           // ── Place everything synchronously ──
           let cy = PAD;
 
-          // Zone title text
+          // Zone title text (nudged down for breathing room below frame header)
+          cy += 24;
           editor.createShape({
             id: createShapeId(), type: "text",
             x: PAD, y: cy, parentId: frameId,
@@ -2833,7 +2922,7 @@ export function Canvas() {
           // Layout constants (must match solution layout)
           const PAD = 72;
           const CARD_GAP = 48;
-          const TITLE_H = 160;
+          const TITLE_H = 120;
           const CONF_STICKY = 200;
           const CONF_OVERLAP = 60;
 
@@ -2862,74 +2951,64 @@ export function Canvas() {
             meta: { createdBy: "ai", initialContent: docContent },
           });
 
-          // Confidence sticky
+          // Confidence sticky — color determined after ranking all solutions
           let newConfX = 0;
           let newConfY = 0;
           if (confidence) {
             const confText = `${confidence} confidence`;
             newConfX = cardX + Math.floor((CARD_W - CONF_STICKY) / 2);
             newConfY = cy + docH - CONF_OVERLAP;
+
+            // Gather all confidence values (existing stickies + this new one) for ranking
+            const freshChildren = editor.getCurrentPageShapes().filter(s => s.parentId === frameId);
+            const existingNotes = freshChildren.filter(s => s.type === "note");
+            const parseConf = (s: string) => parseFloat((s || "0").replace(/[^0-9.]/g, "")) || 0;
+            const newConfVal = parseConf(confidence);
+            const allConfs: { id: string | null; val: number }[] = existingNotes.map(n => {
+              const text = (n.props as any).richText?.content?.[0]?.content?.[0]?.text
+                || (n.props as any).text || "";
+              return { id: n.id as string, val: parseConf(text) };
+            });
+            allConfs.push({ id: null, val: newConfVal }); // null = the new card
+
+            const maxVal = Math.max(...allConfs.map(c => c.val));
+            const minVal = Math.min(...allConfs.map(c => c.val));
+            const getColor = (val: number) => {
+              if (val === maxVal) return colorMap["green"] || "green";
+              if (val === minVal && allConfs.length > 2 && minVal !== maxVal) return colorMap["red"] || "red";
+              return colorMap["yellow"] || "yellow";
+            };
+
+            // Create the new sticky with ranked color
             editor.createShape({
               id: createShapeId(), type: "note",
               x: newConfX, y: newConfY, rotation: noteRotation(), parentId: frameId,
               props: {
                 richText: toRichText(confText),
-                color: solRecommended ? (colorMap["green"] || "green") : (colorMap["yellow"] || "yellow"),
+                color: getColor(newConfVal),
                 font: "sans", size: "s", fontSizeAdjustment: 14,
               } as any,
               meta: { createdBy: "ai" },
             });
-          }
 
-          // If this is the new recommended solution, move the RECOMMENDED sticker
-          if (solRecommended) {
-            // Find and remove old recommended sticker image(s) inside the solutions frame
-            const frameChildren = allShapes.filter(s => s.parentId === frameId);
-            frameChildren.forEach(child => {
-              if (child.type === "image") {
-                const assetId = (child.props as any).assetId as string | undefined;
-                if (assetId && assetId.includes("recommended")) {
-                  editor.deleteShape(child.id);
-                }
+            // Re-rank existing stickies' colors
+            existingNotes.forEach(n => {
+              const text = (n.props as any).richText?.content?.[0]?.content?.[0]?.text
+                || (n.props as any).text || "";
+              const val = parseConf(text);
+              if (val > 0) {
+                editor.updateShape({ id: n.id, type: "note", props: { color: getColor(val) } });
               }
             });
 
-            // Also change old green confidence stickies to yellow (de-recommend)
-            frameChildren.forEach(child => {
-              if (child.type === "note") {
-                const noteColor = (child.props as any).color;
-                if (noteColor === (colorMap["green"] || "green")) {
-                  editor.updateShape({
-                    id: child.id, type: "note",
-                    props: { color: colorMap["yellow"] || "yellow" },
-                  });
-                }
-              }
-            });
-
-            // Place RECOMMENDED sticker on the new card's confidence sticky
-            if (confidence) {
-              const stickerUrl = "https://mirostatic.com/stickers/general-task-tacklers__2/task_tacklers_recommended.svg";
-              const dW = 140, dH = 140;
-              const assetId = `asset:sticker-recommended-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
-              editor.createAssets([{
-                id: assetId, type: "image", typeName: "asset",
-                props: { name: "recommended", src: stickerUrl, w: 200, h: 200, mimeType: "image/svg+xml", isAnimated: false },
-                meta: {},
-              }]);
-              editor.createShape({
-                id: createShapeId(), type: "image",
-                x: solutionsFrame.x + newConfX + CONF_STICKY - dW + 20,
-                y: solutionsFrame.y + newConfY + CONF_STICKY - 50,
-                props: { assetId, w: dW, h: dH },
-                meta: { createdBy: "ai" },
-              });
-            }
+            // Recommended sticker — single helper places it on the green sticky
+            ensureRecommendedSticker(editor);
           }
 
-          // Extend frame height if needed
+          // Extend frame height if needed (include sticker overhang)
+          const STICKER_OVERHANG = 80;
           const cardH = docH + (CONF_STICKY - CONF_OVERLAP) + 24;
-          const neededH = PAD + TITLE_H + cardH + PAD;
+          const neededH = PAD + TITLE_H + cardH + STICKER_OVERHANG + PAD;
           if (neededH > frameH) {
             editor.updateShape({
               id: frameId, type: "frame",
@@ -2993,7 +3072,7 @@ export function Canvas() {
           type: "frame",
           x: framePos.x,
           y: framePos.y,
-          props: { name: "", w: frameW, h: frameH },
+          props: { name: title || "Zone", w: frameW, h: frameH },
           meta: { createdBy: "ai" },
         });
         engine.recordPlacement(frameId as unknown as string, { category: "format", width: frameW, height: frameH }, framePos);
@@ -3843,7 +3922,7 @@ export function Canvas() {
           type NoteColor = "yellow" | "blue" | "green" | "orange" | "violet" | "black" | "red" | "grey" | "light-blue" | "light-green" | "light-red" | "light-violet" | "white";
           const stickyColorMap: Record<string, NoteColor> = {
             yellow: "yellow", blue: "blue", green: "green",
-            red: "light-red", pink: "light-red", orange: "orange", violet: "violet",
+            red: "red", pink: "light-red", orange: "orange", violet: "violet",
           };
           const mappedColor: NoteColor = stickyColorMap[newColor] || stickyColorMap[newColor?.toLowerCase()] || "yellow";
 
@@ -3893,44 +3972,8 @@ export function Canvas() {
                 y: newY,
               });
 
-              // If color is green → this is the new recommended solution
-              // Delete ALL existing recommended sticker images, then create a fresh one
-              if (mappedColor === "green") {
-                const CONF_STICKY = 200;
-
-                // Get absolute position of the sticky (sticky coords are relative to parent frame)
-                const pageBounds = editor.getShapePageBounds(shapeToUpdate.id);
-                const absX = pageBounds ? pageBounds.x : 0;
-                const absY = pageBounds ? pageBounds.y : 0;
-
-                // Delete ALL existing recommended sticker images anywhere on canvas
-                const freshShapes = editor.getCurrentPageShapes();
-                freshShapes.forEach(s => {
-                  if (s.type === "image") {
-                    const aid = (s.props as any).assetId || "";
-                    if (aid.includes("sticker-recommended")) {
-                      editor.deleteShape(s.id);
-                    }
-                  }
-                });
-
-                // Create fresh sticker at absolute position overlapping the green sticky
-                const stickerUrl = "https://mirostatic.com/stickers/general-task-tacklers__2/task_tacklers_recommended.svg";
-                const dW = 140, dH = 140;
-                const stickerAssetId = `asset:sticker-recommended-${Date.now()}-${Math.random().toString(36).slice(2, 5)}` as any;
-                editor.createAssets([{
-                  id: stickerAssetId, type: "image", typeName: "asset",
-                  props: { name: "recommended", src: stickerUrl, w: 200, h: 200, mimeType: "image/svg+xml", isAnimated: false },
-                  meta: {},
-                }]);
-                editor.createShape({
-                  id: createShapeId(), type: "image",
-                  x: absX + CONF_STICKY - dW + 20,
-                  y: absY + CONF_STICKY - 50,
-                  props: { assetId: stickerAssetId, w: dW, h: dH },
-                  meta: { createdBy: "ai" },
-                });
-              }
+              // Recommended sticker — single helper places it on the green sticky
+              ensureRecommendedSticker(editor);
             }
           }
         }
@@ -4777,33 +4820,35 @@ export function Canvas() {
       return isLoading ? null : lastMsg.content.trim() || null;
     }
 
-    // Split strategy: look for "---" separator first (reliable), then fall back to toolTextSplit
+    // Split strategy: toolTextSplit (primary, from dedup), --- separator (fallback)
+    const stripSep = (s: string) => s.replace(/\n?---\n?/g, '\n').trim();
+    const validToolSplit = split !== undefined && split > 0 && split < lastMsg.content.length;
     const sepIdx = lastMsg.content.indexOf('\n---\n');
     const hasSeparator = sepIdx !== -1;
-    const stripSep = (s: string) => s.replace(/\n?---\n?/g, '\n').trim();
 
     if (isLoading) {
-      // Streaming: show the ack portion (before --- or before first tool)
+      // Streaming: show only the ack portion
+      if (validToolSplit) {
+        return stripSep(lastMsg.content.slice(0, split)) || null;
+      }
       if (hasSeparator) {
         return stripSep(lastMsg.content.slice(0, sepIdx)) || null;
       }
-      return (split !== undefined && split > 0)
-        ? lastMsg.content.slice(0, split).trim() || null
-        : stripSep(lastMsg.content) || null;
+      return stripSep(lastMsg.content) || null;
     }
 
-    // Done — show only the summary (after ---), not the ack
+    // Done — show only the summary, not the ack
+    if (validToolSplit) {
+      const summary = stripSep(lastMsg.content.slice(split));
+      return summary || null;
+    }
     if (hasSeparator) {
       const summary = stripSep(lastMsg.content.slice(sepIdx + 5));
       return summary || null;
     }
 
     if (hasTools) {
-      // Fallback: toolTextSplit-based splitting
-      const rawPostTool = (split !== undefined && split > 0 && split < lastMsg.content.length)
-        ? lastMsg.content.slice(split).trim()
-        : "";
-      if (rawPostTool) return rawPostTool;
+      // No split info — don't re-show ack text
       return null;
     }
 

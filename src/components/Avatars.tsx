@@ -2,6 +2,7 @@
 
 import { useOthers, useSelf } from "@/liveblocks.config";
 import { IconChevronDown } from "@mirohq/design-system-icons";
+import { getCursorColorByFill } from "@/lib/userIdentity";
 
 // ─── Shared hook for extracting user data ──────────────────────
 
@@ -62,8 +63,8 @@ export function Avatars() {
           className="relative group"
         >
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium shadow-md border-2 border-white"
-            style={{ backgroundColor: user.color }}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shadow-md border-2 border-white"
+            style={{ backgroundColor: user.color, color: getCursorColorByFill(user.color)?.text || "#fff" }}
             title={user.name}
           >
             {user.name.slice(0, 2).toUpperCase()}
@@ -112,8 +113,8 @@ export function MastheadAvatars() {
                 />
               ) : (
                 <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-semibold"
-                  style={{ backgroundColor: user.color }}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-semibold"
+                  style={{ backgroundColor: user.color, color: getCursorColorByFill(user.color)?.text || "#fff" }}
                   title={user.name}
                 >
                   {user.name.slice(0, 2).toUpperCase()}
