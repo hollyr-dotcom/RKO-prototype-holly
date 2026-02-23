@@ -15,6 +15,13 @@ const typeConfig = {
   "key-result": { label: "Key Result", icon: "◇" },
 };
 
+/** Progress fill color: orange < 40%, yellow 40-65%, green > 65% */
+function progressColor(value: number): string {
+  if (value < 40) return "#f8d3af";
+  if (value <= 65) return "#fff6b6";
+  return "#adf0c7";
+}
+
 export function GoalsWidget({ goals }: GoalsWidgetProps) {
   return (
     <div className="flex flex-col gap-2.5 rounded-xl bg-white py-3">
@@ -34,8 +41,11 @@ export function GoalsWidget({ goals }: GoalsWidgetProps) {
             <div className="relative flex h-6 items-center gap-1 rounded-full bg-[#f2f4fc] px-1.5 py-0.5 overflow-hidden flex-1 min-w-0">
               {/* Progress fill */}
               <div
-                className="absolute inset-y-0 left-0 rounded-l-full bg-[#e8ecfc] mix-blend-multiply"
-                style={{ width: `${goal.progress}%` }}
+                className="absolute inset-y-0 left-0 rounded-l-full mix-blend-multiply"
+                style={{
+                  width: `${goal.progress}%`,
+                  backgroundColor: progressColor(goal.progress),
+                }}
               />
               <span className="relative text-xs text-[#656b81] shrink-0">
                 {typeConfig[goal.type].icon}
