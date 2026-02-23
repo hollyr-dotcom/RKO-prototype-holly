@@ -7,6 +7,12 @@ import type { FeedItem } from "@/types/feed";
 import { FeedCard } from "./FeedCard";
 import { SpaceHeader } from "./SpaceHeader";
 import { PromptBar } from "@/components/PromptBar";
+import {
+  GoalsWidget,
+  StatsWidget,
+  AwaitingDecisionWidget,
+} from "@/components/sidebar-widgets";
+import { SIDEBAR_WIDGET_DATA } from "@/data/sidebar-widget-data";
 
 interface SpaceFeedProps {
   spaceId: string;
@@ -116,6 +122,8 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
   );
 
   const sidebarPanels = SIDEBAR_PANELS[spaceId];
+  const widgetData = SIDEBAR_WIDGET_DATA[spaceId];
+  const hasSidebar = !!(sidebarPanels || widgetData);
 
   return (
     <div className="h-full relative overflow-hidden">
@@ -140,7 +148,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
         {/* Feed + sidebar row — only render once header data is loaded */}
         {!space ? null : (
         <div className="flex justify-center px-4">
-          <div className={`flex ${sidebarPanels ? "gap-12" : ""} items-start`}>
+          <div className={`flex ${hasSidebar ? "gap-12" : ""} items-start`}>
             {/* Feed column */}
             <div style={{ width: 712 }}>
               <div className="pb-28">
@@ -188,6 +196,18 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
                     priority={i === 0}
                   />
                 ))}
+              </div>
+            )}
+
+            {/* Widget-based sidebar (1:1 spaces) */}
+            {widgetData && (
+              <div className="flex flex-col gap-6 flex-shrink-0 sticky" style={{ width: 320, top: 24 }}>
+                <GoalsWidget goals={widgetData.goals} />
+                <StatsWidget stats={widgetData.stats} />
+                <AwaitingDecisionWidget
+                  decisions={widgetData.decisions}
+                  onSeeAll={() => {}}
+                />
               </div>
             )}
           </div>
