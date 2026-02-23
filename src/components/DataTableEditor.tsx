@@ -12,6 +12,7 @@ import {
   type ColumnDef,
   type SortingState,
   type ColumnFiltersState,
+  type ColumnSizingState,
 } from "@tanstack/react-table";
 import {
   type TableMeta,
@@ -21,6 +22,7 @@ import {
   type RowData,
   DEFAULT_META,
   migrateColumns,
+  getRandomOptionColor,
 } from "./datatable/types";
 import { CellRenderer } from "./datatable/CellRenderer";
 import { ColumnTypeIcon } from "./datatable/ColumnTypeIcons";
@@ -38,7 +40,7 @@ interface DataTableEditorProps {
   w: number;
   h: number;
   onEscape?: () => void;
-  initialData?: { columns: string[]; rows: string[][] };
+  initialData?: { columns: (string | { name: string; type?: string })[]; rows: string[][] };
   pendingRows?: string[][];
 }
 
@@ -227,6 +229,7 @@ function DataTableGrid({
 }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
   const [showFilters, setShowFilters] = useState(false);
   const [showAddColumnPicker, setShowAddColumnPicker] = useState(false);
 
@@ -492,6 +495,7 @@ function DataTableGrid({
       size: 36,
       enableSorting: false,
       enableColumnFilter: false,
+      enableResizing: false,
       cell: ({ row }) => row.original._rowIndex + 1,
     };
 
@@ -499,7 +503,10 @@ function DataTableGrid({
       id: `col_${colIdx}`,
       accessorKey: `col_${colIdx}`,
       header: colConfig.name,
-      size: undefined, // auto
+      size: 150,
+      minSize: 60,
+      maxSize: 800,
+      enableResizing: true,
       cell: ({ row }: { row: { original: RowData } }) => (
         <CellRenderer
           column={colConfig}
@@ -519,12 +526,16 @@ function DataTableGrid({
   const table = useReactTable({
     data,
     columns,
+    columnResizeMode: "onChange",
+    enableColumnResizing: true,
     state: {
       sorting,
       columnFilters,
+      columnSizing,
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onColumnSizingChange: setColumnSizing,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -590,8 +601,9 @@ function DataTableGrid({
         <table
           style={{
             borderCollapse: "collapse",
-            width: "100%",
-            tableLayout: "auto",
+            minWidth: "100%",
+            width: table.getCenterTotalSize() + 32, // +32 for add-column button col
+            tableLayout: "fixed",
           }}
         >
           <thead>
@@ -607,7 +619,7 @@ function DataTableGrid({
                     <th
                       key={header.id}
                       style={{
-                        width: isRowNum ? 36 : undefined,
+                        width: header.getSize(),
                         padding: "6px 8px",
                         borderBottom: "1px solid #e5e7eb",
                         borderRight: "1px solid #f3f4f6",
@@ -619,6 +631,7 @@ function DataTableGrid({
                         position: "sticky",
                         top: 0,
                         zIndex: 2,
+                        overflow: "hidden",
                       }}
                     >
                       {isRowNum ? (
@@ -657,6 +670,34 @@ function DataTableGrid({
                             />
                           )}
                         </>
+                      )}
+                      {header.column.getCanResize() && (
+                        <div
+                          onMouseDown={header.getResizeHandler()}
+                          onTouchStart={header.getResizeHandler()}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          style={{
+                            position: "absolute",
+                            right: 0,
+                            top: 0,
+                            height: "100%",
+                            width: 4,
+                            cursor: "col-resize",
+                            userSelect: "none",
+                            touchAction: "none",
+                            background: header.column.getIsResizing() ? "#3b82f6" : "transparent",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!header.column.getIsResizing()) {
+                              e.currentTarget.style.background = "#d1d5db";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!header.column.getIsResizing()) {
+                              e.currentTarget.style.background = "transparent";
+                            }
+                          }}
+                        />
                       )}
                     </th>
                   );
@@ -723,6 +764,7 @@ function DataTableGrid({
                     <td
                       key={cell.id}
                       style={{
+                        width: cell.column.getSize(),
                         padding: isRowNum ? "5px 4px" : 0,
                         borderBottom: "1px solid #f3f4f6",
                         borderRight: "1px solid #f3f4f6",
@@ -731,6 +773,7 @@ function DataTableGrid({
                         fontSize: isRowNum ? 11 : undefined,
                         fontWeight: isRowNum ? 500 : undefined,
                         textAlign: isRowNum ? "center" : undefined,
+                        overflow: "hidden",
                       }}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -799,7 +842,27 @@ export function DataTableEditor({
       }
       return entries;
     }
-    const cols: ColumnConfig[] = initialData.columns.map((name) => ({ name, type: "text" as ColumnType }));
+    // Support both string[] and {name, type}[] column formats
+    const cols: ColumnConfig[] = initialData.columns.map((col) => {
+      if (typeof col === "string") return { name: col, type: "text" as ColumnType };
+      return { name: col.name, type: (col.type || "text") as ColumnType };
+    });
+
+    // For select columns, auto-create options from unique row values
+    cols.forEach((col, colIdx) => {
+      if (col.type === "select" || col.type === "multiSelect") {
+        const uniqueValues = new Set<string>();
+        initialData.rows.forEach((row) => {
+          const val = row[colIdx]?.trim();
+          if (val) uniqueValues.add(val);
+        });
+        col.options = Array.from(uniqueValues).map((label) => ({
+          label,
+          color: getRandomOptionColor(),
+        }));
+      }
+    });
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const entries: [string, any][] = [
       ["meta", { columns: cols, rowCount: initialData.rows.length }],

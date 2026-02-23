@@ -1,6 +1,6 @@
 "use client";
 
-import { Tldraw, Editor, createShapeId, toRichText, renderHtmlFromRichTextForMeasurement, TLShapeId, DefaultFontStyle, DefaultSizeStyle, DefaultDashStyle, DefaultFillStyle, TLGridProps, DefaultColorStyle, DefaultColorThemePalette, TLCursorProps, useTransform } from "tldraw";
+import { Tldraw, Editor, createShapeId, createBindingId, toRichText, renderHtmlFromRichTextForMeasurement, TLShapeId, DefaultFontStyle, DefaultSizeStyle, DefaultDashStyle, DefaultFillStyle, TLGridProps, DefaultColorStyle, DefaultColorThemePalette, TLCursorProps, useTransform } from "tldraw";
 import "tldraw/tldraw.css";
 
 // ── Override tldraw sticky colors with Miro DS canvas sticky tokens ──
@@ -35,6 +35,9 @@ import { GanttChartShapeUtil } from "@/shapes/GanttChartShapeUtil";
 import { KanbanBoardShapeUtil } from "@/shapes/KanbanBoardShapeUtil";
 import { ApproveButtonShapeUtil } from "@/shapes/ApproveButtonShapeUtil";
 import { PeopleListShapeUtil } from "@/shapes/PeopleListShapeUtil";
+import { WorkdayCardShapeUtil } from "@/shapes/WorkdayCardShapeUtil";
+import { SlackCardShapeUtil } from "@/shapes/SlackCardShapeUtil";
+import { ConnectorLineShapeUtil, CONNECTOR_LINE_SHAPE_TYPE, computeConnectorPath } from "@/shapes/ConnectorLineShapeUtil";
 import { Toolbar } from "./toolbar/Toolbar";
 import { StartingPromptCards } from "./StartingPromptCards";
 import { CanvasComments } from "./CanvasComments";
@@ -57,6 +60,7 @@ import { FocusModeOverlay, FocusedShape } from "./FocusModeOverlay";
 import { FloatingQuestionCard } from "./FloatingQuestionCard";
 import { setFocusedDocId } from "@/lib/focusModeStore";
 import { PlacementEngine, getCategoryForTool } from "@/lib/placementEngine";
+import { ConnectorHandles } from "./ConnectorHandles";
 
 // Animation variants
 const sidebarVariants = {
@@ -807,7 +811,7 @@ const CustomCursor = memo(function CustomCursor({ className, zoom, point, color,
   );
 });
 
-const tldrawComponents = { Grid: CustomGrid, Background: CustomBackground, Cursor: CustomCursor, CollaboratorCursor: CustomCursor };
+const tldrawComponents = { Grid: CustomGrid, Background: CustomBackground, OnTheCanvas: ConnectorHandles, Cursor: CustomCursor, CollaboratorCursor: CustomCursor };
 
 export function Canvas() {
   // Get authenticated user
@@ -815,7 +819,7 @@ export function Canvas() {
 
   // LiveBlocks multiplayer store -- syncs tldraw state across users
   const [sessionUser] = useState(() => authUser ? getSessionUser(authUser) : getLocalDevUser());
-  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil, ApproveButtonShapeUtil, PeopleListShapeUtil], []);
+  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil, ApproveButtonShapeUtil, PeopleListShapeUtil, WorkdayCardShapeUtil, SlackCardShapeUtil, ConnectorLineShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 
   // Prevent browser back/forward navigation from trackpad gestures (Safari + fallback)
@@ -869,6 +873,7 @@ export function Canvas() {
   const [focusedShape, setFocusedShape] = useState<FocusedShape | null>(null);
   const wasLoadingRef = useRef(false);
   const createdShapesRef = useRef<TLShapeId[]>([]);
+  const itemIdToShapeIdRef = useRef<Record<string, TLShapeId>>({});
   const placementEngineRef = useRef<PlacementEngine | null>(null);
   const isProcessingToolCallRef = useRef(false);
 
@@ -888,7 +893,7 @@ export function Canvas() {
     pendingItems?: Record<string, unknown>[]; // For hierarchy/flow: items accumulated during streaming
   }>>(new Map());
   const streamingDocsRef = useRef<Map<string, { shapeId: TLShapeId }>>(new Map());
-  const streamingTablesRef = useRef<Map<string, { shapeId: TLShapeId; columns: string[]; rowCount: number; accumulatedRows: string[][] }>>(new Map());
+  const streamingTablesRef = useRef<Map<string, { shapeId: TLShapeId; columns: { name: string; type: string }[]; rowCount: number; accumulatedRows: string[][] }>>(new Map());
   const userEditsRef = useRef<Array<{ shapeId: string; field: string; oldValue: string; newValue: string }>>([]);
   const shouldHideToastRef = useRef(false); // Track if toast should be hidden during new request
   const voiceRef = useRef<{ isConnected: boolean; sendCanvasUpdate: () => void; sendScreenshot: (changeDescription?: string) => void } | null>(null);
@@ -1207,6 +1212,19 @@ export function Canvas() {
 
       try {
 
+      // ===== TOOL RESULT → SHAPE ID MAPPING =====
+      // When the server returns a tool result (e.g. createSlackCard_result),
+      // map the server-generated item ID to the most recently created tldraw shape ID.
+      // This lets createConnector/createArrow resolve server IDs to real shape IDs.
+      if (toolName.endsWith("_result") && typeof (args as Record<string, unknown>).id === "string") {
+        const serverItemId = (args as Record<string, unknown>).id as string;
+        const lastShapeId = createdShapesRef.current[createdShapesRef.current.length - 1];
+        if (lastShapeId) {
+          itemIdToShapeIdRef.current[serverItemId] = lastShapeId;
+        }
+        return;
+      }
+
       // ===== STREAMING TOOL CALL HANDLERS =====
       // These handle shapes appearing incrementally as the model generates them.
       // The _streaming_* events are sent by useAgent (chat) and useRealtimeVoice (voice).
@@ -1323,7 +1341,8 @@ export function Canvas() {
         }
 
         if (streamToolName === "createDataTable") {
-          const columns = (partialArgs.columns as string[]) || [];
+          const rawCols = (partialArgs.columns as (string | { name: string; type?: string })[]) || [];
+          const columns = rawCols.map(col => typeof col === "string" ? { name: col, type: "text" } : { name: col.name, type: col.type || "text" });
           const title = (partialArgs.title as string) || "Loading...";
           const validWidth = Math.max(columns.length * 120 + 68, 400);
           const validHeight = 200; // Start small
@@ -1407,7 +1426,9 @@ export function Canvas() {
             editor.updateShape({ id: tableState.shapeId, type: "datatable", props: { title: scalars.title as string } });
           }
           if (scalars.columns && Array.isArray(scalars.columns)) {
-            tableState.columns = scalars.columns as string[];
+            tableState.columns = (scalars.columns as (string | { name: string; type?: string })[]).map(col =>
+              typeof col === "string" ? { name: col, type: "text" } : { name: col.name, type: col.type || "text" }
+            );
             const shape = editor.getShape(tableState.shapeId);
             if (shape) {
               editor.updateShape({
@@ -2021,8 +2042,10 @@ export function Canvas() {
       }
 
       if (toolName === "updateDocument") {
-        const { itemId, content } = args as { itemId: string; content: string };
-        const shape = editor.getShape(itemId as TLShapeId);
+        const { itemId: rawItemId, content } = args as { itemId: string; content: string };
+        // Resolve server-generated ID to tldraw shape ID
+        const resolvedId = itemIdToShapeIdRef.current[rawItemId] || rawItemId;
+        const shape = editor.getShape(resolvedId as TLShapeId);
         if (shape && shape.type === "document") {
           editor.updateShape({
             id: shape.id,
@@ -2090,6 +2113,23 @@ export function Canvas() {
         }
       }
 
+      if (toolName === "updateDataTable") {
+        const { itemId: rawItemId, columns, rows } = args as { itemId: string; columns: string[]; rows: string[][] };
+        // Resolve server-generated ID to tldraw shape ID
+        const resolvedId = itemIdToShapeIdRef.current[rawItemId] || rawItemId;
+        const shape = editor.getShape(resolvedId as TLShapeId);
+        if (shape && (shape.type as string) === "datatable") {
+          editor.updateShape({
+            id: shape.id,
+            type: "datatable" as any,
+            meta: {
+              ...shape.meta,
+              initialData: JSON.stringify({ columns, rows }),
+            },
+          });
+        }
+      }
+
       if (toolName === "updateTaskCard") {
         const { itemId, ...updates } = args as { itemId: string; title?: string; description?: string; status?: string; priority?: string; assignee?: string; dueDate?: string; tags?: string[]; subtasks?: Array<{ id: string; title: string; completed: boolean }> };
         const shape = editor.getShape(itemId as TLShapeId);
@@ -2114,14 +2154,19 @@ export function Canvas() {
       }
 
       if (toolName === "createDataTable") {
-        const { title, columns, rows, width, height, parentFrameId } = args as {
+        const { title, columns: rawColumns, rows, width, height, parentFrameId } = args as {
           title?: string;
-          columns?: string[];
+          columns?: (string | { name: string; type?: string })[];
           rows?: string[][];
           width?: number;
           height?: number;
           parentFrameId?: string;
         };
+
+        // Normalize columns: support both string[] and {name, type}[] formats
+        const columns = rawColumns?.map(col =>
+          typeof col === "string" ? { name: col, type: "text" } : { name: col.name, type: col.type || "text" }
+        );
 
         // Calculate size from content if not explicitly provided
         let calcWidth = width;
@@ -2137,9 +2182,9 @@ export function Canvas() {
           const ADD_COL_BTN = 32;
 
           let totalColWidth = ROW_NUM_COL + ADD_COL_BTN;
-          columns.forEach((header, colIdx) => {
+          columns.forEach((col, colIdx) => {
             // Find the longest text in this column (header + all cells)
-            let maxLen = header.length;
+            let maxLen = col.name.length;
             rows.forEach((row) => {
               if (row[colIdx]) maxLen = Math.max(maxLen, row[colIdx].length);
             });
@@ -2347,6 +2392,57 @@ export function Canvas() {
               dueDate: dueDate || "",
               tags: tags || [],
               subtasks: subtasks || [],
+            },
+            meta: { createdBy: "ai" },
+          });
+          engine.recordPlacement(shapeId, { category: "widget", width: validWidth, height: validHeight }, pos);
+        }
+      }
+
+      if (toolName === "createSlackCard") {
+        const { title, parentFrameId } = args as {
+          title?: string;
+          parentFrameId?: string;
+        };
+
+        const validWidth = 288;
+        const validHeight = 120;
+
+        if (parentFrameId) {
+          const zoneEngine = getZoneEngineForFrame(parentFrameId);
+          if (zoneEngine) {
+            const pos = zoneEngine.place({ category: "widget", width: validWidth, height: validHeight });
+            shapeId = createShapeId();
+            editor.createShape({
+              id: shapeId,
+              type: "slack-card" as any,
+              x: pos.x,
+              y: pos.y,
+              parentId: parentFrameId as any,
+              props: {
+                w: validWidth,
+                h: validHeight,
+                title: title || "Slack Message",
+              },
+              meta: { createdBy: "ai" },
+            });
+            const newH = zoneEngine.recordPlacement(shapeId, { category: "widget", width: validWidth, height: validHeight }, pos);
+            maybeResizeParentFrame(parentFrameId, newH);
+          }
+        } else {
+          const engine = getPlacementEngine();
+          const pos = engine.place({ category: "widget", width: validWidth, height: validHeight });
+
+          shapeId = createShapeId();
+          editor.createShape({
+            id: shapeId,
+            type: "slack-card" as any,
+            x: pos.x,
+            y: pos.y,
+            props: {
+              w: validWidth,
+              h: validHeight,
+              title: title || "Slack Message",
             },
             meta: { createdBy: "ai" },
           });
@@ -3185,12 +3281,18 @@ export function Canvas() {
       }
 
       if (toolName === "createArrow") {
-        const { startX, startY, endX, endY } = args as {
+        const { startX, startY, endX, endY, fromShapeId: rawFrom, toShapeId: rawTo } = args as {
           startX: number;
           startY: number;
           endX: number;
           endY: number;
+          fromShapeId?: string;
+          toShapeId?: string;
         };
+
+        // Resolve server item IDs to tldraw shape IDs
+        const fromShapeId = rawFrom ? (itemIdToShapeIdRef.current[rawFrom] || rawFrom) : undefined;
+        const toShapeId = rawTo ? (itemIdToShapeIdRef.current[rawTo] || rawTo) : undefined;
 
         shapeId = createShapeId();
         editor.createShape({
@@ -3204,6 +3306,96 @@ export function Canvas() {
           },
           meta: { createdBy: "ai" },
         });
+
+        // Create bindings if shape IDs are provided
+        if (fromShapeId) {
+          editor.createBinding({
+            id: createBindingId(),
+            type: "arrow",
+            fromId: shapeId,
+            toId: fromShapeId as TLShapeId,
+            props: {
+              terminal: "start",
+              normalizedAnchor: { x: 0.5, y: 0.5 },
+              isExact: false,
+              isPrecise: false,
+              snap: "none",
+            },
+          });
+        }
+        if (toShapeId) {
+          editor.createBinding({
+            id: createBindingId(),
+            type: "arrow",
+            fromId: shapeId,
+            toId: toShapeId as TLShapeId,
+            props: {
+              terminal: "end",
+              normalizedAnchor: { x: 0.5, y: 0.5 },
+              isExact: false,
+              isPrecise: false,
+              snap: "none",
+            },
+          });
+        }
+      }
+
+      if (toolName === "createConnector") {
+        const { fromShapeId: rawFrom, toShapeId: rawTo } = args as {
+          fromShapeId: string;
+          toShapeId: string;
+        };
+
+        // Retry with backoff — tool_result events that map server IDs to tldraw shape IDs
+        // may arrive AFTER createConnector when the AI calls tools in parallel.
+        const tryCreateConnector = (attempt: number) => {
+          const fromShapeId = itemIdToShapeIdRef.current[rawFrom] || rawFrom;
+          const toShapeId = itemIdToShapeIdRef.current[rawTo] || rawTo;
+
+          const result = computeConnectorPath(editor, fromShapeId, toShapeId);
+
+          if (!result) {
+            if (attempt < 15) {
+              setTimeout(() => tryCreateConnector(attempt + 1), 300);
+            } else {
+              console.warn(`[CANVAS] createConnector failed after ${attempt} attempts — shapes not found`, { rawFrom, rawTo, fromShapeId, toShapeId });
+            }
+            return;
+          }
+
+          const connectorId = createShapeId();
+          editor.createShape({
+            id: connectorId,
+            type: CONNECTOR_LINE_SHAPE_TYPE as any,
+            x: result.x,
+            y: result.y,
+            props: { w: result.w, h: result.h, path: result.path, fromId: fromShapeId, toId: toShapeId },
+            meta: { createdBy: "ai-connector" },
+          });
+
+          // Send connector behind other shapes so it doesn't obscure content
+          editor.sendToBack([connectorId]);
+
+          // Mark connected shapes with purple border + glow
+          const fromShape = editor.getShape(fromShapeId as TLShapeId);
+          const toShape = editor.getShape(toShapeId as TLShapeId);
+          if (fromShape) {
+            editor.updateShape({
+              id: fromShape.id,
+              type: fromShape.type,
+              meta: { ...fromShape.meta, isConnected: true },
+            });
+          }
+          if (toShape) {
+            editor.updateShape({
+              id: toShape.id,
+              type: toShape.type,
+              meta: { ...toShape.meta, isConnected: true },
+            });
+          }
+        };
+
+        tryCreateConnector(0);
       }
 
       // Working notes - larger sticky with distinct color
@@ -4450,6 +4642,32 @@ export function Canvas() {
       }
     }, 3000);
 
+    // ── Recompute connector-line paths when connected shapes move ──
+    editor.sideEffects.registerAfterChangeHandler('shape', (_prev, next) => {
+      // Only care about non-connector shapes (the ones being dragged/resized)
+      if ((next.type as string) === CONNECTOR_LINE_SHAPE_TYPE) return;
+
+      const changedId = next.id;
+      // Find all connector-line shapes that reference this shape
+      const allShapes = editor.getCurrentPageShapes();
+      for (const shape of allShapes) {
+        if ((shape.type as string) !== CONNECTOR_LINE_SHAPE_TYPE) continue;
+        const props = shape.props as { fromId: string; toId: string; w: number; h: number; path: string };
+        if (props.fromId !== changedId && props.toId !== changedId) continue;
+
+        const result = computeConnectorPath(editor, props.fromId, props.toId);
+        if (!result) continue;
+
+        editor.updateShape({
+          id: shape.id,
+          type: CONNECTOR_LINE_SHAPE_TYPE as any,
+          x: result.x,
+          y: result.y,
+          props: { ...props, w: result.w, h: result.h, path: result.path },
+        });
+      }
+    });
+
     // Auto-enter editing mode when a single document/table shape is clicked in its interior
     editor.sideEffects.registerAfterChangeHandler('instance_page_state', (prev, next) => {
       const prevSelected = prev.selectedShapeIds;
@@ -4917,7 +5135,7 @@ export function Canvas() {
       "createCanvas", "createLayout", "createFrame",
       "createSticky", "createShape", "createText",
       "createDocument", "createDataTable", "createSticker", "createTaskCard",
-      "createZone",
+      "createSlackCard", "createZone",
     ];
     const creationTools = tools.filter((t: { toolName: string }) =>
       CREATION_TOOL_NAMES.includes(t.toolName)
@@ -4989,6 +5207,14 @@ export function Canvas() {
           entries.push({
             id: `${latestMsg.id}:${tool.toolName}:${entries.length}`,
             name: (args.title as string) || "task",
+            type: "task",
+            isCreating: isLoading,
+          });
+          break;
+        case "createSlackCard":
+          entries.push({
+            id: `${latestMsg.id}:${tool.toolName}:${entries.length}`,
+            name: (args.title as string) || "Slack card",
             type: "task",
             isCreating: isLoading,
           });
@@ -5519,6 +5745,25 @@ export function Canvas() {
                     dueDate: "",
                     tags: [],
                     subtasks: [],
+                  },
+                  meta: { createdBy: "user" },
+                });
+                editor.select(shapeId);
+              }}
+              onCreateSlackCard={() => {
+                if (!editor) return;
+                const viewportCenter = editor.getViewportScreenCenter();
+                const canvasPoint = editor.screenToPage(viewportCenter);
+                const shapeId = createShapeId();
+                editor.createShape({
+                  id: shapeId,
+                  type: "slack-card" as any,
+                  x: canvasPoint.x - 144,
+                  y: canvasPoint.y - 60,
+                  props: {
+                    w: 288,
+                    h: 120,
+                    title: "Slack Message",
                   },
                   meta: { createdBy: "user" },
                 });

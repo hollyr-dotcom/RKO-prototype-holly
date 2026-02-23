@@ -13,6 +13,7 @@ import {
   IconTargetArrow,
   IconShuffle,
   IconCross,
+  IconChat,
 } from "@mirohq/design-system-icons";
 
 interface Prompt {
@@ -23,9 +24,13 @@ interface Prompt {
 
 const ALL_PROMPTS: Prompt[] = [
   {
+    icon: <IconChat size="small" />,
+    text: "Andrey sends me lots of DMs, help me organise the links in them",
+    isTopTip: true,
+  },
+  {
     icon: <IconLightning size="small" />,
     text: "Set up connectors to Gmail, Asana, and more",
-    isTopTip: true,
   },
   {
     icon: <IconWarning size="small" />,

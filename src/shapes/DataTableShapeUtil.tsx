@@ -80,6 +80,7 @@ export class DataTableShapeUtil extends ShapeUtil<IDataTableShape> {
     const isEditing = this.editor.getEditingShapeId() === shape.id;
     const isSelected = this.editor.getSelectedShapeIds().includes(shape.id);
     const meta = shape.meta as Record<string, unknown>;
+    const isConnected = !!meta?.isConnected;
     const rawInitialData = meta?.initialData;
     const initialData = typeof rawInitialData === "string" ? (() => { try { return JSON.parse(rawInitialData); } catch { return undefined; } })() as { columns: string[]; rows: string[][] } | undefined : rawInitialData as { columns: string[]; rows: string[][] } | undefined;
     const rawPendingRows = meta?.pendingRows;
@@ -87,12 +88,13 @@ export class DataTableShapeUtil extends ShapeUtil<IDataTableShape> {
 
     return (
       <HTMLContainer
+        className={isConnected ? "connected-shape-glow" : undefined}
         style={{
           width: shape.props.w,
           height: shape.props.h,
           overflow: "hidden",
           borderRadius: 16,
-          border: "1px solid #d0d5dd",
+          border: `1.5px solid ${isConnected ? "#7C3AED" : "#d0d5dd"}`,
           background: "#ffffff",
           pointerEvents: "all",
         }}

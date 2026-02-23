@@ -309,7 +309,7 @@ const generateItemId = () => `item-${Date.now()}-${Math.random().toString(36).sl
 // --- Canvas Creation Tools ---
 const createStickyTool = tool({
   name: "createSticky",
-  description: "Create a single post-it note (tldraw sticky note shape). ⚠️ ONLY for adding ONE sticky to existing content. For 2+ stickies, you MUST use createLayout(type:'sticky') instead - it handles positioning automatically. Never call this multiple times in sequence.",
+  description: "Create a single post-it note (tldraw sticky note shape). ⚠️ ONLY for adding ONE sticky to existing content. For 2+ stickies, you MUST use createLayout(type:'sticky') instead - it handles positioning automatically. Never call this multiple times in sequence. Returns an ID you can pass to createArrow/createConnector.",
   parameters: z.object({
     text: z.string().describe("Sticky note text. 1-2 punchy sentences for insights, or short labels for brainstorms."),
     color: z.enum(["yellow", "blue", "green", "pink", "orange", "violet"]),
@@ -336,7 +336,7 @@ const createTextTool = tool({
 
 const createShapeTool = tool({
   name: "createShape",
-  description: "⚠️ ONLY for adding a SINGLE shape. For 2+ shapes (diagrams, org charts, flows), you MUST use createLayout() with type:'hierarchy' or type:'flow' - it creates shapes with automatic arrows!",
+  description: "⚠️ ONLY for adding a SINGLE shape. For 2+ shapes (diagrams, org charts, flows), you MUST use createLayout() with type:'hierarchy' or type:'flow' - it creates shapes with automatic arrows! Returns an ID you can pass to createArrow/createConnector.",
   parameters: z.object({
     type: z.enum(["rectangle", "ellipse", "triangle", "diamond"]),
     text: z.string().default("").describe("Label text inside the shape"),
@@ -367,16 +367,31 @@ const createFrameTool = tool({
 
 const createArrowTool = tool({
   name: "createArrow",
-  description: "Create an arrow to CONNECT shapes! Essential for flowcharts, org charts, sitemaps, process diagrams. Shows hierarchy, flow, relationships. Use liberally to make diagrams meaningful! Returns an ID.",
+  description: "Create an arrow to CONNECT shapes! Essential for flowcharts, org charts, sitemaps, process diagrams. Shows hierarchy, flow, relationships. Use liberally to make diagrams meaningful! Returns an ID. Optionally pass fromShapeId/toShapeId to create bound connectors that follow shapes when moved.",
   parameters: z.object({
     startX: z.number().describe("Start X (typically center-bottom of source shape)"),
     startY: z.number().describe("Start Y"),
     endX: z.number().describe("End X (typically center-top of target shape)"),
     endY: z.number().describe("End Y"),
+    fromShapeId: z.string().nullable().describe("ID returned by a creation tool (createDocument, createSticky, etc.) or from canvas state. Binds arrow start to shape (follows when moved). Pass null if not binding."),
+    toShapeId: z.string().nullable().describe("ID returned by a creation tool (createDocument, createSticky, etc.) or from canvas state. Binds arrow end to shape (follows when moved). Pass null if not binding."),
   }),
   execute: async (args) => {
     const id = generateItemId();
     return JSON.stringify({ created: "arrow", id, ...args });
+  },
+});
+
+const createConnectorTool = tool({
+  name: "createConnector",
+  description: "Create a styled connector line between two shapes. Unlike arrows, connectors are violet curved arcs with no arrowheads and an animated pulse effect. Use for showing relationships, associations, and connections between elements. Both shapes must already exist on the canvas.",
+  parameters: z.object({
+    fromShapeId: z.string().describe("ID returned by a creation tool (createDocument, createSlackCard, etc.) or from canvas state"),
+    toShapeId: z.string().describe("ID returned by a creation tool (createDocument, createSlackCard, etc.) or from canvas state"),
+  }),
+  execute: async (args) => {
+    const id = generateItemId();
+    return JSON.stringify({ created: "connector", id, ...args });
   },
 });
 
@@ -395,7 +410,7 @@ const createWorkingNoteTool = tool({
 
 const createDocumentTool = tool({
   name: "createDocument",
-  description: "Create a rich text document on the canvas. Use for written content: briefs, specs, guidelines, summaries. NOT for quick notes (use stickies) or tabular data (use createDataTable). ALWAYS provide meaningful content — never create empty documents. Default size: 780×660. Space items left-to-right with 50px gaps.",
+  description: "Create a rich text document on the canvas. Use for written content: briefs, specs, guidelines, summaries. NOT for quick notes (use stickies) or tabular data (use createDataTable). ALWAYS provide meaningful content — never create empty documents. Default size: 780×660. Space items left-to-right with 50px gaps. Returns an ID you can pass to createArrow/createConnector.",
   parameters: z.object({
     title: z.string().describe("Document title"),
     content: z.string().describe("Document body as HTML. Use <h2>, <p>, <ul>/<li>, <strong>, <em>. Example: '<h2>Overview</h2><p>This project...</p>'"),
@@ -419,11 +434,15 @@ const updateDocumentTool = tool({
 
 const createDataTableTool = tool({
   name: "createDataTable",
-  description: "Create an interactive data table on the canvas. Use for structured data: comparisons, feature matrices, RACI tables, timelines. NOT for simple lists (use stickies) or prose (use createDocument). ALWAYS fill ALL cells with meaningful data — never leave cells empty. Default size: 700×460. Space items left-to-right with 50px gaps.",
+  description: "Create an interactive data table on the canvas. Use for structured data: comparisons, feature matrices, RACI tables, timelines. NOT for simple lists (use stickies) or prose (use createDocument). ALWAYS fill ALL cells with meaningful data — never leave cells empty. Default size: 700×460. Space items left-to-right with 50px gaps. Returns an ID you can pass to createArrow/createConnector.",
   parameters: z.object({
     title: z.string().describe("Table title"),
-    columns: z.array(z.string()).min(1).max(8).describe("Column header names"),
+    columns: z.array(z.object({
+      name: z.string().describe("Column header name"),
+      type: z.enum(["text", "number", "select", "date", "link"]).default("text").describe("Column type. Use 'select' for option/dropdown columns — the unique values in the rows will automatically become the dropdown options."),
+    })).min(1).max(8).describe("Column definitions. Use type 'select' for columns where values should be selectable options (e.g. Priority, Status)."),
     rows: z.array(z.array(z.string())).describe("Row data — each inner array must match the number of columns"),
+    width: z.number().nullable().describe("Width override in pixels (e.g. 800). Pass null to auto-calculate from column content."),
     parentFrameId: z.string().nullable().describe("If provided, place this item inside the specified frame. Pass null if not nesting."),
   }),
   execute: async (args) => {
@@ -503,7 +522,7 @@ const createStickerTool = tool({
 
 const createTaskCardTool = tool({
   name: "createTaskCard",
-  description: "Create a task card on the canvas. Use for ALL actionable work items, todos, tasks, and action items — call this tool once per task. For multiple tasks, call createTaskCard multiple times (NOT createLayout with stickies). Shows as a compact card with status, priority, and assignee. Space items left-to-right with 50px gaps.",
+  description: "Create a task card on the canvas. Use for ALL actionable work items, todos, tasks, and action items — call this tool once per task. For multiple tasks, call createTaskCard multiple times (NOT createLayout with stickies). Shows as a compact card with status, priority, and assignee. Space items left-to-right with 50px gaps. Returns an ID you can pass to createArrow/createConnector.",
   parameters: z.object({
     title: z.string().describe("Task title"),
     description: z.string().default("").describe("Task description as HTML"),
@@ -522,6 +541,19 @@ const createTaskCardTool = tool({
   execute: async (args) => {
     const id = generateItemId();
     return JSON.stringify({ created: "taskcard", id, ...args });
+  },
+});
+
+const createSlackCardTool = tool({
+  name: "createSlackCard",
+  description: "Create a Slack card on the canvas. Use for Slack messages, thread summaries, or Slack-sourced content. Shows as a compact card with the Slack logo and an editable title. Returns an ID you can pass to createConnector.",
+  parameters: z.object({
+    title: z.string().describe("Card title — the Slack message or thread summary"),
+    parentFrameId: z.string().nullable().describe("If provided, place this item inside the specified frame. Pass null if not nesting."),
+  }),
+  execute: async (args) => {
+    const id = generateItemId();
+    return JSON.stringify({ created: "slack-card", id, ...args });
   },
 });
 
@@ -916,7 +948,23 @@ const planningAgent = new Agent({
   model: "gpt-5.2",
   instructions: `You're a friendly workspace assistant. You help people create visual artifacts on canvases (whiteboards) and navigate their workspace.
 
-FIRST: DECIDE HOW TO RESPOND based on what the user asked:
+IF the prompt contains the trigger word "Andrey" always do the following:
+
+ 🚨 EXAMPLE REQUEST: "Help me organize the links Andrey sends me in Slack each week"
+
+    The plan MUST follow this 10-step exactly and wait until the previous step is complete before proceeding to the next step:
+
+    0. Message the user, "Let's create a Flow for this" 
+    1. Create a slackCard. The title should read "Weekly digest of links in DMs with @Andrey". Save the returned ID.
+    2. Gather data from the Slack connector where the Direct Message is from Andrey to Jeff. Confirm the number of messages with links found. syntehsize the information into a json JSON for Title, Topic, summary, URL and Priority. 
+    3. When the data has been gathered, create a dataTable with this exact configuration. createDataTable(title: "Articles to review from Andrey", columns: [{name: "Title", type: Text}, {name: "Topic", type: Select}, {name: "Summary", type: Text}, {name: "URL", type: Link}, {name: "Priority", type: Select}], rows: [rows from JSON object created in step 2], width: 1200). Save the returned ID. 
+    4. When you see the dataTable, Connect the slackCard and the Datatable using createConnector(fromShapeId: [slackCard ID from step 1], toShapeId: [DataTable ID from step 3])
+    6. 400px below the the dataTable, create a blank Document (createDocument). Save the returned ID.
+    7. When you see the Document, connect the slackCard and the Document with the createConnector. - createConnector(fromShapeId: [slackCard id from step 1], toShapeId: [Document id from step 4)).
+    8. When connected, Stream the content of the document with a summary of all themes in links shared by Andrey in Slack Messages.
+    9. Add a sticky note to the top right of the Document from Step 4, "Thanks Andrey!" and summarizing a thought on the themes.  add a large Sticker (createSticker(intent: "Skull"))
+
+OTHERWISE: DECIDE HOW TO RESPOND based on what the user asked:
 
 1. JUST REPLY (no tools) — for simple/conversational requests:
    - "What can you do?" → Brief, friendly answer (2-3 sentences)
@@ -935,7 +983,7 @@ FIRST: DECIDE HOW TO RESPOND based on what the user asked:
    - Simple questions with a single answer — query a few services and respond
    - Use queryConnectors for INTERNAL company data (projects, metrics, people, tickets)
    - Use webSearch for EXTERNAL data (market trends, news, best practices)
-
+  
 3. QUESTIONS + PLAN (askUser, then confirmPlan in SEPARATE turns) — for substantial canvas work:
    - "Create a project kickoff" → needs scope, format, details
    - "Design a user flow for checkout" → needs context
@@ -1019,6 +1067,7 @@ FIRST: DECIDE HOW TO RESPOND based on what the user asked:
 
    ⚠️ NEVER call askUser() AND confirmPlan() in the same turn!
 
+
 WORKSPACE NAVIGATION:
 - Check [WORKSPACE CONTEXT] to see where the user is (home, space, or canvas) and what canvases exist.
 - If user is on the HOME PAGE and asks for canvas work → use createCanvas() to make a new board, then start working on it.
@@ -1086,6 +1135,12 @@ Research steps should IMPLY synthesis — the step title hints at what you'll ex
 The later steps in the plan should BUILD ON what research uncovered — reference insights, use real data.
 
 CANVAS: Check [CANVAS STATE] for existing content and positions.
+
+CONNECTING SHAPES:
+To connect shapes with arrows or connectors:
+1. Create all shapes first — each creation tool returns an "id" in its result
+2. Use those returned IDs as fromShapeId/toShapeId in createArrow or createConnector
+Do NOT read canvas state to find IDs — use the IDs returned by your own tool calls.
 
 FOR SIMPLE, DIRECT REQUESTS - USE TOOLS IMMEDIATELY:
 - "Create stickies about X" → Use createLayout(type:"sticky") for post-it notes! NOT shapes.
@@ -1227,6 +1282,7 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     createShapeTool,
     createFrameTool,
     createArrowTool,
+    createConnectorTool,
     updateStickyTool,
     moveItemTool,
     deleteItemTool,
@@ -1237,6 +1293,7 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     createStickerTool,
     createTaskCardTool,
     updateTaskCardTool,
+    createSlackCardTool,
     createGanttChartTool,
     createKanbanBoardTool,
     createZoneTool,
@@ -1371,6 +1428,10 @@ Work through steps in sequence. For each step:
    - "Analyze..." → queryConnectors + showProgress (no canvas output)
    - "Synthesize..." → createZone(layout:"synthesis") — doc only
    - "Explore solutions..." → createZone(layout:"solution") x1 — with solutions array
+   For streamline-messages plans:
+   - "Gather Slack messages..." → queryConnectors(['slack']) + createSlackCard
+   - "Summarize..." (messages context) → createDocument (themed clusters from DM links)
+   - "Prioritize..." (messages context) → createDataTable + createConnector x2
    For non-prioritisation plans, pick the right tool:
    - Research? → webSearch + createSources + createLayout(type:"sticky")
    - Written content? → createDocument
@@ -1869,6 +1930,7 @@ MAX 2-3 COLORS PER FRAME. If you're reaching for a 4th color, stop and ask: "Doe
     createShapeTool,
     createFrameTool,
     createArrowTool,
+    createConnectorTool,
     createWorkingNoteTool,
     deleteItemTool,
     updateStickyTool,
@@ -1880,6 +1942,7 @@ MAX 2-3 COLORS PER FRAME. If you're reaching for a 4th color, stop and ask: "Doe
     createStickerTool,
     createTaskCardTool,
     updateTaskCardTool,
+    createSlackCardTool,
     createGanttChartTool,
     createKanbanBoardTool,
     createZoneTool,
@@ -2623,6 +2686,30 @@ ${workspace.availableCanvases.map(c => `  - "${c.name}" [ID: ${c.id}]${c.spaceId
                     const result = JSON.parse(outputString);
                     safeEnqueue(
                       encoder.encode(`data: ${JSON.stringify({ type: "tool_result", toolName: "createZone", result })}\n\n`)
+                    );
+                  } catch {}
+                }
+
+                // Forward creation tool results for client-side ID mapping.
+                // The client maps server-generated IDs (item-xxx) to tldraw shape IDs,
+                // enabling createArrow/createConnector to resolve bindings.
+                const CREATION_TOOLS_WITH_IDS = new Set([
+                  "createSticky", "createText", "createShape", "createFrame",
+                  "createArrow", "createConnector", "createWorkingNote",
+                  "createDocument", "createDataTable", "createSticker",
+                  "createTaskCard", "createSlackCard", "createGanttChart",
+                  "createKanbanBoard", "createLayout", "createSources",
+                ]);
+
+                if (
+                  matchedToolName &&
+                  CREATION_TOOLS_WITH_IDS.has(matchedToolName) &&
+                  outputString
+                ) {
+                  try {
+                    const result = JSON.parse(outputString);
+                    safeEnqueue(
+                      encoder.encode(`data: ${JSON.stringify({ type: "tool_result", toolName: matchedToolName, result })}\n\n`)
                     );
                   } catch {}
                 }

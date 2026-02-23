@@ -184,6 +184,20 @@ html, body {
   animation: suggestions-in 0.2s ease-out forwards;
 }
 
+/* Purple glow for shapes connected via createConnector */
+@keyframes connected-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(124, 58, 237, 0.15), 0 0 2px rgba(124, 58, 237, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(124, 58, 237, 0.25), 0 0 4px rgba(124, 58, 237, 0.15);
+  }
+}
+
+.connected-shape-glow {
+  animation: connected-glow-pulse 2.5s ease-in-out infinite;
+}
+
 @keyframes slideInFromLeft {
   from {
     opacity: 0;

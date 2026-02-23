@@ -380,10 +380,103 @@ export function useRealtimeVoice() {
               return;
             }
 
+            // queryConnectors - make async HTTP call to get connector data
+            if (toolName === "queryConnectors") {
+              const { services, purpose } = args as { services: string[]; purpose: string };
+              console.log("[VOICE] queryConnectors called:", { services, purpose });
+
+              fetch("/api/voice/connectors", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ services, purpose }),
+              })
+                .then((res) => res.json())
+                .then((connectorResults) => {
+                  console.log("[VOICE] Connector results:", connectorResults);
+                  dc.send(JSON.stringify({
+                    type: "conversation.item.create",
+                    item: {
+                      type: "function_call_output",
+                      call_id: message.call_id,
+                      output: JSON.stringify(connectorResults),
+                    },
+                  }));
+                  dc.send(JSON.stringify({ type: "response.create" }));
+                })
+                .catch((err) => {
+                  console.error("[VOICE] Connector error:", err);
+                  dc.send(JSON.stringify({
+                    type: "conversation.item.create",
+                    item: {
+                      type: "function_call_output",
+                      call_id: message.call_id,
+                      output: JSON.stringify({ error: String(err), data: [] }),
+                    },
+                  }));
+                  dc.send(JSON.stringify({ type: "response.create" }));
+                });
+
+              return;
+            }
+
+            // createSticker - server-side sticker lookup then canvas dispatch
+            if (toolName === "createSticker") {
+              const { intent } = args as { intent: string };
+              console.log("[VOICE] createSticker called:", { intent });
+
+              const callId = message.call_id;
+              fetch("/api/voice/sticker", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ intent }),
+              })
+                .then((res) => res.json())
+                .then((stickerResult) => {
+                  console.log("[VOICE] Sticker result:", stickerResult);
+                  // Forward to canvas for rendering (use _result suffix to match chat flow)
+                  if (onToolCallRef.current && stickerResult.url) {
+                    onToolCallRef.current("createSticker_result", stickerResult);
+                  }
+                  // Send canvas state back to OpenAI after a short delay
+                  setTimeout(() => {
+                    if (!getCanvasStateRef.current) return;
+                    const freshState = getCanvasStateRef.current() as {
+                      frames: Array<{ id: string; name?: string; createdBy: string; children: Array<{ id: string; text?: string; type: string; color?: string; createdBy: string }> }>;
+                      orphans: Array<{ id: string; text?: string; type: string; createdBy: string }>;
+                    };
+                    const summary = serializeCanvasState(freshState);
+                    dc.send(JSON.stringify({
+                      type: "conversation.item.create",
+                      item: {
+                        type: "function_call_output",
+                        call_id: callId,
+                        output: JSON.stringify({ success: true, canvasUpdate: summary || "Canvas updated" }),
+                      },
+                    }));
+                    dc.send(JSON.stringify({ type: "response.create" }));
+                  }, 100);
+                })
+                .catch((err) => {
+                  console.error("[VOICE] Sticker error:", err);
+                  dc.send(JSON.stringify({
+                    type: "conversation.item.create",
+                    item: {
+                      type: "function_call_output",
+                      call_id: callId,
+                      output: JSON.stringify({ error: String(err) }),
+                    },
+                  }));
+                  dc.send(JSON.stringify({ type: "response.create" }));
+                });
+
+              return;
+            }
+
             // Canvas-modifying tools - send fresh canvas state with the response
             const canvasTools = ["createSticky", "createShape", "createText", "createFrame",
               "createArrow", "createWorkingNote", "createLayout", "createSources",
-              "deleteItem", "deleteFrame", "updateSticky", "moveItem", "createWorkshopBoard", "createZone", "addSolutionCard"];
+              "deleteItem", "deleteFrame", "updateSticky", "moveItem", "createWorkshopBoard", "createZone", "addSolutionCard",
+              "createSlackCard", "createConnector", "createDataTable", "createDocument"];
             const isCanvasTool = canvasTools.includes(toolName);
 
             if (isCanvasTool && getCanvasStateRef.current) {
