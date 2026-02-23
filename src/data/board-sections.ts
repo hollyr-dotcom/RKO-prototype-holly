@@ -207,6 +207,53 @@ export const BOARD_SECTIONS: Record<string, BoardSection[]> = {
     },
   ],
 
+  /* ── 1:1 spaces ──────────────────────────────────────────────── */
+
+  "space-1on1-james": [
+    {
+      label: "Goals & Growth",
+      canvasIds: ["canvas-1on1-james-01", "canvas-1on1-james-02"],
+    },
+    {
+      label: "Org & People",
+      canvasIds: ["canvas-1on1-james-03", "canvas-1on1-james-04"],
+    },
+    {
+      label: "Planning",
+      canvasIds: ["canvas-1on1-james-05", "canvas-1on1-james-06"],
+    },
+  ],
+
+  "space-1on1-amara": [
+    {
+      label: "Goals & Growth",
+      canvasIds: ["canvas-1on1-amara-01", "canvas-1on1-amara-02"],
+    },
+    {
+      label: "Team & Process",
+      canvasIds: ["canvas-1on1-amara-03", "canvas-1on1-amara-04"],
+    },
+    {
+      label: "Planning",
+      canvasIds: ["canvas-1on1-amara-05", "canvas-1on1-amara-06"],
+    },
+  ],
+
+  "space-1on1-daniel": [
+    {
+      label: "Goals & Growth",
+      canvasIds: ["canvas-1on1-daniel-01", "canvas-1on1-daniel-02"],
+    },
+    {
+      label: "Team & Delivery",
+      canvasIds: ["canvas-1on1-daniel-03", "canvas-1on1-daniel-04"],
+    },
+    {
+      label: "Planning",
+      canvasIds: ["canvas-1on1-daniel-05", "canvas-1on1-daniel-06"],
+    },
+  ],
+
   /* ── Event spaces ─────────────────────────────────────────────── */
 
   "space-ff26": [

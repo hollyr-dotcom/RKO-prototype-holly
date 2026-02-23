@@ -682,5 +682,170 @@
     "createdAt": "2025-12-05T10:00:00Z",
     "updatedAt": "2026-02-18T10:00:00Z",
     "order": 6
+  },
+
+  {
+    "id": "canvas-1on1-james-01",
+    "spaceId": "space-1on1-james",
+    "name": "H1 OKRs & Performance",
+    "emoji": "🎯",
+    "createdAt": "2026-01-06T09:00:00Z",
+    "updatedAt": "2026-02-20T10:00:00Z",
+    "order": 0
+  },
+  {
+    "id": "canvas-1on1-james-02",
+    "spaceId": "space-1on1-james",
+    "name": "Career Development Plan",
+    "emoji": "📈",
+    "createdAt": "2026-01-06T09:00:00Z",
+    "updatedAt": "2026-02-14T11:00:00Z",
+    "order": 1
+  },
+  {
+    "id": "canvas-1on1-james-03",
+    "spaceId": "space-1on1-james",
+    "name": "Eng Org Restructure",
+    "emoji": "🏗️",
+    "createdAt": "2026-01-20T10:00:00Z",
+    "updatedAt": "2026-02-19T09:00:00Z",
+    "order": 2
+  },
+  {
+    "id": "canvas-1on1-james-04",
+    "spaceId": "space-1on1-james",
+    "name": "Hiring & Backfill Tracker",
+    "emoji": "👥",
+    "createdAt": "2026-01-10T10:00:00Z",
+    "updatedAt": "2026-02-13T15:00:00Z",
+    "order": 3
+  },
+  {
+    "id": "canvas-1on1-james-05",
+    "spaceId": "space-1on1-james",
+    "name": "Q2 Budget & Contractors",
+    "emoji": "💰",
+    "createdAt": "2026-01-15T10:00:00Z",
+    "updatedAt": "2026-02-15T14:00:00Z",
+    "order": 4
+  },
+  {
+    "id": "canvas-1on1-james-06",
+    "spaceId": "space-1on1-james",
+    "name": "Tech Debt Roadmap",
+    "emoji": "🔧",
+    "createdAt": "2026-01-22T10:00:00Z",
+    "updatedAt": "2026-02-10T10:00:00Z",
+    "order": 5
+  },
+
+  {
+    "id": "canvas-1on1-amara-01",
+    "spaceId": "space-1on1-amara",
+    "name": "H1 OKRs & Performance",
+    "emoji": "🎯",
+    "createdAt": "2026-01-06T09:00:00Z",
+    "updatedAt": "2026-02-20T10:00:00Z",
+    "order": 0
+  },
+  {
+    "id": "canvas-1on1-amara-02",
+    "spaceId": "space-1on1-amara",
+    "name": "Career Growth & Coaching",
+    "emoji": "🌱",
+    "createdAt": "2026-01-06T09:00:00Z",
+    "updatedAt": "2026-02-13T11:00:00Z",
+    "order": 1
+  },
+  {
+    "id": "canvas-1on1-amara-03",
+    "spaceId": "space-1on1-amara",
+    "name": "Embedded Design Model",
+    "emoji": "🔀",
+    "createdAt": "2026-01-20T10:00:00Z",
+    "updatedAt": "2026-02-07T14:00:00Z",
+    "order": 2
+  },
+  {
+    "id": "canvas-1on1-amara-04",
+    "spaceId": "space-1on1-amara",
+    "name": "Design Critique Framework",
+    "emoji": "💬",
+    "createdAt": "2026-01-25T10:00:00Z",
+    "updatedAt": "2026-02-13T11:00:00Z",
+    "order": 3
+  },
+  {
+    "id": "canvas-1on1-amara-05",
+    "spaceId": "space-1on1-amara",
+    "name": "H2 Capacity & Hiring",
+    "emoji": "📊",
+    "createdAt": "2026-01-15T10:00:00Z",
+    "updatedAt": "2026-02-16T14:00:00Z",
+    "order": 4
+  },
+  {
+    "id": "canvas-1on1-amara-06",
+    "spaceId": "space-1on1-amara",
+    "name": "Tooling & Budget",
+    "emoji": "💰",
+    "createdAt": "2026-01-10T10:00:00Z",
+    "updatedAt": "2026-02-09T10:00:00Z",
+    "order": 5
+  },
+
+  {
+    "id": "canvas-1on1-daniel-01",
+    "spaceId": "space-1on1-daniel",
+    "name": "H1 OKRs & Performance",
+    "emoji": "🎯",
+    "createdAt": "2026-01-06T09:00:00Z",
+    "updatedAt": "2026-02-19T10:00:00Z",
+    "order": 0
+  },
+  {
+    "id": "canvas-1on1-daniel-02",
+    "spaceId": "space-1on1-daniel",
+    "name": "Senior Lead Growth Plan",
+    "emoji": "🚀",
+    "createdAt": "2026-01-06T09:00:00Z",
+    "updatedAt": "2026-02-14T10:00:00Z",
+    "order": 1
+  },
+  {
+    "id": "canvas-1on1-daniel-03",
+    "spaceId": "space-1on1-daniel",
+    "name": "Incident Response Runbook",
+    "emoji": "🚨",
+    "createdAt": "2026-01-18T10:00:00Z",
+    "updatedAt": "2026-02-10T15:00:00Z",
+    "order": 2
+  },
+  {
+    "id": "canvas-1on1-daniel-04",
+    "spaceId": "space-1on1-daniel",
+    "name": "Cross-Training Plan",
+    "emoji": "🔄",
+    "createdAt": "2026-01-22T10:00:00Z",
+    "updatedAt": "2026-02-16T09:00:00Z",
+    "order": 3
+  },
+  {
+    "id": "canvas-1on1-daniel-05",
+    "spaceId": "space-1on1-daniel",
+    "name": "Sprint Health & Blockers",
+    "emoji": "📉",
+    "createdAt": "2026-01-10T10:00:00Z",
+    "updatedAt": "2026-02-19T10:00:00Z",
+    "order": 4
+  },
+  {
+    "id": "canvas-1on1-daniel-06",
+    "spaceId": "space-1on1-daniel",
+    "name": "Q2 Architecture Decisions",
+    "emoji": "🏛️",
+    "createdAt": "2026-01-15T10:00:00Z",
+    "updatedAt": "2026-02-17T14:00:00Z",
+    "order": 5
   }
 ]
