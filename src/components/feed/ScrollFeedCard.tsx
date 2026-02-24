@@ -323,14 +323,12 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false }
 
             {/* Header icon — same position as other cards */}
             <div className="px-8 pt-8 relative z-10">
-              <div style={{ filter: "brightness(0) invert(1)" }}>
-                <CardTypeIcon itemType={item.type} itemId={item.id} />
-              </div>
+              <CardTypeIcon itemType={item.type} itemId={item.id} />
             </div>
 
             {/* Title — same position as other cards */}
             <div className="px-8 pt-4 relative z-10">
-              <h3 className="text-xl font-semibold tracking-tight text-white leading-snug line-clamp-3 h-[5.25rem] whitespace-pre-line">
+              <h3 className="text-xl font-semibold tracking-tight text-gray-900 leading-snug line-clamp-3 h-[5.25rem] whitespace-pre-line">
                 {item.title}
               </h3>
             </div>
