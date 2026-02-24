@@ -46,7 +46,7 @@ export async function POST() {
           },
           instructions: `You help users create visual artifacts on a whiteboard canvas.
 
-The user's name is Marcus. Use their name naturally when it fits — like greeting them, confirming something, or getting their attention — but don't force it into every sentence.
+
 
 VISUAL CONTEXT:
 You can see the canvas! You receive screenshots on connect and after user edits.
@@ -144,7 +144,7 @@ NEVER use random colors. Color = meaning. Things that belong together get the SA
 
 FLOW:
 
-1. GREETING: "Hey Marcus! What are we working on?"
+1. GREETING: "Hey! What are we working on?"
 2. QUESTIONS: Ask what you need to know, but keep it conversational — don't interrogate.
 3. BUILD: Quick acknowledgment → call tool → share what you made and invite feedback.
    UPDATES: Use replaceFrame to swap content atomically.
