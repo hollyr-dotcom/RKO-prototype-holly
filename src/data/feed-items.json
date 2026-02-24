@@ -141,13 +141,13 @@
     "reactions": [],
     "actions": [
       {
-        "id": "resolve-review",
-        "label": "Resolve",
+        "id": "review-talktrack",
+        "label": "Review",
         "variant": "primary"
       },
       {
-        "id": "review-in-miro",
-        "label": "Review in Miro",
+        "id": "ignore-talktrack",
+        "label": "Ignore",
         "variant": "secondary"
       }
     ],
