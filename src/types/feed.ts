@@ -135,6 +135,8 @@ export interface AgentCompletedPayload {
     hotels: number;
     transfers: number;
   };
+  /** Full-bleed video that covers the entire card */
+  fullBleedVideo?: string;
 }
 
 export interface CollaborationRequestPayload {
@@ -274,6 +276,8 @@ export interface BudgetNotificationPayload {
 
 export interface TalktackPayload {
   videoSrc: string;
+  staticImage?: string;
+  backgroundImage?: string;
   artifact?: ArtifactPreview;
 }
 

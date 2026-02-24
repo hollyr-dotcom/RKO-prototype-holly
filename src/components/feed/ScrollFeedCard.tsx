@@ -93,7 +93,26 @@ function CardVisual({ item }: { item: FeedItem }) {
         );
       }
       return <AlertFYIContent item={item} />;
-    case "talktrack":
+    case "talktrack": {
+      // Static image talktrack — render image with play overlay
+      const staticImage = item.payload.staticImage;
+      if (staticImage) {
+        return (
+          <div className="relative w-full h-[180px] rounded-2xl overflow-hidden" style={{ backgroundColor: "rgba(0,0,0,0.2)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={staticImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.45)" }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M5.5 3.5L12.5 8L5.5 12.5V3.5Z" fill="white" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      return null; // video overlay covers this area for video talktracks
+    }
     case "decision":
       return null; // video overlay covers this area
   }
@@ -123,9 +142,19 @@ const adjust = (v: number, fMin: number, fMax: number, tMin: number, tMax: numbe
 type VideoState = "idle" | "loading" | "playing";
 
 export function ScrollFeedCard({ item, isActive = false, suppressHover = false }: { item: FeedItem; isActive?: boolean; suppressHover?: boolean }) {
+  // Full-bleed video card — completely different layout
+  const fullBleedVideo =
+    item.type === "agent-completed" ? item.payload.fullBleedVideo : undefined;
+
   const videoSrc =
     item.type === "talktrack" || item.type === "decision"
       ? item.payload.videoSrc
+      : undefined;
+
+  // Blurred background image for talktrack cards
+  const cardBgImage =
+    item.type === "talktrack"
+      ? item.payload.backgroundImage || item.payload.staticImage
       : undefined;
 
   const isDecision = item.type === "decision";
@@ -247,6 +276,84 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false }
 
   const videoPos = videoState === "playing" ? VIDEO_EXPANDED : VIDEO_DEFAULT;
 
+  /* ── Full-bleed video card ─────────────────────────────────────── */
+  if (fullBleedVideo) {
+    return (
+      <div className="flex-shrink-0">
+        <motion.div
+          className="relative group rounded-3xl [transition:box-shadow_300ms_ease-out]"
+          animate={{ scale: isEngaged ? 1.02 : 1 }}
+          transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ boxShadow: isEngaged ? "0 8px 28px rgba(0,0,0,0.10)" : "none" }}
+          onMouseEnter={() => {
+            setIsHovered(true);
+            setVideoState("loading");
+            timerRef.current = setTimeout(() => {
+              setVideoState("playing");
+              if (videoRef.current) {
+                videoRef.current.currentTime = 0;
+                videoRef.current.play().catch(() => {});
+              }
+            }, 600);
+          }}
+          onMouseLeave={() => {
+            setIsHovered(false);
+            if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+            setVideoState("idle");
+            if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; }
+          }}
+        >
+          <div className="relative w-[360px] rounded-3xl overflow-hidden h-[480px] border border-neutral-200 bg-black">
+            {/* Video — full-bleed, aspect-fill the entire card */}
+            <video
+              ref={videoRef}
+              src={fullBleedVideo}
+              className="absolute inset-0 w-full h-full object-cover"
+              loop
+              muted
+              playsInline
+              preload="metadata"
+            />
+
+            {/* Gradient overlay for text legibility */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0) 65%, rgba(0,0,0,0.4) 100%)" }}
+            />
+
+            {/* Header icon — same position as other cards */}
+            <div className="px-8 pt-8 relative z-10">
+              <div style={{ filter: "brightness(0) invert(1)" }}>
+                <CardTypeIcon itemType={item.type} itemId={item.id} />
+              </div>
+            </div>
+
+            {/* Title — same position as other cards */}
+            <div className="px-8 pt-4 relative z-10">
+              <h3 className="text-xl font-semibold tracking-tight text-white leading-snug line-clamp-3 h-[5.25rem] whitespace-pre-line">
+                {item.title}
+              </h3>
+            </div>
+
+            {/* Footer — hover-reveal actions */}
+            <div className="absolute bottom-0 left-0 right-0 z-10 mb-6 h-12 overflow-hidden">
+              {item.actions.length > 0 && (
+                <div className={`absolute inset-y-0 inset-x-6 flex items-center transition-[transform,opacity] duration-300 ease-out ${isEngaged ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}>
+                  <FeedActions
+                    actions={item.actions}
+                    size="large"
+                    fill
+                    onDark
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex-shrink-0"
@@ -295,6 +402,17 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false }
         }`}
         style={{ transitionTimingFunction: EASE }}
       >
+        {/* Blurred background image fill — talktrack cards only */}
+        {cardBgImage && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={cardBgImage}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            style={{ opacity: 0.4, filter: "blur(60px)", transform: "scale(1.3)" }}
+          />
+        )}
+
         {/* Gold card face — wraps content, equivalent to <img> in pokemon-cards-css */}
         <div
           className="w-full h-full flex flex-col"

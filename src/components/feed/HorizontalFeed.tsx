@@ -133,7 +133,7 @@ export function HorizontalFeed() {
       .then((data: FeedItem[]) => {
         if (!cancelled) {
           const pile = selectDeskPile(data);
-          for (const id of ["feed-ff-youth-04", "feed-ff-05", "feed-cross-06"]) {
+          for (const id of ["feed-agent-activity-01", "feed-ff-youth-04", "feed-ff-05", "feed-cross-06"]) {
             const card = data.find((i) => i.id === id);
             if (card && !pile.some((i) => i.id === card.id)) {
               pile.push(card);

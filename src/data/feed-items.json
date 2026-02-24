@@ -89,6 +89,74 @@
     "spaceName": "Core Banking Migration"
   },
   {
+    "id": "feed-agent-activity-01",
+    "type": "agent-completed",
+    "spaceId": "space-firstflex",
+    "spaceName": "FirstFlex Youth Banking",
+    "title": "Your AI assistant is preparing updates across your spaces",
+    "body": "",
+    "timestamp": "2026-02-24T06:30:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review-activity",
+        "label": "Review",
+        "variant": "primary"
+      },
+      {
+        "id": "dismiss-activity",
+        "label": "Dismiss",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "activity",
+        "name": "Overnight Activity Summary"
+      },
+      "completionSummary": "Processed 12 updates across FirstFlex, Core Banking, and PayGrid.",
+      "fullBleedVideo": "/videos/agent-activity.mp4"
+    }
+  },
+  {
+    "id": "feed-firstflex-review-talktrack",
+    "type": "talktrack",
+    "spaceId": "space-firstflex",
+    "spaceName": "FirstFlex Youth Banking",
+    "title": "Get ready for the upcoming FirstFlex Solution Review with this Talktrack.",
+    "body": "",
+    "timestamp": "2026-02-23T14:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-agent",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [],
+    "actions": [
+      {
+        "id": "resolve-review",
+        "label": "Resolve",
+        "variant": "primary"
+      },
+      {
+        "id": "review-in-miro",
+        "label": "Review in Miro",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "videoSrc": "",
+      "staticImage": "/feed-viz/FirstFlex-Youth-Banking/firstflex-kids.png"
+    }
+  },
+  {
     "id": "feed-roadmap-talktrack-01",
     "type": "talktrack",
     "spaceId": "space-roadmaps",
@@ -117,6 +185,7 @@
     ],
     "payload": {
       "videoSrc": "/videos/marcus-talktrack.mp4",
+      "backgroundImage": "/videos/marcus-talktrack-poster.jpg",
       "artifact": {
         "type": "slides",
         "id": "talktrack-q2",
