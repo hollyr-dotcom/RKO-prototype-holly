@@ -215,6 +215,12 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
         )}
       </div>
 
+      {/* Gradient fade behind prompt bar */}
+      <div
+        className="absolute bottom-0 left-0 right-0 pointer-events-none z-[19]"
+        style={{ height: "calc(128px + 2rem)", background: "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 60%, rgba(255,255,255,0.98) 100%)" }}
+      />
+
       {/* Prompt bar — anchored to bottom */}
       <div className="absolute bottom-8 left-0 right-0 mx-auto w-full max-w-3xl px-6 z-20">
         <PromptBar
