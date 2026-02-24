@@ -215,17 +215,29 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
         )}
       </div>
 
-      {/* Gradient fade behind prompt bar */}
-      <div
-        className="absolute bottom-0 left-0 right-0 pointer-events-none z-[19]"
-        style={{ height: "calc(128px + 2rem)", background: "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 60%, rgba(255,255,255,0.98) 100%)" }}
-      />
-
-      {/* Prompt bar — anchored to bottom */}
-      <div className="absolute bottom-8 left-0 right-0 mx-auto w-full max-w-3xl px-6 z-20">
-        <PromptBar
-          onSubmit={() => {}}
-        />
+      {/* Gradient fade + prompt bar — aligned to feed column via same flex layout */}
+      <div className="absolute bottom-0 left-0 right-0 z-[19] flex justify-center px-4 pointer-events-none">
+        <div className={`flex ${hasSidebar ? "gap-12" : ""} items-end`}>
+          <div style={{ width: 712 }}>
+            {/* Gradient overlay */}
+            <div
+              className="absolute bottom-0 pointer-events-none"
+              style={{
+                width: 712,
+                height: "calc(128px + 2rem)",
+                background: "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 60%, rgba(255,255,255,0.98) 100%)",
+              }}
+            />
+            {/* Prompt bar */}
+            <div className="relative pb-8 pointer-events-auto">
+              <div className="mx-auto max-w-3xl px-6">
+                <PromptBar onSubmit={() => {}} />
+              </div>
+            </div>
+          </div>
+          {/* Invisible spacer matching sidebar width so feed column stays aligned */}
+          {hasSidebar && <div style={{ width: 320 }} className="flex-shrink-0" />}
+        </div>
       </div>
 
       {/* Global shimmer keyframes for AI avatars */}
