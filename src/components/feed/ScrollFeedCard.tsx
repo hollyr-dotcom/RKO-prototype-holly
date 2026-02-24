@@ -318,7 +318,7 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false }
             {/* Gradient overlay for text legibility */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0) 65%, rgba(0,0,0,0.4) 100%)" }}
+              style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 30%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.08) 70%, rgba(0,0,0,0.22) 100%)" }}
             />
 
             {/* Header icon — same position as other cards */}
