@@ -77,8 +77,18 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
     [onDescriptionChange]
   );
 
-  // Per-space gradient overrides: { gradient, buttonBg, buttonFg }
-  const GRADIENT_OVERRIDES: Record<string, { gradient: string; buttonBg: string; buttonFg: string }> = {
+  // Per-space gradient overrides
+  const GRADIENT_OVERRIDES: Record<string, {
+    gradient: string;
+    buttonBg: string;
+    buttonFg: string;
+    /** Full-bleed background image (object-cover, vertically centred) */
+    backgroundImage?: string;
+    /** Dominant colour sampled from the background image — used to tint the button */
+    dominantColor?: string;
+    /** Avatar image to show instead of the emoji */
+    avatar?: string;
+  }> = {
     "space-firstflex": {
       gradient: "linear-gradient(151deg, #05747C, #116E85)",
       buttonBg: "#4DD4D8",
@@ -89,6 +99,26 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
       buttonBg: "#C9A0FF",
       buttonFg: "#222428",
     },
+    "space-1on1-james": {
+      gradient: "linear-gradient(151deg, #3a1a6e, #5a2d9e)",
+      buttonBg: "rgba(255,255,255,0.85)",
+      buttonFg: "#222428",
+      backgroundImage: "/avatars/james-rodriguez-banner.png",
+      dominantColor: "#7B4FAE",
+      avatar: "/avatars/james-rodriguez.png",
+    },
+    "space-1on1-amara": {
+      gradient: "linear-gradient(151deg, #1a4a6e, #2d7a9e)",
+      buttonBg: "rgba(255,255,255,0.85)",
+      buttonFg: "#222428",
+      avatar: "/avatars/amara-okafor.png",
+    },
+    "space-1on1-daniel": {
+      gradient: "linear-gradient(151deg, #1a3a5e, #2d5a8e)",
+      buttonBg: "rgba(255,255,255,0.85)",
+      buttonFg: "#222428",
+      avatar: "/avatars/daniel-park.png",
+    },
   };
 
   const override = GRADIENT_OVERRIDES[space.id];
@@ -97,30 +127,56 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
     background: override?.gradient ?? `linear-gradient(151deg, hsl(${hue}, 65%, 43%), hsl(${hue + 12}, 65%, 43%))`,
   };
   const buttonHue = hue + 6;
-  const buttonBg = override?.buttonBg ?? `hsl(${buttonHue}, 100%, 69%)`;
-  const buttonFg = override?.buttonFg ?? (needsDarkText(buttonHue, 100, 69) ? "#222428" : "white");
+  // When a background image is set with a dominant colour, tint the button with it
+  // and make it slightly translucent so the image bleeds through subtly
+  const hasImageBg = !!(override?.backgroundImage && override?.dominantColor);
+  const buttonBg =
+    hasImageBg
+      ? override.dominantColor + "d9"  // ~85% opacity hex suffix
+      : override?.buttonBg ?? `hsl(${buttonHue}, 100%, 69%)`;
+  const buttonFg =
+    hasImageBg
+      ? "white"
+      : override?.buttonFg ?? (needsDarkText(buttonHue, 100, 69) ? "#222428" : "white");
 
   return (
     <div
-      className="rounded-2xl overflow-hidden mb-6 flex flex-col justify-end"
+      className="rounded-2xl overflow-hidden mb-6 flex flex-col justify-end relative"
       style={{ ...gradientStyle, minHeight: 230, padding: "32px 48px 48px" }}
     >
+      {/* Optional background image — cropped & vertically centred */}
+      {override?.backgroundImage && (
+        <img
+          src={override.backgroundImage}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+        />
+      )}
       {/* Bottom row: title+description on left, button on right */}
-      <div className="flex items-end justify-between gap-8">
+      <div className="flex items-end justify-between gap-8 relative z-10">
         {/* Emoji + Title + description */}
         <div className="flex flex-col gap-2 min-w-0">
-          {/* Emoji — 10px above title */}
+          {/* Emoji or avatar — 10px above title */}
           <div
-            className="bg-white flex items-center justify-center flex-shrink-0 mb-1"
+            className="flex items-center justify-center flex-shrink-0 mb-1 overflow-hidden"
             style={{
               width: 64,
               height: 64,
               borderRadius: 20,
               boxShadow:
                 "0 0 12px rgba(34,36,40,0.04), 0 2px 8px rgba(34,36,40,0.12)",
+              ...(!override?.avatar && { backgroundColor: "white" }),
             }}
           >
-            <BoardEmoji emoji={space.emoji} size={38} />
+            {override?.avatar ? (
+              <img
+                src={override.avatar}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <BoardEmoji emoji={space.emoji} size={38} />
+            )}
           </div>
           <input
             type="text"
@@ -149,6 +205,7 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
             padding: "12px 24px",
             boxShadow:
               "0 12px 32px rgba(34,36,40,0.2), 0 0 8px rgba(34,36,40,0.06)",
+            ...(hasImageBg && { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }),
           }}
         >
           <svg

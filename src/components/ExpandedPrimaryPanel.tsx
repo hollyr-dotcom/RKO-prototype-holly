@@ -603,11 +603,28 @@ function GroupedSpaceList({
 
         if (sectionSpaces.length === 0) return null;
 
+        const SPACE_AVATARS: Record<string, string> = {
+          "space-1on1-james": "/avatars/james-rodriguez.png",
+          "space-1on1-amara": "/avatars/amara-okafor.png",
+          "space-1on1-daniel": "/avatars/daniel-park.png",
+        };
+
         const sectionNavItems: NavListItem[] = sectionSpaces.map((space) => ({
           id: space.id,
           label: space.name,
           href: `/space/${space.id}`,
-          icon: space.emoji ? (
+          icon: SPACE_AVATARS[space.id] ? (
+            <span
+              className="flex-shrink-0 rounded-full overflow-hidden"
+              style={{ width: 24, height: 24, minWidth: 24, minHeight: 24 }}
+            >
+              <img
+                src={SPACE_AVATARS[space.id]}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            </span>
+          ) : space.emoji ? (
             <BoardEmoji emoji={space.emoji} size={16} />
           ) : (
             <span
