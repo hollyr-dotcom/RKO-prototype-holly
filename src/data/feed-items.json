@@ -105,8 +105,8 @@
     "reactions": [],
     "actions": [
       {
-        "id": "review-activity",
-        "label": "Review",
+        "id": "join-activity",
+        "label": "Join",
         "variant": "primary"
       },
       {
