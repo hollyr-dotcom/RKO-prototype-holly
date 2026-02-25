@@ -139,16 +139,16 @@ function GapIndicator({ confidence }: { confidence: number }) {
   return (
     <div className="relative">
       <svg width="120" height="120" viewBox="0 0 120 120" className="transform -rotate-90">
-        <circle cx="60" cy="60" r={r} stroke="#e5e7eb" strokeWidth="10" fill="none" />
+        <circle cx="60" cy="60" r={r} stroke="var(--space-bg)" strokeWidth="10" fill="none" />
         <circle
           cx="60" cy="60" r={r}
-          stroke="#6366f1" strokeWidth="10" fill="none"
+          stroke="var(--space-accent)" strokeWidth="10" fill="none"
           strokeDasharray={circumference} strokeDashoffset={offset}
           strokeLinecap="round"
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-3xl font-bold text-gray-800 leading-none">{percentage}%</div>
+        <div className="text-3xl font-bold leading-none" style={{ color: 'var(--space-accent)' }}>{percentage}%</div>
         <div className="text-xs font-medium text-gray-400 mt-0.5">Confidence</div>
       </div>
     </div>
@@ -217,16 +217,16 @@ function InvitationStall({ invitations, days }: { invitations: number; days: num
 function GanttIllustration() {
   return (
     <svg width="296" height="168" viewBox="0 0 296 168" preserveAspectRatio="xMidYMid meet">
-      {/* Phase 1 bar — light grey, short, left of today line */}
-      <rect x="35" y="37" width="113" height="22" rx="4" fill="#d1d5db" />
-      {/* Phase 2 bar — light grey, longer, crosses today line */}
-      <rect x="35" y="77" width="202" height="22" rx="4" fill="#d1d5db" />
+      {/* Phase 1 bar — secondary, short, left of today line */}
+      <rect x="35" y="37" width="113" height="22" rx="4" style={{ fill: "var(--space-bg)" }} />
+      {/* Phase 2 bar — secondary, longer, crosses today line */}
+      <rect x="35" y="77" width="202" height="22" rx="4" style={{ fill: "var(--space-bg)" }} />
       {/* Today vertical line */}
       <line x1="149" y1="20" x2="149" y2="168" stroke="#9ca3af" strokeWidth="1.5" />
-      {/* Delay marker — red */}
-      <rect x="115" y="116" width="28" height="22" rx="3" fill="#EF4444" />
-      {/* Active phase bar — cyan */}
-      <rect x="148" y="116" width="121" height="22" rx="4" fill="#22D3EE" />
+      {/* Delay marker — secondary */}
+      <rect x="115" y="116" width="28" height="22" rx="3" style={{ fill: "var(--space-secondary)" }} />
+      {/* Active phase bar — accent (highlighted) */}
+      <rect x="148" y="116" width="121" height="22" rx="4" style={{ fill: "var(--space-accent)" }} />
     </svg>
   );
 }
@@ -235,12 +235,12 @@ function GanttIllustration() {
 function TimelineConflictIllustration() {
   return (
     <svg width="234" height="148" viewBox="0 0 234 148" fill="none">
-      {/* Pink bar — top, left-aligned with yellow */}
-      <rect x="10" y="30" width="95" height="22" rx="4" fill="#F9A8D4" />
-      {/* Yellow bar — middle, same left edge as pink, wider */}
-      <rect x="10" y="63" width="185" height="22" rx="4" fill="#FBBF24" />
-      {/* Cyan bar — bottom, starts near today line, extends to right edge */}
-      <rect x="90" y="96" width="140" height="22" rx="4" fill="#7DD3FC" />
+      {/* Top bar — secondary */}
+      <rect x="10" y="30" width="95" height="22" rx="4" style={{ fill: "var(--space-secondary)" }} />
+      {/* Middle bar — highlighted (accent) */}
+      <rect x="10" y="63" width="185" height="22" rx="4" style={{ fill: "var(--space-accent)" }} />
+      {/* Bottom bar — secondary */}
+      <rect x="90" y="96" width="140" height="22" rx="4" style={{ fill: "var(--space-secondary)" }} />
       {/* Today vertical line */}
       <line x1="105" y1="16" x2="105" y2="132" stroke="#1E1E2E" strokeWidth="1.5" />
     </svg>
@@ -251,10 +251,10 @@ function TimelineConflictIllustration() {
 function ClaimsSparkIllustration() {
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="text-[40px] font-bold text-gray-800 tracking-tight leading-none">34%</div>
+      <div className="text-[40px] font-bold tracking-tight leading-none" style={{ color: "var(--space-accent)" }}>34%</div>
       <svg width="242" height="90" viewBox="0 0 242 90" fill="none">
         <path d="M242 82L0 82" stroke="black" />
-        <path d="M118.13 74L151.971 39.0432L184.131 59L233.205 12.2705" stroke="#FF0909" strokeWidth="6" strokeLinecap="round" />
+        <path d="M118.13 74L151.971 39.0432L184.131 59L233.205 12.2705" style={{ stroke: "var(--space-accent)" }} strokeWidth="6" strokeLinecap="round" />
       </svg>
     </div>
   );
@@ -267,10 +267,10 @@ function ActivationDropIllustration() {
       className="flex flex-col items-center justify-center"
       style={{ width: 240, height: 184, padding: 32 }}
     >
-      <div className="text-[40px] font-bold text-gray-800 tracking-tight leading-none">12%</div>
+      <div className="text-[40px] font-bold tracking-tight leading-none" style={{ color: "var(--space-accent)" }}>12%</div>
       <svg viewBox="0 0 242 90" fill="none" className="w-full">
         <path d="M242 82L0 82" stroke="black" />
-        <path d="M118.13 74L151.971 39.0432L184.131 59L233.205 12.2705" stroke="#FF0909" strokeWidth="6" strokeLinecap="round" />
+        <path d="M118.13 74L151.971 39.0432L184.131 59L233.205 12.2705" style={{ stroke: "var(--space-accent)" }} strokeWidth="6" strokeLinecap="round" />
       </svg>
     </div>
   );
@@ -307,9 +307,9 @@ function OkrRingIllustration() {
 
   return (
     <svg width="194" height="194" viewBox="0 0 194 194" fill="none">
-      <path d={grayPath} stroke="#E5E7EB" strokeWidth={strokeW} strokeLinecap="round" fill="none" />
-      <path d={goldPath} stroke="#FBBF24" strokeWidth={strokeW} strokeLinecap="round" fill="none" />
-      <text x={cx} y={cy + 4} textAnchor="middle" dominantBaseline="middle" fontSize="28" fontWeight="700" fill="#374151">3/8</text>
+      <path d={grayPath} stroke="var(--space-bg)" strokeWidth={strokeW} strokeLinecap="round" fill="none" />
+      <path d={goldPath} stroke="var(--space-accent)" strokeWidth={strokeW} strokeLinecap="round" fill="none" />
+      <text x={cx} y={cy + 4} textAnchor="middle" dominantBaseline="middle" fontSize="28" fontWeight="700" style={{ fill: "var(--space-accent)" }}>3/8</text>
     </svg>
   );
 }

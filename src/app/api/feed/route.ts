@@ -28,7 +28,10 @@ function readSpaces(): SpaceRaw[] {
 }
 
 /** Prefixes for duplicate items that only belong in their specific spaces */
-const DUPLICATE_PREFIXES = ["feed-org27-", "feed-revops-", "feed-ff26-", "feed-epd-"];
+const DUPLICATE_PREFIXES = [
+  "feed-org27-", "feed-revops-", "feed-ff26-", "feed-epd-",
+  "feed-1on1-james-", "feed-1on1-amara-", "feed-1on1-daniel-",
+];
 
 /** GET /api/feed — all feed items across all spaces (excludes space-only duplicates) */
 export async function GET() {

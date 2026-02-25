@@ -15,8 +15,8 @@ export const SPACE_SECTIONS: SpaceSection[] = [
   {
     label: "Portfolio",
     spaceIds: [
-      "space-paygrid",
       "space-firstflex",
+      "space-paygrid",
       "space-core",
       "space-embed",
     ],
@@ -31,18 +31,26 @@ export const SPACE_SECTIONS: SpaceSection[] = [
     ],
   },
   {
-    label: "Operations",
+    label: "Leadership Team",
     spaceIds: [
-      "space-roadmaps",
-      "space-epd",
-      "space-revenueops",
-      "space-org27",
+      "space-1on1-james",
+      "space-1on1-amara",
+      "space-1on1-daniel",
     ],
   },
   {
     label: "Events",
     spaceIds: [
       "space-ff26",
+    ],
+  },
+  {
+    label: "Operations",
+    spaceIds: [
+      "space-roadmaps",
+      "space-epd",
+      "space-revenueops",
+      "space-org27",
     ],
   },
 ];

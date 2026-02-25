@@ -26,6 +26,8 @@ interface PromptBarProps {
   placeholder?: string;
   className?: string;
   autoFocus?: boolean;
+  /** Background color for the inner input area (defaults to #efedfd) */
+  inputBg?: string;
 }
 
 export function PromptBar({
@@ -34,6 +36,7 @@ export function PromptBar({
   placeholder = "Create or ask anything",
   className = "",
   autoFocus = false,
+  inputBg = "#efedfd",
 }: PromptBarProps) {
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -52,44 +55,53 @@ export function PromptBar({
   };
 
   return (
-    <form onSubmit={handleSubmit} className={`w-full max-w-xl ${className}`}>
+    <form onSubmit={handleSubmit} className={className}>
       <div
-        className="flex items-center bg-white rounded-full border border-gray-200 shadow-card"
+        className="flex items-center bg-white rounded-full"
+        style={{
+          padding: "8px 18px 8px 10px",
+          boxShadow:
+            "0px 6px 16px 0px rgba(34,36,40,0.12), 0px 0px 8px 0px rgba(34,36,40,0.06)",
+        }}
       >
-        {/* Plus button */}
-        <button
-          type="button"
-          className="p-3 text-black hover:text-black transition-colors duration-200 flex-shrink-0"
-          title="Add"
+        {/* Inner input area with tinted background */}
+        <div
+          className="flex-1 flex items-center rounded-full min-w-0"
+          style={{
+            backgroundColor: inputBg,
+            height: 56,
+            paddingLeft: 24,
+            paddingRight: 4,
+            paddingTop: 4,
+            paddingBottom: 4,
+          }}
         >
-          <IconPlus size="medium" />
-        </button>
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder={placeholder}
+            disabled={isLoading}
+            className="flex-1 text-base bg-transparent border-0 outline-none disabled:opacity-50 min-w-0"
+            style={{ color: "rgba(34,36,40,0.8)" }}
+          />
 
-        {/* Input */}
-        <input
-          ref={inputRef}
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder={placeholder}
-          disabled={isLoading}
-          className="flex-1 py-3 text-base bg-transparent border-0 outline-none placeholder:text-gray-400 disabled:opacity-50 min-w-0"
-        />
+          {/* Mic button inside the input area */}
+          <button
+            type="button"
+            className="flex items-center justify-center flex-shrink-0 w-10 h-10 rounded-full text-gray-700 hover:text-gray-900 transition-colors duration-200"
+            title="Voice input"
+          >
+            <IconMicrophone size="medium" />
+          </button>
+        </div>
 
-        {/* Mic button */}
-        <button
-          type="button"
-          className="p-3 text-black hover:text-black transition-colors duration-200 flex-shrink-0"
-          title="Voice input"
-        >
-          <IconMicrophone size="medium" />
-        </button>
-
-        {/* Submit / Voice wave button */}
+        {/* Submit / Voice wave button — outside the input area */}
         {inputValue.trim() ? (
           <button
             type="submit"
-            className="w-10 h-10 min-w-[40px] m-1 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-gray-800 flex-shrink-0 transition-colors"
+            className="w-10 h-10 min-w-[40px] ml-2 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-gray-800 flex-shrink-0 transition-colors"
             title="Send"
           >
             <IconArrowUp size="medium" />
@@ -97,7 +109,7 @@ export function PromptBar({
         ) : (
           <button
             type="button"
-            className="w-10 h-10 min-w-[40px] m-1 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-gray-800 flex-shrink-0 transition-colors"
+            className="w-10 h-10 min-w-[40px] ml-2 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-gray-800 flex-shrink-0 transition-colors"
             title="Voice mode"
           >
             <VoiceWaveIcon />

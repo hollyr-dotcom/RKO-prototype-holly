@@ -2,11 +2,26 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 import type { FeedItem } from "@/types/feed";
 import { FeedCard } from "./FeedCard";
 import { SpaceHeader } from "./SpaceHeader";
 import { PromptBar } from "@/components/PromptBar";
+import {
+  GoalsWidget,
+  StatsWidget,
+  AwaitingDecisionWidget,
+} from "@/components/sidebar-widgets";
+import {
+  CountdownWidget,
+  AttendeesWidget,
+  StaffWidget,
+  VibeCheckWidget,
+  RACIWidget,
+  MilestoneWidget,
+} from "@/components/space-widgets";
+import { SIDEBAR_WIDGET_DATA } from "@/data/sidebar-widget-data";
+import { FF26_WIDGETS, FIRSTFLEX_WIDGETS } from "@/data/space-widgets-data";
+import { getSpaceHue, generateSpaceTheme, spaceThemeToCssVars } from "@/lib/space-theme";
 
 interface SpaceFeedProps {
   spaceId: string;
@@ -20,19 +35,14 @@ const staggerContainer = {
   },
 };
 
-/** Sidebar panel config — maps spaceId → ordered list of PNG image paths */
-const SIDEBAR_PANELS: Record<string, string[]> = {
-  "space-firstflex": [
-    "/feed-viz/FirstFlex-Youth-Banking/Single%20number-2.png",
-    "/feed-viz/FirstFlex-Youth-Banking/Single%20number.png",
-    "/feed-viz/FirstFlex-Youth-Banking/Single%20number-1.png",
-  ],
-  "space-ff26": [
-    "/feed-viz/FlexForward-26/Single%20number.png",
-    "/feed-viz/FlexForward-26/Single%20number-1.png",
-    "/feed-viz/FlexForward-26/Single%20number-2.png",
-    "/feed-viz/FlexForward-26/Single%20number-3.png",
-  ],
+/** Space widget config — maps spaceId → widget data for live widget sidebars */
+const SPACE_WIDGETS: Record<string, typeof FF26_WIDGETS> = {
+  "space-ff26": FF26_WIDGETS,
+};
+
+/** FirstFlex-style widget config — RACI + milestones */
+const FIRSTFLEX_SPACE_WIDGETS: Record<string, typeof FIRSTFLEX_WIDGETS> = {
+  "space-firstflex": FIRSTFLEX_WIDGETS,
 };
 
 export function SpaceFeed({ spaceId }: SpaceFeedProps) {
@@ -115,32 +125,41 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
     [spaceId]
   );
 
-  const sidebarPanels = SIDEBAR_PANELS[spaceId];
+  const spaceWidgets = SPACE_WIDGETS[spaceId];
+  const firstflexWidgets = FIRSTFLEX_SPACE_WIDGETS[spaceId];
+  const widgetData = SIDEBAR_WIDGET_DATA[spaceId];
+  const hasSidebar = !!(spaceWidgets || firstflexWidgets || widgetData);
+
+  const theme = generateSpaceTheme(getSpaceHue(spaceId));
+  const cssVars = spaceThemeToCssVars(theme);
 
   return (
-    <div className="h-full relative overflow-hidden">
+    <div className="h-full relative overflow-hidden bg-white" style={{ ...cssVars } as React.CSSProperties}>
       {/* Single scroll container — header scrolls out, sidebar sticks */}
       <div className="h-full overflow-y-auto">
-        {/* Header — scrolls with content */}
-        <div className="px-4 pt-4">
-          {space ? (
-            <SpaceHeader
-              space={space}
-              onNameChange={handleNameChange}
-              onDescriptionChange={handleDescriptionChange}
-            />
-          ) : (
-            <div
-              className="rounded-2xl bg-gray-100 animate-pulse mb-6"
-              style={{ minHeight: 230 }}
-            />
-          )}
+        {/* Header — scrolls with content, aligned to feed+sidebar width */}
+        <div className="flex justify-center px-16">
+          <div style={{ width: hasSidebar ? 712 + 48 + 320 : 712 }}>
+            {space ? (
+              <SpaceHeader
+                space={space}
+                onNameChange={handleNameChange}
+                onDescriptionChange={handleDescriptionChange}
+              />
+            ) : (
+              <div className="animate-pulse mb-6 pt-12 pb-12 flex flex-col gap-3">
+                <div className="w-16 h-16 rounded-[20px] bg-white/60" />
+                <div className="h-14 w-3/5 bg-white/40 rounded-lg" />
+                <div className="h-7 w-4/5 bg-white/30 rounded" />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Feed + sidebar row — only render once header data is loaded */}
         {!space ? null : (
-        <div className="flex justify-center px-4">
-          <div className={`flex ${sidebarPanels ? "gap-12" : ""} items-start`}>
+        <div className="flex justify-center px-16">
+          <div className={`flex ${hasSidebar ? "gap-12" : ""} items-start`}>
             {/* Feed column */}
             <div style={{ width: 712 }}>
               <div className="pb-28">
@@ -174,20 +193,34 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
               </div>
             </div>
 
-            {/* Sidebar panels — sticky to viewport top */}
-            {sidebarPanels && (
+            {/* FirstFlex widgets sidebar (RACI + milestones) */}
+            {firstflexWidgets && (
+              <div className="flex flex-col gap-5 flex-shrink-0 sticky" style={{ width: 320, top: 24 }}>
+                <RACIWidget {...firstflexWidgets.raci} />
+                <MilestoneWidget {...firstflexWidgets.nextMilestone} />
+                <MilestoneWidget {...firstflexWidgets.lastMilestone} />
+              </div>
+            )}
+
+            {/* Space widgets sidebar (FF26 etc.) */}
+            {spaceWidgets && (
+              <div className="flex flex-col gap-5 flex-shrink-0 sticky" style={{ width: 320, top: 24 }}>
+                <CountdownWidget {...spaceWidgets.countdown} />
+                <AttendeesWidget {...spaceWidgets.attendees} />
+                <StaffWidget {...spaceWidgets.staff} />
+                <VibeCheckWidget {...spaceWidgets.vibeCheck} />
+              </div>
+            )}
+
+            {/* Widget-based sidebar (1:1 spaces) */}
+            {widgetData && (
               <div className="flex flex-col gap-6 flex-shrink-0 sticky" style={{ width: 320, top: 24 }}>
-                {sidebarPanels.map((src, i) => (
-                  <Image
-                    key={i}
-                    src={src}
-                    alt=""
-                    width={480}
-                    height={480}
-                    className="w-full h-auto rounded-xl"
-                    priority={i === 0}
-                  />
-                ))}
+                <GoalsWidget goals={widgetData.goals} />
+                <StatsWidget stats={widgetData.stats} />
+                <AwaitingDecisionWidget
+                  decisions={widgetData.decisions}
+                  onSeeAll={() => {}}
+                />
               </div>
             )}
           </div>
@@ -195,11 +228,29 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
         )}
       </div>
 
-      {/* Prompt bar — anchored to bottom */}
-      <div className="absolute bottom-8 left-0 right-0 mx-auto w-full max-w-3xl px-6 z-20">
-        <PromptBar
-          onSubmit={() => {}}
-        />
+      {/* Gradient fade + prompt bar — aligned to feed column via same flex layout */}
+      <div className="absolute bottom-0 left-0 right-0 z-[19] flex justify-center px-16 pointer-events-none">
+        <div className={`flex ${hasSidebar ? "gap-12" : ""} items-end`}>
+          <div style={{ width: 712 }}>
+            {/* Gradient overlay */}
+            <div
+              className="absolute bottom-0 pointer-events-none"
+              style={{
+                width: 712,
+                height: "calc(128px + 2rem)",
+                background: `linear-gradient(180deg, hsla(${theme.tintHue},80%,96%,0) 0%, hsla(${theme.tintHue},80%,96%,0.8) 60%, hsla(${theme.tintHue},80%,96%,0.98) 100%)`,
+              }}
+            />
+            {/* Prompt bar */}
+            <div className="relative pb-8 pointer-events-auto">
+              <div className="mx-auto max-w-3xl px-6">
+                <PromptBar onSubmit={() => {}} inputBg={theme.bg} />
+              </div>
+            </div>
+          </div>
+          {/* Invisible spacer matching sidebar width so feed column stays aligned */}
+          {hasSidebar && <div style={{ width: 320 }} className="flex-shrink-0" />}
+        </div>
       </div>
 
       {/* Global shimmer keyframes for AI avatars */}

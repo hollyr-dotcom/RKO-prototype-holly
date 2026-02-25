@@ -138,8 +138,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
       <motion.div
         variants={staggerItem}
         className="group relative rounded-[24px] overflow-hidden transition-shadow duration-200 hover:shadow-card bg-gray-200"
-        style={{ border: "0.5px solid var(--color-gray-300)" }}
-        style={{ width: 712 }}
+        style={{ border: "0.5px solid var(--color-gray-300)", width: 712 }}
       >
         <div className="flex">
           {/* Left: text content */}
@@ -200,7 +199,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
                     </div>
                     <div className="grid grid-cols-5 gap-1">
                       {[...Array(15)].map((_, i) => (
-                        <div key={i} className="h-5 rounded-sm" style={{ backgroundColor: i === 7 ? '#DB4F4F' : '#FFC6C6' }} />
+                        <div key={i} className="h-5 rounded-sm" style={{ backgroundColor: i === 7 ? 'var(--space-accent)' : 'var(--space-bg)' }} />
                       ))}
                     </div>
                   </div>
@@ -208,19 +207,19 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
                 {item.id === "feed-ff-youth-04" && (
                   <div className="w-full h-full relative bg-white flex items-center" style={{ padding: '0 24px 0 16px' }}>
                     <svg width="108" height="115" viewBox="0 0 108 115" fill="none" style={{ transform: 'scaleX(-1)' }}>
-                      <path d="M54.9697 9.61279C83.9022 9.61279 107.357 33.0671 107.357 61.9995C107.357 90.9321 83.9023 114.387 54.9697 114.387C26.0373 114.387 2.58301 90.932 2.58301 61.9995C2.58305 55.4151 3.79701 49.1141 6.01465 43.3091L52.2568 60.9634C53.566 61.463 54.9697 60.4965 54.9697 59.0952V11.6128C54.9697 10.6157 54.2397 9.79156 53.2852 9.64014C53.8445 9.62246 54.4061 9.6128 54.9697 9.61279Z" fill="#E9EAEF" />
-                      <path d="M48.3578 49.4462C48.3578 50.8477 46.9538 51.8145 45.6445 51.3147L1.27256 34.3737C0.240495 33.9797 -0.280194 32.8216 0.153425 31.8055C7.89531 13.6645 25.5783 0.781464 46.3578 0.00137677C47.4616 -0.040061 48.3578 0.859329 48.3578 1.9639V49.4462Z" fill="#04BBEE" />
+                      <path d="M54.9697 9.61279C83.9022 9.61279 107.357 33.0671 107.357 61.9995C107.357 90.9321 83.9023 114.387 54.9697 114.387C26.0373 114.387 2.58301 90.932 2.58301 61.9995C2.58305 55.4151 3.79701 49.1141 6.01465 43.3091L52.2568 60.9634C53.566 61.463 54.9697 60.4965 54.9697 59.0952V11.6128C54.9697 10.6157 54.2397 9.79156 53.2852 9.64014C53.8445 9.62246 54.4061 9.6128 54.9697 9.61279Z" style={{ fill: 'var(--space-bg)' }} />
+                      <path d="M48.3578 49.4462C48.3578 50.8477 46.9538 51.8145 45.6445 51.3147L1.27256 34.3737C0.240495 33.9797 -0.280194 32.8216 0.153425 31.8055C7.89531 13.6645 25.5783 0.781464 46.3578 0.00137677C47.4616 -0.040061 48.3578 0.859329 48.3578 1.9639V49.4462Z" style={{ fill: 'var(--space-accent)' }} />
                     </svg>
-                    <span className="absolute font-semibold" style={{ fontSize: 20, color: '#222428', zIndex: 1, right: 24, top: '50%', transform: 'translateY(-50%)' }}>$ 4.2M</span>
+                    <span className="absolute font-semibold" style={{ fontSize: 20, color: 'var(--space-accent)', zIndex: 1, right: 24, top: '50%', transform: 'translateY(-50%)' }}>$ 4.2M</span>
                   </div>
                 )}
                 {item.id === "feed-ff-07" && (
                   <div className="w-full h-full relative bg-white flex items-center" style={{ padding: '0 24px 0 16px' }}>
                     <svg width="108" height="115" viewBox="0 0 108 115" fill="none" style={{ transform: 'scaleX(-1)' }}>
-                      <path d="M54.9697 9.61279C83.9022 9.61279 107.357 33.0671 107.357 61.9995C107.357 90.9321 83.9023 114.387 54.9697 114.387C26.0373 114.387 2.58301 90.932 2.58301 61.9995C2.58305 55.4151 3.79701 49.1141 6.01465 43.3091L52.2568 60.9634C53.566 61.463 54.9697 60.4965 54.9697 59.0952V11.6128C54.9697 10.6157 54.2397 9.79156 53.2852 9.64014C53.8445 9.62246 54.4061 9.6128 54.9697 9.61279Z" fill="#E9EAEF" />
-                      <path d="M48.3578 49.4462C48.3578 50.8477 46.9538 51.8145 45.6445 51.3147L1.27256 34.3737C0.240495 33.9797 -0.280194 32.8216 0.153425 31.8055C7.89531 13.6645 25.5783 0.781464 46.3578 0.00137677C47.4616 -0.040061 48.3578 0.859329 48.3578 1.9639V49.4462Z" fill="#04BBEE" />
+                      <path d="M54.9697 9.61279C83.9022 9.61279 107.357 33.0671 107.357 61.9995C107.357 90.9321 83.9023 114.387 54.9697 114.387C26.0373 114.387 2.58301 90.932 2.58301 61.9995C2.58305 55.4151 3.79701 49.1141 6.01465 43.3091L52.2568 60.9634C53.566 61.463 54.9697 60.4965 54.9697 59.0952V11.6128C54.9697 10.6157 54.2397 9.79156 53.2852 9.64014C53.8445 9.62246 54.4061 9.6128 54.9697 9.61279Z" style={{ fill: 'var(--space-bg)' }} />
+                      <path d="M48.3578 49.4462C48.3578 50.8477 46.9538 51.8145 45.6445 51.3147L1.27256 34.3737C0.240495 33.9797 -0.280194 32.8216 0.153425 31.8055C7.89531 13.6645 25.5783 0.781464 46.3578 0.00137677C47.4616 -0.040061 48.3578 0.859329 48.3578 1.9639V49.4462Z" style={{ fill: 'var(--space-accent)' }} />
                     </svg>
-                    <span className="absolute font-semibold" style={{ fontSize: 20, color: '#222428', zIndex: 1, right: 24, top: '50%', transform: 'translateY(-50%)' }}>62%</span>
+                    <span className="absolute font-semibold" style={{ fontSize: 20, color: 'var(--space-accent)', zIndex: 1, right: 24, top: '50%', transform: 'translateY(-50%)' }}>62%</span>
                   </div>
                 )}
                 {item.id === "feed-ff-youth-03" && (
@@ -291,7 +290,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
   /* ------------------------------------------------------------------ */
   const px = isStack ? "px-8" : "px-6";
   const pt = isStack ? "pt-8" : "pt-6";
-  const pbActions = isStack ? "pb-10" : "pb-8";
+  const pbActions = isStack ? "pb-[34px]" : "pb-[26px]";
 
   return (
     <motion.div

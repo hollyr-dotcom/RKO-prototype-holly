@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconArrowLeft, IconLightning } from "@mirohq/design-system-icons";
 import { ChatInput } from "@/components/toolbar/ChatInput";
+import { PromptBar } from "@/components/PromptBar";
 import { CardFan } from "@/components/home/CardFan";
 import {
   attentionCards,
@@ -449,17 +450,18 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
-      {/* Chat input — same as canvas toolbar chat mode */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[70]" style={{ width: 420 }}>
-        <ChatInput
-          onSubmit={handleSubmit}
-          onFocusChange={() => {}}
-          isLoading={isLoading}
-          hasMessages={false}
-          hasPendingQuestion={false}
-          canvasState={{ frames: [], orphans: [], arrows: [] }}
-          voiceState="idle"
-        />
+      {/* Prompt bar */}
+      <div className="absolute bottom-8 left-0 right-0 flex justify-center px-4">
+        <div style={{ width: 712 }}>
+          <div className="mx-auto max-w-3xl px-6">
+            <PromptBar
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+              autoFocus
+              inputBg="#f2f2f2"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

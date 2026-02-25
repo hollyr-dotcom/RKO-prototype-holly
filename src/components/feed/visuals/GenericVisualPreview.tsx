@@ -302,7 +302,7 @@ function BrainstormShape() {
   return (
     <div className="flex flex-wrap gap-2 justify-center">
       {[1, 2, 3, 4, 5, 6].map((i) => (
-        <div key={i} className="w-14 h-10 rounded-lg" style={{ backgroundColor: i === 3 || i === 4 ? '#F9E05C' : '#FCF4C8' }} />
+        <div key={i} className="w-14 h-10 rounded-lg" style={{ backgroundColor: i === 3 || i === 4 ? 'var(--space-accent)' : 'var(--space-bg)' }} />
       ))}
     </div>
   );
@@ -410,7 +410,7 @@ function CalendarShape() {
       </div>
       <div className="grid grid-cols-5 gap-1">
         {[...Array(15)].map((_, i) => (
-          <div key={i} className="h-4 rounded-sm" style={{ backgroundColor: i === 7 ? '#DB4F4F' : '#FFC6C6' }} />
+          <div key={i} className="h-4 rounded-sm" style={{ backgroundColor: i === 7 ? 'var(--space-accent)' : 'var(--space-bg)' }} />
         ))}
       </div>
     </div>

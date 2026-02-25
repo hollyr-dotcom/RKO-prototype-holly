@@ -11,6 +11,7 @@ import { NavList, NavListItem } from "@/components/NavList";
 import { BoardEmoji } from "@/components/BoardEmoji";
 import { generateAndSetEmoji } from "@/lib/canvasUtils";
 import { BOARD_SECTIONS } from "@/data/board-sections";
+import { getSpaceHue, generateSpaceTheme } from "@/lib/space-theme";
 
 type Canvas = {
   id: string;
@@ -27,10 +28,94 @@ type Space = {
   color?: string;
 };
 
-// Fixed pages for a space — only Overview
-const capabilities = [
-  { id: "overview", label: "Overview" },
-];
+// Fixed pages for a space — Overview + space-specific sections
+const SPACE_SECTIONS: Record<string, { id: string; label: string }[]> = {
+  // Portfolio
+  "space-paygrid": [
+    { id: "tasks", label: "Tasks" },
+    { id: "people", label: "People" },
+    { id: "budget", label: "Budget" },
+  ],
+  "space-firstflex": [
+    { id: "tasks", label: "Tasks" },
+    { id: "people", label: "People" },
+    { id: "budget", label: "Budget" },
+  ],
+  "space-core": [
+    { id: "tasks", label: "Tasks" },
+    { id: "people", label: "People" },
+    { id: "timeline", label: "Timeline" },
+  ],
+  "space-embed": [
+    { id: "tasks", label: "Tasks" },
+    { id: "people", label: "People" },
+    { id: "partners", label: "Partners" },
+  ],
+  // Programs
+  "space-launch-q3": [
+    { id: "tasks", label: "Tasks" },
+    { id: "people", label: "People" },
+    { id: "timeline", label: "Timeline" },
+  ],
+  "space-brand": [
+    { id: "tasks", label: "Tasks" },
+    { id: "people", label: "People" },
+    { id: "assets", label: "Assets" },
+  ],
+  "space-kyc": [
+    { id: "tasks", label: "Tasks" },
+    { id: "people", label: "People" },
+    { id: "compliance", label: "Compliance" },
+  ],
+  "space-claims": [
+    { id: "tasks", label: "Tasks" },
+    { id: "people", label: "People" },
+    { id: "models", label: "Models" },
+  ],
+  // Events
+  "space-ff26": [
+    { id: "schedule", label: "Schedule" },
+    { id: "attendees", label: "Attendees" },
+    { id: "logistics", label: "Logistics" },
+  ],
+  // Operations
+  "space-roadmaps": [
+    { id: "tasks", label: "Tasks" },
+    { id: "people", label: "People" },
+    { id: "priorities", label: "Priorities" },
+  ],
+  "space-epd": [
+    { id: "people", label: "People" },
+    { id: "goals", label: "Goals" },
+    { id: "reviews", label: "Reviews" },
+  ],
+  "space-revenueops": [
+    { id: "pipeline", label: "Pipeline" },
+    { id: "people", label: "People" },
+    { id: "metrics", label: "Metrics" },
+  ],
+  "space-org27": [
+    { id: "people", label: "People" },
+    { id: "budget", label: "Budget" },
+    { id: "timeline", label: "Timeline" },
+  ],
+  // 1:1s
+  "space-1on1-james": [
+    { id: "goals", label: "Goals" },
+    { id: "actions", label: "Actions" },
+    { id: "notes", label: "Notes" },
+  ],
+  "space-1on1-amara": [
+    { id: "goals", label: "Goals" },
+    { id: "actions", label: "Actions" },
+    { id: "notes", label: "Notes" },
+  ],
+  "space-1on1-daniel": [
+    { id: "goals", label: "Goals" },
+    { id: "actions", label: "Actions" },
+    { id: "notes", label: "Notes" },
+  ],
+};
 
 // Motion: stagger container + items (spring.snappy: stiffness 400, damping 30)
 const staggerContainer = {
@@ -338,6 +423,8 @@ export function SecondaryPanel() {
 
   const spaceName = space?.name || "Space";
 
+  const sidebarTheme = generateSpaceTheme(params.spaceId ? getSpaceHue(params.spaceId) : 260);
+
   return (
     <aside
       className="h-full flex-shrink-0 overflow-hidden rounded-l-[2.5rem] shadow-surface-nav"
@@ -345,35 +432,37 @@ export function SecondaryPanel() {
     >
       <div className="h-full flex flex-col">
         {/* Space header — single click to edit */}
-        <div className="flex items-center px-6 pt-6 pb-5">
-          {loading ? (
-            <div className="h-5 w-3/5 bg-gray-100 rounded animate-pulse" />
-          ) : isEditingSpaceName ? (
-            <input
-              ref={spaceNameInputRef}
-              value={spaceNameEditValue}
-              onChange={(e) => setSpaceNameEditValue(e.target.value)}
-              onBlur={handleSaveSpaceName}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleSaveSpaceName();
-                }
-                if (e.key === "Escape") {
-                  e.preventDefault();
-                  handleCancelSpaceName();
-                }
-              }}
-              className="flex-1 text-md font-semibold text-gray-900 truncate bg-transparent outline-none border-none p-0 m-0"
-            />
-          ) : (
-            <h2
-              className="flex-1 text-md font-semibold text-gray-900 truncate cursor-text"
-              onClick={() => setIsEditingSpaceName(true)}
-            >
-              {spaceName}
-            </h2>
-          )}
+        <div className="px-6 pt-6 pb-0">
+          <div className="flex items-center pb-5">
+            {loading ? (
+              <div className="h-5 w-3/5 bg-gray-100 rounded animate-pulse" />
+            ) : isEditingSpaceName ? (
+              <input
+                ref={spaceNameInputRef}
+                value={spaceNameEditValue}
+                onChange={(e) => setSpaceNameEditValue(e.target.value)}
+                onBlur={handleSaveSpaceName}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSaveSpaceName();
+                  }
+                  if (e.key === "Escape") {
+                    e.preventDefault();
+                    handleCancelSpaceName();
+                  }
+                }}
+                className="flex-1 text-md font-semibold text-gray-900 truncate bg-transparent outline-none border-none p-0 m-0"
+              />
+            ) : (
+              <h2
+                className="flex-1 text-md font-semibold text-gray-900 truncate cursor-text"
+                onClick={() => setIsEditingSpaceName(true)}
+              >
+                {spaceName}
+              </h2>
+            )}
+          </div>
         </div>
 
         {/* Scrollable content */}
@@ -382,10 +471,10 @@ export function SecondaryPanel() {
             /* Skeleton UI */
             <div className="flex flex-col">
               {/* Capability skeleton */}
-              <div className="h-8 w-2/5 bg-gray-100 rounded-lg animate-pulse mx-1" />
+              <div className="h-10 w-2/5 bg-gray-100 rounded-[8px] animate-pulse mx-1" />
 
               {/* Divider */}
-              <div className="my-8 border-gray-200" />
+              <div className="my-6 border-b border-black/[0.08]" />
 
               {/* Boards header — label only, no + button */}
               <div className="flex items-center h-8 px-3">
@@ -409,27 +498,36 @@ export function SecondaryPanel() {
             </div>
           ) : (
             <>
-              {/* Capabilities list */}
+              {/* Capabilities list — Overview + space-specific sections */}
               <motion.div
                 className="flex flex-col gap-0.5"
                 variants={staggerContainer}
                 initial="hidden"
                 animate="visible"
               >
-                {capabilities.map((cap) => (
-                  <motion.div key={cap.id} variants={staggerItem}>
+                <motion.div variants={staggerItem}>
+                  <CapabilityItem
+                    label="Overview"
+                    isSelected={selectedCapability === "overview"}
+                    onClick={() => setSelectedCapability("overview")}
+                    href={`/space/${params.spaceId}`}
+                    highlightColor="#E5E7EB"
+                  />
+                </motion.div>
+                {(params.spaceId && SPACE_SECTIONS[params.spaceId] || []).map((section) => (
+                  <motion.div key={section.id} variants={staggerItem}>
                     <CapabilityItem
-                      label={cap.label}
-                      isSelected={selectedCapability === cap.id}
-                      onClick={() => setSelectedCapability(cap.id)}
-                      href={cap.id === "overview" ? `/space/${params.spaceId}` : undefined}
+                      label={section.label}
+                      isSelected={false}
+                      onClick={() => {}}
+                      highlightColor="#E5E7EB"
                     />
                   </motion.div>
                 ))}
               </motion.div>
 
               {/* Divider */}
-              <div className="my-8  border-gray-200" />
+              <div className="my-6 border-b border-black/[0.08]" />
 
               {/* Boards section */}
               <div className="flex items-center h-8 pl-3 pr-0">
@@ -480,28 +578,40 @@ function CapabilityItem({
   isSelected,
   onClick,
   href,
+  highlightColor,
 }: {
   label: string;
   isSelected: boolean;
   onClick: () => void;
   href?: string;
+  highlightColor?: string;
 }) {
-  const className = `w-full flex items-center h-8 rounded-lg text-sm transition-colors duration-200 px-4 ${
-    isSelected
-      ? "bg-gray-100 text-gray-900 font-medium"
-      : "text-gray-600 hover:bg-gray-100"
-  }`;
+  const baseClass = "w-full flex items-center rounded-[8px] text-sm transition-colors duration-200 px-4";
+  const textClass = isSelected ? "text-gray-900 font-medium" : "text-gray-600";
 
   if (href) {
     return (
-      <Link href={href} onClick={onClick} className={className}>
+      <Link
+        href={href}
+        onClick={onClick}
+        className={`${baseClass} ${textClass}`}
+        style={{ height: 40, ...(isSelected ? { backgroundColor: highlightColor } : undefined) }}
+        onMouseEnter={(e) => { if (!isSelected && highlightColor) (e.currentTarget.style.backgroundColor = highlightColor); }}
+        onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = ""; }}
+      >
         <span className="truncate text-left">{label}</span>
       </Link>
     );
   }
 
   return (
-    <button onClick={onClick} className={className}>
+    <button
+      onClick={onClick}
+      className={`${baseClass} ${textClass}`}
+      style={{ height: 40, ...(isSelected ? { backgroundColor: highlightColor } : undefined) }}
+      onMouseEnter={(e) => { if (!isSelected && highlightColor) (e.currentTarget.style.backgroundColor = highlightColor); }}
+      onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = ""; }}
+    >
       <span className="truncate text-left">{label}</span>
     </button>
   );

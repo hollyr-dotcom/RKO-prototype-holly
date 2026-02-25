@@ -34,12 +34,12 @@ function CardVisual({ item }: { item: FeedItem }) {
           <div className="flex flex-col items-center gap-2">
             <div className="flex gap-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="w-14 h-10 rounded-lg" style={{ backgroundColor: i === 2 ? '#F9E05C' : '#FCF4C8' }} />
+                <div key={i} className="w-14 h-10 rounded-lg" style={{ backgroundColor: i === 2 ? 'var(--space-accent)' : 'var(--space-bg)' }} />
               ))}
             </div>
             <div className="flex gap-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="w-14 h-10 rounded-lg" style={{ backgroundColor: i === 2 ? '#F9E05C' : '#FCF4C8' }} />
+                <div key={i} className="w-14 h-10 rounded-lg" style={{ backgroundColor: i === 2 ? 'var(--space-accent)' : 'var(--space-bg)' }} />
               ))}
             </div>
           </div>
@@ -49,10 +49,10 @@ function CardVisual({ item }: { item: FeedItem }) {
         return (
           <div className="flex items-center gap-4">
             <svg width="108" height="115" viewBox="0 0 108 115" fill="none">
-              <path d="M54.9697 9.61279C83.9022 9.61279 107.357 33.0671 107.357 61.9995C107.357 90.9321 83.9023 114.387 54.9697 114.387C26.0373 114.387 2.58301 90.932 2.58301 61.9995C2.58305 55.4151 3.79701 49.1141 6.01465 43.3091L52.2568 60.9634C53.566 61.463 54.9697 60.4965 54.9697 59.0952V11.6128C54.9697 10.6157 54.2397 9.79156 53.2852 9.64014C53.8445 9.62246 54.4061 9.6128 54.9697 9.61279Z" fill="#E9EAEF" />
-              <path d="M48.3578 49.4462C48.3578 50.8477 46.9538 51.8145 45.6445 51.3147L1.27256 34.3737C0.240495 33.9797 -0.280194 32.8216 0.153425 31.8055C7.89531 13.6645 25.5783 0.781464 46.3578 0.00137677C47.4616 -0.040061 48.3578 0.859329 48.3578 1.9639V49.4462Z" fill="#04BBEE" />
+              <path d="M54.9697 9.61279C83.9022 9.61279 107.357 33.0671 107.357 61.9995C107.357 90.9321 83.9023 114.387 54.9697 114.387C26.0373 114.387 2.58301 90.932 2.58301 61.9995C2.58305 55.4151 3.79701 49.1141 6.01465 43.3091L52.2568 60.9634C53.566 61.463 54.9697 60.4965 54.9697 59.0952V11.6128C54.9697 10.6157 54.2397 9.79156 53.2852 9.64014C53.8445 9.62246 54.4061 9.6128 54.9697 9.61279Z" style={{ fill: 'var(--space-bg)' }} />
+              <path d="M48.3578 49.4462C48.3578 50.8477 46.9538 51.8145 45.6445 51.3147L1.27256 34.3737C0.240495 33.9797 -0.280194 32.8216 0.153425 31.8055C7.89531 13.6645 25.5783 0.781464 46.3578 0.00137677C47.4616 -0.040061 48.3578 0.859329 48.3578 1.9639V49.4462Z" style={{ fill: 'var(--space-accent)' }} />
             </svg>
-            <span className="font-bold text-gray-800 tracking-tight leading-none" style={{ fontSize: '20pt' }}>$ 4.2M</span>
+            <span className="font-bold tracking-tight leading-none" style={{ fontSize: '20pt', color: 'var(--space-accent)' }}>$ 4.2M</span>
           </div>
         );
       }
@@ -87,14 +87,33 @@ function CardVisual({ item }: { item: FeedItem }) {
             </div>
             <div className="grid grid-cols-5 gap-1.5">
               {[...Array(15)].map((_, i) => (
-                <div key={i} className="w-12 h-6 rounded-sm" style={{ backgroundColor: i === 7 ? '#DB4F4F' : '#FFC6C6' }} />
+                <div key={i} className="w-12 h-6 rounded-sm" style={{ backgroundColor: i === 7 ? 'var(--space-accent)' : 'var(--space-bg)' }} />
               ))}
             </div>
           </div>
         );
       }
       return <AlertFYIContent item={item} />;
-    case "talktrack":
+    case "talktrack": {
+      // Static image talktrack — render image with play overlay
+      const staticImage = item.payload.staticImage;
+      if (staticImage) {
+        return (
+          <div className="relative w-full h-[180px] rounded-2xl overflow-hidden" style={{ backgroundColor: "rgba(0,0,0,0.2)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={staticImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.45)" }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M5.5 3.5L12.5 8L5.5 12.5V3.5Z" fill="white" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      return null; // video overlay covers this area for video talktracks
+    }
     case "decision":
       return null; // video overlay covers this area
   }
@@ -110,9 +129,9 @@ const TILT_SPRING = { stiffness: 300, damping: 25 };
 const EASE = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 const VIDEO_TRANSITION = `top 220ms ${EASE}, left 220ms ${EASE}, right 220ms ${EASE}, height 220ms ${EASE}, border-radius 220ms ${EASE}, opacity 200ms ease-out`;
 
-// Pixel positions within the 576px card (scaled 20% from original 480px)
-const VIDEO_DEFAULT = { top: 196, left: 32, right: 32, height: 276, borderRadius: 16, opacity: 1 };
-const VIDEO_EXPANDED = { top: 0, left: 0, right: 0, height: 576, borderRadius: 24, opacity: 1 };
+// Pixel positions within the 480px card
+const VIDEO_DEFAULT = { top: 196, left: 32, right: 32, height: 180, borderRadius: 16, opacity: 1 };
+const VIDEO_EXPANDED = { top: 0, left: 0, right: 0, height: 480, borderRadius: 24, opacity: 1 };
 
 /** Map a value from one range to another (used for CSS custom property calculation). */
 const adjust = (v: number, fMin: number, fMax: number, tMin: number, tMax: number) =>
@@ -121,9 +140,19 @@ const adjust = (v: number, fMin: number, fMax: number, tMin: number, tMax: numbe
 type VideoState = "idle" | "loading" | "playing";
 
 export function ScrollFeedCard({ item, isActive = false, suppressHover = false, isHero = false }: { item: FeedItem; isActive?: boolean; suppressHover?: boolean; isHero?: boolean }) {
+  // Full-bleed video card — completely different layout
+  const fullBleedVideo =
+    item.type === "agent-completed" ? item.payload.fullBleedVideo : undefined;
+
   const videoSrc =
     item.type === "talktrack" || item.type === "decision"
       ? item.payload.videoSrc
+      : undefined;
+
+  // Blurred background image for talktrack cards
+  const cardBgImage =
+    item.type === "talktrack"
+      ? item.payload.backgroundImage || item.payload.staticImage
       : undefined;
 
   const isDecision = item.type === "decision";
@@ -245,6 +274,82 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false, 
 
   const videoPos = videoState === "playing" ? VIDEO_EXPANDED : VIDEO_DEFAULT;
 
+  /* ── Full-bleed video card ─────────────────────────────────────── */
+  if (fullBleedVideo) {
+    return (
+      <div className="flex-shrink-0">
+        <motion.div
+          className="relative group rounded-3xl [transition:box-shadow_300ms_ease-out]"
+          animate={{ scale: isEngaged ? 1.02 : 1 }}
+          transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ boxShadow: isEngaged ? "0 8px 28px rgba(0,0,0,0.10)" : "none" }}
+          onMouseEnter={() => {
+            setIsHovered(true);
+            setVideoState("loading");
+            timerRef.current = setTimeout(() => {
+              setVideoState("playing");
+              if (videoRef.current) {
+                videoRef.current.currentTime = 0;
+                videoRef.current.play().catch(() => {});
+              }
+            }, 600);
+          }}
+          onMouseLeave={() => {
+            setIsHovered(false);
+            if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+            setVideoState("idle");
+            if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; }
+          }}
+        >
+          <div className="relative w-[360px] rounded-3xl overflow-hidden h-[480px] border border-neutral-200 bg-black">
+            {/* Video — full-bleed, aspect-fill the entire card */}
+            <video
+              ref={videoRef}
+              src={fullBleedVideo}
+              className="absolute inset-0 w-full h-full object-cover"
+              loop
+              muted
+              playsInline
+              preload="metadata"
+            />
+
+            {/* Gradient overlay for text legibility */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 30%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.08) 70%, rgba(0,0,0,0.22) 100%)" }}
+            />
+
+            {/* Header icon — same position as other cards */}
+            <div className="px-8 pt-8 relative z-10">
+              <CardTypeIcon itemType={item.type} itemId={item.id} />
+            </div>
+
+            {/* Title — same position as other cards */}
+            <div className="px-8 pt-4 relative z-10">
+              <h3 className="text-xl font-semibold tracking-tight text-gray-900 leading-snug line-clamp-3 h-[5.25rem] whitespace-pre-line">
+                {item.title}
+              </h3>
+            </div>
+
+            {/* Footer — hover-reveal actions */}
+            <div className="absolute bottom-0 left-0 right-0 z-10 mb-6 h-9 overflow-hidden">
+              {item.actions.length > 0 && (
+                <div className={`absolute inset-y-0 inset-x-6 flex items-center transition-[transform,opacity] duration-300 ease-out ${isEngaged ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}>
+                  <FeedActions
+                    actions={item.actions}
+                    size="large"
+                    fill
+                    onDark
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex-shrink-0"
@@ -291,10 +396,21 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false, 
         className={`relative ${isHero ? "w-[475px] h-[634px]" : "w-[432px] h-[576px]"} rounded-3xl overflow-hidden flex flex-col border transition-[border-color] duration-300 ${
           isDecision
             ? `border-transparent holo-card${isEngaged ? " holo-active" : ""}`
-            : "bg-gray-50 border-neutral-200"
+            : "bg-white border-neutral-200"
         }`}
         style={{ transitionTimingFunction: EASE }}
       >
+        {/* Blurred background image fill — talktrack cards only */}
+        {cardBgImage && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={cardBgImage}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            style={{ opacity: 0.4, filter: "blur(60px)", transform: "scale(1.3)" }}
+          />
+        )}
+
         {/* Gold card face — wraps content, equivalent to <img> in pokemon-cards-css */}
         <div
           className="w-full h-full flex flex-col"
@@ -365,7 +481,7 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false, 
 
 
           {/* Footer — sits above video overlay */}
-          <div className="relative mt-6 mb-6 h-12 overflow-hidden z-10">
+          <div className="relative mt-6 mb-6 h-9 overflow-hidden z-10">
            
             {/* Hover reveal: emoji reactions (decision) or action buttons */}
             {item.type === "decision" ? (

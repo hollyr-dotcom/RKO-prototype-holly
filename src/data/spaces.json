@@ -117,5 +117,32 @@
     "createdAt": "2025-12-01T14:00:00Z",
     "updatedAt": "2026-02-15T13:00:00Z",
     "order": 12
+  },
+  {
+    "id": "space-1on1-james",
+    "name": "James Rodriguez",
+    "description": "Weekly 1:1 with VP of Engineering — goals, action items, decisions, and career growth",
+    "emoji": "🤝",
+    "createdAt": "2026-01-06T09:00:00Z",
+    "updatedAt": "2026-02-23T08:00:00Z",
+    "order": 13
+  },
+  {
+    "id": "space-1on1-amara",
+    "name": "Amara Okafor",
+    "description": "Weekly 1:1 with Head of Design — goals, action items, decisions, and career growth",
+    "emoji": "🤝",
+    "createdAt": "2026-01-06T09:00:00Z",
+    "updatedAt": "2026-02-23T08:00:00Z",
+    "order": 14
+  },
+  {
+    "id": "space-1on1-daniel",
+    "name": "Daniel Park",
+    "description": "Weekly 1:1 with Engineering Lead — goals, action items, decisions, and career growth",
+    "emoji": "🤝",
+    "createdAt": "2026-01-06T09:00:00Z",
+    "updatedAt": "2026-02-23T08:00:00Z",
+    "order": 15
   }
 ]

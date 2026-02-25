@@ -8,6 +8,8 @@ import { ChatShell } from "@/components/ChatShell";
 // Shared transition for content surface properties that sync with the sidebar collapse
 const contentTransition = "border-radius 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), background-color 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)";
 
+const NEUTRAL_SHADOW = "0px 0px 8px 0px rgba(34,36,40,0.06), 0px 6px 16px 0px rgba(34,36,40,0.12)";
+
 export function NavigationShell({ children }: { children: React.ReactNode }) {
   const { isCollapsed, showSecondary, navPalette } = useSidebar();
   const { chatMode, resizeHovered } = useChat();
@@ -46,7 +48,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   ? "0 2.5rem 2.5rem 0"
                   : "0",
             border: `1px solid ${resizeHovered ? "#d1d5db" : "#e5e7eb"}`,
-            boxShadow: "0px 0px 8px 0px rgba(34,36,40,0.06), 0px 6px 16px 0px rgba(34,36,40,0.12)",
+            boxShadow: NEUTRAL_SHADOW,
             transition: `${contentTransition}, border-color 0.15s ease`,
           }}
         >

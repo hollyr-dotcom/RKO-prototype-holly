@@ -89,6 +89,74 @@
     "spaceName": "Core Banking Migration"
   },
   {
+    "id": "feed-agent-activity-01",
+    "type": "agent-completed",
+    "spaceId": "space-firstflex",
+    "spaceName": "FirstFlex Youth Banking",
+    "title": "Your AI assistant is preparing updates across your spaces",
+    "body": "",
+    "timestamp": "2026-02-24T06:30:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [],
+    "actions": [
+      {
+        "id": "join-activity",
+        "label": "Join",
+        "variant": "primary"
+      },
+      {
+        "id": "dismiss-activity",
+        "label": "Dismiss",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "activity",
+        "name": "Overnight Activity Summary"
+      },
+      "completionSummary": "Processed 12 updates across FirstFlex, Core Banking, and PayGrid.",
+      "fullBleedVideo": "/videos/agent-activity.mp4"
+    }
+  },
+  {
+    "id": "feed-firstflex-review-talktrack",
+    "type": "talktrack",
+    "spaceId": "space-firstflex",
+    "spaceName": "FirstFlex Youth Banking",
+    "title": "Get ready for the upcoming FirstFlex Solution Review with this Talktrack.",
+    "body": "",
+    "timestamp": "2026-02-23T14:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-agent",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review-talktrack",
+        "label": "Review",
+        "variant": "primary"
+      },
+      {
+        "id": "ignore-talktrack",
+        "label": "Ignore",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "videoSrc": "",
+      "staticImage": "/feed-viz/FirstFlex-Youth-Banking/firstflex-kids.png"
+    }
+  },
+  {
     "id": "feed-roadmap-talktrack-01",
     "type": "talktrack",
     "spaceId": "space-roadmaps",
@@ -117,6 +185,7 @@
     ],
     "payload": {
       "videoSrc": "/videos/marcus-talktrack.mp4",
+      "backgroundImage": "/videos/marcus-talktrack-poster.jpg",
       "artifact": {
         "type": "slides",
         "id": "talktrack-q2",
@@ -8285,5 +8354,2069 @@
       }
     },
     "spaceName": "EPD Leadership"
+  },
+
+  {
+    "id": "feed-1on1-james-01",
+    "type": "decision",
+    "spaceId": "space-1on1-james",
+    "title": "Core Banking Phase 2 staffing — allocate 2 seniors from PayGrid",
+    "body": "Phase 2 system integration needs two senior backend engineers urgently. Proposal: temporarily reassign Anika Patel and Marco Vitale from PayGrid (partner API work is ahead of schedule). PayGrid impact: minor — partner onboarding pauses 2 weeks. Core Banking impact: unblocks the critical path.",
+    "timestamp": "2026-02-19T09:30:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-james",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "⚠️",
+        "count": 2,
+        "users": ["Marcus C.", "Migration Lead"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "approve-reallocation",
+        "label": "Approve reallocation",
+        "variant": "primary"
+      },
+      {
+        "id": "view-impact-analysis",
+        "label": "View impact analysis",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "status": "needed",
+      "options": [
+        "Reassign 2 seniors from PayGrid for 6 weeks",
+        "Hire 2 contractors instead",
+        "Delay Phase 2 by 3 weeks"
+      ],
+      "decidedBy": null,
+      "participants": ["user-james", "user-marcus", "agent-product-leader"]
+    },
+    "visualPreview": {
+      "type": "PeoplePreview",
+      "data": {
+        "title": "Proposed Reallocation",
+        "people": [
+          {
+            "name": "Anika Patel",
+            "role": "Senior Backend Engineer",
+            "from": "PayGrid",
+            "to": "Core Banking Phase 2",
+            "status": "proposed"
+          },
+          {
+            "name": "Marco Vitale",
+            "role": "Senior Backend Engineer",
+            "from": "PayGrid",
+            "to": "Core Banking Phase 2",
+            "status": "proposed"
+          }
+        ]
+      }
+    },
+    "spaceName": "1:1 — James Rodriguez"
+  },
+  {
+    "id": "feed-1on1-james-02",
+    "type": "key-metric",
+    "spaceId": "space-1on1-james",
+    "title": "Engineering team velocity down 12% — burnout risk flagged",
+    "body": "Sprint velocity across James's engineering org dropped 12% over the last 3 sprints. Correlates with extended on-call rotations and 2 unplanned departures. Three team leads flagged increased overtime in their retrospectives. Recommend discussing workload rebalancing.",
+    "timestamp": "2026-02-18T08:15:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "📉",
+        "count": 1,
+        "users": ["James R."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-velocity-breakdown",
+        "label": "View breakdown",
+        "variant": "primary"
+      },
+      {
+        "id": "compare-teams",
+        "label": "Compare teams",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "metric": "Engineering velocity",
+      "value": "-12%",
+      "trend": "down",
+      "changePercent": 12,
+      "period": "Last 3 sprints"
+    },
+    "visualPreview": {
+      "type": "LineChartPreview",
+      "data": {
+        "title": "Engineering Velocity — Last 8 Sprints",
+        "series": [
+          {
+            "label": "Story Points Completed",
+            "color": "#6366f1",
+            "data": [142, 148, 151, 145, 139, 134, 130, 128],
+            "targetLine": 145
+          }
+        ],
+        "xLabels": ["S21", "S22", "S23", "S24", "S25", "S26", "S27", "S28"],
+        "yDomain": [100, 160],
+        "annotations": [
+          {
+            "x": 5,
+            "label": "2 departures",
+            "color": "#ef4444"
+          }
+        ]
+      }
+    },
+    "spaceName": "1:1 — James Rodriguez"
+  },
+  {
+    "id": "feed-1on1-james-03",
+    "type": "agent-opportunity",
+    "spaceId": "space-1on1-james",
+    "title": "3 engineers eligible for promotion cycle — review before March deadline",
+    "body": "Based on performance data and tenure, three engineers in James's org meet the criteria for the Q1 promotion cycle: Li Wei (Staff Engineer track), Priya Sharma (Senior), and Carlos Mendez (Senior). Deadline for nominations is March 7. Recommend discussing calibration with James.",
+    "timestamp": "2026-02-17T10:00:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [],
+    "actions": [
+      {
+        "id": "view-candidate-profiles",
+        "label": "View profiles",
+        "variant": "primary"
+      },
+      {
+        "id": "schedule-calibration",
+        "label": "Schedule calibration",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {},
+    "visualPreview": {
+      "type": "PeoplePreview",
+      "data": {
+        "title": "Promotion Candidates — Q1 Cycle",
+        "people": [
+          {
+            "name": "Li Wei",
+            "role": "Senior Engineer → Staff Engineer",
+            "status": "eligible",
+            "detail": "4.2 yrs tenure · Exceeds expectations"
+          },
+          {
+            "name": "Priya Sharma",
+            "role": "Mid-level → Senior Engineer",
+            "status": "eligible",
+            "detail": "2.8 yrs tenure · Exceeds expectations"
+          },
+          {
+            "name": "Carlos Mendez",
+            "role": "Mid-level → Senior Engineer",
+            "status": "eligible",
+            "detail": "3.1 yrs tenure · Strong performer"
+          }
+        ]
+      }
+    },
+    "spaceName": "1:1 — James Rodriguez"
+  },
+  {
+    "id": "feed-1on1-james-04",
+    "type": "approval",
+    "spaceId": "space-1on1-james",
+    "title": "Approve £95K contractor budget for Q2 platform hardening",
+    "body": "James is requesting £95K for two senior contractors (12-week engagement) to support Q2 platform hardening. Focus areas: API gateway migration, database connection pooling, and observability improvements. Current team is at capacity with Core Banking Phase 2.",
+    "timestamp": "2026-02-15T14:30:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-james",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "💰",
+        "count": 1,
+        "users": ["Finance"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "approve-contractor-budget",
+        "label": "Approve",
+        "variant": "primary"
+      },
+      {
+        "id": "request-alternatives",
+        "label": "Request alternatives",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "status": "needed",
+      "approver": "CPTO",
+      "subject": "Q2 contractor budget — platform hardening (£95K)",
+      "conditions": [
+        "Scope limited to platform hardening only",
+        "12-week engagement with 2-week review gate",
+        "Knowledge transfer plan required"
+      ]
+    },
+    "visualPreview": {
+      "type": "MetricsPreview",
+      "data": {
+        "metrics": [
+          {
+            "label": "Budget requested",
+            "value": "£95K",
+            "valueColor": "#6366f1"
+          },
+          {
+            "label": "Duration",
+            "value": "12 weeks",
+            "valueColor": "#6366f1"
+          },
+          {
+            "label": "Contractors",
+            "value": "2",
+            "valueColor": "#6366f1"
+          },
+          {
+            "label": "Start date",
+            "value": "Mar 10",
+            "valueColor": "#10b981"
+          }
+        ]
+      }
+    },
+    "spaceName": "1:1 — James Rodriguez"
+  },
+  {
+    "id": "feed-1on1-james-05",
+    "type": "feedback-request",
+    "spaceId": "space-1on1-james",
+    "title": "James requests feedback on engineering org restructure proposal",
+    "body": "James has drafted a proposal to reorganise the engineering org from project-based teams to platform-aligned squads. Proposes 4 squads: Platform Core, Product Engineering, Data & ML, and Developer Experience. Requesting your feedback before sharing with the wider leadership team.",
+    "timestamp": "2026-02-14T11:00:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "user-james",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "💭",
+        "count": 1,
+        "users": ["James R."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-restructure-proposal",
+        "label": "Review proposal",
+        "variant": "primary"
+      },
+      {
+        "id": "schedule-discussion",
+        "label": "Schedule discussion",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "feedback",
+      "from": "James Rodriguez",
+      "dueDate": "2026-02-21"
+    },
+    "visualPreview": {
+      "type": "FlowDiagramPreview",
+      "data": {
+        "title": "Proposed Engineering Org Structure",
+        "nodes": [
+          {"id": "vp", "label": "VP Engineering", "level": 0},
+          {"id": "platform", "label": "Platform Core", "level": 1},
+          {"id": "product", "label": "Product Engineering", "level": 1},
+          {"id": "data", "label": "Data & ML", "level": 1},
+          {"id": "devex", "label": "Developer Experience", "level": 1}
+        ],
+        "edges": [
+          {"from": "vp", "to": "platform"},
+          {"from": "vp", "to": "product"},
+          {"from": "vp", "to": "data"},
+          {"from": "vp", "to": "devex"}
+        ]
+      }
+    },
+    "spaceName": "1:1 — James Rodriguez"
+  },
+  {
+    "id": "feed-1on1-james-06",
+    "type": "team-announcement",
+    "spaceId": "space-1on1-james",
+    "title": "Senior engineer departure — backfill plan needed",
+    "body": "Tomás Herrera (Senior Platform Engineer, 3.5 years) has resigned effective March 14. He's the primary maintainer of the API gateway and auth service. James recommends promoting Li Wei to cover critical systems and opening an external senior hire req. Transition plan needed within 2 weeks.",
+    "timestamp": "2026-02-13T09:45:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-james",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "😔",
+        "count": 3,
+        "users": ["Platform Team", "James R.", "Engineering"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-backfill-plan",
+        "label": "Review backfill plan",
+        "variant": "primary"
+      },
+      {
+        "id": "approve-job-posting",
+        "label": "Approve job posting",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "person": {
+        "name": "Tomás Herrera",
+        "role": "Senior Platform Engineer",
+        "department": "Platform Core",
+        "startDate": "2026-03-14"
+      },
+      "announcementType": "departure"
+    },
+    "visualPreview": {
+      "type": "PeoplePreview",
+      "data": {
+        "title": "Departure & Backfill Plan",
+        "people": [
+          {
+            "name": "Tomás Herrera",
+            "role": "Senior Platform Engineer",
+            "status": "departing",
+            "detail": "Last day: March 14 · 3.5 yrs tenure"
+          },
+          {
+            "name": "Li Wei",
+            "role": "Proposed interim: API gateway & auth",
+            "status": "proposed",
+            "detail": "Internal promotion candidate"
+          },
+          {
+            "name": "External Hire",
+            "role": "Senior Platform Engineer",
+            "status": "open",
+            "detail": "New req — targeting April start"
+          }
+        ]
+      }
+    },
+    "spaceName": "1:1 — James Rodriguez"
+  },
+  {
+    "id": "feed-1on1-james-07",
+    "type": "workflow-change",
+    "spaceId": "space-1on1-james",
+    "title": "On-call rotation policy updated — reduced from 7 to 5 day cycles",
+    "body": "James implemented a revised on-call rotation reducing shifts from 7-day to 5-day cycles, with mandatory 48-hour cool-down periods. Change driven by burnout signals and exit interview feedback. Expected impact: 23% reduction in after-hours pages per engineer per month.",
+    "timestamp": "2026-02-12T16:00:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "user-james",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 4,
+        "users": ["Platform Team", "Backend Team", "SRE", "DevOps"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-rotation-schedule",
+        "label": "View new schedule",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "7-day rotation",
+      "toStatus": "5-day rotation + 48h cooldown",
+      "implication": "Projected 23% reduction in after-hours pages per engineer"
+    },
+    "visualPreview": {
+      "type": "MetricsPreview",
+      "data": {
+        "metrics": [
+          {
+            "label": "Rotation (before)",
+            "value": "7 days",
+            "valueColor": "#ef4444"
+          },
+          {
+            "label": "Rotation (after)",
+            "value": "5 days",
+            "valueColor": "#10b981"
+          },
+          {
+            "label": "Cooldown period",
+            "value": "48 hrs",
+            "valueColor": "#10b981"
+          },
+          {
+            "label": "Projected page reduction",
+            "value": "-23%",
+            "valueColor": "#10b981"
+          }
+        ]
+      }
+    },
+    "spaceName": "1:1 — James Rodriguez"
+  },
+  {
+    "id": "feed-1on1-james-08",
+    "type": "collaboration-request",
+    "spaceId": "space-1on1-james",
+    "title": "Review James's technical debt reduction roadmap",
+    "body": "James has prepared a 6-month technical debt reduction roadmap. Proposes dedicating 20% of sprint capacity to debt work. Key targets: legacy auth service rewrite, API versioning cleanup, and test coverage gaps. Needs your sign-off before presenting to the wider engineering org.",
+    "timestamp": "2026-02-10T10:30:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "user-james",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review-debt-roadmap",
+        "label": "Review roadmap",
+        "variant": "primary"
+      },
+      {
+        "id": "suggest-priorities",
+        "label": "Suggest priorities",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "review",
+      "mentionedUsers": [],
+      "dueDate": "2026-02-17"
+    },
+    "visualPreview": {
+      "type": "ProgressBarsPreview",
+      "data": {
+        "title": "Technical Debt — Priority Areas",
+        "bars": [
+          {
+            "label": "Legacy auth service",
+            "value": 15,
+            "color": "#ef4444",
+            "status": "not-started"
+          },
+          {
+            "label": "API versioning cleanup",
+            "value": 30,
+            "color": "#f59e0b",
+            "status": "in-progress"
+          },
+          {
+            "label": "Test coverage (target 80%)",
+            "value": 62,
+            "color": "#f59e0b",
+            "status": "in-progress"
+          },
+          {
+            "label": "CI/CD pipeline optimization",
+            "value": 45,
+            "color": "#f59e0b",
+            "status": "in-progress"
+          }
+        ],
+        "overallLabel": "20% sprint capacity proposed · 6-month timeline"
+      }
+    },
+    "spaceName": "1:1 — James Rodriguez"
+  },
+  {
+    "id": "feed-1on1-james-09",
+    "type": "budget-notification",
+    "spaceId": "space-1on1-james",
+    "title": "Engineering hiring budget 78% spent — 2 open reqs remaining",
+    "body": "Q1 engineering hiring budget at 78% utilisation (£624K of £800K). Two approved positions still open: Senior Platform Engineer (backfill) and ML Engineer. Remaining £176K covers both hires if filled by end of March. Q2 budget request (£95K contractors) pending separate approval.",
+    "timestamp": "2026-02-08T08:30:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [],
+    "actions": [
+      {
+        "id": "view-hiring-pipeline",
+        "label": "View hiring pipeline",
+        "variant": "primary"
+      },
+      {
+        "id": "view-budget-breakdown",
+        "label": "View budget breakdown",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "category": "Engineering Hiring",
+      "currentSpend": "£624K",
+      "budget": "£800K",
+      "percentUsed": 78
+    },
+    "visualPreview": {
+      "type": "DonutChartPreview",
+      "data": {
+        "title": "Engineering Hiring Budget — Q1",
+        "segments": [
+          {"label": "Spent", "value": 78, "color": "#6366f1"},
+          {"label": "Remaining", "value": 22, "color": "#e5e7eb"}
+        ],
+        "centerLabel": "78%",
+        "centerSubLabel": "£624K of £800K"
+      }
+    },
+    "spaceName": "1:1 — James Rodriguez"
+  },
+  {
+    "id": "feed-1on1-james-10",
+    "type": "alert-fyi",
+    "spaceId": "space-1on1-james",
+    "title": "Architecture review board flagged PayGrid latency regression",
+    "body": "The architecture review board detected a P95 latency regression in PayGrid's partner API — response times increased from 180ms to 340ms over the past 2 weeks. Root cause suspected: new partner onboarding load combined with unoptimised database queries. James's platform team should investigate.",
+    "timestamp": "2026-02-06T15:20:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "⚠️",
+        "count": 2,
+        "users": ["Platform Eng.", "PayGrid Lead"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-latency-report",
+        "label": "View latency report",
+        "variant": "primary"
+      },
+      {
+        "id": "assign-investigation",
+        "label": "Assign investigation",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {},
+    "visualPreview": {
+      "type": "LineChartPreview",
+      "data": {
+        "title": "PayGrid Partner API — P95 Latency (ms)",
+        "series": [
+          {
+            "label": "P95 Latency",
+            "color": "#ef4444",
+            "data": [175, 180, 185, 195, 220, 260, 310, 340],
+            "targetLine": 200
+          }
+        ],
+        "xLabels": ["Jan 20", "Jan 24", "Jan 28", "Feb 1", "Feb 5", "Feb 9", "Feb 13", "Feb 17"],
+        "yDomain": [100, 400],
+        "annotations": [
+          {
+            "x": 3,
+            "label": "New partner load",
+            "color": "#f59e0b"
+          }
+        ]
+      }
+    },
+    "spaceName": "1:1 — James Rodriguez"
+  },
+  {
+    "id": "feed-1on1-james-11",
+    "type": "agent-completed",
+    "spaceId": "space-1on1-james",
+    "title": "AI prepared James's quarterly performance summary draft",
+    "body": "",
+    "timestamp": "2026-02-04T09:00:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "✅",
+        "count": 1,
+        "users": ["James R."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-performance-summary",
+        "label": "Review draft",
+        "variant": "primary"
+      },
+      {
+        "id": "edit-summary",
+        "label": "Edit",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "document",
+        "id": "artifact-1on1-james-11",
+        "name": "James Rodriguez — Q4 2025 Performance Summary"
+      },
+      "completionSummary": "Compiled quarterly performance summary covering: team velocity trends, project delivery (Core Banking Phase 1, PayGrid scaling), hiring progress (6 of 8 positions filled), and key wins. Includes suggested discussion points for your 1:1.",
+      "timeSpent": "1.2h",
+      "changesCount": 1
+    },
+    "visualPreview": {
+      "type": "DocPreview",
+      "data": {
+        "title": "Q4 2025 Performance Summary — James Rodriguez",
+        "sections": [
+          {"label": "Team Delivery & Velocity", "status": "complete", "lineCount": 12},
+          {"label": "Project Outcomes", "status": "complete", "lineCount": 8},
+          {"label": "Hiring & Team Growth", "status": "complete", "lineCount": 6},
+          {"label": "Discussion Points", "status": "draft", "lineCount": 4}
+        ],
+        "badge": {"label": "Draft", "color": "#f59e0b"},
+        "lastUpdated": "2026-02-04"
+      }
+    },
+    "spaceName": "1:1 — James Rodriguez"
+  },
+  {
+    "id": "feed-1on1-james-12",
+    "type": "decision",
+    "spaceId": "space-1on1-james",
+    "title": "Decide: promote from within vs external hire for Platform Lead",
+    "body": "With Tomás departing, the Platform Lead role needs filling. Two options: promote Li Wei internally (strong technical skills, limited management experience) or hire externally (6-8 week search, higher cost, proven leadership). James recommends the internal promotion with a leadership coaching budget.",
+    "timestamp": "2026-01-30T11:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-james",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "💭",
+        "count": 2,
+        "users": ["James R.", "HR"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "approve-internal-promotion",
+        "label": "Approve internal",
+        "variant": "primary"
+      },
+      {
+        "id": "start-external-search",
+        "label": "Start external search",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "status": "needed",
+      "options": [
+        "Promote Li Wei + leadership coaching (£8K)",
+        "External hire (8-week search, £140K+ package)"
+      ],
+      "decidedBy": null,
+      "participants": ["user-james", "user-hr", "agent-product-leader"]
+    },
+    "visualPreview": {
+      "type": "TablePreview",
+      "data": {
+        "title": "Platform Lead — Options Comparison",
+        "columns": ["Factor", "Internal (Li Wei)", "External Hire"],
+        "rows": [
+          ["Time to fill", "Immediate", "6-8 weeks"],
+          ["Cost", "£8K coaching", "£140K+ package"],
+          ["Team continuity", "High", "Medium"],
+          ["Leadership experience", "Limited", "Proven"],
+          ["System knowledge", "Deep", "Ramp-up needed"]
+        ]
+      }
+    },
+    "spaceName": "1:1 — James Rodriguez"
+  },
+
+  {
+    "id": "feed-1on1-amara-01",
+    "type": "collaboration-request",
+    "spaceId": "space-1on1-amara",
+    "title": "Review Brand Refresh identity concepts before board presentation",
+    "body": "Amara's design team has prepared 3 identity concepts for the Brand Refresh initiative. Board presentation is scheduled for March 5. She needs your input on the strategic direction before finalising the shortlist. Concepts range from evolutionary refinement to bold repositioning.",
+    "timestamp": "2026-02-20T09:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-amara",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "🎨",
+        "count": 2,
+        "users": ["Amara O.", "Brand Team"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-concepts",
+        "label": "Review concepts",
+        "variant": "primary"
+      },
+      {
+        "id": "schedule-walkthrough",
+        "label": "Schedule walkthrough",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "review",
+      "mentionedUsers": [],
+      "dueDate": "2026-02-26"
+    },
+    "visualPreview": {
+      "type": "DesignPreview",
+      "data": {
+        "title": "Brand Identity Concepts",
+        "variants": [
+          {"label": "Concept A — Evolution", "description": "Refined colour palette, updated typography", "accent": "#4262FF"},
+          {"label": "Concept B — Modern", "description": "New visual language, motion-first approach", "accent": "#10b981"},
+          {"label": "Concept C — Bold", "description": "Complete repositioning, new brand mark", "accent": "#8b5cf6"}
+        ]
+      }
+    },
+    "spaceName": "1:1 — Amara Okafor"
+  },
+  {
+    "id": "feed-1on1-amara-02",
+    "type": "key-metric",
+    "spaceId": "space-1on1-amara",
+    "title": "Design system adoption at 67% — target 85% by Q3",
+    "body": "Design system component adoption across product teams measured at 67%. Highest adoption: PayGrid (82%) and KYC (78%). Lowest: Core Banking (41%) and Embedded Finance (53%). Primary blockers: outdated components in legacy flows and missing complex table patterns.",
+    "timestamp": "2026-02-18T10:30:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "📊",
+        "count": 1,
+        "users": ["Amara O."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-adoption-breakdown",
+        "label": "View breakdown",
+        "variant": "primary"
+      },
+      {
+        "id": "view-gap-analysis",
+        "label": "View gap analysis",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "metric": "Design system adoption",
+      "value": "67%",
+      "trend": "up",
+      "changePercent": 5,
+      "period": "Q1 2026"
+    },
+    "visualPreview": {
+      "type": "BarChartPreview",
+      "data": {
+        "title": "Design System Adoption by Product Team",
+        "bars": [
+          {"label": "PayGrid", "value": 82, "color": "#10b981"},
+          {"label": "KYC", "value": 78, "color": "#10b981"},
+          {"label": "Claims", "value": 71, "color": "#f59e0b"},
+          {"label": "FirstFlex", "value": 65, "color": "#f59e0b"},
+          {"label": "Embedded", "value": 53, "color": "#ef4444"},
+          {"label": "Core Banking", "value": 41, "color": "#ef4444", "highlighted": true}
+        ],
+        "yLabel": "Adoption %",
+        "targetLine": 85,
+        "targetLineLabel": "Q3 Target"
+      }
+    },
+    "spaceName": "1:1 — Amara Okafor"
+  },
+  {
+    "id": "feed-1on1-amara-03",
+    "type": "decision",
+    "spaceId": "space-1on1-amara",
+    "title": "Decide: hire senior product designer vs UX researcher",
+    "body": "Amara has one open headcount for Q2. Two competing needs: a senior product designer to support Embedded Finance (no dedicated designer currently) or a UX researcher to establish a research practice across all product teams. Both roles have strong business cases.",
+    "timestamp": "2026-02-16T14:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-amara",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "💭",
+        "count": 2,
+        "users": ["Amara O.", "Design Lead"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "approve-designer-hire",
+        "label": "Hire designer",
+        "variant": "primary"
+      },
+      {
+        "id": "approve-researcher-hire",
+        "label": "Hire researcher",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "status": "needed",
+      "options": [
+        "Senior Product Designer — dedicated to Embedded Finance",
+        "UX Researcher — shared across all product teams"
+      ],
+      "decidedBy": null,
+      "participants": ["user-amara", "agent-product-leader"]
+    },
+    "visualPreview": {
+      "type": "TablePreview",
+      "data": {
+        "title": "Hiring Options — Impact Comparison",
+        "columns": ["Factor", "Product Designer", "UX Researcher"],
+        "rows": [
+          ["Immediate impact", "Embedded Finance unblocked", "Research insights for all teams"],
+          ["Team coverage", "1 product", "All products"],
+          ["Current gap", "No designer on Embedded", "No formal research practice"],
+          ["Revenue impact", "Direct (Embedded launch)", "Indirect (better decisions)"],
+          ["Time to impact", "4-6 weeks", "3-4 months"]
+        ]
+      }
+    },
+    "spaceName": "1:1 — Amara Okafor"
+  },
+  {
+    "id": "feed-1on1-amara-04",
+    "type": "agent-opportunity",
+    "spaceId": "space-1on1-amara",
+    "title": "FirstFlex accessibility audit overdue by 3 weeks",
+    "body": "The scheduled WCAG 2.2 AA accessibility audit for FirstFlex Youth Banking was due January 27 and hasn't been initiated. With the DE market launch targeting Q2, accessibility compliance is a regulatory requirement in Germany. Recommend prioritising with Amara's design team this week.",
+    "timestamp": "2026-02-15T08:45:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "⚠️",
+        "count": 2,
+        "users": ["Compliance", "Amara O."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "schedule-audit",
+        "label": "Schedule audit",
+        "variant": "primary"
+      },
+      {
+        "id": "view-audit-scope",
+        "label": "View audit scope",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {},
+    "visualPreview": {
+      "type": "CountdownPreview",
+      "data": {
+        "targetLabel": "FirstFlex DE Launch — Accessibility Required",
+        "targetDate": "2026-04-15",
+        "urgencyColor": "#ef4444",
+        "subLabel": "WCAG 2.2 AA audit overdue · Originally due Jan 27",
+        "milestones": [
+          {"label": "Start audit", "dueInDays": 7},
+          {"label": "Remediation window", "dueInDays": 30},
+          {"label": "Compliance sign-off", "dueInDays": 45}
+        ]
+      }
+    },
+    "spaceName": "1:1 — Amara Okafor"
+  },
+  {
+    "id": "feed-1on1-amara-05",
+    "type": "feedback-request",
+    "spaceId": "space-1on1-amara",
+    "title": "Amara requests input on design critique process proposal",
+    "body": "Amara has drafted a new design critique framework to replace ad-hoc feedback sessions. Proposes structured 45-minute critiques with rotating facilitators, clear evaluation criteria, and documented outcomes. Piloting with the Brand Refresh team first before rolling out org-wide.",
+    "timestamp": "2026-02-13T11:15:00Z",
+    "priority": "low",
+    "source": {
+      "userId": "user-amara",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 1,
+        "users": ["Design Team"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-critique-process",
+        "label": "Review proposal",
+        "variant": "primary"
+      },
+      {
+        "id": "suggest-changes",
+        "label": "Suggest changes",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "input",
+      "from": "Amara Okafor",
+      "dueDate": "2026-02-20"
+    },
+    "spaceName": "1:1 — Amara Okafor"
+  },
+  {
+    "id": "feed-1on1-amara-06",
+    "type": "team-announcement",
+    "spaceId": "space-1on1-amara",
+    "title": "Junior designer promoted to mid-level — effective March 1",
+    "body": "Amara recommends promoting Elena Vasquez from Junior to Mid-level Product Designer effective March 1. Elena has exceeded expectations on the KYC redesign and Brand Refresh projects over the past 8 months. Performance review scores consistent at 'exceeds expectations'.",
+    "timestamp": "2026-02-11T09:30:00Z",
+    "priority": "low",
+    "source": {
+      "userId": "user-amara",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "🎉",
+        "count": 3,
+        "users": ["Design Team", "Amara O.", "Elena V."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "approve-promotion",
+        "label": "Approve promotion",
+        "variant": "primary"
+      },
+      {
+        "id": "view-performance-record",
+        "label": "View performance record",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "person": {
+        "name": "Elena Vasquez",
+        "role": "Mid-level Product Designer",
+        "department": "Design",
+        "startDate": "2026-03-01"
+      },
+      "announcementType": "promotion"
+    },
+    "spaceName": "1:1 — Amara Okafor"
+  },
+  {
+    "id": "feed-1on1-amara-07",
+    "type": "budget-request",
+    "spaceId": "space-1on1-amara",
+    "title": "€35K request for Figma Enterprise + usability testing tools",
+    "body": "Amara is requesting €35K annual budget for: Figma Enterprise upgrade (€22K — enables branching, analytics, design system management) and Maze usability testing platform (€13K — replaces manual testing with automated user testing). Current Figma Professional plan limits collaboration at scale.",
+    "timestamp": "2026-02-09T10:00:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "user-amara",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "🔧",
+        "count": 1,
+        "users": ["Design Team"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "approve-tooling-budget",
+        "label": "Approve",
+        "variant": "primary"
+      },
+      {
+        "id": "view-roi-comparison",
+        "label": "View ROI comparison",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "amount": "€35K",
+      "category": "Design Tooling",
+      "status": "pending",
+      "requestedBy": "Amara Okafor"
+    },
+    "visualPreview": {
+      "type": "MetricsPreview",
+      "data": {
+        "metrics": [
+          {
+            "label": "Figma Enterprise",
+            "value": "€22K/yr",
+            "valueColor": "#6366f1"
+          },
+          {
+            "label": "Maze Testing",
+            "value": "€13K/yr",
+            "valueColor": "#6366f1"
+          },
+          {
+            "label": "Total request",
+            "value": "€35K",
+            "valueColor": "#6366f1"
+          },
+          {
+            "label": "Team size",
+            "value": "8 designers",
+            "valueColor": "#10b981"
+          }
+        ]
+      }
+    },
+    "spaceName": "1:1 — Amara Okafor"
+  },
+  {
+    "id": "feed-1on1-amara-08",
+    "type": "approval",
+    "spaceId": "space-1on1-amara",
+    "title": "Approve Amara's plan to embed designers in product squads",
+    "body": "Amara proposes transitioning from a centralised design team to an embedded model. Each product squad gets a dedicated designer reporting to Amara but sitting with the squad. Pilot: embed 2 designers in PayGrid and KYC teams for 8 weeks, measure velocity and satisfaction. Requires agreement from engineering leads.",
+    "timestamp": "2026-02-07T14:45:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-amara",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "💡",
+        "count": 2,
+        "users": ["James R.", "Marcus C."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "approve-embedded-pilot",
+        "label": "Approve pilot",
+        "variant": "primary"
+      },
+      {
+        "id": "request-modified-plan",
+        "label": "Request modifications",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "status": "needed",
+      "approver": "CPTO",
+      "subject": "Embedded design model — 8-week pilot",
+      "conditions": [
+        "PayGrid and KYC squads only (pilot)",
+        "8-week trial period with success criteria",
+        "Engineering lead sign-off required"
+      ]
+    },
+    "visualPreview": {
+      "type": "FlowDiagramPreview",
+      "data": {
+        "title": "Embedded Design Model — Pilot",
+        "nodes": [
+          {"id": "design", "label": "Design Lead (Amara)", "level": 0},
+          {"id": "d1", "label": "Designer → PayGrid Squad", "level": 1},
+          {"id": "d2", "label": "Designer → KYC Squad", "level": 1},
+          {"id": "d3", "label": "Centralised (remaining)", "level": 1}
+        ],
+        "edges": [
+          {"from": "design", "to": "d1"},
+          {"from": "design", "to": "d2"},
+          {"from": "design", "to": "d3"}
+        ]
+      }
+    },
+    "spaceName": "1:1 — Amara Okafor"
+  },
+  {
+    "id": "feed-1on1-amara-09",
+    "type": "workflow-change",
+    "spaceId": "space-1on1-amara",
+    "title": "Design review cadence changed from weekly to bi-weekly",
+    "body": "Amara has adjusted the cross-team design review from weekly to bi-weekly. Reason: weekly reviews were creating context-switching overhead and reducing deep work time. Bi-weekly format includes longer sessions (90 min vs 60 min) with more structured critique format.",
+    "timestamp": "2026-02-05T16:30:00Z",
+    "priority": "low",
+    "source": {
+      "userId": "user-amara",
+      "isAgent": false
+    },
+    "isRead": true,
+    "reactions": [
+      {
+        "emoji": "👍",
+        "count": 3,
+        "users": ["Design Team", "UX", "Brand"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-new-schedule",
+        "label": "View new schedule",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "Weekly (60 min)",
+      "toStatus": "Bi-weekly (90 min)",
+      "implication": "Structured critique format with rotating facilitators"
+    },
+    "spaceName": "1:1 — Amara Okafor"
+  },
+  {
+    "id": "feed-1on1-amara-10",
+    "type": "agent-completed",
+    "spaceId": "space-1on1-amara",
+    "title": "AI prepared design team capacity analysis for H2 planning",
+    "body": "",
+    "timestamp": "2026-02-03T09:15:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "📊",
+        "count": 1,
+        "users": ["Amara O."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-capacity-analysis",
+        "label": "Review analysis",
+        "variant": "primary"
+      },
+      {
+        "id": "share-with-leadership",
+        "label": "Share with leadership",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "document",
+        "id": "artifact-1on1-amara-10",
+        "name": "Design Team Capacity Analysis — H2 2026"
+      },
+      "completionSummary": "Analysed design team capacity across 6 active projects. Current utilisation at 112% — team is overcommitted. Recommended: deprioritise 1 project or add 1 FTE. Embedded Finance has zero design coverage. Brand Refresh consuming 40% of team bandwidth.",
+      "timeSpent": "0.8h",
+      "changesCount": 1
+    },
+    "visualPreview": {
+      "type": "ProgressBarsPreview",
+      "data": {
+        "title": "Design Team — Project Allocation",
+        "bars": [
+          {
+            "label": "Brand Refresh",
+            "value": 40,
+            "color": "#8b5cf6",
+            "status": "in-progress"
+          },
+          {
+            "label": "KYC Redesign",
+            "value": 25,
+            "color": "#6366f1",
+            "status": "in-progress"
+          },
+          {
+            "label": "FirstFlex",
+            "value": 20,
+            "color": "#10b981",
+            "status": "in-progress"
+          },
+          {
+            "label": "PayGrid",
+            "value": 15,
+            "color": "#f59e0b",
+            "status": "in-progress"
+          },
+          {
+            "label": "Embedded Finance",
+            "value": 0,
+            "color": "#ef4444",
+            "status": "not-started"
+          }
+        ],
+        "overallLabel": "112% utilisation · Team overcommitted"
+      }
+    },
+    "spaceName": "1:1 — Amara Okafor"
+  },
+  {
+    "id": "feed-1on1-amara-11",
+    "type": "alert-fyi",
+    "spaceId": "space-1on1-amara",
+    "title": "Design contractor ending March 15 — transition plan needed",
+    "body": "Contract designer Sam Whitfield's engagement ends March 15 (not renewable due to IR35). Sam is currently leading the KYC redesign work. Handover to permanent team member needed by March 8 at latest. Amara suggests Elena Vasquez as the successor given her recent KYC work.",
+    "timestamp": "2026-02-01T10:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-amara",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "⚠️",
+        "count": 1,
+        "users": ["HR"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "approve-transition-plan",
+        "label": "Approve transition plan",
+        "variant": "primary"
+      },
+      {
+        "id": "explore-extension",
+        "label": "Explore extension",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {},
+    "visualPreview": {
+      "type": "TimelinePreview",
+      "data": {
+        "title": "Contractor Transition Timeline",
+        "startDate": "2026-02-17",
+        "endDate": "2026-03-21",
+        "tracks": [
+          {
+            "label": "Sam Whitfield",
+            "color": "#ef4444",
+            "bars": [
+              {"start": "2026-02-17", "end": "2026-03-15", "label": "Final weeks · KYC handover"}
+            ]
+          },
+          {
+            "label": "Elena Vasquez",
+            "color": "#10b981",
+            "bars": [
+              {"start": "2026-02-24", "end": "2026-03-08", "label": "Shadow & transition"},
+              {"start": "2026-03-08", "end": "2026-03-21", "label": "Primary owner"}
+            ]
+          }
+        ],
+        "today": "2026-02-18"
+      }
+    },
+    "spaceName": "1:1 — Amara Okafor"
+  },
+  {
+    "id": "feed-1on1-amara-12",
+    "type": "budget-notification",
+    "spaceId": "space-1on1-amara",
+    "title": "Design tools budget 91% spent — renewal due next month",
+    "body": "Annual design tools budget at 91% utilisation (€41K of €45K). Remaining €4K covers current subscriptions through March. Figma Enterprise upgrade (€22K) and Maze (€13K) would require new budget allocation for FY27. Renewal negotiations should start this month.",
+    "timestamp": "2026-01-28T08:00:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [],
+    "actions": [
+      {
+        "id": "view-tool-costs",
+        "label": "View tool costs",
+        "variant": "primary"
+      },
+      {
+        "id": "start-renewal-process",
+        "label": "Start renewal process",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "category": "Design Tools",
+      "currentSpend": "€41K",
+      "budget": "€45K",
+      "percentUsed": 91,
+      "alert": "Renewal due next month — negotiate before expiry"
+    },
+    "visualPreview": {
+      "type": "DonutChartPreview",
+      "data": {
+        "title": "Design Tools Budget — FY26",
+        "segments": [
+          {"label": "Spent", "value": 91, "color": "#f59e0b"},
+          {"label": "Remaining", "value": 9, "color": "#e5e7eb"}
+        ],
+        "centerLabel": "91%",
+        "centerSubLabel": "€41K of €45K"
+      }
+    },
+    "spaceName": "1:1 — Amara Okafor"
+  },
+
+  {
+    "id": "feed-1on1-daniel-01",
+    "type": "key-metric",
+    "spaceId": "space-1on1-daniel",
+    "title": "Sprint completion rate dropped to 72% — investigate blockers",
+    "body": "Daniel's team sprint completion rate has declined from 89% to 72% over the last 4 sprints. Primary blockers identified: cross-team dependency waits (38% of incomplete items), unclear requirements from product (24%), and unplanned production support (18%). Recommend discussing prioritisation approach.",
+    "timestamp": "2026-02-19T10:15:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "📉",
+        "count": 1,
+        "users": ["Daniel P."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-blocker-breakdown",
+        "label": "View blockers",
+        "variant": "primary"
+      },
+      {
+        "id": "compare-sprints",
+        "label": "Compare sprints",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "metric": "Sprint completion rate",
+      "value": "72%",
+      "trend": "down",
+      "changePercent": 17,
+      "period": "Last 4 sprints"
+    },
+    "visualPreview": {
+      "type": "LineChartPreview",
+      "data": {
+        "title": "Sprint Completion Rate — Last 8 Sprints",
+        "series": [
+          {
+            "label": "Completion Rate",
+            "color": "#6366f1",
+            "data": [91, 89, 88, 85, 82, 78, 75, 72],
+            "targetLine": 85
+          }
+        ],
+        "xLabels": ["S21", "S22", "S23", "S24", "S25", "S26", "S27", "S28"],
+        "yDomain": [60, 100],
+        "annotations": [
+          {
+            "x": 4,
+            "label": "Dependency issues started",
+            "color": "#ef4444"
+          }
+        ]
+      }
+    },
+    "spaceName": "1:1 — Daniel Park"
+  },
+  {
+    "id": "feed-1on1-daniel-02",
+    "type": "decision",
+    "spaceId": "space-1on1-daniel",
+    "title": "Embedded Finance API architecture — monolith vs microservices",
+    "body": "Daniel's team needs to decide on the architecture for the Embedded Finance API layer. Current monolith handles 80% of traffic but scaling bottlenecks are emerging. Options: decompose into microservices (higher upfront cost, better long-term scale) or optimise the monolith (faster, but limits future flexibility).",
+    "timestamp": "2026-02-17T14:30:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "user-daniel",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "💭",
+        "count": 3,
+        "users": ["Daniel P.", "Platform Eng.", "Architecture Board"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "approve-microservices",
+        "label": "Go microservices",
+        "variant": "primary"
+      },
+      {
+        "id": "approve-monolith-optimisation",
+        "label": "Optimise monolith",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "status": "needed",
+      "options": [
+        "Microservices decomposition (12-week migration)",
+        "Monolith optimisation (4-week effort)"
+      ],
+      "decidedBy": null,
+      "participants": ["user-daniel", "user-james", "agent-product-leader"]
+    },
+    "visualPreview": {
+      "type": "TablePreview",
+      "data": {
+        "title": "Architecture Options — Comparison",
+        "columns": ["Factor", "Microservices", "Monolith Optimisation"],
+        "rows": [
+          ["Timeline", "12 weeks", "4 weeks"],
+          ["Team effort", "6 engineers", "2 engineers"],
+          ["Scalability", "10x headroom", "3x headroom"],
+          ["Operational complexity", "Higher", "Lower"],
+          ["Long-term flexibility", "High", "Limited"]
+        ]
+      }
+    },
+    "spaceName": "1:1 — Daniel Park"
+  },
+  {
+    "id": "feed-1on1-daniel-03",
+    "type": "agent-opportunity",
+    "spaceId": "space-1on1-daniel",
+    "title": "Daniel's team has 3 single points of failure — knowledge risk flagged",
+    "body": "Analysis of code ownership and on-call patterns reveals 3 critical knowledge silos in Daniel's team: payment reconciliation (only Yuki handles), partner webhook system (only Daniel), and the batch processing pipeline (only Raj). If any leave or are unavailable, these systems have no backup. Recommend cross-training plan.",
+    "timestamp": "2026-02-16T09:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "⚠️",
+        "count": 1,
+        "users": ["Daniel P."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-ownership-map",
+        "label": "View ownership map",
+        "variant": "primary"
+      },
+      {
+        "id": "create-cross-training-plan",
+        "label": "Create training plan",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {},
+    "visualPreview": {
+      "type": "PeoplePreview",
+      "data": {
+        "title": "Single Points of Failure — Knowledge Risk",
+        "people": [
+          {
+            "name": "Yuki Tanaka",
+            "role": "Payment reconciliation",
+            "status": "at-risk",
+            "detail": "Sole maintainer · No backup"
+          },
+          {
+            "name": "Daniel Park",
+            "role": "Partner webhook system",
+            "status": "at-risk",
+            "detail": "Sole maintainer · No backup"
+          },
+          {
+            "name": "Raj Patel",
+            "role": "Batch processing pipeline",
+            "status": "at-risk",
+            "detail": "Sole maintainer · No backup"
+          }
+        ]
+      }
+    },
+    "spaceName": "1:1 — Daniel Park"
+  },
+  {
+    "id": "feed-1on1-daniel-04",
+    "type": "feedback-request",
+    "spaceId": "space-1on1-daniel",
+    "title": "Daniel requests feedback on his technical lead development plan",
+    "body": "Daniel has drafted a personal development plan for growing into a senior engineering lead role. Focus areas: strategic thinking, cross-team influence, and stakeholder communication. Includes proposed mentorship pairing, conference attendance, and a stretch project leading the Embedded Finance architecture review.",
+    "timestamp": "2026-02-14T10:30:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "user-daniel",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "💪",
+        "count": 1,
+        "users": ["Daniel P."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-development-plan",
+        "label": "Review plan",
+        "variant": "primary"
+      },
+      {
+        "id": "suggest-additions",
+        "label": "Suggest additions",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "feedback",
+      "from": "Daniel Park",
+      "dueDate": "2026-02-21"
+    },
+    "spaceName": "1:1 — Daniel Park"
+  },
+  {
+    "id": "feed-1on1-daniel-05",
+    "type": "team-announcement",
+    "spaceId": "space-1on1-daniel",
+    "title": "New grad engineer starting March 10 — mentorship assignment needed",
+    "body": "Jess Liu (new grad, University of Edinburgh, MSc Computer Science) starts on Daniel's team March 10. Daniel proposes pairing her with Yuki Tanaka as mentor — this also addresses the payment reconciliation knowledge silo. Need to confirm mentorship assignment and onboarding plan.",
+    "timestamp": "2026-02-12T09:00:00Z",
+    "priority": "low",
+    "source": {
+      "userId": "user-daniel",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "👋",
+        "count": 2,
+        "users": ["Daniel P.", "Team"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "approve-mentorship-pairing",
+        "label": "Approve pairing",
+        "variant": "primary"
+      },
+      {
+        "id": "view-onboarding-plan",
+        "label": "View onboarding plan",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "person": {
+        "name": "Jess Liu",
+        "role": "Graduate Software Engineer",
+        "department": "Daniel Park's Team",
+        "startDate": "2026-03-10"
+      },
+      "announcementType": "new-hire"
+    },
+    "spaceName": "1:1 — Daniel Park"
+  },
+  {
+    "id": "feed-1on1-daniel-06",
+    "type": "collaboration-request",
+    "spaceId": "space-1on1-daniel",
+    "title": "Review Daniel's incident response process improvements",
+    "body": "Daniel has revised the team's incident response runbook after the February 3 outage retrospective. Key changes: clearer escalation paths, automated PagerDuty routing, post-incident review within 48 hours (was 1 week), and a blame-free template. Requesting your review before rolling out to the wider engineering org.",
+    "timestamp": "2026-02-10T15:00:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "user-daniel",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [],
+    "actions": [
+      {
+        "id": "review-runbook",
+        "label": "Review runbook",
+        "variant": "primary"
+      },
+      {
+        "id": "suggest-edits",
+        "label": "Suggest edits",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "requestType": "review",
+      "mentionedUsers": [],
+      "dueDate": "2026-02-17"
+    },
+    "visualPreview": {
+      "type": "DocPreview",
+      "data": {
+        "title": "Incident Response Runbook v2",
+        "sections": [
+          {"label": "Escalation Matrix", "status": "updated", "lineCount": 6},
+          {"label": "PagerDuty Routing Rules", "status": "new", "lineCount": 4},
+          {"label": "Post-Incident Review Template", "status": "updated", "lineCount": 8},
+          {"label": "Communication Templates", "status": "unchanged", "lineCount": 5}
+        ],
+        "badge": {"label": "Ready for Review", "color": "#6366f1"},
+        "lastUpdated": "2026-02-10"
+      }
+    },
+    "spaceName": "1:1 — Daniel Park"
+  },
+  {
+    "id": "feed-1on1-daniel-07",
+    "type": "workflow-change",
+    "spaceId": "space-1on1-daniel",
+    "title": "Code review SLA tightened from 48h to 24h — trial period",
+    "body": "Daniel has implemented a 4-week trial of tighter code review SLAs: 24 hours max for all PRs (was 48h). Early results after 1 week: average review time dropped from 31h to 18h, but 2 team members flagged increased interruptions. Will evaluate at end of trial before making permanent.",
+    "timestamp": "2026-02-08T11:30:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "user-daniel",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "⚡",
+        "count": 2,
+        "users": ["Daniel P.", "Backend Team"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-trial-metrics",
+        "label": "View trial metrics",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "fromStatus": "48h code review SLA",
+      "toStatus": "24h code review SLA (trial)",
+      "implication": "4-week trial · Average review time dropped from 31h to 18h"
+    },
+    "visualPreview": {
+      "type": "MetricsPreview",
+      "data": {
+        "metrics": [
+          {
+            "label": "SLA (before)",
+            "value": "48h",
+            "valueColor": "#f59e0b"
+          },
+          {
+            "label": "SLA (after)",
+            "value": "24h",
+            "valueColor": "#10b981"
+          },
+          {
+            "label": "Avg review time",
+            "value": "18h",
+            "valueColor": "#10b981"
+          },
+          {
+            "label": "Trial ends",
+            "value": "Mar 7",
+            "valueColor": "#6366f1"
+          }
+        ]
+      }
+    },
+    "spaceName": "1:1 — Daniel Park"
+  },
+  {
+    "id": "feed-1on1-daniel-08",
+    "type": "approval",
+    "spaceId": "space-1on1-daniel",
+    "title": "Approve conference attendance for 4 engineers (QCon London)",
+    "body": "Daniel requests approval for 4 engineers to attend QCon London (March 24-26). Total cost: £4,800 (tickets) + £2,400 (travel/accommodation) = £7,200. Engineers selected based on talk relevance to current architecture decisions. One engineer proposing to submit a talk on the Embedded Finance API migration.",
+    "timestamp": "2026-02-06T09:30:00Z",
+    "priority": "low",
+    "source": {
+      "userId": "user-daniel",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "🎓",
+        "count": 2,
+        "users": ["Daniel P.", "Engineering"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "approve-conference",
+        "label": "Approve",
+        "variant": "primary"
+      },
+      {
+        "id": "view-talk-schedule",
+        "label": "View talk schedule",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "status": "needed",
+      "approver": "CPTO",
+      "subject": "QCon London attendance — 4 engineers (£7.2K)",
+      "conditions": [
+        "Knowledge sharing session after conference",
+        "Written summary of relevant talks",
+        "Support talk submission if accepted"
+      ]
+    },
+    "spaceName": "1:1 — Daniel Park"
+  },
+  {
+    "id": "feed-1on1-daniel-09",
+    "type": "budget-request",
+    "spaceId": "space-1on1-daniel",
+    "title": "£12K request for team offsite and team-building event",
+    "body": "Daniel proposes a 2-day team offsite for his 9-person team. Focus: architecture planning for H2, cross-training workshops (addressing knowledge silo risk), and team bonding. Venue: co-working retreat near Cambridge. Budget: £8K venue/catering + £4K activities/transport.",
+    "timestamp": "2026-02-04T10:00:00Z",
+    "priority": "low",
+    "source": {
+      "userId": "user-daniel",
+      "isAgent": false
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "🏕️",
+        "count": 3,
+        "users": ["Daniel P.", "Team", "Raj P."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "approve-offsite",
+        "label": "Approve",
+        "variant": "primary"
+      },
+      {
+        "id": "suggest-modifications",
+        "label": "Suggest modifications",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "amount": "£12K",
+      "category": "Team Offsite",
+      "status": "pending",
+      "requestedBy": "Daniel Park"
+    },
+    "visualPreview": {
+      "type": "MetricsPreview",
+      "data": {
+        "metrics": [
+          {
+            "label": "Venue & catering",
+            "value": "£8K",
+            "valueColor": "#6366f1"
+          },
+          {
+            "label": "Activities & transport",
+            "value": "£4K",
+            "valueColor": "#6366f1"
+          },
+          {
+            "label": "Team size",
+            "value": "9 people",
+            "valueColor": "#10b981"
+          },
+          {
+            "label": "Duration",
+            "value": "2 days",
+            "valueColor": "#10b981"
+          }
+        ]
+      }
+    },
+    "spaceName": "1:1 — Daniel Park"
+  },
+  {
+    "id": "feed-1on1-daniel-10",
+    "type": "alert-fyi",
+    "spaceId": "space-1on1-daniel",
+    "title": "EU KYC project dependency on Daniel's team is at risk",
+    "body": "The EU KYC Phase 2 self-service portal depends on Daniel's team delivering the authentication API refactor by March 15. Current progress: 40% complete with 3 weeks remaining. Sprint completion rate issues may cause a 2-week delay, impacting the KYC team's April launch target.",
+    "timestamp": "2026-02-02T14:00:00Z",
+    "priority": "high",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "⚠️",
+        "count": 2,
+        "users": ["Sofia R.", "KYC Lead"]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-dependency-map",
+        "label": "View dependency map",
+        "variant": "primary"
+      },
+      {
+        "id": "schedule-sync-with-kyc",
+        "label": "Schedule KYC sync",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {},
+    "visualPreview": {
+      "type": "ProgressBarsPreview",
+      "data": {
+        "title": "Auth API Refactor — KYC Dependency",
+        "bars": [
+          {
+            "label": "Auth API refactor",
+            "value": 40,
+            "color": "#ef4444",
+            "status": "at-risk",
+            "eta": "March 15 (target)"
+          },
+          {
+            "label": "KYC self-service portal",
+            "value": 20,
+            "color": "#f59e0b",
+            "status": "blocked",
+            "eta": "Depends on auth API"
+          }
+        ],
+        "overallLabel": "At risk · 2-week delay projected"
+      }
+    },
+    "spaceName": "1:1 — Daniel Park"
+  },
+  {
+    "id": "feed-1on1-daniel-11",
+    "type": "agent-completed",
+    "spaceId": "space-1on1-daniel",
+    "title": "AI prepared Daniel's career growth plan with competency mapping",
+    "body": "",
+    "timestamp": "2026-01-30T09:00:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "✅",
+        "count": 1,
+        "users": ["Daniel P."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "review-growth-plan",
+        "label": "Review plan",
+        "variant": "primary"
+      },
+      {
+        "id": "discuss-in-1on1",
+        "label": "Discuss in 1:1",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "artifact": {
+        "type": "document",
+        "id": "artifact-1on1-daniel-11",
+        "name": "Daniel Park — Career Growth Plan & Competency Map"
+      },
+      "completionSummary": "Mapped Daniel's current competencies against Senior Engineering Lead requirements. Strengths: technical depth, team delivery, incident management. Growth areas: strategic thinking (65%), stakeholder communication (58%), cross-team influence (52%). Includes 6-month action plan with milestones.",
+      "timeSpent": "1.5h",
+      "changesCount": 1
+    },
+    "visualPreview": {
+      "type": "ProgressBarsPreview",
+      "data": {
+        "title": "Competency Map — Senior Engineering Lead",
+        "bars": [
+          {
+            "label": "Technical depth",
+            "value": 92,
+            "color": "#10b981",
+            "status": "strong"
+          },
+          {
+            "label": "Team delivery",
+            "value": 85,
+            "color": "#10b981",
+            "status": "strong"
+          },
+          {
+            "label": "Incident management",
+            "value": 88,
+            "color": "#10b981",
+            "status": "strong"
+          },
+          {
+            "label": "Strategic thinking",
+            "value": 65,
+            "color": "#f59e0b",
+            "status": "growth-area"
+          },
+          {
+            "label": "Stakeholder communication",
+            "value": 58,
+            "color": "#f59e0b",
+            "status": "growth-area"
+          },
+          {
+            "label": "Cross-team influence",
+            "value": 52,
+            "color": "#ef4444",
+            "status": "growth-area"
+          }
+        ],
+        "overallLabel": "Ready for Senior Lead in 6-9 months"
+      }
+    },
+    "spaceName": "1:1 — Daniel Park"
+  },
+  {
+    "id": "feed-1on1-daniel-12",
+    "type": "budget-notification",
+    "spaceId": "space-1on1-daniel",
+    "title": "Cloud infrastructure budget 85% used — usage spike from load testing",
+    "body": "Daniel's team cloud infrastructure spend at 85% of quarterly allocation (£42.5K of £50K) with 5 weeks remaining. Spike driven by Embedded Finance load testing consuming 3x normal compute. Load testing completes in 2 weeks — spend should normalise. No action needed unless testing extends.",
+    "timestamp": "2026-01-27T08:30:00Z",
+    "priority": "medium",
+    "source": {
+      "userId": "agent-product-leader",
+      "isAgent": true
+    },
+    "isRead": false,
+    "reactions": [
+      {
+        "emoji": "📊",
+        "count": 1,
+        "users": ["Daniel P."]
+      }
+    ],
+    "actions": [
+      {
+        "id": "view-cost-breakdown",
+        "label": "View cost breakdown",
+        "variant": "primary"
+      },
+      {
+        "id": "set-cost-alert",
+        "label": "Set cost alert",
+        "variant": "secondary"
+      }
+    ],
+    "payload": {
+      "category": "Cloud Infrastructure",
+      "currentSpend": "£42.5K",
+      "budget": "£50K",
+      "percentUsed": 85,
+      "alert": "Load testing spike — expected to normalise in 2 weeks"
+    },
+    "visualPreview": {
+      "type": "DonutChartPreview",
+      "data": {
+        "title": "Cloud Infrastructure Budget — Q1",
+        "segments": [
+          {"label": "Spent", "value": 85, "color": "#f59e0b"},
+          {"label": "Remaining", "value": 15, "color": "#e5e7eb"}
+        ],
+        "centerLabel": "85%",
+        "centerSubLabel": "£42.5K of £50K"
+      }
+    },
+    "spaceName": "1:1 — Daniel Park"
   }
 ]
