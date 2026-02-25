@@ -35,13 +35,28 @@ export const primaryTools: ToolItem[] = [
   { id: "plus", label: "More", icon: IconShapesLines, actionType: "plus" },
 ];
 
+/**
+ * OverflowItem — used by both the categorized tool menu and the Toolbar handler.
+ * Extended with `description` and `categoryId` for the new categorized grid.
+ * The `group` field is kept for backward compatibility but derived from category.
+ */
 export interface OverflowItem {
   id: string;
   label: string;
   icon: ComponentType<any>;
   group: "custom" | "tldraw";
   tldrawTool?: string;
+  description: string;
+  categoryId: string;
 }
+
+export interface ToolCategory {
+  id: string;
+  label: string;
+  tools: OverflowItem[];
+}
+
+// ---------- Custom SVG Icons ----------
 
 function ApproveButtonIcon({ style }: { style?: React.CSSProperties }) {
   return (
@@ -74,18 +89,54 @@ function SlackIcon({ style }: { style?: React.CSSProperties }) {
   );
 }
 
-export const overflowItems: OverflowItem[] = [
-  // Custom shapes
-  { id: "task-card", label: "Task card", icon: IconCard, group: "custom" },
-  { id: "slack-card", label: "Slack card", icon: SlackIcon, group: "custom" },
-  { id: "approve", label: "Approve", icon: ApproveButtonIcon, group: "custom" },
-  { id: "document", label: "Document", icon: IconArticle, group: "custom" },
-  { id: "data-table", label: "Data table", icon: IconTable, group: "custom" },
-  { id: "timeline", label: "Timeline", icon: IconTimelineFormat, group: "custom" },
-  { id: "kanban", label: "Kanban board", icon: KanbanIcon, group: "custom" },
-  // tldraw tools
-  { id: "text", label: "Text", icon: IconTextT, group: "tldraw", tldrawTool: "text" },
-  { id: "frame", label: "Frame", icon: IconFrame, group: "tldraw", tldrawTool: "frame" },
-  { id: "line", label: "Line", icon: IconLineStraight, group: "tldraw", tldrawTool: "line" },
-  { id: "eraser", label: "Eraser", icon: IconEraser, group: "tldraw", tldrawTool: "eraser" },
+function PeopleIcon({ style }: { style?: React.CSSProperties }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={style}>
+      <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+    </svg>
+  );
+}
+
+// ---------- Categorized Tool Data ----------
+
+export const toolCategories: ToolCategory[] = [
+  {
+    id: "essentials",
+    label: "Essentials",
+    tools: [
+      { id: "text", label: "Text", icon: IconTextT, description: "Add text to the canvas", tldrawTool: "text", group: "tldraw", categoryId: "essentials" },
+      { id: "frame", label: "Frame", icon: IconFrame, description: "Create a container to group shapes", tldrawTool: "frame", group: "tldraw", categoryId: "essentials" },
+      { id: "line", label: "Line", icon: IconLineStraight, description: "Draw a line or arrow", tldrawTool: "line", group: "tldraw", categoryId: "essentials" },
+      { id: "eraser", label: "Eraser", icon: IconEraser, description: "Erase shapes from the canvas", tldrawTool: "eraser", group: "tldraw", categoryId: "essentials" },
+    ],
+  },
+  {
+    id: "cards-content",
+    label: "Cards & Content",
+    tools: [
+      { id: "document", label: "Document", icon: IconArticle, description: "Create a rich text document with formatting", group: "custom", categoryId: "cards-content" },
+      { id: "task-card", label: "Task Card", icon: IconCard, description: "Create a trackable task card with status and priority", group: "custom", categoryId: "cards-content" },
+      { id: "slack-card", label: "Slack Card", icon: SlackIcon, description: "Create a Slack-style message card", group: "custom", categoryId: "cards-content" },
+    ],
+  },
+  {
+    id: "data-viz",
+    label: "Data & Visualization",
+    tools: [
+      { id: "data-table", label: "Data Table", icon: IconTable, description: "Create an interactive data table", group: "custom", categoryId: "data-viz" },
+      { id: "kanban", label: "Kanban", icon: KanbanIcon, description: "Create a kanban board with columns and cards", group: "custom", categoryId: "data-viz" },
+      { id: "timeline", label: "Timeline", icon: IconTimelineFormat, description: "Create a timeline or Gantt chart", group: "custom", categoryId: "data-viz" },
+    ],
+  },
+  {
+    id: "workflow",
+    label: "Workflow",
+    tools: [
+      { id: "approve", label: "Approve", icon: ApproveButtonIcon, description: "Create an approval button for workflows", group: "custom", categoryId: "workflow" },
+      { id: "people-list", label: "People", icon: PeopleIcon, description: "Create a list of people", group: "custom", categoryId: "workflow" },
+    ],
+  },
 ];
+
+/** Flat list of all overflow items — for backward compatibility and search. */
+export const overflowItems: OverflowItem[] = toolCategories.flatMap((cat) => cat.tools);
