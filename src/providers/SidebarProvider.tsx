@@ -10,7 +10,7 @@ export const SECONDARY_WIDTH = 240;
 export const EXPANDED_PRIMARY_WIDTH = 260;
 
 // Default navigation base color — customisable per-prototype
-const DEFAULT_NAV_COLOR = "#F6F7F8";
+const DEFAULT_NAV_COLOR = "#FFFFFF";
 
 interface SidebarContextType {
   isCollapsed: boolean;

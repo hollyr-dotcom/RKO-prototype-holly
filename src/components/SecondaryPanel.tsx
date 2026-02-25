@@ -428,7 +428,7 @@ export function SecondaryPanel() {
   return (
     <aside
       className="h-full flex-shrink-0 overflow-hidden rounded-l-[2.5rem] shadow-surface-nav"
-      style={{ backgroundColor: "#F8F9FA", width: SECONDARY_WIDTH, borderLeft: "1px solid white" }}
+      style={{ backgroundColor: "#FFFFFF", width: SECONDARY_WIDTH }}
     >
       <div className="h-full flex flex-col">
         {/* Space header — single click to edit */}
@@ -511,7 +511,8 @@ export function SecondaryPanel() {
                     isSelected={selectedCapability === "overview"}
                     onClick={() => setSelectedCapability("overview")}
                     href={`/space/${params.spaceId}`}
-                    highlightColor="#E5E7EB"
+                    highlightColor={`hsl(${sidebarTheme.tintHue}, 80%, 91%)`}
+                    activeTextColor={sidebarTheme.accent}
                   />
                 </motion.div>
                 {(params.spaceId && SPACE_SECTIONS[params.spaceId] || []).map((section) => (
@@ -520,7 +521,8 @@ export function SecondaryPanel() {
                       label={section.label}
                       isSelected={false}
                       onClick={() => {}}
-                      highlightColor="#E5E7EB"
+                      highlightColor={`hsl(${sidebarTheme.tintHue}, 80%, 91%)`}
+                      activeTextColor={sidebarTheme.accent}
                     />
                   </motion.div>
                 ))}
@@ -579,23 +581,27 @@ function CapabilityItem({
   onClick,
   href,
   highlightColor,
+  activeTextColor,
 }: {
   label: string;
   isSelected: boolean;
   onClick: () => void;
   href?: string;
   highlightColor?: string;
+  activeTextColor?: string;
 }) {
-  const baseClass = "w-full flex items-center rounded-[8px] text-sm transition-colors duration-200 px-4";
-  const textClass = isSelected ? "text-gray-900 font-medium" : "text-gray-600";
+  const baseClass = "w-full flex items-center rounded-[16px] text-sm transition-colors duration-200 px-4";
+  const selectedStyle = isSelected
+    ? { backgroundColor: highlightColor, color: activeTextColor, fontWeight: 500 }
+    : undefined;
 
   if (href) {
     return (
       <Link
         href={href}
         onClick={onClick}
-        className={`${baseClass} ${textClass}`}
-        style={{ height: 40, ...(isSelected ? { backgroundColor: highlightColor } : undefined) }}
+        className={`${baseClass} ${isSelected ? "" : "text-gray-600"}`}
+        style={{ height: 40, ...selectedStyle }}
         onMouseEnter={(e) => { if (!isSelected && highlightColor) (e.currentTarget.style.backgroundColor = highlightColor); }}
         onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = ""; }}
       >
@@ -607,8 +613,8 @@ function CapabilityItem({
   return (
     <button
       onClick={onClick}
-      className={`${baseClass} ${textClass}`}
-      style={{ height: 40, ...(isSelected ? { backgroundColor: highlightColor } : undefined) }}
+      className={`${baseClass} ${isSelected ? "" : "text-gray-600"}`}
+      style={{ height: 40, ...selectedStyle }}
       onMouseEnter={(e) => { if (!isSelected && highlightColor) (e.currentTarget.style.backgroundColor = highlightColor); }}
       onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = ""; }}
     >

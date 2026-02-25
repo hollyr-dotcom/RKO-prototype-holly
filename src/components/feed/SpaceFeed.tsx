@@ -134,7 +134,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
   const cssVars = spaceThemeToCssVars(theme);
 
   return (
-    <div className="h-full relative overflow-hidden bg-white" style={{ ...cssVars } as React.CSSProperties}>
+    <div className="h-full relative overflow-hidden" style={{ backgroundColor: theme.bg, ...cssVars } as React.CSSProperties}>
       {/* Single scroll container — header scrolls out, sidebar sticks */}
       <div className="h-full overflow-y-auto">
         {/* Header — scrolls with content, aligned to feed+sidebar width */}
