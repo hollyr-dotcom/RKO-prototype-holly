@@ -258,7 +258,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
             {/* Prompt bar */}
             <div className="relative pb-8 pointer-events-auto">
               <div className="mx-auto max-w-3xl px-6">
-                <PromptBar onSubmit={() => {}} />
+                <PromptBar onSubmit={() => {}} inputBg={surfaceBg} />
               </div>
             </div>
           </div>
