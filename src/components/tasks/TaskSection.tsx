@@ -4,8 +4,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconChevronDown } from "@mirohq/design-system-icons";
 import { motionTheme } from "@/lib/motion/themes";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { staggerContainer, expandCollapse } from "@/lib/motion/variants";
 import { TaskRow } from "./TaskRow";
+import { SortableTaskRow } from "./SortableTaskRow";
 import type { TaskItem } from "@/types/task";
 
 interface TaskSectionProps {
@@ -13,6 +15,7 @@ interface TaskSectionProps {
   tasks: TaskItem[];
   collapsible?: boolean;
   defaultCollapsed?: boolean;
+  sortable?: boolean;
   onToggleStatus: (id: string) => void;
   onUpdateTitle: (id: string, title: string) => void;
   onDelete: (id: string) => void;
@@ -26,6 +29,7 @@ export function TaskSection({
   tasks,
   collapsible = false,
   defaultCollapsed = false,
+  sortable = false,
   onToggleStatus,
   onUpdateTitle,
   onDelete,
@@ -68,22 +72,36 @@ export function TaskSection({
             exit="collapsed"
             style={{ overflow: "hidden" }}
           >
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              {tasks.map((task) => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  onToggleStatus={onToggleStatus}
-                  onUpdateTitle={onUpdateTitle}
-                  onDelete={onDelete}
-                />
-              ))}
-            </motion.div>
+            {sortable ? (
+              <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+                {tasks.map((task) => (
+                  <SortableTaskRow
+                    key={task.id}
+                    task={task}
+                    onToggleStatus={onToggleStatus}
+                    onUpdateTitle={onUpdateTitle}
+                    onDelete={onDelete}
+                  />
+                ))}
+              </SortableContext>
+            ) : (
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                {tasks.map((task) => (
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    onToggleStatus={onToggleStatus}
+                    onUpdateTitle={onUpdateTitle}
+                    onDelete={onDelete}
+                  />
+                ))}
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

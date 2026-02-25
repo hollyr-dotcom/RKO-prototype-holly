@@ -13,6 +13,7 @@ interface TaskRowProps {
   onToggleStatus: (id: string) => void;
   onUpdateTitle: (id: string, title: string) => void;
   onDelete: (id: string) => void;
+  dragHandleProps?: Record<string, unknown>;
 }
 
 const itemVariants = staggerItem(motionTheme);
@@ -49,7 +50,7 @@ function formatDueDate(dueDate: string | null): { label: string; isOverdue: bool
   };
 }
 
-export function TaskRow({ task, onToggleStatus, onUpdateTitle, onDelete }: TaskRowProps) {
+export function TaskRow({ task, onToggleStatus, onUpdateTitle, onDelete, dragHandleProps }: TaskRowProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(task.title);
   const [isHovered, setIsHovered] = useState(false);
@@ -97,10 +98,16 @@ export function TaskRow({ task, onToggleStatus, onUpdateTitle, onDelete }: TaskR
     onToggleStatus(task.id);
   }, [task.id, onToggleStatus]);
 
+  const Wrapper = dragHandleProps ? "div" : motion.div;
+  const wrapperProps = dragHandleProps
+    ? {}
+    : { variants: itemVariants };
+
   return (
-    <motion.div
-      variants={itemVariants}
-      className="group px-3 py-2.5 hover:bg-gray-50 rounded-lg transition-colors duration-200 flex items-center gap-3"
+    <Wrapper
+      {...wrapperProps}
+      {...(dragHandleProps ?? {})}
+      className={`group px-3 py-2.5 hover:bg-gray-50 border-b border-gray-100 transition-colors duration-200 flex items-center gap-3${dragHandleProps ? " cursor-grab active:cursor-grabbing" : ""}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -207,6 +214,6 @@ export function TaskRow({ task, onToggleStatus, onUpdateTitle, onDelete }: TaskR
           <IconTrash css={{ width: 20, height: 20 }} />
         </button>
       </div>
-    </motion.div>
+    </Wrapper>
   );
 }
