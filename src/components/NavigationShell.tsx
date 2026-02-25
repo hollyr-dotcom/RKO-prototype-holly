@@ -39,14 +39,14 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
           className="h-full flex-1 flex flex-col overflow-hidden bg-white"
           style={{
             borderRadius: contentHasRounding && isChatSidePanel
-              ? "1.5rem"
+              ? "2.5rem"
               : contentHasRounding
-                ? "1.5rem 0 0 1.5rem"
+                ? "2.5rem 0 0 2.5rem"
                 : isChatSidePanel
-                  ? "0 1.5rem 1.5rem 0"
+                  ? "0 2.5rem 2.5rem 0"
                   : "0",
             border: `1px solid ${resizeHovered ? "#d1d5db" : "#e5e7eb"}`,
-            boxShadow: "0 0 24px rgba(0, 0, 0, 0.02)",
+            boxShadow: "0px 0px 8px 0px rgba(34,36,40,0.06), 0px 6px 16px 0px rgba(34,36,40,0.12)",
             transition: `${contentTransition}, border-color 0.15s ease`,
           }}
         >

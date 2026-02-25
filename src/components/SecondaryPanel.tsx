@@ -54,7 +54,7 @@ export function SecondaryPanel() {
   const pathname = usePathname();
   const params = useParams<{ spaceId: string; canvasId?: string }>();
   const router = useRouter();
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, navPalette } = useSidebar();
 
   const [space, setSpace] = useState<Space | null>(null);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
@@ -340,8 +340,8 @@ export function SecondaryPanel() {
 
   return (
     <aside
-      className="h-full flex-shrink-0 overflow-hidden bg-white rounded-l-3xl shadow-chrome"
-      style={{ width: SECONDARY_WIDTH }}
+      className="h-full flex-shrink-0 overflow-hidden rounded-l-[2.5rem] shadow-surface-nav"
+      style={{ backgroundColor: "#F8F9FA", width: SECONDARY_WIDTH, borderLeft: "1px solid white" }}
     >
       <div className="h-full flex flex-col">
         {/* Space header — single click to edit */}
@@ -665,7 +665,7 @@ function BoardSectionItem({
     >
       {/* Section header — tap to toggle, drag to reorder */}
       <motion.div
-        className="flex items-center h-8 pl-3 pr-0 pt-2 text-xs font-bold w-full cursor-pointer text-gray-400"
+        className="flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full cursor-pointer text-gray-700"
         onTap={() => { if (!didDrag.current) onToggle(); }}
       >
         <span className="flex-1 text-left">{section.label}</span>

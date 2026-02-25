@@ -171,10 +171,29 @@ For cards and elevated content areas:
 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
 ```
 
+### Navigation Surface Shadow (`shadow-surface-nav`)
+
+For the secondary navigation panel — a single deep, soft shadow:
+
+```css
+box-shadow: 0px 12px 32px 0px rgba(34, 36, 40, 0.1);
+```
+
+### Content Surface Shadow (`shadow-surface-content` / elevation-300)
+
+For the main content area when navigation is expanded — a two-layer ambient + key-light shadow:
+
+```css
+box-shadow: 0px 0px 8px 0px rgba(34, 36, 40, 0.06),
+            0px 6px 16px 0px rgba(34, 36, 40, 0.12);
+```
+
 ### Rules
 
 - Floating chrome (masthead, toolbar) uses the chrome bar shadow
 - Cards and popovers use the card shadow
+- Navigation surfaces use `shadow-surface-nav`
+- Content surface uses `shadow-surface-content` (elevation-300)
 - Never use Tailwind's default `shadow-lg` or `shadow-xl` — too harsh for this aesthetic
 - Shadows should feel soft and subtle, reinforcing the "invisible interface" principle
 
@@ -185,12 +204,16 @@ box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
 | Token | Value | Usage |
 |-------|-------|-------|
 | `rounded-full` | pill | Chrome bars (masthead, toolbar), primary buttons |
-| `rounded-lg` | 8px | Cards, popovers, sidebar items, shape containers |
-| `rounded` | 4px | Small elements, badges |
+| `radius-5xl` | 48px | Secondary panel top-left corner |
+| `radius-4xl` | 40px | Content surface left corners, nav outer frame |
+| `radius-3xl` | 24px | Secondary panel bottom-left corner |
+| `rounded-lg` | 8px | Cards, popovers, sidebar items, shape containers, nav items |
+| `rounded` | 4px | Small elements, badges, board items |
 
 ### Rules
 
 - Chrome surfaces are pills (`rounded-full`)
+- Navigation & content surfaces use large radii (40px–48px) for soft, sweeping curves
 - Content containers are `rounded-lg`
 - Never use sharp corners (no `rounded-none` on visible elements)
 

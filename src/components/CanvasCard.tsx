@@ -24,7 +24,7 @@ export function CanvasCard({ id, spaceId, name, updatedAt }: CanvasCardProps) {
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="text-sm font-medium text-gray-900 group-hover:text-gray-700 truncate">
+        <h3 className="text-sm font-heading font-medium text-gray-900 group-hover:text-gray-700 truncate">
           {name}
         </h3>
         <p className="text-xs text-gray-400 mt-2">Updated {timeAgo}</p>

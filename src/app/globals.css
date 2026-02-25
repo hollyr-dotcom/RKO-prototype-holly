@@ -2,6 +2,15 @@
 @import "@liveblocks/react-tiptap/styles.css";
 @import "@liveblocks/react-ui/styles.css";
 
+/* ── Local fonts ── */
+@font-face {
+  font-family: "Roobert PRO";
+  src: url("/fonts/RoobertPRO-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Embla carousel viewport */
 .embla__viewport { overflow: hidden; }
 
@@ -56,6 +65,8 @@ html, body {
   --shadow-card: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
   --shadow-elevated: 0 8px 32px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.06);
   --shadow-subtle: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-surface-nav: 0px 12px 32px 0px rgba(34,36,40,0.1);
+  --shadow-surface-content: 0px 0px 8px 0px rgba(34,36,40,0.06), 0px 6px 16px 0px rgba(34,36,40,0.12);
 
   /* ── Shadows — Tailwind utility overrides ── */
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
@@ -71,6 +82,9 @@ html, body {
   --radius-lg: 8px;
   --radius-xl: 12px;
   --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-4xl: 40px;
+  --radius-5xl: 48px;
   --radius-full: 9999px;
 }
 

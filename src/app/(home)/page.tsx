@@ -204,7 +204,7 @@ export default function HomePage() {
       <button
         onClick={handleCreateEmptyCanvas}
         disabled={isCreating}
-        className="fixed top-5 right-6 z-[9900] px-4 py-2 bg-gray-100 text-gray-900 text-sm font-medium rounded-full hover:bg-gray-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
+        className="fixed top-5 right-6 z-[9900] px-4 py-2 bg-gray-100 text-gray-900 text-sm font-heading font-medium rounded-full hover:bg-gray-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
       >
         {isCreating ? (
           <span className="flex items-center gap-2">
@@ -231,7 +231,7 @@ export default function HomePage() {
             {/* Back button */}
             <motion.button
               onClick={handleBack}
-              className="absolute left-6 top-6 flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50"
+              className="absolute left-6 top-6 flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-heading font-medium text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50"
               initial={{ opacity: 0, x: -12 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ ...spring.snappy, delay: 0.1 }}
@@ -379,7 +379,7 @@ export default function HomePage() {
           >
             {/* Greeting */}
             <motion.h1
-              className="text-5xl font-bold tracking-tight text-zinc-900"
+              className="text-5xl font-heading font-medium tracking-tight text-zinc-900"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...spring.gentle, delay: 0.05 }}
@@ -388,7 +388,7 @@ export default function HomePage() {
             </motion.h1>
 
             <motion.h2
-              className="mt-3 text-3xl text-zinc-400"
+              className="mt-3 text-3xl font-heading font-medium text-zinc-400"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...spring.gentle, delay: 0.15 }}
@@ -424,9 +424,9 @@ export default function HomePage() {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`relative rounded-full px-4 py-1.5 text-sm transition-colors ${
+                  className={`relative rounded-full px-4 py-1.5 text-sm font-heading transition-colors ${
                     activeTab === tab
-                      ? "font-semibold text-zinc-900"
+                      ? "font-medium text-zinc-900"
                       : "font-medium text-zinc-400 hover:text-zinc-600"
                   }`}
                 >

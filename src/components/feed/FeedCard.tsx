@@ -173,7 +173,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
             </div>
 
             {/* Title */}
-            <h3 className="text-lg font-semibold text-gray-900 leading-snug mb-1">
+            <h3 className="text-lg font-heading font-medium text-gray-900 leading-snug mb-1">
               {item.title}
             </h3>
 
@@ -325,7 +325,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
 
         {/* Heading */}
         <div className={`${px} pb-2`}>
-          <h3 className="text-xl font-semibold text-gray-900">
+          <h3 className="text-xl font-heading font-medium text-gray-900">
             {item.title}
           </h3>
         </div>

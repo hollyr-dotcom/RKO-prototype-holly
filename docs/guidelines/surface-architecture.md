@@ -102,7 +102,9 @@ The icon-only navigation rail shown when inside a space.
 Appears when the user is inside a Space (route matches `/space/[spaceId]/*`).
 
 - **Width:** 240px (`SECONDARY_WIDTH`)
-- **Background:** `bg-white`, `border-r border-gray-200`
+- **Background:** `#f8f9fa`
+- **Border-radius:** `40px` left corners (`2.5rem`)
+- **Shadow:** `0px 12px 32px rgba(34,36,40,0.1)` (`shadow-surface-nav`)
 - **Key components:** `SecondaryPanel`
 - **Contents:**
   - Space header (name + collapse toggle)
@@ -175,8 +177,8 @@ These are persistent or toggleable UI layers that float above the canvas:
 The main content area to the right of the navigation.
 
 - **Background:** `#FFFFFF`
-- **Border-radius:** `24px 0 0 24px` when secondary panel is visible
-- **Shadow:** `0px 0px 8px rgba(34,36,40,0.06), 0px 12px 32px rgba(34,36,40,0.1)` when secondary panel is visible
+- **Border-radius:** `40px 0 0 40px` when navigation is expanded (Figma: elevation-300 surface)
+- **Shadow:** `0px 0px 8px rgba(34,36,40,0.06), 0px 6px 16px rgba(34,36,40,0.12)` (elevation-300)
 
 ### Expanded Artifacts
 

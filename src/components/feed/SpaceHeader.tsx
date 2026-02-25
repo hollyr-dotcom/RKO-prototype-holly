@@ -127,7 +127,7 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
             value={name}
             onChange={(e) => handleNameChange(e.target.value)}
             placeholder="Untitled Space"
-            className="bg-transparent border-none outline-none p-0 text-white font-semibold leading-[1.2] placeholder:text-white/40 w-full"
+            className="bg-transparent border-none outline-none p-0 text-white font-heading font-medium leading-[1.2] placeholder:text-white/40 w-full"
             style={{ fontSize: 52, letterSpacing: "-2px" }}
           />
           <input
@@ -142,7 +142,7 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
 
         {/* Create new button */}
         <button
-          className="flex-shrink-0 flex items-center gap-2.5 text-sm font-normal rounded-full cursor-pointer hover:brightness-110 transition-all"
+          className="flex-shrink-0 flex items-center gap-2.5 text-sm font-heading font-medium rounded-full cursor-pointer hover:brightness-110 transition-all"
           style={{
             background: buttonBg,
             color: buttonFg,

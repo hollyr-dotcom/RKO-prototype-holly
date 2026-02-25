@@ -673,7 +673,7 @@ function SpaceSectionItem({
     >
       {/* Section header — tap to toggle, drag to reorder */}
       <motion.div
-        className="flex items-center h-8 pl-3 pr-1 pt-2 text-xs font-bold w-full cursor-pointer text-gray-400"
+        className="flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full cursor-pointer text-gray-700"
         onTap={() => { if (!didDrag.current) onToggle(); }}
       >
         <span className="flex-1 text-left">{section.label}</span>
