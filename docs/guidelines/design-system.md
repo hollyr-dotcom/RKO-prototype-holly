@@ -85,6 +85,29 @@ The palette auto-detects whether the base is light or dark (via WCAG relative lu
 - To change the navigation color, update the `navColor` prop on `SidebarProvider`
 - The logo icon sits inside a `rounded-lg` container with `navPalette.logoContainer` background
 
+### Space Theme Palette (Hue-Derived)
+
+Each space has a **base hue** (set in `src/lib/space-theme.ts`) from which 3 colour tokens are derived and injected as CSS custom properties on the space feed container:
+
+| CSS Variable | Role | HSL Formula | FF26 (H=260) |
+|---|---|---|---|
+| `--space-bg` | Light surface / fill | `hsl(H-10, 80%, 96%)` | `#F0EDFD` |
+| `--space-secondary` | Mid accent | `hsl(H-10, 77%, 72%)` | `#9381EF` |
+| `--space-accent` | Dark accent | `hsl(H, 68%, 28%)` | `#371778` |
+
+Lighter tones shift 10° cooler to stay perceptually "the same colour" (Abney effect).
+
+**Graph colour rule:**
+- Two-colour graphs use **light** (`--space-bg`) and **dark** (`--space-accent`) only.
+- The **mid** colour (`--space-secondary`) is reserved for **callouts** within graphs (highlighted stats, annotations, labels that need to stand out).
+- Never hardcode chart/graph colours — always use the space theme CSS variables so visualisations adapt to each space's hue.
+
+**Usage:**
+- Buttons, headings, highlighted elements → `var(--space-accent)`
+- Stats, role tags, callout labels → `var(--space-secondary)`
+- Surface backgrounds, graph fills, calendar cells → `var(--space-bg)`
+- Never hardcode space colours in components — always reference CSS variables
+
 ### Surface Colours
 
 | Surface | Background | Border |

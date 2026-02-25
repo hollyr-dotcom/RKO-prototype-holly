@@ -33,12 +33,12 @@ function CardVisual({ item }: { item: FeedItem }) {
           <div className="flex flex-col items-center gap-2">
             <div className="flex gap-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="w-14 h-10 rounded-lg" style={{ backgroundColor: i === 2 ? '#F9E05C' : '#FCF4C8' }} />
+                <div key={i} className="w-14 h-10 rounded-lg" style={{ backgroundColor: i === 2 ? 'var(--space-accent)' : 'var(--space-bg)' }} />
               ))}
             </div>
             <div className="flex gap-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="w-14 h-10 rounded-lg" style={{ backgroundColor: i === 2 ? '#F9E05C' : '#FCF4C8' }} />
+                <div key={i} className="w-14 h-10 rounded-lg" style={{ backgroundColor: i === 2 ? 'var(--space-accent)' : 'var(--space-bg)' }} />
               ))}
             </div>
           </div>
@@ -48,8 +48,8 @@ function CardVisual({ item }: { item: FeedItem }) {
         return (
           <div className="flex items-center gap-4">
             <svg width="108" height="115" viewBox="0 0 108 115" fill="none">
-              <path d="M54.9697 9.61279C83.9022 9.61279 107.357 33.0671 107.357 61.9995C107.357 90.9321 83.9023 114.387 54.9697 114.387C26.0373 114.387 2.58301 90.932 2.58301 61.9995C2.58305 55.4151 3.79701 49.1141 6.01465 43.3091L52.2568 60.9634C53.566 61.463 54.9697 60.4965 54.9697 59.0952V11.6128C54.9697 10.6157 54.2397 9.79156 53.2852 9.64014C53.8445 9.62246 54.4061 9.6128 54.9697 9.61279Z" fill="#E9EAEF" />
-              <path d="M48.3578 49.4462C48.3578 50.8477 46.9538 51.8145 45.6445 51.3147L1.27256 34.3737C0.240495 33.9797 -0.280194 32.8216 0.153425 31.8055C7.89531 13.6645 25.5783 0.781464 46.3578 0.00137677C47.4616 -0.040061 48.3578 0.859329 48.3578 1.9639V49.4462Z" fill="#04BBEE" />
+              <path d="M54.9697 9.61279C83.9022 9.61279 107.357 33.0671 107.357 61.9995C107.357 90.9321 83.9023 114.387 54.9697 114.387C26.0373 114.387 2.58301 90.932 2.58301 61.9995C2.58305 55.4151 3.79701 49.1141 6.01465 43.3091L52.2568 60.9634C53.566 61.463 54.9697 60.4965 54.9697 59.0952V11.6128C54.9697 10.6157 54.2397 9.79156 53.2852 9.64014C53.8445 9.62246 54.4061 9.6128 54.9697 9.61279Z" style={{ fill: 'var(--space-bg)' }} />
+              <path d="M48.3578 49.4462C48.3578 50.8477 46.9538 51.8145 45.6445 51.3147L1.27256 34.3737C0.240495 33.9797 -0.280194 32.8216 0.153425 31.8055C7.89531 13.6645 25.5783 0.781464 46.3578 0.00137677C47.4616 -0.040061 48.3578 0.859329 48.3578 1.9639V49.4462Z" style={{ fill: 'var(--space-accent)' }} />
             </svg>
             <span className="font-bold text-gray-800 tracking-tight leading-none" style={{ fontSize: '20pt' }}>$ 4.2M</span>
           </div>
@@ -86,7 +86,7 @@ function CardVisual({ item }: { item: FeedItem }) {
             </div>
             <div className="grid grid-cols-5 gap-1.5">
               {[...Array(15)].map((_, i) => (
-                <div key={i} className="w-12 h-6 rounded-sm" style={{ backgroundColor: i === 7 ? '#DB4F4F' : '#FFC6C6' }} />
+                <div key={i} className="w-12 h-6 rounded-sm" style={{ backgroundColor: i === 7 ? 'var(--space-accent)' : 'var(--space-bg)' }} />
               ))}
             </div>
           </div>
@@ -129,7 +129,7 @@ const EASE = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 const VIDEO_TRANSITION = `top 220ms ${EASE}, left 220ms ${EASE}, right 220ms ${EASE}, height 220ms ${EASE}, border-radius 220ms ${EASE}, opacity 200ms ease-out`;
 
 // Pixel positions within the 480px card
-// Avatar bottom: pt-8(32) + h-12(48) = 80px
+// Avatar bottom: pt-8(32) + h-9(36) = 68px
 // Visual top: 80 + pt-4(16) + h-[5.25rem](84) + mt-4(16) = 196px
 // Footer top: 196 + h-[180px](180) + mt-6(24) = 400px
 const VIDEO_DEFAULT = { top: 196, left: 32, right: 32, height: 180, borderRadius: 16, opacity: 1 };
@@ -334,7 +334,7 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false }
             </div>
 
             {/* Footer — hover-reveal actions */}
-            <div className="absolute bottom-0 left-0 right-0 z-10 mb-6 h-12 overflow-hidden">
+            <div className="absolute bottom-0 left-0 right-0 z-10 mb-6 h-9 overflow-hidden">
               {item.actions.length > 0 && (
                 <div className={`absolute inset-y-0 inset-x-6 flex items-center transition-[transform,opacity] duration-300 ease-out ${isEngaged ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}>
                   <FeedActions
@@ -471,7 +471,7 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false }
 
 
           {/* Footer — sits above video overlay */}
-          <div className="relative mt-6 mb-6 h-12 overflow-hidden z-10">
+          <div className="relative mt-6 mb-6 h-9 overflow-hidden z-10">
            
             {/* Hover reveal: emoji reactions (decision) or action buttons */}
             {item.type === "decision" ? (

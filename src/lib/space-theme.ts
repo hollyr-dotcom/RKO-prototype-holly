@@ -9,6 +9,12 @@
  *   dark  ≈ #371778  (target #361777)
  *   mid   ≈ #9381EF  (target #8F7FEE)
  *   light ≈ #F0EDFD  (target #EFEDFD)
+ *
+ * ## Graph colour rule
+ *
+ * Two-colour graphs use **light** (`--space-bg`) and **dark** (`--space-accent`) only.
+ * The **mid** colour (`--space-secondary`) is reserved for callouts within graphs
+ * (highlighted stats, annotations, labels that need to stand out).
  */
 
 export interface SpaceTheme {

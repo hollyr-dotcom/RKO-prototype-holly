@@ -46,7 +46,7 @@ export function FeedActions({ actions, size = "default", fill = false, onDark = 
 
   const styles = onDark ? variantStylesDark : variantStyles;
   const btnClass = size === "large"
-    ? "px-5 h-12 rounded-[24px] text-sm font-medium"
+    ? "px-5 h-9 rounded-[18px] text-sm font-medium"
     : "px-3 py-1.5 rounded-full text-xs font-medium";
 
   return (
