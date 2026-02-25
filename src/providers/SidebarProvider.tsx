@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 import { generateNavPalette, type NavPalette } from "@/lib/nav-palette";
 
 // Navigation dimension constants (from Figma)
-export const RAIL_WIDTH = 64;
+export const RAIL_WIDTH = 72;
 export const SECONDARY_WIDTH = 240;
-export const EXPANDED_PRIMARY_WIDTH = 228;
+export const EXPANDED_PRIMARY_WIDTH = 260;
 
 // Default navigation base color — customisable per-prototype
 const DEFAULT_NAV_COLOR = "#F6F7F8";

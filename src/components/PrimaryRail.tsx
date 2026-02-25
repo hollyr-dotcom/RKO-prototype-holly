@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   IconHouse,
-  IconChat,
   IconCheckBoxLines,
   IconMagnifyingGlass,
 } from "@mirohq/design-system-icons";
@@ -15,7 +14,6 @@ import { RAIL_WIDTH } from "@/providers/SidebarProvider";
 
 const navItems = [
   { id: "home", label: "Home", href: "/", icon: IconHouse },
-  { id: "chat", label: "Chat", href: "#", icon: IconChat },
   { id: "tasks", label: "Tasks", href: "/tasks", icon: IconCheckBoxLines },
   { id: "search", label: "Search", href: "#", icon: IconMagnifyingGlass },
 ];
@@ -43,7 +41,7 @@ export function PrimaryRail() {
       {/* Brand icon in rounded-lg tonal container */}
       <Link href="/" className="flex-shrink-0">
         <div
-          className="w-10 h-10 flex items-center justify-center shadow-sm rounded-lg"
+          className="w-10 h-10 flex items-center justify-center shadow-sm rounded-2xl"
           style={{ backgroundColor: "#7A2CDD" }}
         >
           <img src="/flexfund.svg" alt="FlexFund" width={24} height={24} />

@@ -137,7 +137,8 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
     return (
       <motion.div
         variants={staggerItem}
-        className="group relative rounded-2xl overflow-hidden transition-shadow duration-200 hover:shadow-card border border-gray-200 bg-white"
+        className="group relative rounded-[24px] overflow-hidden transition-shadow duration-200 hover:shadow-card bg-gray-200"
+        style={{ border: "0.5px solid var(--color-gray-300)" }}
         style={{ width: 712 }}
       >
         <div className="flex">
@@ -297,9 +298,10 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
       variants={staggerItem}
       className={
         isStack
-          ? "group relative overflow-hidden bg-white h-full flex flex-col"
-          : "group relative rounded-xl overflow-hidden transition-shadow duration-200 hover:shadow-card border border-gray-200 bg-white"
+          ? "group relative overflow-hidden bg-gray-200 h-full flex flex-col"
+          : "group relative rounded-[24px] overflow-hidden transition-shadow duration-200 hover:shadow-card bg-gray-200"
       }
+      style={{ border: "0.5px solid var(--color-gray-300)" }}
     >
       <div className={isStack ? "relative flex flex-col flex-1" : "relative"}>
         {/* Avatar + timestamp */}
