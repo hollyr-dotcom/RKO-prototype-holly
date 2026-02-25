@@ -18,6 +18,27 @@ interface SpaceFeedProps {
   spaceId: string;
 }
 
+/** Derive a stable hue (0–359) from a string by summing char codes. */
+function hueFromId(id: string): number {
+  let sum = 0;
+  for (let i = 0; i < id.length; i++) sum += id.charCodeAt(i);
+  return sum % 360;
+}
+
+/** Hue overrides for spaces with branded header gradients */
+const SPACE_HUES: Record<string, number> = {
+  "space-firstflex": 184,
+  "space-ff26": 268,
+  "space-1on1-james": 263,
+  "space-1on1-amara": 202,
+  "space-1on1-daniel": 212,
+};
+
+/** Get the light surface tint hue for a space */
+function getSpaceHue(spaceId: string): number {
+  return SPACE_HUES[spaceId] ?? hueFromId(spaceId);
+}
+
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
@@ -125,8 +146,11 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
   const widgetData = SIDEBAR_WIDGET_DATA[spaceId];
   const hasSidebar = !!(sidebarPanels || widgetData);
 
+  const surfaceHue = getSpaceHue(spaceId);
+  const surfaceBg = `hsl(${surfaceHue}, 35%, 96%)`;
+
   return (
-    <div className="h-full relative overflow-hidden">
+    <div className="h-full relative overflow-hidden" style={{ backgroundColor: surfaceBg }}>
       {/* Single scroll container — header scrolls out, sidebar sticks */}
       <div className="h-full overflow-y-auto">
         {/* Header — scrolls with content */}
@@ -225,7 +249,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
               style={{
                 width: 712,
                 height: "calc(128px + 2rem)",
-                background: "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 60%, rgba(255,255,255,0.98) 100%)",
+                background: `linear-gradient(180deg, hsla(${surfaceHue},35%,96%,0) 0%, hsla(${surfaceHue},35%,96%,0.8) 60%, hsla(${surfaceHue},35%,96%,0.98) 100%)`,
               }}
             />
             {/* Prompt bar */}

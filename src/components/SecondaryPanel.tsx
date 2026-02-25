@@ -32,6 +32,26 @@ const capabilities = [
   { id: "overview", label: "Overview" },
 ];
 
+/** Derive a stable hue (0–359) from a string by summing char codes. */
+function hueFromId(id: string): number {
+  let sum = 0;
+  for (let i = 0; i < id.length; i++) sum += id.charCodeAt(i);
+  return sum % 360;
+}
+
+/** Hue overrides for spaces with branded header gradients */
+const SPACE_HUES: Record<string, number> = {
+  "space-firstflex": 184,
+  "space-ff26": 268,
+  "space-1on1-james": 263,
+  "space-1on1-amara": 202,
+  "space-1on1-daniel": 212,
+};
+
+function getSpaceHue(spaceId: string): number {
+  return SPACE_HUES[spaceId] ?? hueFromId(spaceId);
+}
+
 // Motion: stagger container + items (spring.snappy: stiffness 400, damping 30)
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -338,10 +358,13 @@ export function SecondaryPanel() {
 
   const spaceName = space?.name || "Space";
 
+  const sidebarHue = getSpaceHue(params.spaceId);
+  const sidebarShadow = `0px 6px 16px 0px hsla(${sidebarHue},67%,28%,0.12), 0px 0px 8px 0px hsla(${sidebarHue},67%,28%,0.06)`;
+
   return (
     <aside
-      className="h-full flex-shrink-0 overflow-hidden bg-white rounded-l-3xl shadow-[0px_0px_8px_0px_rgba(34,36,40,0.06),0px_12px_32px_0px_rgba(34,36,40,0.1)]"
-      style={{ width: SECONDARY_WIDTH }}
+      className="h-full flex-shrink-0 overflow-hidden bg-white/50 rounded-l-[40px]"
+      style={{ width: SECONDARY_WIDTH, boxShadow: sidebarShadow }}
     >
       <div className="h-full flex flex-col">
         {/* Space header — single click to edit */}
@@ -423,6 +446,7 @@ export function SecondaryPanel() {
                       isSelected={selectedCapability === cap.id}
                       onClick={() => setSelectedCapability(cap.id)}
                       href={cap.id === "overview" ? `/space/${params.spaceId}` : undefined}
+                      highlightColor={`hsl(${getSpaceHue(params.spaceId)}, 35%, 96%)`}
                     />
                   </motion.div>
                 ))}
@@ -480,28 +504,40 @@ function CapabilityItem({
   isSelected,
   onClick,
   href,
+  highlightColor,
 }: {
   label: string;
   isSelected: boolean;
   onClick: () => void;
   href?: string;
+  highlightColor?: string;
 }) {
-  const className = `w-full flex items-center h-8 rounded-lg text-sm transition-colors duration-200 px-4 ${
-    isSelected
-      ? "bg-gray-100 text-gray-900 font-medium"
-      : "text-gray-600 hover:bg-gray-100"
-  }`;
+  const baseClass = "w-full flex items-center h-8 rounded-lg text-sm transition-colors duration-200 px-4";
+  const textClass = isSelected ? "text-gray-900 font-medium" : "text-gray-600";
 
   if (href) {
     return (
-      <Link href={href} onClick={onClick} className={className}>
+      <Link
+        href={href}
+        onClick={onClick}
+        className={`${baseClass} ${textClass}`}
+        style={isSelected ? { backgroundColor: highlightColor } : undefined}
+        onMouseEnter={(e) => { if (!isSelected && highlightColor) (e.currentTarget.style.backgroundColor = highlightColor); }}
+        onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = ""; }}
+      >
         <span className="truncate text-left">{label}</span>
       </Link>
     );
   }
 
   return (
-    <button onClick={onClick} className={className}>
+    <button
+      onClick={onClick}
+      className={`${baseClass} ${textClass}`}
+      style={isSelected ? { backgroundColor: highlightColor } : undefined}
+      onMouseEnter={(e) => { if (!isSelected && highlightColor) (e.currentTarget.style.backgroundColor = highlightColor); }}
+      onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = ""; }}
+    >
       <span className="truncate text-left">{label}</span>
     </button>
   );
