@@ -339,7 +339,7 @@ export function SecondaryPanel() {
 
   const spaceName = space?.name || "Space";
 
-  const sidebarHue = getSpaceHue(params.spaceId);
+  const sidebarHue = params.spaceId ? getSpaceHue(params.spaceId) : 260;
   const sidebarShadow = `0px 6px 16px 0px hsla(${sidebarHue},67%,28%,0.12), 0px 0px 8px 0px hsla(${sidebarHue},67%,28%,0.06)`;
 
   return (
@@ -427,7 +427,7 @@ export function SecondaryPanel() {
                       isSelected={selectedCapability === cap.id}
                       onClick={() => setSelectedCapability(cap.id)}
                       href={cap.id === "overview" ? `/space/${params.spaceId}` : undefined}
-                      highlightColor={`hsl(${getSpaceHue(params.spaceId)}, 35%, 96%)`}
+                      highlightColor={`hsl(${sidebarHue}, 35%, 96%)`}
                     />
                   </motion.div>
                 ))}
