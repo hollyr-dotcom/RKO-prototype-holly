@@ -16,7 +16,7 @@ import { RAIL_WIDTH } from "@/providers/SidebarProvider";
 const navItems = [
   { id: "home", label: "Home", href: "/", icon: IconHouse },
   { id: "chat", label: "Chat", href: "#", icon: IconChat },
-  { id: "tasks", label: "Tasks", href: "#", icon: IconCheckBoxLines },
+  { id: "tasks", label: "Tasks", href: "/tasks", icon: IconCheckBoxLines },
   { id: "search", label: "Search", href: "#", icon: IconMagnifyingGlass },
 ];
 
