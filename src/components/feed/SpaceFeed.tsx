@@ -153,20 +153,23 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
     <div className="h-full relative overflow-hidden" style={{ backgroundColor: surfaceBg }}>
       {/* Single scroll container — header scrolls out, sidebar sticks */}
       <div className="h-full overflow-y-auto">
-        {/* Header — scrolls with content */}
-        <div className="px-4 pt-4">
-          {space ? (
-            <SpaceHeader
-              space={space}
-              onNameChange={handleNameChange}
-              onDescriptionChange={handleDescriptionChange}
-            />
-          ) : (
-            <div
-              className="rounded-2xl bg-gray-100 animate-pulse mb-6"
-              style={{ minHeight: 230 }}
-            />
-          )}
+        {/* Header — scrolls with content, aligned to feed+sidebar width */}
+        <div className="flex justify-center px-4">
+          <div style={{ width: hasSidebar ? 712 + 48 + 320 : 712 }}>
+            {space ? (
+              <SpaceHeader
+                space={space}
+                onNameChange={handleNameChange}
+                onDescriptionChange={handleDescriptionChange}
+              />
+            ) : (
+              <div className="animate-pulse mb-6 pt-12 pb-12 flex flex-col gap-3">
+                <div className="w-16 h-16 rounded-[20px] bg-white/60" />
+                <div className="h-14 w-3/5 bg-white/40 rounded-lg" />
+                <div className="h-7 w-4/5 bg-white/30 rounded" />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Feed + sidebar row — only render once header data is loaded */}

@@ -23,25 +23,25 @@ function hueFromId(id: string): number {
   return sum % 360;
 }
 
-/**
- * Determine whether text on an HSL background should be dark or light.
- * Uses relative luminance approximation from the HSL lightness + saturation.
- * Returns true if the background is light enough to need dark text.
- */
-function needsDarkText(hue: number, saturation: number, lightness: number): boolean {
-  // Convert HSL to RGB to compute relative luminance
-  const s = saturation / 100;
-  const l = lightness / 100;
-  const a = s * Math.min(l, 1 - l);
-  const f = (n: number) => {
-    const k = (n + hue / 30) % 12;
-    return l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-  };
-  const r = f(0), g = f(8), b = f(4);
-  // Relative luminance (sRGB)
-  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return luminance > 0.5;
+/** Hue overrides for spaces with branded colors */
+const SPACE_HUES: Record<string, number> = {
+  "space-firstflex": 184,
+  "space-ff26": 268,
+  "space-1on1-james": 263,
+  "space-1on1-amara": 202,
+  "space-1on1-daniel": 212,
+};
+
+function getSpaceHue(spaceId: string): number {
+  return SPACE_HUES[spaceId] ?? hueFromId(spaceId);
 }
+
+/** Avatar overrides for 1:1 spaces */
+const SPACE_AVATARS: Record<string, string> = {
+  "space-1on1-james": "/avatars/james-rodriguez.png",
+  "space-1on1-amara": "/avatars/amara-okafor.png",
+  "space-1on1-daniel": "/avatars/daniel-park.png",
+};
 
 export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceHeaderProps) {
   const [name, setName] = useState(space.name);
@@ -77,100 +77,36 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
     [onDescriptionChange]
   );
 
-  // Per-space gradient overrides
-  const GRADIENT_OVERRIDES: Record<string, {
-    gradient: string;
-    buttonBg: string;
-    buttonFg: string;
-    /** Full-bleed background image (object-cover, vertically centred) */
-    backgroundImage?: string;
-    /** Dominant colour sampled from the background image — used to tint the button */
-    dominantColor?: string;
-    /** Avatar image to show instead of the emoji */
-    avatar?: string;
-  }> = {
-    "space-firstflex": {
-      gradient: "linear-gradient(151deg, #05747C, #116E85)",
-      buttonBg: "#4DD4D8",
-      buttonFg: "#222428",
-    },
-    "space-ff26": {
-      gradient: "linear-gradient(151deg, #5A1DB8, #7B2FE0)",
-      buttonBg: "#C9A0FF",
-      buttonFg: "#222428",
-    },
-    "space-1on1-james": {
-      gradient: "linear-gradient(151deg, #3a1a6e, #5a2d9e)",
-      buttonBg: "rgba(255,255,255,0.85)",
-      buttonFg: "#222428",
-      backgroundImage: "/avatars/james-rodriguez-banner.png",
-      dominantColor: "#7B4FAE",
-      avatar: "/avatars/james-rodriguez.png",
-    },
-    "space-1on1-amara": {
-      gradient: "linear-gradient(151deg, #1a4a6e, #2d7a9e)",
-      buttonBg: "rgba(255,255,255,0.85)",
-      buttonFg: "#222428",
-      avatar: "/avatars/amara-okafor.png",
-    },
-    "space-1on1-daniel": {
-      gradient: "linear-gradient(151deg, #1a3a5e, #2d5a8e)",
-      buttonBg: "rgba(255,255,255,0.85)",
-      buttonFg: "#222428",
-      avatar: "/avatars/daniel-park.png",
-    },
-  };
+  const hue = getSpaceHue(space.id);
+  const avatar = SPACE_AVATARS[space.id];
 
-  const override = GRADIENT_OVERRIDES[space.id];
-  const hue = hueFromId(space.id);
-  const gradientStyle = {
-    background: override?.gradient ?? `linear-gradient(151deg, hsl(${hue}, 65%, 43%), hsl(${hue + 12}, 65%, 43%))`,
-  };
-  const buttonHue = hue + 6;
-  // When a background image is set with a dominant colour, tint the button with it
-  // and make it slightly translucent so the image bleeds through subtly
-  const hasImageBg = !!(override?.backgroundImage && override?.dominantColor);
-  const buttonBg =
-    hasImageBg
-      ? override.dominantColor + "d9"  // ~85% opacity hex suffix
-      : override?.buttonBg ?? `hsl(${buttonHue}, 100%, 69%)`;
-  const buttonFg =
-    hasImageBg
-      ? "white"
-      : override?.buttonFg ?? (needsDarkText(buttonHue, 100, 69) ? "#222428" : "white");
+  // Button uses a dark saturated shade of the space's hue
+  const buttonBg = `hsl(${hue}, 67%, 28%)`;
 
   return (
     <div
-      className="rounded-2xl overflow-hidden mb-6 flex flex-col justify-end relative"
-      style={{ ...gradientStyle, minHeight: 230, padding: "32px 48px 48px" }}
+      className="flex flex-col justify-end"
+      style={{ minHeight: 380, paddingBottom: 48 }}
     >
-      {/* Optional background image — cropped & vertically centred */}
-      {override?.backgroundImage && (
-        <img
-          src={override.backgroundImage}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
-        />
-      )}
-      {/* Bottom row: title+description on left, button on right */}
-      <div className="flex items-end justify-between gap-8 relative z-10">
+      {/* Content row: title+description on left, button on right */}
+      <div className="flex items-end justify-between gap-8">
         {/* Emoji + Title + description */}
-        <div className="flex flex-col gap-2 min-w-0">
-          {/* Emoji or avatar — 10px above title */}
+        <div className="flex flex-col min-w-0" style={{ gap: 10 }}>
+          {/* Emoji or avatar */}
           <div
-            className="flex items-center justify-center flex-shrink-0 mb-1 overflow-hidden"
+            className="flex items-center justify-center flex-shrink-0 overflow-hidden"
             style={{
               width: 64,
               height: 64,
               borderRadius: 20,
               boxShadow:
                 "0 0 12px rgba(34,36,40,0.04), 0 2px 8px rgba(34,36,40,0.12)",
-              ...(!override?.avatar && { backgroundColor: "white" }),
+              ...(!avatar && { backgroundColor: "white" }),
             }}
           >
-            {override?.avatar ? (
+            {avatar ? (
               <img
-                src={override.avatar}
+                src={avatar}
                 alt=""
                 className="w-full h-full object-cover"
               />
@@ -183,29 +119,31 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
             value={name}
             onChange={(e) => handleNameChange(e.target.value)}
             placeholder="Untitled Space"
-            className="bg-transparent border-none outline-none p-0 text-white font-semibold leading-[1.2] placeholder:text-white/40 w-full"
-            style={{ fontSize: 52, letterSpacing: "-2px" }}
+            className="bg-transparent border-none outline-none p-0 font-semibold leading-[1.2] w-full"
+            style={{ fontSize: 52, letterSpacing: "-2px", color: "#20084f" }}
           />
           <input
             type="text"
             value={description}
             onChange={(e) => handleDescriptionChange(e.target.value)}
             placeholder="Add a description..."
-            className={`bg-transparent border-none outline-none p-0 placeholder:text-white/40 w-full ${description ? "text-white/65" : "text-white/40"}`}
-            style={{ fontSize: 18, lineHeight: 1.5 }}
+            className="bg-transparent border-none outline-none p-0 w-full"
+            style={{
+              fontSize: 18,
+              lineHeight: 1.5,
+              color: description ? "#20084f" : undefined,
+            }}
           />
         </div>
 
-        {/* Create new button */}
+        {/* Create new button — dark pill */}
         <button
-          className="flex-shrink-0 flex items-center gap-2.5 text-sm font-normal rounded-full cursor-pointer hover:brightness-110 transition-all"
+          className="flex-shrink-0 flex items-center gap-2.5 text-sm font-bold text-white rounded-full cursor-pointer hover:brightness-110 transition-all"
           style={{
             background: buttonBg,
-            color: buttonFg,
             padding: "12px 24px",
             boxShadow:
               "0 12px 32px rgba(34,36,40,0.2), 0 0 8px rgba(34,36,40,0.06)",
-            ...(hasImageBg && { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }),
           }}
         >
           <svg
@@ -217,7 +155,7 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
           >
             <path
               d="M12 4V20M4 12H20"
-              stroke={buttonFg}
+              stroke="white"
               strokeWidth="2"
               strokeLinecap="round"
             />
