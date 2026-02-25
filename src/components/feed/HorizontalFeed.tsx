@@ -8,6 +8,7 @@ import { selectDeskPile } from "@/lib/selectDeskPile";
 import { ScrollFeedCard } from "./ScrollFeedCard";
 
 const CARD_WIDTH = 360;
+const HERO_CARD_WIDTH = 396;
 const EDGE_PADDING = `calc(50% - ${CARD_WIDTH / 2}px)`;
 
 export function HorizontalFeed() {
@@ -114,6 +115,20 @@ export function HorizontalFeed() {
         keyboardActiveRef.current = true;
         setKeyboardActive(true);
         emblaApi.scrollNext();
+      } else if (e.key === "Enter" && keyboardActiveRef.current) {
+        // Trigger primary action on focused card
+        e.preventDefault();
+        const activeEl = slideRefs.current[selectedIndexRef.current];
+        if (activeEl) {
+          const primaryBtn = activeEl.querySelector<HTMLButtonElement>("button");
+          primaryBtn?.click();
+        }
+      } else if (e.key === "Escape" && keyboardActiveRef.current) {
+        // Defocus carousel
+        e.preventDefault();
+        keyboardActiveRef.current = false;
+        setKeyboardActive(false);
+        updateOpacity();
       }
     };
 
@@ -175,6 +190,23 @@ export function HorizontalFeed() {
     );
   }
 
+  if (items.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center" style={{ paddingTop: 48, paddingBottom: 48 }}>
+        <div className="flex flex-col items-center gap-3 text-center max-w-xs">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" className="text-gray-300">
+            <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            <path d="M16 28c2-3 5-4 8-4s6 1 8 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+            <circle cx="18" cy="20" r="1.5" fill="currentColor" />
+            <circle cx="30" cy="20" r="1.5" fill="currentColor" />
+          </svg>
+          <p className="text-base font-medium text-gray-500">Nothing here yet</p>
+          <p className="text-sm text-gray-400">Your AI assistant will surface important items as you work</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="embla__viewport"
@@ -197,25 +229,28 @@ export function HorizontalFeed() {
           paddingRight: EDGE_PADDING,
         }}
       >
-        {items.map((item, i) => (
-          <div
-            key={item.id}
-            ref={(el) => { slideRefs.current[i] = el; }}
-            className="flex-shrink-0"
-            style={{ width: CARD_WIDTH, transition: "opacity 150ms ease-out" }}
-            onMouseEnter={() => {
-              hoveredIndexRef.current = i;
-              const el = slideRefs.current[i];
-              if (el) el.style.opacity = "1";
-            }}
-            onMouseLeave={() => {
-              if (hoveredIndexRef.current === i) hoveredIndexRef.current = null;
-              updateOpacity();
-            }}
-          >
-            <ScrollFeedCard item={item} isActive={keyboardActive && i === selectedIndex} suppressHover={keyboardActive} />
-          </div>
-        ))}
+        {items.map((item, i) => {
+          const isHero = i === 0;
+          return (
+            <div
+              key={item.id}
+              ref={(el) => { slideRefs.current[i] = el; }}
+              className="flex-shrink-0"
+              style={{ width: isHero ? HERO_CARD_WIDTH : CARD_WIDTH, transition: "opacity 150ms ease-out" }}
+              onMouseEnter={() => {
+                hoveredIndexRef.current = i;
+                const el = slideRefs.current[i];
+                if (el) el.style.opacity = "1";
+              }}
+              onMouseLeave={() => {
+                if (hoveredIndexRef.current === i) hoveredIndexRef.current = null;
+                updateOpacity();
+              }}
+            >
+              <ScrollFeedCard item={item} isActive={keyboardActive && i === selectedIndex} suppressHover={keyboardActive} isHero={isHero} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

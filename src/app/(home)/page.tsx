@@ -1,18 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { HorizontalFeed } from "@/components/feed/HorizontalFeed";
 import { PromptBar } from "@/components/PromptBar";
 import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/hooks/useAuth";
+import { spring } from "@/lib/motion";
 
 export default function HomePage() {
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<"foryou" | "recent">("foryou");
+  const prevTabRef = useRef(activeTab);
   const { user } = useAuth();
   const firstName = user?.displayName?.split(" ")[0] || "Andy";
+
+  // Track direction for slide animation
+  const direction = activeTab === "recent" ? 1 : -1;
+  useEffect(() => {
+    prevTabRef.current = activeTab;
+  }, [activeTab]);
 
   // Pre-warm the canvas route so it's already compiled when user clicks "Create new"
   useEffect(() => {
@@ -82,26 +91,26 @@ export default function HomePage() {
 
       {/* For you / Recent toggle — centered, aligned with logo and create button */}
       <div className="absolute top-5 left-1/2 -translate-x-1/2 z-10 flex items-center bg-gray-100 rounded-full p-1">
-        <button
-          onClick={() => setActiveTab("foryou")}
-          className={`px-5 py-1.5 rounded-full text-sm transition-all duration-150 ${
-            activeTab === "foryou"
-              ? "bg-white shadow-sm font-medium text-gray-900"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          For you
-        </button>
-        <button
-          onClick={() => setActiveTab("recent")}
-          className={`px-5 py-1.5 rounded-full text-sm transition-all duration-150 ${
-            activeTab === "recent"
-              ? "bg-white shadow-sm font-medium text-gray-900"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          Recent
-        </button>
+        {(["foryou", "recent"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`relative px-5 py-1.5 rounded-full text-sm transition-colors duration-150 ${
+              activeTab === tab
+                ? "font-medium text-gray-900"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            {activeTab === tab && (
+              <motion.div
+                layoutId="tab-indicator"
+                className="absolute inset-0 bg-white rounded-full shadow-sm"
+                transition={spring.snappy}
+              />
+            )}
+            <span className="relative z-10">{tab === "foryou" ? "For you" : "Recent"}</span>
+          </button>
+        ))}
       </div>
 
       {/* Create new button — fixed top-right */}
@@ -128,14 +137,25 @@ export default function HomePage() {
           <p className="text-4xl leading-none text-gray-500 mt-1">Here&apos;s what you need to know</p>
         </div>
 
-        {/* Feed content */}
-        {activeTab === "foryou" ? (
-          <HorizontalFeed />
-        ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-sm text-gray-400">Recent items coming soon</p>
-          </div>
-        )}
+        {/* Feed content — slides horizontally on tab switch */}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, x: direction * 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction * -60 }}
+            transition={spring.snappy}
+            className="flex-1 min-h-0"
+          >
+            {activeTab === "foryou" ? (
+              <HorizontalFeed />
+            ) : (
+              <div className="flex-1 flex items-center justify-center h-full">
+                <p className="text-sm text-gray-400">Recent items coming soon</p>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Prompt bar */}

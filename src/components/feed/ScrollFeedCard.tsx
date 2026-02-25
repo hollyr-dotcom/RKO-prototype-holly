@@ -5,6 +5,7 @@ import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import type { FeedItem } from "@/types/feed";
 import { formatTimeAgo } from "@/lib/formatTimeAgo";
 import { getUser } from "@/lib/users";
+import { spring } from "@/lib/motion";
 import { FeedActions } from "./FeedActions";
 import { CardTypeIcon } from "./FeedTypeIcon";
 import { AgentOpportunityContent } from "./content/AgentOpportunity";
@@ -122,7 +123,7 @@ const adjust = (v: number, fMin: number, fMax: number, tMin: number, tMax: numbe
 
 type VideoState = "idle" | "loading" | "playing";
 
-export function ScrollFeedCard({ item, isActive = false, suppressHover = false }: { item: FeedItem; isActive?: boolean; suppressHover?: boolean }) {
+export function ScrollFeedCard({ item, isActive = false, suppressHover = false, isHero = false }: { item: FeedItem; isActive?: boolean; suppressHover?: boolean; isHero?: boolean }) {
   const videoSrc =
     item.type === "talktrack" || item.type === "decision"
       ? item.payload.videoSrc
@@ -256,17 +257,19 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false }
     >
    
     <motion.div
-      className="relative group rounded-3xl [transition:box-shadow_300ms_ease-out]"
+      className={`relative group rounded-3xl [transition:box-shadow_300ms_ease-out] ${isActive ? "ring-2 ring-blue-500/40 ring-offset-2" : ""}`}
       animate={{
         scale: !isDecision && isEngaged ? 1.02 : 1,
       }}
-      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+      transition={spring.snappy}
       style={{
         boxShadow: isEngaged
           ? isDecision
             ? "0 8px 28px rgba(212,175,55,0.45)"
             : "0 8px 28px rgba(0,0,0,0.10)"
-          : "none",
+          : isHero
+            ? "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)"
+            : "none",
         rotateX: isDecision ? rotateX : 0,
         rotateY: isDecision ? rotateY : 0,
         transformStyle: isDecision ? "preserve-3d" : undefined,
@@ -288,7 +291,7 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false }
       {/* Card */}
       <div
         ref={cardRef}
-        className={`relative w-[360px] rounded-3xl overflow-hidden flex flex-col border transition-[border-color] duration-300 h-[480px] ${
+        className={`relative ${isHero ? "w-[396px] h-[528px]" : "w-[360px] h-[480px]"} rounded-3xl overflow-hidden flex flex-col border transition-[border-color] duration-300 ${
           isDecision
             ? `border-transparent holo-card${isEngaged ? " holo-active" : ""}`
             : "bg-gray-50 border-neutral-200"
@@ -304,6 +307,16 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false }
               : undefined,
           }}
         >
+          {/* Featured badge for hero cards */}
+          {isHero && (
+            <div className="absolute top-4 right-4 z-10 flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/80 backdrop-blur-sm">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M6 1L7.4 4.2L11 4.6L8.3 7L9.1 10.5L6 8.7L2.9 10.5L3.7 7L1 4.6L4.6 4.2L6 1Z" fill="#F59E0B" />
+              </svg>
+              <span className="text-xs font-medium text-gray-700">Featured</span>
+            </div>
+          )}
+
           {/* Header icon — typed SVG, avatar for human sources, sits above video overlay */}
           <div className="px-8 pt-8 relative z-10">
             {item.type === "decision" ? (
