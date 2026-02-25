@@ -139,12 +139,17 @@ export default function HomePage() {
       </div>
 
       {/* Prompt bar */}
-      <div className="absolute bottom-8 left-0 right-0 mx-auto w-full max-w-3xl px-6 flex justify-center">
-        <PromptBar
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-          autoFocus
-        />
+      <div className="absolute bottom-8 left-0 right-0 flex justify-center px-4">
+        <div style={{ width: 712 }}>
+          <div className="mx-auto max-w-3xl px-6">
+            <PromptBar
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+              autoFocus
+              inputBg="#f2f2f2"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

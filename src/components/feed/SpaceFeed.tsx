@@ -148,9 +148,10 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
 
   const surfaceHue = getSpaceHue(spaceId);
   const surfaceBg = `hsl(${surfaceHue}, 35%, 96%)`;
+  const spaceAccent = `hsl(${surfaceHue}, 67%, 28%)`;
 
   return (
-    <div className="h-full relative overflow-hidden" style={{ backgroundColor: surfaceBg }}>
+    <div className="h-full relative overflow-hidden" style={{ backgroundColor: surfaceBg, '--space-accent': spaceAccent } as React.CSSProperties}>
       {/* Single scroll container — header scrolls out, sidebar sticks */}
       <div className="h-full overflow-y-auto">
         {/* Header — scrolls with content, aligned to feed+sidebar width */}
@@ -219,7 +220,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
                     alt=""
                     width={480}
                     height={480}
-                    className="w-full h-auto rounded-xl"
+                    className="w-full h-auto rounded-2xl"
                     priority={i === 0}
                   />
                 ))}
