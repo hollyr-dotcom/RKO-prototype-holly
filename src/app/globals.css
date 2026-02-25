@@ -244,6 +244,12 @@ html, body {
   animation: connected-glow-pulse 2.5s ease-in-out infinite;
 }
 
+/* AI cursor presence: listening-state pulse (opacity 0.4 → 1.0, 2s loop) */
+@keyframes ai-cursor-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
 @keyframes slideInFromLeft {
   from {
     opacity: 0;

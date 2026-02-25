@@ -100,6 +100,30 @@ const checkpointTool = tool({
   execute: async (args) => JSON.stringify({ type: "checkpoint", ...args }),
 });
 
+// --- Cursor Presence Tools ---
+const moveCursorTool = tool({
+  name: "moveCursor",
+  description: "Move the AI cursor to point at a specific shape or location on the canvas",
+  parameters: z.object({
+    targetShapeId: z.string().optional().describe("Shape ID to point at"),
+    targetPosition: z.object({
+      x: z.number(),
+      y: z.number(),
+    }).optional().describe("Canvas coordinates to point at"),
+    label: z.string().optional().describe("Label to show on cursor"),
+    state: z.enum(["pointing", "working", "asking", "waiting"]).optional(),
+  }),
+  execute: async ({ targetShapeId, targetPosition, label, state }) => {
+    return JSON.stringify({
+      type: "moveCursor",
+      targetShapeId,
+      targetPosition,
+      label,
+      state: state || "pointing",
+    });
+  },
+});
+
 const webSearchTool = tool({
   name: "webSearch",
   description: "Search the web for real-world information - current trends, statistics, examples, best practices, market data. Returns a summary and key findings you can use in your work.",
@@ -1298,6 +1322,8 @@ FOR COMPLEX, MULTI-STEP WORK - USE PLAN:
     createKanbanBoardTool,
     createZoneTool,
     createSourcesTool,
+    // Cursor presence
+    moveCursorTool,
   ],
 });
 
@@ -1947,6 +1973,8 @@ MAX 2-3 COLORS PER FRAME. If you're reaching for a 4th color, stop and ask: "Doe
     createKanbanBoardTool,
     createZoneTool,
     createSourcesTool,
+    // Cursor presence
+    moveCursorTool,
   ],
 });
 

@@ -61,6 +61,7 @@ import { FloatingQuestionCard } from "./FloatingQuestionCard";
 import { setFocusedDocId } from "@/lib/focusModeStore";
 import { PlacementEngine, getCategoryForTool } from "@/lib/placementEngine";
 import { ConnectorHandles } from "./ConnectorHandles";
+import { AI_CURSOR_COLOR, getSharedAIState } from "@/lib/ai-presence";
 
 // Animation variants
 const sidebarVariants = {
@@ -773,19 +774,40 @@ function CustomBackground() {
   return <div style={{ position: 'absolute', inset: 0, backgroundColor: '#f8f8f8' }} />;
 }
 
-// Custom Miro-style cursor with fill + stroke matching DS palette
+// Custom Miro-style cursor with fill + stroke matching DS palette.
+// AI cursor (identified by AI_CURSOR_COLOR) gets state-dependent visuals.
 const CustomCursor = memo(function CustomCursor({ className, zoom, point, color, name, chatMessage }: TLCursorProps) {
   const rCursor = useRef<HTMLDivElement>(null);
   useTransform(rCursor, point?.x, point?.y, 1 / zoom);
 
   if (!point) return null;
 
+  const isAICursor = color === AI_CURSOR_COLOR;
+  const aiState = isAICursor ? getSharedAIState() : null;
+
+  // Hide AI cursor when idle
+  if (isAICursor && aiState === "idle") return null;
+
   const cursorColor = getCursorColorByFill(color || "");
   const fill = cursorColor?.fill || color || "#DAD8D8";
   const stroke = cursorColor?.stroke || "#888888";
 
+  // AI cursor pulse animation for "listening" state
+  const aiPulseStyle: React.CSSProperties =
+    isAICursor && aiState === "listening"
+      ? { animation: "ai-cursor-pulse 2s ease-in-out infinite" }
+      : {};
+
+  // Label override for "waiting" state
+  const displayName =
+    isAICursor && aiState === "waiting" ? "Waiting for you..." : name;
+
   return (
-    <div ref={rCursor} className={["tl-overlays__item", className].filter(Boolean).join(" ")}>
+    <div
+      ref={rCursor}
+      className={["tl-overlays__item", className].filter(Boolean).join(" ")}
+      style={aiPulseStyle}
+    >
       <svg className="tl-cursor" width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ overflow: "visible", marginLeft: -2 }}>
         <path
           d="M22.001 8.936v2.045l-.003.019C15.977 11 11 15.977 11 21.998l-.012.002H8.935L2 3.178V3l1-1h.179L22 8.936Z"
@@ -799,13 +821,18 @@ const CustomCursor = memo(function CustomCursor({ className, zoom, point, color,
           vectorEffect="non-scaling-stroke"
         />
       </svg>
-      {chatMessage ? (
+      {isAICursor && aiState === "asking" && chatMessage ? (
         <>
-          {name && <div className="tl-nametag-title" style={{ color }}>{name}</div>}
+          {displayName && <div className="tl-nametag-title" style={{ color }}>{displayName}</div>}
+          <div className="tl-nametag-chat" style={{ backgroundColor: color }}>{chatMessage}</div>
+        </>
+      ) : chatMessage ? (
+        <>
+          {displayName && <div className="tl-nametag-title" style={{ color }}>{displayName}</div>}
           <div className="tl-nametag-chat" style={{ backgroundColor: color }}>{chatMessage}</div>
         </>
       ) : (
-        name && <div className="tl-nametag" style={{ backgroundColor: color }}>{name}</div>
+        displayName && <div className="tl-nametag" style={{ backgroundColor: color }}>{displayName}</div>
       )}
     </div>
   );
