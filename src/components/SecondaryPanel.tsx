@@ -11,6 +11,7 @@ import { NavList, NavListItem } from "@/components/NavList";
 import { BoardEmoji } from "@/components/BoardEmoji";
 import { generateAndSetEmoji } from "@/lib/canvasUtils";
 import { BOARD_SECTIONS } from "@/data/board-sections";
+import { getSpaceHue } from "@/lib/space-theme";
 
 type Canvas = {
   id: string;
@@ -31,26 +32,6 @@ type Space = {
 const capabilities = [
   { id: "overview", label: "Overview" },
 ];
-
-/** Derive a stable hue (0–359) from a string by summing char codes. */
-function hueFromId(id: string): number {
-  let sum = 0;
-  for (let i = 0; i < id.length; i++) sum += id.charCodeAt(i);
-  return sum % 360;
-}
-
-/** Hue overrides for spaces with branded header gradients */
-const SPACE_HUES: Record<string, number> = {
-  "space-firstflex": 184,
-  "space-ff26": 268,
-  "space-1on1-james": 263,
-  "space-1on1-amara": 202,
-  "space-1on1-daniel": 212,
-};
-
-function getSpaceHue(spaceId: string): number {
-  return SPACE_HUES[spaceId] ?? hueFromId(spaceId);
-}
 
 // Motion: stagger container + items (spring.snappy: stiffness 400, damping 30)
 const staggerContainer = {

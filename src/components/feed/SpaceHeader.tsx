@@ -14,28 +14,6 @@ interface SpaceHeaderProps {
   onDescriptionChange?: (description: string) => void;
 }
 
-/** Derive a stable hue (0–359) from a string by summing char codes. */
-function hueFromId(id: string): number {
-  let sum = 0;
-  for (let i = 0; i < id.length; i++) {
-    sum += id.charCodeAt(i);
-  }
-  return sum % 360;
-}
-
-/** Hue overrides for spaces with branded colors */
-const SPACE_HUES: Record<string, number> = {
-  "space-firstflex": 184,
-  "space-ff26": 268,
-  "space-1on1-james": 263,
-  "space-1on1-amara": 202,
-  "space-1on1-daniel": 212,
-};
-
-function getSpaceHue(spaceId: string): number {
-  return SPACE_HUES[spaceId] ?? hueFromId(spaceId);
-}
-
 /** Avatar overrides for 1:1 spaces */
 const SPACE_AVATARS: Record<string, string> = {
   "space-1on1-james": "/avatars/james-rodriguez.png",
@@ -77,11 +55,7 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
     [onDescriptionChange]
   );
 
-  const hue = getSpaceHue(space.id);
   const avatar = SPACE_AVATARS[space.id];
-
-  // Button uses a dark saturated shade of the space's hue
-  const buttonBg = `hsl(${hue}, 67%, 28%)`;
 
   return (
     <div
@@ -120,7 +94,7 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
             onChange={(e) => handleNameChange(e.target.value)}
             placeholder="Untitled Space"
             className="bg-transparent border-none outline-none p-0 font-semibold leading-[1.2] w-full"
-            style={{ fontSize: 52, letterSpacing: "-2px", color: "#20084f" }}
+            style={{ fontSize: 52, letterSpacing: "-2px", color: "var(--space-accent)" }}
           />
           <input
             type="text"
@@ -131,7 +105,7 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
             style={{
               fontSize: 18,
               lineHeight: 1.5,
-              color: description ? "#20084f" : undefined,
+              color: description ? "var(--space-accent)" : undefined,
             }}
           />
         </div>
@@ -140,7 +114,7 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
         <button
           className="flex-shrink-0 flex items-center gap-2.5 text-sm font-bold text-white rounded-full cursor-pointer hover:brightness-110 transition-all"
           style={{
-            background: buttonBg,
+            background: "var(--space-accent)",
             padding: "12px 24px",
             boxShadow:
               "0 12px 32px rgba(34,36,40,0.2), 0 0 8px rgba(34,36,40,0.06)",

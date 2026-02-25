@@ -17,8 +17,8 @@ interface StaffWidgetProps {
 }
 
 const roleColorMap: Record<RoleColor, { bg: string; border: string; text: string }> = {
-  coral: { bg: "#ffc6c6", border: "#fd9090", text: "#600000" },
-  lavender: { bg: "#8F7FEE33", border: "var(--space-accent)", text: "var(--space-accent)" },
+  coral: { bg: "var(--space-accent)", border: "transparent", text: "#fff" },
+  lavender: { bg: "var(--space-secondary)", border: "transparent", text: "#fff" },
 };
 
 export function StaffWidget({ title, members }: StaffWidgetProps) {

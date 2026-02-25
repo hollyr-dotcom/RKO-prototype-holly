@@ -20,7 +20,7 @@ export function AttendeesWidget({ title, stats }: AttendeesWidgetProps) {
           <div key={i} className="flex-1 flex flex-col items-center gap-2">
             <span
               className="text-[32px] font-bold leading-none"
-              style={{ color: stat.highlight ? "var(--space-accent)" : "#8F7FEE" }}
+              style={{ color: stat.highlight ? "var(--space-accent)" : "var(--space-secondary)" }}
             >
               {stat.value}
             </span>

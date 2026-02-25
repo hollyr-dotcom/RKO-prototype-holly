@@ -5,28 +5,10 @@ import { useSidebar } from "@/hooks/useSidebar";
 import { useChat } from "@/hooks/useChat";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ChatShell } from "@/components/ChatShell";
+import { getSpaceHue } from "@/lib/space-theme";
 
 // Shared transition for content surface properties that sync with the sidebar collapse
 const contentTransition = "border-radius 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), background-color 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)";
-
-/** Derive a stable hue (0–359) from a string by summing char codes. */
-function hueFromId(id: string): number {
-  let sum = 0;
-  for (let i = 0; i < id.length; i++) sum += id.charCodeAt(i);
-  return sum % 360;
-}
-
-const SPACE_HUES: Record<string, number> = {
-  "space-firstflex": 184,
-  "space-ff26": 268,
-  "space-1on1-james": 263,
-  "space-1on1-amara": 202,
-  "space-1on1-daniel": 212,
-};
-
-function getSpaceHue(spaceId: string): number {
-  return SPACE_HUES[spaceId] ?? hueFromId(spaceId);
-}
 
 function spaceShadow(hue: number): string {
   return `0px 6px 16px 0px hsla(${hue},67%,28%,0.12), 0px 0px 8px 0px hsla(${hue},67%,28%,0.06)`;

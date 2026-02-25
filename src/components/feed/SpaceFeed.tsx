@@ -20,30 +20,10 @@ import {
 } from "@/components/space-widgets";
 import { SIDEBAR_WIDGET_DATA } from "@/data/sidebar-widget-data";
 import { FF26_WIDGETS } from "@/data/space-widgets-data";
+import { getSpaceHue, generateSpaceTheme, spaceThemeToCssVars } from "@/lib/space-theme";
 
 interface SpaceFeedProps {
   spaceId: string;
-}
-
-/** Derive a stable hue (0–359) from a string by summing char codes. */
-function hueFromId(id: string): number {
-  let sum = 0;
-  for (let i = 0; i < id.length; i++) sum += id.charCodeAt(i);
-  return sum % 360;
-}
-
-/** Hue overrides for spaces with branded header gradients */
-const SPACE_HUES: Record<string, number> = {
-  "space-firstflex": 184,
-  "space-ff26": 268,
-  "space-1on1-james": 263,
-  "space-1on1-amara": 202,
-  "space-1on1-daniel": 212,
-};
-
-/** Get the light surface tint hue for a space */
-function getSpaceHue(spaceId: string): number {
-  return SPACE_HUES[spaceId] ?? hueFromId(spaceId);
 }
 
 const staggerContainer = {
@@ -153,12 +133,11 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
   const widgetData = SIDEBAR_WIDGET_DATA[spaceId];
   const hasSidebar = !!(sidebarPanels || spaceWidgets || widgetData);
 
-  const surfaceHue = getSpaceHue(spaceId);
-  const surfaceBg = `hsl(${surfaceHue}, 35%, 96%)`;
-  const spaceAccent = `hsl(${surfaceHue}, 67%, 28%)`;
+  const theme = generateSpaceTheme(getSpaceHue(spaceId));
+  const cssVars = spaceThemeToCssVars(theme);
 
   return (
-    <div className="h-full relative overflow-hidden" style={{ backgroundColor: surfaceBg, '--space-accent': spaceAccent } as React.CSSProperties}>
+    <div className="h-full relative overflow-hidden" style={{ backgroundColor: theme.bg, ...cssVars } as React.CSSProperties}>
       {/* Single scroll container — header scrolls out, sidebar sticks */}
       <div className="h-full overflow-y-auto">
         {/* Header — scrolls with content, aligned to feed+sidebar width */}
@@ -270,13 +249,13 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
               style={{
                 width: 712,
                 height: "calc(128px + 2rem)",
-                background: `linear-gradient(180deg, hsla(${surfaceHue},35%,96%,0) 0%, hsla(${surfaceHue},35%,96%,0.8) 60%, hsla(${surfaceHue},35%,96%,0.98) 100%)`,
+                background: `linear-gradient(180deg, hsla(${theme.tintHue},80%,96%,0) 0%, hsla(${theme.tintHue},80%,96%,0.8) 60%, hsla(${theme.tintHue},80%,96%,0.98) 100%)`,
               }}
             />
             {/* Prompt bar */}
             <div className="relative pb-8 pointer-events-auto">
               <div className="mx-auto max-w-3xl px-6">
-                <PromptBar onSubmit={() => {}} inputBg={surfaceBg} />
+                <PromptBar onSubmit={() => {}} inputBg={theme.bg} />
               </div>
             </div>
           </div>
