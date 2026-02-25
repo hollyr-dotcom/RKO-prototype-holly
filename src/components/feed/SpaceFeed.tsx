@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 import type { FeedItem } from "@/types/feed";
 import { FeedCard } from "./FeedCard";
 import { SpaceHeader } from "./SpaceHeader";
@@ -17,9 +16,11 @@ import {
   AttendeesWidget,
   StaffWidget,
   VibeCheckWidget,
+  RACIWidget,
+  MilestoneWidget,
 } from "@/components/space-widgets";
 import { SIDEBAR_WIDGET_DATA } from "@/data/sidebar-widget-data";
-import { FF26_WIDGETS } from "@/data/space-widgets-data";
+import { FF26_WIDGETS, FIRSTFLEX_WIDGETS } from "@/data/space-widgets-data";
 import { getSpaceHue, generateSpaceTheme, spaceThemeToCssVars } from "@/lib/space-theme";
 
 interface SpaceFeedProps {
@@ -34,18 +35,14 @@ const staggerContainer = {
   },
 };
 
-/** Sidebar panel config — maps spaceId → ordered list of PNG image paths */
-const SIDEBAR_PANELS: Record<string, string[]> = {
-  "space-firstflex": [
-    "/feed-viz/FirstFlex-Youth-Banking/Single%20number-2.png",
-    "/feed-viz/FirstFlex-Youth-Banking/Single%20number.png",
-    "/feed-viz/FirstFlex-Youth-Banking/Single%20number-1.png",
-  ],
-};
-
 /** Space widget config — maps spaceId → widget data for live widget sidebars */
 const SPACE_WIDGETS: Record<string, typeof FF26_WIDGETS> = {
   "space-ff26": FF26_WIDGETS,
+};
+
+/** FirstFlex-style widget config — RACI + milestones */
+const FIRSTFLEX_SPACE_WIDGETS: Record<string, typeof FIRSTFLEX_WIDGETS> = {
+  "space-firstflex": FIRSTFLEX_WIDGETS,
 };
 
 export function SpaceFeed({ spaceId }: SpaceFeedProps) {
@@ -128,10 +125,10 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
     [spaceId]
   );
 
-  const sidebarPanels = SIDEBAR_PANELS[spaceId];
   const spaceWidgets = SPACE_WIDGETS[spaceId];
+  const firstflexWidgets = FIRSTFLEX_SPACE_WIDGETS[spaceId];
   const widgetData = SIDEBAR_WIDGET_DATA[spaceId];
-  const hasSidebar = !!(sidebarPanels || spaceWidgets || widgetData);
+  const hasSidebar = !!(spaceWidgets || firstflexWidgets || widgetData);
 
   const theme = generateSpaceTheme(getSpaceHue(spaceId));
   const cssVars = spaceThemeToCssVars(theme);
@@ -196,20 +193,12 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
               </div>
             </div>
 
-            {/* Sidebar panels — sticky to viewport top */}
-            {sidebarPanels && (
-              <div className="flex flex-col gap-6 flex-shrink-0 sticky" style={{ width: 320, top: 24 }}>
-                {sidebarPanels.map((src, i) => (
-                  <Image
-                    key={i}
-                    src={src}
-                    alt=""
-                    width={480}
-                    height={480}
-                    className="w-full h-auto rounded-2xl"
-                    priority={i === 0}
-                  />
-                ))}
+            {/* FirstFlex widgets sidebar (RACI + milestones) */}
+            {firstflexWidgets && (
+              <div className="flex flex-col gap-5 flex-shrink-0 sticky" style={{ width: 320, top: 24 }}>
+                <RACIWidget {...firstflexWidgets.raci} />
+                <MilestoneWidget {...firstflexWidgets.nextMilestone} />
+                <MilestoneWidget {...firstflexWidgets.lastMilestone} />
               </div>
             )}
 

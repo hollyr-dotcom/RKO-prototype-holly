@@ -1,3 +1,27 @@
+export const FIRSTFLEX_WIDGETS = {
+  raci: {
+    title: "RACI",
+    members: [
+      { name: "Sarah Chen", avatar: "/avatars/sarah-chen.png", role: "R", roleColor: "coral" as const },
+      { name: "Priya Sharma", avatar: "/avatars/priya-sharma.png", role: "R", roleColor: "coral" as const },
+      { name: "Marcus Chen", avatar: "/avatars/marcus-chen.png", role: "R", roleColor: "coral" as const },
+      { name: "Jordan Lee", avatar: "/avatars/jordan-lee.png", role: "A", roleColor: "lavender" as const },
+      { name: "Amy Chen", avatar: "/avatars/amy-chen.png", role: "A", roleColor: "lavender" as const },
+      { name: "David Kim", avatar: "/avatars/david-kim.png", role: "A", roleColor: "lavender" as const },
+    ],
+  },
+  nextMilestone: {
+    title: "Next Milestone",
+    name: "Solutions Review",
+    date: "May 21st",
+  },
+  lastMilestone: {
+    title: "Last Milestone",
+    name: "Early Concepts Review",
+    date: "May 21st",
+  },
+};
+
 export const FF26_WIDGETS = {
   countdown: {
     title: "Countdown to FF26  🎉",
