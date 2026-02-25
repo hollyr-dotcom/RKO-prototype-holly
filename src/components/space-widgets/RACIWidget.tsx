@@ -23,7 +23,7 @@ const roleColorMap: Record<RoleColor, { bg: string; border: string; text: string
 
 export function RACIWidget({ title, members }: RACIWidgetProps) {
   return (
-    <div className="rounded-[24px] p-[24px] overflow-hidden">
+    <div className="rounded-[24px] p-[24px] overflow-hidden" style={{ backgroundColor: "var(--space-widget-bg)" }}>
       <h3 className="text-[20px] font-semibold text-[#222428] mb-4">{title}</h3>
       <div className="flex flex-col gap-2">
         {members.map((member, i) => {

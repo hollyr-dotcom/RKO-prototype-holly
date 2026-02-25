@@ -13,7 +13,7 @@ interface AttendeesWidgetProps {
 
 export function AttendeesWidget({ title, stats }: AttendeesWidgetProps) {
   return (
-    <div className="rounded-[24px] p-[24px]">
+    <div className="rounded-[24px] p-[24px]" style={{ backgroundColor: "var(--space-widget-bg)" }}>
       <h3 className="text-[20px] font-semibold text-[#222428] mb-5">{title}</h3>
       <div className="flex gap-[24px]">
         {stats.map((stat, i) => (

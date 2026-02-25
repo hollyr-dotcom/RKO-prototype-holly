@@ -27,8 +27,8 @@ export function StatsWidget({ stats }: StatsWidgetProps) {
       {stats.map((stat, i) => (
         <div
           key={i}
-          className="flex flex-1 flex-col justify-between rounded-2xl border border-[#e9eaef] bg-white px-4 pt-6 pb-4"
-          style={{ minHeight: 143 }}
+          className="flex flex-1 flex-col justify-between rounded-2xl px-4 pt-6 pb-4"
+          style={{ backgroundColor: "var(--space-widget-bg)", minHeight: 143 }}
         >
           <p
             className="text-xl font-semibold text-[#656b81] leading-[1.4]"

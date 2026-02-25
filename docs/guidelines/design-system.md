@@ -87,11 +87,12 @@ The palette auto-detects whether the base is light or dark (via WCAG relative lu
 
 ### Space Theme Palette (Hue-Derived)
 
-Each space has a **base hue** (set in `src/lib/space-theme.ts`) from which 3 colour tokens are derived and injected as CSS custom properties on the space feed container:
+Each space has a **base hue** (set in `src/lib/space-theme.ts`) from which colour tokens are derived and injected as CSS custom properties on the space feed container:
 
 | CSS Variable | Role | HSL Formula | FF26 (H=260) |
 |---|---|---|---|
 | `--space-bg` | Light surface / fill | `hsl(H-10, 80%, 96%)` | `#F0EDFD` |
+| `--space-widget-bg` | Widget panel background | `hsl(H-10, 100%, 93%)` | `#E1DBFF` |
 | `--space-secondary` | Mid accent | `hsl(H-10, 77%, 72%)` | `#9381EF` |
 | `--space-accent` | Dark accent | `hsl(H, 68%, 28%)` | `#371778` |
 
@@ -106,6 +107,7 @@ Lighter tones shift 10° cooler to stay perceptually "the same colour" (Abney ef
 **Usage:**
 - Buttons, headings, highlighted elements → `var(--space-accent)`
 - Stats, role tags, callout labels → `var(--space-secondary)`
+- Widget/panel backgrounds (sidebar widgets, stat cards) → `var(--space-widget-bg)`
 - Surface backgrounds, graph fills, calendar cells → `var(--space-bg)`
 - Never hardcode space colours in components — always reference CSS variables
 

@@ -55,7 +55,7 @@ export function CountdownWidget({ title, targetDate }: CountdownWidgetProps) {
   }, [targetDate]);
 
   return (
-    <div className="rounded-[24px] p-[24px]">
+    <div className="rounded-[24px] p-[24px]" style={{ backgroundColor: "var(--space-widget-bg)" }}>
       <h3 className="text-[20px] font-semibold text-[#222428] mb-5">{title}</h3>
       <div className="flex justify-between gap-[24px]">
         <CalendarTile value={countdown.days} label="DAYS" />

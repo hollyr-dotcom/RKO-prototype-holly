@@ -26,7 +26,7 @@ export function AwaitingDecisionWidget({
   onSeeAll,
 }: AwaitingDecisionWidgetProps) {
   return (
-    <div className="rounded-2xl border border-[#e9eaef] bg-white px-3 py-6">
+    <div className="rounded-2xl px-3 py-6" style={{ backgroundColor: "var(--space-widget-bg)" }}>
       <p
         className="text-xl font-semibold text-[#656b81] leading-[1.4] mb-3"
         style={{ fontFamily: "var(--font-heading)" }}

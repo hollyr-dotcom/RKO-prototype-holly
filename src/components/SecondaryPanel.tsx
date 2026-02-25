@@ -11,7 +11,7 @@ import { NavList, NavListItem } from "@/components/NavList";
 import { BoardEmoji } from "@/components/BoardEmoji";
 import { generateAndSetEmoji } from "@/lib/canvasUtils";
 import { BOARD_SECTIONS } from "@/data/board-sections";
-import { getSpaceHue } from "@/lib/space-theme";
+import { getSpaceHue, generateSpaceTheme } from "@/lib/space-theme";
 
 type Canvas = {
   id: string;
@@ -424,6 +424,7 @@ export function SecondaryPanel() {
   const spaceName = space?.name || "Space";
 
   const sidebarHue = params.spaceId ? getSpaceHue(params.spaceId) : 260;
+  const sidebarTheme = generateSpaceTheme(sidebarHue);
   const sidebarShadow = `0px 6px 16px 0px hsla(${sidebarHue},67%,28%,0.12), 0px 0px 8px 0px hsla(${sidebarHue},67%,28%,0.06)`;
 
   return (
@@ -514,7 +515,7 @@ export function SecondaryPanel() {
                     isSelected={selectedCapability === "overview"}
                     onClick={() => setSelectedCapability("overview")}
                     href={`/space/${params.spaceId}`}
-                    highlightColor={`hsl(${sidebarHue}, 35%, 96%)`}
+                    highlightColor={sidebarTheme.bg}
                   />
                 </motion.div>
                 {(params.spaceId && SPACE_SECTIONS[params.spaceId] || []).map((section) => (
@@ -523,7 +524,7 @@ export function SecondaryPanel() {
                       label={section.label}
                       isSelected={false}
                       onClick={() => {}}
-                      highlightColor={`hsl(${sidebarHue}, 35%, 96%)`}
+                      highlightColor={sidebarTheme.bg}
                     />
                   </motion.div>
                 ))}

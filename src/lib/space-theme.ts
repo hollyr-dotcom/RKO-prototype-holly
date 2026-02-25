@@ -9,6 +9,7 @@
  *   dark  ≈ #371778  (target #361777)
  *   mid   ≈ #9381EF  (target #8F7FEE)
  *   light ≈ #F0EDFD  (target #EFEDFD)
+ *   widget ≈ #E1DBFF  (target #DEDAFF)
  *
  * ## Graph colour rule
  *
@@ -26,6 +27,8 @@ export interface SpaceTheme {
   accent: string;
   /** Mid accent (stats, tag tints) — hsl(H-10, 77%, 72%) */
   secondary: string;
+  /** Widget panel background — hsl(H-10, 100%, 93%) */
+  widgetBg: string;
   /** Base hue for the space */
   hue: number;
   /** Cooled hue used by bg & secondary (hue - 10) */
@@ -76,6 +79,7 @@ export function generateSpaceTheme(hue: number): SpaceTheme {
     bg: `hsl(${tintHue}, 80%, 96%)`,
     accent: `hsl(${hue}, 68%, 28%)`,
     secondary: `hsl(${tintHue}, 77%, 72%)`,
+    widgetBg: `hsl(${tintHue}, 100%, 93%)`,
     hue,
     tintHue,
   };
@@ -87,5 +91,6 @@ export function spaceThemeToCssVars(theme: SpaceTheme): Record<string, string> {
     "--space-bg": theme.bg,
     "--space-accent": theme.accent,
     "--space-secondary": theme.secondary,
+    "--space-widget-bg": theme.widgetBg,
   };
 }
