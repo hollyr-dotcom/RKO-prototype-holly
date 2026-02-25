@@ -41,7 +41,7 @@ function VoiceHoverButton({ onClick }: { onClick?: () => void }) {
         lottieRef.current?.goToAndPlay(0);
       }}
       onMouseLeave={() => setIsHovered(false)}
-      className="flex shrink-0 items-center justify-center rounded-lg w-[36px] h-[36px] text-[#222428]"
+      className="flex shrink-0 items-center justify-center rounded-lg w-[36px] h-[36px] text-gray-900"
     >
       {isHovered ? (
         <Lottie
@@ -187,7 +187,7 @@ export function ChatInput({
       {/* Response toast above */}
       {responseToast && !isLoading && (
         <div className="absolute bottom-full mb-4" style={{ right: -8, width: "calc(100% + 16px)" }}>
-          <div className="w-full bg-white shadow-lg border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: 24 }}>
+          <div className="w-full bg-white shadow-chrome border border-gray-200 overflow-hidden flex flex-col max-h-[300px] relative" style={{ borderRadius: 24 }}>
             {/* spacer for removed icon */}
             {/* Sticky close button */}
             <div className="absolute top-4 right-4 z-10 bg-white">
@@ -263,7 +263,7 @@ export function ChatInput({
 
       {/* Input pill */}
       <form onSubmit={handleSubmit}>
-        <div className="flex w-full items-center gap-1.5 rounded-[18px] h-[44px] border-none bg-[#f1f2f5] pl-4 pr-2">
+        <div className="flex w-full items-center gap-1.5 rounded-[18px] h-[44px] border-none bg-gray-100 pl-4 pr-2">
           <input
             ref={inputRef}
             type="text"
@@ -287,7 +287,7 @@ export function ChatInput({
                 : "What shall we do next?"
             }
             disabled={isLoading}
-            className="flex-1 bg-transparent text-[15px] text-[#222428] outline-none placeholder:text-[#656b81] disabled:opacity-50 min-w-0"
+            className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 disabled:opacity-50 min-w-0"
           />
 
           {value.trim() ? (

@@ -62,11 +62,7 @@ export function ZoomToolbar({ editor }: ZoomToolbarProps) {
   return (
     <div className="absolute bottom-6 right-6 z-[70]" onWheel={(e) => e.stopPropagation()}>
       <div
-        className="flex items-center bg-white rounded-full border border-gray-200 p-1.5"
-        style={{
-          boxShadow:
-            "0 4px 24px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
-        }}
+        className="flex items-center bg-white rounded-full border border-gray-200 p-1.5 shadow-card"
       >
         {/* Zoom out */}
         <button

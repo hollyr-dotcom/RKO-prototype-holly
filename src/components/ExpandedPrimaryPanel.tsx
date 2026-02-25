@@ -373,11 +373,7 @@ export function ExpandedPrimaryPanel() {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="absolute left-0 right-0 mt-2 z-50 rounded-lg overflow-hidden"
-              style={{
-                backgroundColor: "#ffffff",
-                boxShadow: "0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06)",
-              }}
+              className="absolute left-0 right-0 mt-2 z-50 rounded-lg overflow-hidden bg-white shadow-elevated"
             >
               <div className="py-1">
                 {teams.map((team) => {
@@ -677,8 +673,7 @@ function SpaceSectionItem({
     >
       {/* Section header — tap to toggle, drag to reorder */}
       <motion.div
-        className="flex items-center h-8 pl-3 pr-1 pt-2 text-xs font-bold w-full cursor-pointer"
-        style={{ color: "#AEB2C0" }}
+        className="flex items-center h-8 pl-3 pr-1 pt-2 text-xs font-bold w-full cursor-pointer text-gray-400"
         onTap={() => { if (!didDrag.current) onToggle(); }}
       >
         <span className="flex-1 text-left">{section.label}</span>
@@ -691,7 +686,7 @@ function SpaceSectionItem({
         >
           <path
             d="M4 6L8 10L12 6"
-            stroke="#AEB2C0"
+            stroke="currentColor"
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"

@@ -66,7 +66,7 @@ export function PlusMenu({ open, onClose, onSelectItem }: PlusMenuProps) {
           onSelectItem(tool);
           onClose();
         }}
-        className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-[#222428] transition-colors hover:bg-[#f1f2f5] rounded-lg mx-0"
+        className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-900 transition-colors hover:bg-gray-100 rounded-lg mx-0"
       >
         <span
           className="flex items-center justify-center shrink-0"
@@ -100,14 +100,14 @@ export function PlusMenu({ open, onClose, onSelectItem }: PlusMenuProps) {
           <div className="max-h-[380px] overflow-y-auto overflow-x-hidden" style={{ borderRadius: CONTAINER_RADIUS }}>
             {/* Filter input — sticky grey pill */}
             <div className="sticky top-0 z-10 bg-white p-2" style={{ borderRadius: `${CONTAINER_RADIUS}px ${CONTAINER_RADIUS}px 0 0` }}>
-              <div className="flex items-center rounded-full   bg-[#f1f2f5] px-3 h-[36px]">
+              <div className="flex items-center rounded-full bg-gray-100 px-3 h-[36px]">
                 <input
                   ref={inputRef}
                   type="text"
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
                   placeholder="Find a tool..."
-                  className="w-full bg-transparent text-sm text-[#222428] outline-none placeholder:text-[#656b81]"
+                  className="w-full bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
                 />
               </div>
             </div>
@@ -115,7 +115,7 @@ export function PlusMenu({ open, onClose, onSelectItem }: PlusMenuProps) {
             {/* Tool list */}
             <div className="p-2 pt-0">
             {filtered.length === 0 ? (
-              <div className="px-4 py-4 text-center text-sm text-[#656b81]">
+              <div className="px-4 py-4 text-center text-sm text-gray-400">
                 No tools found
               </div>
             ) : (

@@ -317,7 +317,7 @@ export function CanvasComments({ editor, isCommentMode, onExitCommentMode }: Can
               }}
             >
               <div
-                className="w-[340px] bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden"
+                className="w-[340px] bg-white rounded-xl shadow-elevated border border-gray-200 overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Thread
@@ -333,7 +333,7 @@ export function CanvasComments({ editor, isCommentMode, onExitCommentMode }: Can
       {newCommentPos && (
         <div
           data-comment-composer
-          className="absolute w-[340px] bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden"
+          className="absolute w-[340px] bg-white rounded-xl shadow-elevated border border-gray-200 overflow-hidden"
           style={{
             left: newCommentPos.screenX,
             top: newCommentPos.screenY,

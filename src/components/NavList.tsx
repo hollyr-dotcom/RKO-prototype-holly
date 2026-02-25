@@ -279,8 +279,7 @@ function NavListRow({
               {menuOpen && (
                 <motion.div
                   ref={menuRef}
-                  className="absolute right-0 top-full mt-1 z-[600] min-w-[160px] rounded-lg overflow-hidden bg-white border border-gray-200"
-                  style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06)" }}
+                  className="absolute right-0 top-full mt-1 z-[600] min-w-[160px] rounded-lg overflow-hidden bg-white border border-gray-200 shadow-elevated"
                   initial={{ opacity: 0, y: -4, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1, transition: { duration: 0.15, ease: [0.2, 0, 0, 1] } }}
                   exit={{ opacity: 0, y: -4, scale: 0.97, transition: { duration: 0.1, ease: [0.3, 0, 1, 1] } }}

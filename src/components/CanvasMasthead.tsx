@@ -271,12 +271,12 @@ export function CanvasMasthead() {
                     handleCancelName();
                   }
                 }}
-                className="text-[14px] font-medium text-gray-900 max-w-[260px] bg-transparent outline-none border-none p-0 m-0"
+                className="text-sm font-medium text-gray-900 max-w-[260px] bg-transparent outline-none border-none p-0 m-0"
                 style={{ width: `${Math.max(nameEditValue.length, 1)}ch` }}
               />
             ) : (
               <span
-                className="text-[14px] font-medium text-gray-900 truncate max-w-[260px] cursor-text"
+                className="text-sm font-medium text-gray-900 truncate max-w-[260px] cursor-text"
                 onClick={() => setIsEditingName(true)}
               >
                 {canvasName}
@@ -321,8 +321,7 @@ export function CanvasMasthead() {
               {menuOpen && (
                 <motion.div
                   ref={menuRef}
-                  className="absolute top-full right-0 mt-2 z-[600] min-w-[180px] rounded-lg overflow-hidden bg-white border border-gray-200"
-                  style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06)" }}
+                  className="absolute top-full right-0 mt-2 z-[600] min-w-[180px] rounded-lg overflow-hidden bg-white border border-gray-200 shadow-elevated"
                   initial={{ opacity: 0, y: -4, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1, transition: { duration: 0.15, ease: [0.2, 0, 0, 1] } }}
                   exit={{ opacity: 0, y: -4, scale: 0.97, transition: { duration: 0.1, ease: [0.3, 0, 1, 1] } }}
@@ -359,7 +358,7 @@ export function CanvasMasthead() {
             {/* Share button — opens chat sidepanel */}
             <button
               onClick={() => setChatMode(chatMode === "sidepanel" ? "minimized" : "sidepanel")}
-              className="h-8 px-4 flex items-center gap-1.5 bg-[#4262ff] hover:bg-[#3b58e0] text-white text-sm font-medium transition-colors cursor-pointer border-none"
+              className="h-8 px-4 flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors cursor-pointer border-none"
               style={{ borderRadius: 8 }}
             >
               <IconOffice css={{ width: 16, height: 16 }} />

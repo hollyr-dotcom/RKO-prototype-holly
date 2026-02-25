@@ -230,7 +230,7 @@ export function ChatShell() {
           className="absolute top-0 bottom-0 z-[600] flex items-center justify-center cursor-col-resize group"
           style={{ width: 20, left: -10 }}
         >
-          <div className="w-2 h-10 rounded-full bg-white border border-[#e5e7eb] transition-colors group-hover:bg-gray-100 group-hover:border-gray-300" />
+          <div className="w-2 h-10 rounded-full bg-white border border-gray-200 transition-colors group-hover:bg-gray-100 group-hover:border-gray-300" />
         </div>
       )}
 

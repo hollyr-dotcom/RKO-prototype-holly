@@ -137,7 +137,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
     return (
       <motion.div
         variants={staggerItem}
-        className="group relative rounded-2xl overflow-hidden transition-shadow duration-200 hover:shadow-md border border-gray-200 bg-white"
+        className="group relative rounded-2xl overflow-hidden transition-shadow duration-200 hover:shadow-card border border-gray-200 bg-white"
         style={{ width: 712 }}
       >
         <div className="flex">
@@ -163,11 +163,11 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
                     {sourceUser.name}
                   </span>
                 )}
-                <span className="flex-shrink-0" style={{ fontSize: 14, color: "#656B81" }}>
+                <span className="flex-shrink-0 text-sm text-gray-400">
                   {item.type === "live-session" ? "Now" : formatTimeAgo(item.timestamp)}
                 </span>
                 {item.type === "live-session" && (
-                  <div className="rounded-full flex-shrink-0" style={{ width: 8, height: 8, backgroundColor: "#FF0909" }} />
+                  <div className="w-2 h-2 rounded-full flex-shrink-0 bg-red-500" />
                 )}
               </div>
             </div>
@@ -298,7 +298,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
       className={
         isStack
           ? "group relative overflow-hidden bg-white h-full flex flex-col"
-          : "group relative rounded-xl overflow-hidden transition-shadow duration-200 hover:shadow-md border border-gray-200 bg-white"
+          : "group relative rounded-xl overflow-hidden transition-shadow duration-200 hover:shadow-card border border-gray-200 bg-white"
       }
     >
       <div className={isStack ? "relative flex flex-col flex-1" : "relative"}>
@@ -308,17 +308,17 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
           <div className={`flex items-center gap-2 transition-opacity duration-200 ${item.type === "live-session" ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
             {spaceName && (
               <>
-                <span className="flex-shrink-0" style={{ fontSize: 14, color: "#656B81" }}>
+                <span className="flex-shrink-0 text-sm text-gray-400">
                   {spaceName}
                 </span>
-                <span style={{ color: "#656B81" }}>&middot;</span>
+                <span className="text-gray-400">&middot;</span>
               </>
             )}
-            <span className="flex-shrink-0" style={{ fontSize: 14, color: "#656B81" }}>
+            <span className="flex-shrink-0 text-sm text-gray-400">
               {item.type === "live-session" ? "Now" : formatTimeAgo(item.timestamp)}
             </span>
             {item.type === "live-session" && (
-              <div className="rounded-full flex-shrink-0" style={{ width: 8, height: 8, backgroundColor: "#FF0909" }} />
+              <div className="w-2 h-2 rounded-full flex-shrink-0 bg-red-500" />
             )}
           </div>
         </div>

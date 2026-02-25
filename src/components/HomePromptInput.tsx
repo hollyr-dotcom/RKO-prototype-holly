@@ -91,13 +91,9 @@ export function HomePromptInput({ onSubmit, isLoading, onInputChange }: HomeProm
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-xl mx-auto">
       <div
-        className={`bg-white border border-gray-200 rounded-[28px] ${
+        className={`bg-white border border-gray-200 rounded-[28px] shadow-card ${
           isExpanded ? "flex flex-col" : "flex items-center"
         }`}
-        style={{
-          boxShadow:
-            "0 4px 24px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
-        }}
       >
         {/* Collapsed: inline pill layout */}
         {!isExpanded && (

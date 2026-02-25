@@ -119,10 +119,9 @@ export function PromptSuggestions({
       }}
     >
       <div
-        className="bg-white border border-gray-200 py-1.5 overflow-hidden"
+        className="bg-white border border-gray-200 py-1.5 overflow-hidden shadow-elevated"
         style={{
           borderRadius: 24,
-          boxShadow: "0 4px 24px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.06)",
         }}
       >
         {filtered.map((suggestion, i) => (

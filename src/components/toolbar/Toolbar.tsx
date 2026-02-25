@@ -294,7 +294,7 @@ export function Toolbar({
           <div className="relative flex items-center">
             {/* Active tool highlight — sliding pill (always mounted to avoid remount jump) */}
             <motion.div
-              className="absolute top-0 left-0 rounded-[18px] bg-[#e8ecfc]"
+              className="absolute top-0 left-0 rounded-[18px] bg-blue-50"
               animate={{ x: highlightIndex * CELL_W, opacity: showHighlight ? 1 : 0 }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               style={{ width: CELL_W, height: CELL_H }}
@@ -440,8 +440,8 @@ export function Toolbar({
             onClick={onToggleMute}
             className={`absolute top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full transition-colors ${
               isMuted
-                ? "bg-[#FF4444] text-white hover:bg-[#e63e3e]"
-                : "bg-white/80 text-[#222428] hover:bg-white"
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "bg-white/80 text-gray-900 hover:bg-white"
             }`}
             style={{
               left: "calc(100% + 12px)",

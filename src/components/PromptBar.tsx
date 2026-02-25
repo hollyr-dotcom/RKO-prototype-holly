@@ -54,10 +54,7 @@ export function PromptBar({
   return (
     <form onSubmit={handleSubmit} className={`w-full max-w-xl ${className}`}>
       <div
-        className="flex items-center bg-white rounded-full border border-gray-200"
-        style={{
-          boxShadow: "0 4px 24px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
-        }}
+        className="flex items-center bg-white rounded-full border border-gray-200 shadow-card"
       >
         {/* Plus button */}
         <button

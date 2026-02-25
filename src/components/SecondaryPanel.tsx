@@ -340,7 +340,7 @@ export function SecondaryPanel() {
 
   return (
     <aside
-      className="h-full flex-shrink-0 overflow-hidden bg-white rounded-l-3xl shadow-[0px_0px_8px_0px_rgba(34,36,40,0.06),0px_12px_32px_0px_rgba(34,36,40,0.1)]"
+      className="h-full flex-shrink-0 overflow-hidden bg-white rounded-l-3xl shadow-chrome"
       style={{ width: SECONDARY_WIDTH }}
     >
       <div className="h-full flex flex-col">
@@ -665,8 +665,7 @@ function BoardSectionItem({
     >
       {/* Section header — tap to toggle, drag to reorder */}
       <motion.div
-        className="flex items-center h-8 pl-3 pr-0 pt-2 text-xs font-bold w-full cursor-pointer"
-        style={{ color: "#AEB2C0" }}
+        className="flex items-center h-8 pl-3 pr-0 pt-2 text-xs font-bold w-full cursor-pointer text-gray-400"
         onTap={() => { if (!didDrag.current) onToggle(); }}
       >
         <span className="flex-1 text-left">{section.label}</span>
@@ -679,7 +678,7 @@ function BoardSectionItem({
         >
           <path
             d="M4 6L8 10L12 6"
-            stroke="#AEB2C0"
+            stroke="currentColor"
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"

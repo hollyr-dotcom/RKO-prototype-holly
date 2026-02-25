@@ -20,8 +20,8 @@ export function ToolbarItem({ tool, isActive, onClick }: ToolbarItemProps) {
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       className={`relative flex items-center justify-center rounded-[24px] transition-colors focus-visible:outline-none ${
         isActive
-          ? "text-[#4262ff]"
-          : "text-[#222428] hover:text-[#222428]/80"
+          ? "text-blue-500"
+          : "text-gray-900 hover:text-gray-900/80"
       }`}
       style={{ width: CELL_W, height: CELL_H }}
     >

@@ -223,12 +223,10 @@ export function StickerPicker({
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="absolute bottom-full mb-3 left-0 w-[320px] bg-white border border-gray-200 overflow-hidden flex flex-col"
+          className="absolute bottom-full mb-3 left-0 w-[320px] bg-white border border-gray-200 overflow-hidden flex flex-col shadow-elevated"
           style={{
             maxHeight: 400,
             borderRadius: 32,
-            boxShadow:
-              "0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
           }}
         >
           {/* Search bar */}

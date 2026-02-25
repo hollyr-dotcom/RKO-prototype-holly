@@ -22,10 +22,56 @@ html, body {
 }
 
 @theme {
+  /* ── Fonts ── */
   --font-sans: var(--font-noto-sans), "Noto Sans", "OpenSans", "Noto Sans KR",
     "Noto Sans JP", sans-serif;
   --font-heading: "Roobert PRO", "Roobert", "Noto Sans KR", "Noto Sans JP",
     sans-serif;
+
+  /* ── Typography — Font sizes ── */
+  --text-xs: 11px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+
+  /* ── Colors — Gray ramp ── */
+  --color-gray-50: #F9FAFB;
+  --color-gray-100: #F3F4F6;
+  --color-gray-200: #E5E7EB;
+  --color-gray-400: #9CA3AF;
+  --color-gray-600: #4B5563;
+  --color-gray-900: #111827;
+
+  /* ── Colors — Semantic ── */
+  --color-blue-50: #EFF6FF;
+  --color-blue-500: #3B82F6;
+  --color-blue-900: #1E3A5F;
+  --color-red-500: #EF4444;
+  --color-green-500: #22C55E;
+  --color-yellow-500: #EAB308;
+
+  /* ── Shadows — Named tokens ── */
+  --shadow-chrome: 0 4px 24px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-elevated: 0 8px 32px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-subtle: 0 1px 2px rgba(0,0,0,0.05);
+
+  /* ── Shadows — Tailwind utility overrides ── */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-lg: 0 4px 24px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-xl: 0 8px 32px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-2xl: 0 8px 32px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.06);
+
+  /* ── Border Radius ── */
+  --radius-sm: 2px;
+  --radius: 4px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
 }
 
 /* Document editor content styles */

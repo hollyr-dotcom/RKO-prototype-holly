@@ -1792,7 +1792,7 @@ export function ChatPanel({
       {isFullscreen && pendingApproval && !activeQuestion && (
         <div className="flex justify-center px-4 pb-2 mx-auto w-full" style={{ maxWidth: 720 }}>
           <div className="w-full">
-            <div className="bg-white text-gray-900 shadow-2xl overflow-hidden border border-gray-200" style={{ borderRadius: 24 }}>
+            <div className="bg-white text-gray-900 shadow-elevated overflow-hidden border border-gray-200" style={{ borderRadius: 24 }}>
               <div className="px-5 pt-4 pb-2">
                 <p className="text-base font-medium">Ready to start?</p>
               </div>

@@ -28,7 +28,7 @@ export function VoiceStopButton({ voiceState, onStop }: VoiceStopButtonProps) {
         backgroundColor: voiceState === "error" ? "#FF4444" : "#FFD02F",
         borderRadius: CONTAINER_RADIUS - CONTAINER_PADDING,
       }}
-      className="flex shrink-0 items-center justify-center text-[#222428] hover:brightness-95"
+      className="flex shrink-0 items-center justify-center text-gray-900 hover:brightness-95"
     >
       <Lottie
         animationData={voiceState === "speaking" ? aiSpeakingAnimation : aiListeningAnimation}

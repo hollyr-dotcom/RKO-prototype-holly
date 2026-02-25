@@ -182,20 +182,14 @@ export function StartingPromptCards({
       <div className="flex flex-col gap-1.5">
         <button
           onClick={() => setIsDismissed(true)}
-          className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
-          style={{
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)',
-          }}
+          className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-card"
           title="Dismiss"
         >
           <IconCross css={{ width: 14, height: 14, color: '#4b5563' }} />
         </button>
         <button
           onClick={() => setShuffleKey(k => k + 1)}
-          className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
-          style={{
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)',
-          }}
+          className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-card"
           title="Shuffle prompts"
         >
           <IconShuffle size="small" css={{ color: '#666' }} />

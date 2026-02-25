@@ -15,11 +15,7 @@ interface StackFeedCardProps {
 export function StackFeedCard({ item }: StackFeedCardProps) {
   return (
     <div
-      className="w-full max-w-[520px] h-[560px] overflow-y-auto rounded-[32px]"
-      style={{
-        boxShadow:
-          "0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06)",
-      }}
+      className="w-full max-w-[520px] h-[560px] overflow-y-auto rounded-[32px] shadow-elevated"
     >
       <FeedCard item={item} spaceName={item.spaceName} variant="stack" />
     </div>

@@ -68,7 +68,7 @@ export function FloatingQuestionCard({
 
   return (
     <div className="w-full">
-      <div className="bg-white text-gray-900 shadow-2xl overflow-hidden border border-gray-200" style={{ borderRadius: 24 }}>
+      <div className="bg-white text-gray-900 shadow-elevated overflow-hidden border border-gray-200" style={{ borderRadius: 24 }}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-2">
           <p className="text-base font-medium flex-1 pr-4">{question}</p>

@@ -219,8 +219,7 @@ function BannerOverflowMenu({
         {menuOpen && (
           <motion.div
             ref={menuRef}
-            className="absolute right-0 top-full mt-1 z-[600] min-w-[160px] rounded-lg overflow-hidden bg-white border border-gray-200"
-            style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06)" }}
+            className="absolute right-0 top-full mt-1 z-[600] min-w-[160px] rounded-lg overflow-hidden bg-white border border-gray-200 shadow-elevated"
             initial={{ opacity: 0, y: -4, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1, transition: { duration: 0.15, ease: [0.2, 0, 0, 1] } }}
             exit={{ opacity: 0, y: -4, scale: 0.97, transition: { duration: 0.1, ease: [0.3, 0, 1, 1] } }}
@@ -313,11 +312,7 @@ function BannerEmojiPicker({
       <button
         ref={buttonRef}
         onClick={() => setPickerOpen(!pickerOpen)}
-        className="w-16 h-16 bg-white rounded-[20px] flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
-        style={{
-          boxShadow:
-            "0 0 12px rgba(34, 36, 40, 0.04), 0 2px 8px rgba(34, 36, 40, 0.12)",
-        }}
+        className="w-16 h-16 bg-white rounded-[20px] flex items-center justify-center cursor-pointer hover:scale-105 transition-transform shadow-card"
         title="Change emoji"
       >
         {emoji ? (
@@ -466,7 +461,7 @@ export function SpaceOverviewBanner({
         variants={contentStagger}
         initial="hidden"
         animate="visible"
-        className="flex flex-col gap-[10px]"
+        className="flex flex-col gap-2.5"
       >
         <motion.div variants={contentItem}>
           <BannerEmojiPicker emoji={emoji} onEmojiChange={onEmojiChange} />
