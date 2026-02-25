@@ -1,29 +1,140 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { HorizontalFeed } from "@/components/feed/HorizontalFeed";
-import { PromptBar } from "@/components/PromptBar";
+import { IconArrowLeft, IconLightning } from "@mirohq/design-system-icons";
+import { ChatInput } from "@/components/toolbar/ChatInput";
+import { CardFan } from "@/components/home/CardFan";
+import {
+  attentionCards,
+  teamCards,
+  cardChat,
+  type FanCardData,
+  type ChatMessage,
+} from "@/components/home/card-data";
 import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/hooks/useAuth";
 import { spring } from "@/lib/motion";
 
+// ---------------------------------------------------------------------------
+// Tabs
+// ---------------------------------------------------------------------------
+
+const TABS = [
+  "What needs my attention",
+  "What's happening in my team",
+] as const;
+type Tab = (typeof TABS)[number];
+
+const TAB_CARDS: Record<Tab, FanCardData[]> = {
+  "What needs my attention": attentionCards,
+  "What's happening in my team": teamCards,
+};
+
+// ---------------------------------------------------------------------------
+// Streaming chat hook
+// ---------------------------------------------------------------------------
+
+function useStreamingChat(cardId: string | null) {
+  const [visibleMessages, setVisibleMessages] = useState<ChatMessage[]>([]);
+
+  useEffect(() => {
+    if (!cardId) {
+      setVisibleMessages([]);
+      return;
+    }
+
+    const messages = cardChat[cardId] ?? [];
+    setVisibleMessages([]);
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    messages.forEach((msg, i) => {
+      const t = setTimeout(() => {
+        setVisibleMessages((prev) => [...prev, msg]);
+      }, msg.delay + i * 100);
+      timers.push(t);
+    });
+
+    return () => timers.forEach(clearTimeout);
+  }, [cardId]);
+
+  return visibleMessages;
+}
+
+// ---------------------------------------------------------------------------
+// Simple markdown-ish renderer (bold only)
+// ---------------------------------------------------------------------------
+
+function RichLine({ text }: { text: string }) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.startsWith("**") && part.endsWith("**") ? (
+          <strong key={i} className="font-semibold text-zinc-900">
+            {part.slice(2, -2)}
+          </strong>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+}
+
+function ChatBubble({ message }: { message: ChatMessage }) {
+  const lines = message.text.split("\n");
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={spring.default}
+      className="flex gap-3"
+    >
+      {/* Avatar */}
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-900 mt-0.5">
+        <span className="flex items-center justify-center text-white" style={{ width: 14, height: 14 }}>
+          <IconLightning />
+        </span>
+      </div>
+
+      {/* Message */}
+      <div className="min-w-0 flex-1 text-sm leading-relaxed text-zinc-600">
+        {lines.map((line, i) => (
+          <p key={i} className={i > 0 ? "mt-1" : ""}>
+            <RichLine text={line} />
+          </p>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
+
 export default function HomePage() {
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
-  const [activeTab, setActiveTab] = useState<"foryou" | "recent">("foryou");
-  const prevTabRef = useRef(activeTab);
+  const [activeTab, setActiveTab] = useState<Tab>("What needs my attention");
+  const [selectedCard, setSelectedCard] = useState<FanCardData | null>(null);
   const { user } = useAuth();
   const firstName = user?.displayName?.split(" ")[0] || "Andy";
 
-  // Track direction for slide animation
-  const direction = activeTab === "recent" ? 1 : -1;
-  useEffect(() => {
-    prevTabRef.current = activeTab;
-  }, [activeTab]);
+  const messages = useStreamingChat(selectedCard?.id ?? null);
 
-  // Pre-warm the canvas route so it's already compiled when user clicks "Create new"
+  const handleSelect = useCallback((card: FanCardData) => {
+    setSelectedCard(card);
+  }, []);
+
+  const handleBack = useCallback(() => {
+    setSelectedCard(null);
+  }, []);
+
+  // Pre-warm the canvas route
   useEffect(() => {
     router.prefetch("/space/unassigned/canvas/warmup");
   }, [router]);
@@ -31,7 +142,7 @@ export default function HomePage() {
   // Use chat from provider
   const { append, isLoading, openFullscreen, registerHandlers } = useChat();
 
-  // Register no-op handlers on mount (safe defaults for home page)
+  // Register no-op handlers on mount
   useEffect(() => {
     registerHandlers({
       handleToolCall: () => {},
@@ -89,30 +200,6 @@ export default function HomePage() {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/miro-logo.svg" alt="Miro" className="absolute top-7 left-7 z-10 w-[56px] h-[20px]" />
 
-      {/* For you / Recent toggle — centered, aligned with logo and create button */}
-      <div className="absolute top-5 left-1/2 -translate-x-1/2 z-10 flex items-center bg-gray-100 rounded-full p-1">
-        {(["foryou", "recent"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`relative px-5 py-1.5 rounded-full text-sm transition-colors duration-150 ${
-              activeTab === tab
-                ? "font-medium text-gray-900"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {activeTab === tab && (
-              <motion.div
-                layoutId="tab-indicator"
-                className="absolute inset-0 bg-white rounded-full shadow-sm"
-                transition={spring.snappy}
-              />
-            )}
-            <span className="relative z-10">{tab === "foryou" ? "For you" : "Recent"}</span>
-          </button>
-        ))}
-      </div>
-
       {/* Create new button — fixed top-right */}
       <button
         onClick={handleCreateEmptyCanvas}
@@ -129,41 +216,214 @@ export default function HomePage() {
         )}
       </button>
 
-      {/* Main content */}
-      <div className="absolute inset-0 flex flex-col pt-[8vh] pb-28">
-        {/* Heading */}
-        <div className="mb-4 pt-20 text-center px-6">
-          <h1 className="text-4xl leading-none font-bold tracking-tight text-gray-900">Welcome back, {firstName}</h1>
-          <p className="text-4xl leading-none text-gray-500 mt-1">Here&apos;s what you need to know</p>
-        </div>
-
-        {/* Feed content — slides horizontally on tab switch */}
-        <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="wait">
+        {selectedCard ? (
+          /* ─── Detail view ─── */
           <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: direction * 60 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: direction * -60 }}
-            transition={spring.snappy}
-            className="flex-1 min-h-0"
+            key="detail"
+            className="relative z-10 flex w-full flex-col items-center px-6 pt-16"
+            style={{ maxWidth: 576, margin: "0 auto" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            {activeTab === "foryou" ? (
-              <HorizontalFeed />
-            ) : (
-              <div className="flex-1 flex items-center justify-center h-full">
-                <p className="text-sm text-gray-400">Recent items coming soon</p>
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+            {/* Back button */}
+            <motion.button
+              onClick={handleBack}
+              className="absolute left-6 top-6 flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50"
+              initial={{ opacity: 0, x: -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ ...spring.snappy, delay: 0.1 }}
+            >
+              <span className="flex items-center justify-center" style={{ width: 16, height: 16 }}>
+                <IconArrowLeft />
+              </span>
+              Back
+            </motion.button>
 
-      {/* Prompt bar */}
-      <div className="absolute bottom-8 left-0 right-0 mx-auto w-full max-w-3xl px-6 flex justify-center">
-        <PromptBar
+            {/* Selected card — 3D spin + fly up */}
+            <div style={{ perspective: 1200 }}>
+              <motion.div
+                initial={{ rotateY: 0, y: 120, scale: 1.06 }}
+                animate={{ rotateY: 360, y: 0, scale: 1 }}
+                transition={{
+                  rotateY: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+                  y: { ...spring.bouncy, delay: 0.05 },
+                  scale: { ...spring.bouncy, delay: 0.05 },
+                }}
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                <div style={{ width: 160, aspectRatio: "3 / 4" }}>
+                  <div
+                    className="relative flex h-full w-full flex-col overflow-hidden rounded-2xl bg-white shadow-lg"
+                    style={{ backfaceVisibility: "hidden" }}
+                  >
+                    <div className="flex items-center px-3 pt-3">
+                      {!selectedCard.isAgent && selectedCard.avatar ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={selectedCard.avatar}
+                          alt={selectedCard.sourceName || ""}
+                          className="w-6 h-6 rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="flex items-center justify-center" style={{ width: 12, height: 12 }}>
+                          <IconLightning />
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-1 items-center px-3">
+                      <p className="text-xs font-semibold leading-snug text-gray-900 line-clamp-4">
+                        {selectedCard.title}
+                      </p>
+                    </div>
+                    <div className="px-3 pb-3">
+                      <p className="text-[10px] text-gray-400 truncate">
+                        {selectedCard.spaceName}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Chat stream */}
+            <motion.div
+              className="mt-8 flex w-full flex-col gap-5 pb-32"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              {messages.map((msg) => (
+                <ChatBubble key={msg.id} message={msg} />
+              ))}
+
+              {/* Typing indicator — show while more messages are pending */}
+              {messages.length < (cardChat[selectedCard.id]?.length ?? 0) && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex gap-3"
+                >
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-900">
+                    <span className="flex items-center justify-center text-white" style={{ width: 14, height: 14 }}>
+                      <IconLightning />
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 pt-1">
+                    <motion.div
+                      className="h-1.5 w-1.5 rounded-full bg-zinc-300"
+                      animate={{ opacity: [0.3, 1, 0.3] }}
+                      transition={{ duration: 1.2, repeat: Infinity, delay: 0 }}
+                    />
+                    <motion.div
+                      className="h-1.5 w-1.5 rounded-full bg-zinc-300"
+                      animate={{ opacity: [0.3, 1, 0.3] }}
+                      transition={{ duration: 1.2, repeat: Infinity, delay: 0.2 }}
+                    />
+                    <motion.div
+                      className="h-1.5 w-1.5 rounded-full bg-zinc-300"
+                      animate={{ opacity: [0.3, 1, 0.3] }}
+                      transition={{ duration: 1.2, repeat: Infinity, delay: 0.4 }}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          </motion.div>
+        ) : (
+          /* ─── Home view ─── */
+          <motion.div
+            key="home"
+            className="relative z-10 flex flex-1 h-full flex-col items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* Greeting */}
+            <motion.h1
+              className="text-5xl font-bold tracking-tight text-zinc-900"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spring.gentle, delay: 0.05 }}
+            >
+              Hey {firstName}
+            </motion.h1>
+
+            <motion.h2
+              className="mt-3 text-xl text-zinc-400"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spring.gentle, delay: 0.15 }}
+            >
+              How are you going to save the world today?
+            </motion.h2>
+
+            {/* Card fan */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                className="mt-12"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <CardFan
+                  cards={TAB_CARDS[activeTab]}
+                  onSelect={handleSelect}
+                />
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Tabs under card fan */}
+            <motion.div
+              className="mt-6 flex items-center gap-1"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spring.gentle, delay: 0.25 }}
+            >
+              {TABS.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`relative rounded-full px-4 py-1.5 text-sm transition-colors ${
+                    activeTab === tab
+                      ? "font-semibold text-zinc-900"
+                      : "font-medium text-zinc-400 hover:text-zinc-600"
+                  }`}
+                >
+                  {activeTab === tab && (
+                    <motion.div
+                      layoutId="card-home-tab-bg"
+                      className="absolute inset-0 rounded-full bg-white shadow-sm"
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  <span className="relative z-10">{tab}</span>
+                </button>
+              ))}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Chat input — same as canvas toolbar chat mode */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[70]" style={{ width: 420 }}>
+        <ChatInput
           onSubmit={handleSubmit}
+          onFocusChange={() => {}}
           isLoading={isLoading}
-          autoFocus
+          hasMessages={false}
+          hasPendingQuestion={false}
+          canvasState={{ frames: [], orphans: [], arrows: [] }}
+          voiceState="idle"
         />
       </div>
     </div>

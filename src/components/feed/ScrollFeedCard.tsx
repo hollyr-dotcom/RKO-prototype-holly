@@ -110,12 +110,9 @@ const TILT_SPRING = { stiffness: 300, damping: 25 };
 const EASE = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 const VIDEO_TRANSITION = `top 220ms ${EASE}, left 220ms ${EASE}, right 220ms ${EASE}, height 220ms ${EASE}, border-radius 220ms ${EASE}, opacity 200ms ease-out`;
 
-// Pixel positions within the 480px card
-// Avatar bottom: pt-8(32) + h-12(48) = 80px
-// Visual top: 80 + pt-4(16) + h-[5.25rem](84) + mt-4(16) = 196px
-// Footer top: 196 + h-[180px](180) + mt-6(24) = 400px
-const VIDEO_DEFAULT = { top: 196, left: 32, right: 32, height: 180, borderRadius: 16, opacity: 1 };
-const VIDEO_EXPANDED = { top: 0, left: 0, right: 0, height: 480, borderRadius: 24, opacity: 1 };
+// Pixel positions within the 576px card (scaled 20% from original 480px)
+const VIDEO_DEFAULT = { top: 196, left: 32, right: 32, height: 276, borderRadius: 16, opacity: 1 };
+const VIDEO_EXPANDED = { top: 0, left: 0, right: 0, height: 576, borderRadius: 24, opacity: 1 };
 
 /** Map a value from one range to another (used for CSS custom property calculation). */
 const adjust = (v: number, fMin: number, fMax: number, tMin: number, tMax: number) =>
@@ -291,7 +288,7 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false, 
       {/* Card */}
       <div
         ref={cardRef}
-        className={`relative ${isHero ? "w-[396px] h-[528px]" : "w-[360px] h-[480px]"} rounded-3xl overflow-hidden flex flex-col border transition-[border-color] duration-300 ${
+        className={`relative ${isHero ? "w-[475px] h-[634px]" : "w-[432px] h-[576px]"} rounded-3xl overflow-hidden flex flex-col border transition-[border-color] duration-300 ${
           isDecision
             ? `border-transparent holo-card${isEngaged ? " holo-active" : ""}`
             : "bg-gray-50 border-neutral-200"

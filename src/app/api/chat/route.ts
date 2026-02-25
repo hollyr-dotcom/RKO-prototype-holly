@@ -105,13 +105,13 @@ const moveCursorTool = tool({
   name: "moveCursor",
   description: "Move the AI cursor to point at a specific shape or location on the canvas",
   parameters: z.object({
-    targetShapeId: z.string().optional().describe("Shape ID to point at"),
+    targetShapeId: z.string().nullable().describe("Shape ID to point at, or null if targeting coordinates"),
     targetPosition: z.object({
       x: z.number(),
       y: z.number(),
-    }).optional().describe("Canvas coordinates to point at"),
-    label: z.string().optional().describe("Label to show on cursor"),
-    state: z.enum(["pointing", "working", "asking", "waiting"]).optional(),
+    }).nullable().describe("Canvas coordinates to point at, or null if targeting a shape"),
+    label: z.string().nullable().describe("Label to show on cursor, or null"),
+    state: z.enum(["pointing", "working", "asking", "waiting"]).nullable().describe("Cursor visual state, or null for default 'pointing'"),
   }),
   execute: async ({ targetShapeId, targetPosition, label, state }) => {
     return JSON.stringify({

@@ -7,8 +7,8 @@ import type { FeedItem } from "@/types/feed";
 import { selectDeskPile } from "@/lib/selectDeskPile";
 import { ScrollFeedCard } from "./ScrollFeedCard";
 
-const CARD_WIDTH = 360;
-const HERO_CARD_WIDTH = 396;
+const CARD_WIDTH = 432;
+const HERO_CARD_WIDTH = 475;
 const EDGE_PADDING = `calc(50% - ${CARD_WIDTH / 2}px)`;
 
 export function HorizontalFeed() {
@@ -183,7 +183,7 @@ export function HorizontalFeed() {
           <div
             key={i}
             className="flex-shrink-0 rounded-3xl bg-gray-100 animate-pulse"
-            style={{ width: CARD_WIDTH, height: 480 }}
+            style={{ width: CARD_WIDTH, height: 576 }}
           />
         ))}
       </div>
