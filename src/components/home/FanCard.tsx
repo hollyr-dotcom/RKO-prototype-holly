@@ -1,14 +1,30 @@
 "use client";
 
-import { useRef, useCallback } from "react";
-import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { useRef, useCallback, useState } from "react";
+import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from "framer-motion";
 import type { FanCardData } from "./card-data";
 import { CardTypeIcon } from "@/components/feed/FeedTypeIcon";
+import "@/components/feed/holo-card.css";
 
 /** Max tilt in degrees */
 const TILT_MAX = 10;
 
 const springConfig = { stiffness: 300, damping: 25 };
+
+const GOLD_GRADIENT =
+  "linear-gradient(135deg, rgb(255 232 158), rgb(238 193 47), rgb(255 163 70), rgb(212 175 55), rgb(246 211 101))";
+
+const EASE = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+const VIDEO_TRANSITION = `top 220ms ${EASE}, left 220ms ${EASE}, right 220ms ${EASE}, height 220ms ${EASE}, border-radius 220ms ${EASE}, opacity 200ms ease-out`;
+
+// Video positions within the 240×320 card
+const VIDEO_DEFAULT = { top: 132, left: 20, right: 20, height: 108, borderRadius: 12, opacity: 1 };
+const VIDEO_EXPANDED = { top: 0, left: 0, right: 0, height: 320, borderRadius: 16, opacity: 1 };
+
+const adjust = (v: number, fMin: number, fMax: number, tMin: number, tMax: number) =>
+  ((v - fMin) / (fMax - fMin)) * (tMax - tMin) + tMin;
+
+type VideoState = "idle" | "loading" | "playing";
 
 interface FanCardProps {
   card: FanCardData;
@@ -17,6 +33,14 @@ interface FanCardProps {
 
 export function FanCard({ card, isHovered }: FanCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const emojiIdRef = useRef(0);
+  const [videoState, setVideoState] = useState<VideoState>("idle");
+  const [floatingEmojis, setFloatingEmojis] = useState<{ id: number; emoji: string; x: number }[]>([]);
+
+  const isDecision = card.type === "decision";
+  const isGold = card.shiny === "gold";
 
   // Raw mouse-position values (0 → 1 across the card)
   const mouseX = useMotionValue(0.5);
@@ -31,8 +55,6 @@ export function FanCard({ card, isHovered }: FanCardProps) {
   // Shimmer gradient position (percentage for background-position)
   const holoX = useTransform(mouseX, [0, 1], [0, 100]);
   const holoY = useTransform(mouseY, [0, 1], [0, 100]);
-
-  const isGold = card.shiny === "gold";
 
   // Primary radial — rainbow for holographic, warm gold for gold
   const shinyBackground = useTransform(
@@ -98,19 +120,251 @@ export function FanCard({ card, isHovered }: FanCardProps) {
       const ny = (e.clientY - rect.top) / rect.height;
       mouseX.set(nx);
       mouseY.set(ny);
+
+      // Update CSS custom properties for holo effect
+      if (isDecision && cardRef.current) {
+        const px = nx * 100;
+        const py = ny * 100;
+        cardRef.current.style.setProperty("--pointer-x", `${px}%`);
+        cardRef.current.style.setProperty("--pointer-y", `${py}%`);
+        cardRef.current.style.setProperty("--background-x", `${adjust(px, 0, 100, 37, 63)}%`);
+        cardRef.current.style.setProperty("--background-y", `${adjust(py, 0, 100, 33, 67)}%`);
+        const fromCenter = Math.min(
+          Math.sqrt((py - 50) ** 2 + (px - 50) ** 2) / 50,
+          1
+        );
+        cardRef.current.style.setProperty("--pointer-from-center", String(fromCenter));
+        cardRef.current.style.setProperty("--pointer-from-top", String(py / 100));
+        cardRef.current.style.setProperty("--pointer-from-left", String(px / 100));
+      }
     },
-    [mouseX, mouseY]
+    [mouseX, mouseY, isDecision]
   );
 
   const handleMouseLeave = useCallback(() => {
     mouseX.set(0.5);
     mouseY.set(0.5);
-  }, [mouseX, mouseY]);
 
+    // Reset holo CSS custom properties
+    if (isDecision && cardRef.current) {
+      cardRef.current.style.setProperty("--pointer-x", "50%");
+      cardRef.current.style.setProperty("--pointer-y", "50%");
+      cardRef.current.style.setProperty("--background-x", "50%");
+      cardRef.current.style.setProperty("--background-y", "50%");
+      cardRef.current.style.setProperty("--pointer-from-center", "0");
+      cardRef.current.style.setProperty("--pointer-from-top", "0.5");
+      cardRef.current.style.setProperty("--pointer-from-left", "0.5");
+    }
+
+    // Stop video
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    setVideoState("idle");
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  }, [mouseX, mouseY, isDecision]);
+
+  // Start video on hover for decision cards
+  const handleMouseEnter = useCallback(() => {
+    if (!isDecision) return;
+    setVideoState("loading");
+    timerRef.current = setTimeout(() => {
+      setVideoState("playing");
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0;
+        videoRef.current.play().catch(() => {});
+      }
+    }, 1000);
+  }, [isDecision]);
+
+  const videoPos = videoState === "playing" ? VIDEO_EXPANDED : VIDEO_DEFAULT;
+
+  // Decision cards get the full gold treatment
+  if (isDecision) {
+    return (
+      <div
+        data-fan-card
+        style={{ perspective: 800, width: 240, aspectRatio: "3 / 4", position: "relative" }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onMouseEnter={handleMouseEnter}
+      >
+        <motion.div
+          className="relative rounded-2xl [transition:box-shadow_300ms_ease-out]"
+          style={{
+            boxShadow: isHovered
+              ? "0 8px 28px rgba(212,175,55,0.45)"
+              : "0 4px 12px rgba(212,175,55,0.2)",
+            rotateX,
+            rotateY,
+            transformStyle: "preserve-3d",
+          }}
+        >
+          {/* Gold gradient border */}
+          <div
+            className={`absolute -inset-[1px] rounded-[17px] pointer-events-none transition-opacity duration-300 ${isHovered ? "opacity-100" : "opacity-70"}`}
+            style={{ background: GOLD_GRADIENT }}
+          />
+
+          {/* Card body */}
+          <div
+            ref={cardRef}
+            className={`relative w-full h-full rounded-2xl overflow-hidden flex flex-col border border-transparent holo-card${isHovered ? " holo-active" : ""}`}
+            style={{ width: 240, aspectRatio: "3 / 4" }}
+          >
+            {/* Gold gradient face */}
+            <div
+              className="w-full h-full flex flex-col"
+              style={{ background: GOLD_GRADIENT }}
+            >
+              {/* Header: approved icon */}
+              <div className="px-4 pt-4 relative z-10">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/approved.svg"
+                  alt="Decision"
+                  className="w-7 h-7 flex-shrink-0"
+                  style={{
+                    filter: videoState === "playing" ? "brightness(0) invert(1)" : "none",
+                    transition: "filter 300ms ease-out",
+                  }}
+                />
+              </div>
+
+              {/* Title */}
+              <div
+                className="px-4 pt-3 relative z-10"
+                style={{
+                  transition: "opacity 250ms ease-out",
+                  opacity: videoState === "playing" ? 0 : 1,
+                }}
+              >
+                <p className="text-sm font-semibold leading-snug text-gray-900 line-clamp-4">
+                  {card.title}
+                </p>
+              </div>
+
+              <div className="flex-1" />
+
+              {/* Footer: space name or emoji reactions */}
+              <div className="relative px-4 pb-4 h-10 z-10">
+                {videoState === "playing" ? (
+                  <div className="flex items-center rounded-full px-1 bg-white/90" style={{ height: 28 }}>
+                    {["❤️", "👍", "🔥", "👏", "🙌", "👀"].map((emoji) => (
+                      <button
+                        key={emoji}
+                        className="flex-1 flex items-center justify-center text-xs hover:scale-110 transition-transform pointer-events-auto"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const id = ++emojiIdRef.current;
+                          const btnRect = e.currentTarget.getBoundingClientRect();
+                          const outerEl = cardRef.current?.closest("[data-fan-card]") as HTMLElement | null;
+                          const cardRect = outerEl?.getBoundingClientRect();
+                          const x = cardRect ? btnRect.left - cardRect.left + btnRect.width / 2 : 100;
+                          setFloatingEmojis((prev) => [...prev, { id, emoji, x }]);
+                          setTimeout(() => {
+                            setFloatingEmojis((prev) => prev.filter((e) => e.id !== id));
+                          }, 900);
+                        }}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500/80 truncate">
+                    {card.spaceName}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Holo shine + glare overlays */}
+            <div className="holo-shine" />
+            <div className="holo-glare" />
+
+            {/* Video overlay */}
+            <div
+              className="absolute overflow-hidden pointer-events-none"
+              style={{
+                top: videoPos.top,
+                left: videoPos.left,
+                right: videoPos.right,
+                height: videoPos.height,
+                borderRadius: videoPos.borderRadius,
+                opacity: videoPos.opacity,
+                zIndex: 5,
+                transition: VIDEO_TRANSITION,
+              }}
+            >
+              <video
+                ref={videoRef}
+                src="/videos/decisions.mp4"
+                className="w-full h-full object-cover"
+                loop
+                muted
+                playsInline
+                preload="metadata"
+              />
+              {/* Play button → spinner → hidden */}
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ opacity: videoState === "playing" ? 0 : 1, transition: "opacity 200ms ease-out" }}
+              >
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center relative"
+                  style={{ backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
+                >
+                  {/* Play icon */}
+                  <div className="absolute" style={{ opacity: videoState === "idle" ? 1 : 0, transition: "opacity 200ms ease-out" }}>
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                      <path d="M5.5 3.5L12.5 8L5.5 12.5V3.5Z" fill="white" />
+                    </svg>
+                  </div>
+                  {/* Spinner */}
+                  <div
+                    className="absolute w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
+                    style={{ opacity: videoState === "loading" ? 1 : 0, transition: "opacity 200ms ease-out" }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Floating emoji bubbles — outside overflow-hidden card */}
+        <AnimatePresence>
+          {floatingEmojis.map(({ id, emoji, x }) => (
+            <motion.span
+              key={id}
+              className="absolute pointer-events-none text-2xl select-none"
+              style={{ left: x, bottom: 40, translateX: "-50%", zIndex: 20 }}
+              initial={{ opacity: 1, y: 0, scale: 0.4, rotate: 0 }}
+              animate={{
+                opacity: [1, 1, 0],
+                y: -100,
+                scale: [0.4, 1.3, 1],
+                rotate: [0, -12, 10, -6, 0],
+              }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              {emoji}
+            </motion.span>
+          ))}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // Default card (non-decision)
   return (
     <div
       ref={cardRef}
-      style={{ perspective: 800, width: 200, aspectRatio: "3 / 4" }}
+      style={{ perspective: 800, width: 240, aspectRatio: "3 / 4" }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -138,12 +392,14 @@ export function FanCard({ card, isHovered }: FanCardProps) {
           )}
         </div>
 
-        {/* Title — main content area */}
-        <div className="flex flex-1 items-center px-4">
+        {/* Title — top-aligned */}
+        <div className="px-4 pt-3">
           <p className="text-sm font-semibold leading-snug text-gray-900 line-clamp-4">
             {card.title}
           </p>
         </div>
+
+        <div className="flex-1" />
 
         {/* Footer: space name */}
         <div className="px-4 pb-4">

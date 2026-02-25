@@ -255,35 +255,70 @@ export default function HomePage() {
                 style={{ transformStyle: "preserve-3d" }}
               >
                 <div style={{ width: 160, aspectRatio: "3 / 4" }}>
-                  <div
-                    className="relative flex h-full w-full flex-col overflow-hidden rounded-2xl bg-white shadow-lg"
-                    style={{ backfaceVisibility: "hidden" }}
-                  >
-                    <div className="flex items-center px-3 pt-3">
-                      {!selectedCard.isAgent && selectedCard.avatar ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={selectedCard.avatar}
-                          alt={selectedCard.sourceName || ""}
-                          className="w-6 h-6 rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="flex items-center justify-center" style={{ width: 12, height: 12 }}>
-                          <IconLightning />
-                        </span>
-                      )}
+                  {selectedCard.type === "decision" ? (
+                    /* Gold decision card */
+                    <div className="relative h-full w-full">
+                      <div
+                        className="absolute -inset-[1px] rounded-[17px] pointer-events-none opacity-70"
+                        style={{ background: "linear-gradient(135deg, rgb(255 232 158), rgb(238 193 47), rgb(255 163 70), rgb(212 175 55), rgb(246 211 101))" }}
+                      />
+                      <div
+                        className="relative flex h-full w-full flex-col overflow-hidden rounded-2xl"
+                        style={{
+                          backfaceVisibility: "hidden",
+                          background: "linear-gradient(135deg, rgb(255 232 158), rgb(238 193 47), rgb(255 163 70), rgb(212 175 55), rgb(246 211 101))",
+                        }}
+                      >
+                        <div className="flex items-center px-3 pt-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src="/approved.svg" alt="Decision" className="w-6 h-6 flex-shrink-0" />
+                        </div>
+                        <div className="px-3 pt-2">
+                          <p className="text-xs font-semibold leading-snug text-gray-900 line-clamp-4">
+                            {selectedCard.title}
+                          </p>
+                        </div>
+                        <div className="flex-1" />
+                        <div className="px-3 pb-3">
+                          <p className="text-[10px] text-gray-500/80 truncate">
+                            {selectedCard.spaceName}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex flex-1 items-center px-3">
-                      <p className="text-xs font-semibold leading-snug text-gray-900 line-clamp-4">
-                        {selectedCard.title}
-                      </p>
+                  ) : (
+                    /* Standard card */
+                    <div
+                      className="relative flex h-full w-full flex-col overflow-hidden rounded-2xl bg-white shadow-lg"
+                      style={{ backfaceVisibility: "hidden" }}
+                    >
+                      <div className="flex items-center px-3 pt-3">
+                        {!selectedCard.isAgent && selectedCard.avatar ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={selectedCard.avatar}
+                            alt={selectedCard.sourceName || ""}
+                            className="w-6 h-6 rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="flex items-center justify-center" style={{ width: 12, height: 12 }}>
+                            <IconLightning />
+                          </span>
+                        )}
+                      </div>
+                      <div className="px-3 pt-2">
+                        <p className="text-xs font-semibold leading-snug text-gray-900 line-clamp-4">
+                          {selectedCard.title}
+                        </p>
+                      </div>
+                      <div className="flex-1" />
+                      <div className="px-3 pb-3">
+                        <p className="text-[10px] text-gray-400 truncate">
+                          {selectedCard.spaceName}
+                        </p>
+                      </div>
                     </div>
-                    <div className="px-3 pb-3">
-                      <p className="text-[10px] text-gray-400 truncate">
-                        {selectedCard.spaceName}
-                      </p>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </motion.div>
             </div>
@@ -353,7 +388,7 @@ export default function HomePage() {
             </motion.h1>
 
             <motion.h2
-              className="mt-3 text-xl text-zinc-400"
+              className="mt-3 text-3xl text-zinc-400"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...spring.gentle, delay: 0.15 }}

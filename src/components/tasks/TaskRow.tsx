@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { IconCheckMark, IconSquarePencil, IconTrash } from "@mirohq/design-system-icons";
 import { spring } from "@/lib/motion/tokens";
 import { motionTheme } from "@/lib/motion/themes";
@@ -53,7 +53,6 @@ export function TaskRow({ task, onToggleStatus, onUpdateTitle, onDelete }: TaskR
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(task.title);
   const [isHovered, setIsHovered] = useState(false);
-  const [isChecking, setIsChecking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const isComplete = task.status === "complete";
   const dueInfo = formatDueDate(task.dueDate);
@@ -95,9 +94,7 @@ export function TaskRow({ task, onToggleStatus, onUpdateTitle, onDelete }: TaskR
   );
 
   const handleCheckboxClick = useCallback(() => {
-    setIsChecking(true);
     onToggleStatus(task.id);
-    setTimeout(() => setIsChecking(false), 300);
   }, [task.id, onToggleStatus]);
 
   return (
@@ -108,24 +105,39 @@ export function TaskRow({ task, onToggleStatus, onUpdateTitle, onDelete }: TaskR
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Checkbox */}
-      <motion.button
+      <button
         onClick={handleCheckboxClick}
-        className="flex-shrink-0 focus:outline-none"
-        animate={isChecking ? { scale: [1, 1.2, 1] } : {}}
-        transition={spring.snappy}
+        className="relative flex-shrink-0 w-6 h-6 focus:outline-none"
         aria-label={isComplete ? "Mark as incomplete" : "Mark as complete"}
       >
-        {isComplete ? (
-          <div className="w-5 h-5 rounded-full bg-blue-500 border-2 border-blue-500 flex items-center justify-center">
-            <IconCheckMark css={{ width: 10, height: 10, color: "white" }} />
-          </div>
-        ) : (
-          <div className="w-5 h-5 rounded-full border-2 border-gray-200 hover:border-gray-400 transition-colors duration-200" />
-        )}
-      </motion.button>
+        {/* Empty circle base */}
+        <div className="absolute inset-0 rounded-full border-2 border-gray-200 hover:border-gray-400 transition-colors duration-200" />
+        {/* Blue filled circle — animates in/out */}
+        <AnimatePresence>
+          {isComplete && (
+            <motion.div
+              className="absolute inset-0 rounded-full bg-blue-500 flex items-center justify-center"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              transition={spring.snappy}
+            >
+              <motion.span
+                className="flex items-center justify-center"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{ ...spring.snappy, delay: 0.05 }}
+              >
+                <IconCheckMark css={{ width: 12, height: 12, color: "white" }} />
+              </motion.span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </button>
 
       {/* Content */}
-      <div className="flex-1 min-w-0 flex items-center gap-2">
+      <div className="flex-1 min-w-0">
         {isEditing ? (
           <input
             ref={inputRef}
@@ -136,54 +148,63 @@ export function TaskRow({ task, onToggleStatus, onUpdateTitle, onDelete }: TaskR
             className="flex-1 text-sm text-gray-900 bg-transparent border-b border-blue-500 outline-none py-0"
           />
         ) : (
-          <span
-            onDoubleClick={handleDoubleClick}
-            className={`text-sm truncate cursor-default ${
-              isComplete ? "line-through text-gray-400" : "text-gray-900"
-            }`}
-          >
-            {task.title}
-          </span>
-        )}
-
-        {!isEditing && (
           <>
-            <PriorityBadge priority={task.priority} />
-            {task.spaceName && (
-              <span className="text-xs text-gray-400 truncate">{task.spaceName}</span>
-            )}
-            {dueInfo.label && (
-              <span
-                className={`text-xs ${
-                  dueInfo.isOverdue ? "text-red-500" : "text-gray-400"
-                }`}
+            <span className="relative inline-flex items-center truncate">
+              <motion.span
+                onDoubleClick={handleDoubleClick}
+                className="truncate cursor-default text-base"
+                animate={{ color: isComplete ? "#9ca3af" : "#111827" }}
+                transition={{ duration: 0.3 }}
               >
-                {dueInfo.label}
-              </span>
-            )}
+                {task.title}
+              </motion.span>
+              {/* Animated strikethrough line */}
+              <motion.span
+                className="absolute left-0 right-0 h-px bg-gray-400 pointer-events-none"
+                style={{ top: "50%" }}
+                initial={false}
+                animate={{ scaleX: isComplete ? 1 : 0, originX: 0 }}
+                transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
+              />
+            </span>
+            <div className="flex items-center gap-2 mt-1">
+              <PriorityBadge priority={task.priority} />
+              {task.spaceName && (
+                <span className="text-xs text-gray-400 truncate">{task.spaceName}</span>
+              )}
+              {dueInfo.label && (
+                <span
+                  className={`text-xs ${
+                    dueInfo.isOverdue ? "text-red-500" : "text-gray-400"
+                  }`}
+                >
+                  {dueInfo.label}
+                </span>
+              )}
+            </div>
           </>
         )}
       </div>
 
       {/* Hover actions */}
       <div
-        className={`flex items-center gap-1 transition-opacity duration-200 ${
+        className={`flex items-center gap-0.5 transition-opacity duration-200 ${
           isHovered && !isEditing ? "opacity-100" : "opacity-0"
         }`}
       >
         <button
           onClick={handleDoubleClick}
-          className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+          className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors duration-200"
           aria-label="Edit task"
         >
-          <IconSquarePencil css={{ width: 14, height: 14 }} />
+          <IconSquarePencil css={{ width: 20, height: 20 }} />
         </button>
         <button
           onClick={() => onDelete(task.id)}
-          className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-red-500 transition-colors duration-200"
+          className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-red-500 transition-colors duration-200"
           aria-label="Delete task"
         >
-          <IconTrash css={{ width: 14, height: 14 }} />
+          <IconTrash css={{ width: 20, height: 20 }} />
         </button>
       </div>
     </motion.div>

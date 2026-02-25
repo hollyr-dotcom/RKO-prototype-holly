@@ -11,19 +11,19 @@ import { FanCard } from "./FanCard";
  */
 const fanLayouts: Record<number, { rotate: number; x: number; y: number }[]> = {
   3: [
-    { rotate: -5, x: -120, y: 4 },
+    { rotate: -5, x: -144, y: 5 },
     { rotate: 0, x: 0, y: 0 },
-    { rotate: 5, x: 120, y: 4 },
+    { rotate: 5, x: 144, y: 5 },
   ],
   4: [
-    { rotate: -7, x: -170, y: 8 },
-    { rotate: -2.5, x: -56, y: 1 },
-    { rotate: 2.5, x: 56, y: 1 },
-    { rotate: 7, x: 170, y: 8 },
+    { rotate: -7, x: -204, y: 10 },
+    { rotate: -2.5, x: -67, y: 1 },
+    { rotate: 2.5, x: 67, y: 1 },
+    { rotate: 7, x: 204, y: 10 },
   ],
 };
 
-const PUSH_AMOUNT = 24;
+const PUSH_AMOUNT = 29;
 const PUSH_ROTATION = 0.5;
 
 function centerOutDelay(index: number, count: number): number {
@@ -53,7 +53,7 @@ export function CardFan({ cards, onSelect }: CardFanProps) {
   const count = cards.length;
 
   return (
-    <div className="relative flex items-center justify-center" style={{ height: 360 }}>
+    <div className="relative flex items-center justify-center" style={{ height: 432 }}>
       {cards.map((card, index) => {
         const layout = (fanLayouts[count] ?? fanLayouts[3])[index];
         const isHovered = hoveredIndex === index;

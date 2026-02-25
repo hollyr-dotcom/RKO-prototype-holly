@@ -32,14 +32,8 @@ function categorizeTasks(tasks: TaskItem[]) {
   const overdue: TaskItem[] = [];
   const todayTasks: TaskItem[] = [];
   const upcoming: TaskItem[] = [];
-  const completed: TaskItem[] = [];
 
   for (const task of tasks) {
-    if (task.status === "complete") {
-      completed.push(task);
-      continue;
-    }
-
     if (!task.dueDate) {
       upcoming.push(task);
       continue;
@@ -57,7 +51,7 @@ function categorizeTasks(tasks: TaskItem[]) {
     }
   }
 
-  return { overdue, today: todayTasks, upcoming, completed };
+  return { overdue, today: todayTasks, upcoming };
 }
 
 export function TaskListView({
@@ -122,15 +116,6 @@ export function TaskListView({
       <TaskSection
         title="Upcoming"
         tasks={sections.upcoming}
-        onToggleStatus={handleToggle}
-        onUpdateTitle={handleUpdateTitle}
-        onDelete={handleDelete}
-      />
-      <TaskSection
-        title="Completed"
-        tasks={sections.completed}
-        collapsible
-        defaultCollapsed
         onToggleStatus={handleToggle}
         onUpdateTitle={handleUpdateTitle}
         onDelete={handleDelete}
