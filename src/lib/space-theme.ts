@@ -41,11 +41,27 @@ function hueFromId(id: string): number {
 
 /** Hue overrides for spaces with branded colours. */
 const SPACE_HUES: Record<string, number> = {
-  "space-firstflex": 184,
-  "space-ff26": 260,
-  "space-1on1-james": 263,
-  "space-1on1-amara": 202,
-  "space-1on1-daniel": 212,
+  // Portfolio
+  "space-paygrid": 145,       // green
+  "space-firstflex": 184,     // teal
+  "space-core": 215,          // blue
+  "space-embed": 28,          // orange
+  // Programs
+  "space-launch-q3": 355,     // red
+  "space-brand": 325,         // pink
+  "space-kyc": 48,            // amber
+  "space-claims": 165,        // teal-green
+  // Events
+  "space-ff26": 260,          // purple (DO NOT CHANGE)
+  // Operations
+  "space-roadmaps": 85,       // chartreuse
+  "space-epd": 240,           // indigo
+  "space-revenueops": 12,     // warm red-orange
+  "space-org27": 290,         // violet
+  // 1:1s
+  "space-1on1-james": 350,    // rose
+  "space-1on1-amara": 42,     // gold
+  "space-1on1-daniel": 130,   // green
 };
 
 /** Get the hue for a space (branded override or derived from id). */

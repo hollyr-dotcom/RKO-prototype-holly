@@ -195,17 +195,18 @@ export function SpaceHeader({ space, onNameChange, onDescriptionChange }: SpaceH
             className="bg-transparent border-none outline-none p-0 font-semibold leading-[1.2] w-full"
             style={{ fontSize: 52, letterSpacing: "-2px", color: "var(--space-accent)" }}
           />
-          <input
-            type="text"
+          <textarea
             value={description}
             onChange={(e) => handleDescriptionChange(e.target.value)}
             placeholder="Add a description..."
-            className="bg-transparent border-none outline-none p-0 w-full"
+            rows={1}
+            className="bg-transparent border-none outline-none p-0 w-full resize-none"
             style={{
               fontSize: 18,
               lineHeight: 1.5,
               color: description ? "var(--space-accent)" : undefined,
-            }}
+              fieldSizing: "content",
+            } as React.CSSProperties}
           />
         </div>
 
