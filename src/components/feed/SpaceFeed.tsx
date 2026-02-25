@@ -12,7 +12,14 @@ import {
   StatsWidget,
   AwaitingDecisionWidget,
 } from "@/components/sidebar-widgets";
+import {
+  CountdownWidget,
+  AttendeesWidget,
+  StaffWidget,
+  VibeCheckWidget,
+} from "@/components/space-widgets";
 import { SIDEBAR_WIDGET_DATA } from "@/data/sidebar-widget-data";
+import { FF26_WIDGETS } from "@/data/space-widgets-data";
 
 interface SpaceFeedProps {
   spaceId: string;
@@ -54,12 +61,11 @@ const SIDEBAR_PANELS: Record<string, string[]> = {
     "/feed-viz/FirstFlex-Youth-Banking/Single%20number.png",
     "/feed-viz/FirstFlex-Youth-Banking/Single%20number-1.png",
   ],
-  "space-ff26": [
-    "/feed-viz/FlexForward-26/Single%20number.png",
-    "/feed-viz/FlexForward-26/Single%20number-1.png",
-    "/feed-viz/FlexForward-26/Single%20number-2.png",
-    "/feed-viz/FlexForward-26/Single%20number-3.png",
-  ],
+};
+
+/** Space widget config — maps spaceId → widget data for live widget sidebars */
+const SPACE_WIDGETS: Record<string, typeof FF26_WIDGETS> = {
+  "space-ff26": FF26_WIDGETS,
 };
 
 export function SpaceFeed({ spaceId }: SpaceFeedProps) {
@@ -143,8 +149,9 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
   );
 
   const sidebarPanels = SIDEBAR_PANELS[spaceId];
+  const spaceWidgets = SPACE_WIDGETS[spaceId];
   const widgetData = SIDEBAR_WIDGET_DATA[spaceId];
-  const hasSidebar = !!(sidebarPanels || widgetData);
+  const hasSidebar = !!(sidebarPanels || spaceWidgets || widgetData);
 
   const surfaceHue = getSpaceHue(spaceId);
   const surfaceBg = `hsl(${surfaceHue}, 35%, 96%)`;
@@ -224,6 +231,16 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
                     priority={i === 0}
                   />
                 ))}
+              </div>
+            )}
+
+            {/* Space widgets sidebar (FF26 etc.) */}
+            {spaceWidgets && (
+              <div className="flex flex-col gap-5 flex-shrink-0 sticky" style={{ width: 320, top: 24 }}>
+                <CountdownWidget {...spaceWidgets.countdown} />
+                <AttendeesWidget {...spaceWidgets.attendees} />
+                <StaffWidget {...spaceWidgets.staff} />
+                <VibeCheckWidget {...spaceWidgets.vibeCheck} />
               </div>
             )}
 
