@@ -37,7 +37,7 @@ export function AwaitingDecisionWidget({
         {decisions.map((item, i) => (
           <div
             key={i}
-            className="flex gap-2 rounded-lg border border-[#e9eaef]/50 bg-[rgba(239,237,253,0.4)] p-2"
+            className="flex gap-2 rounded-lg border border-[#e9eaef]/50 bg-[rgba(239,237,253,0.4)] px-2 pb-2 pt-4"
           >
             {/* Avatar */}
             <div className="shrink-0">

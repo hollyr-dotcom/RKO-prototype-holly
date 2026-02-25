@@ -28,7 +28,7 @@ export function GoalsWidget({ goals }: GoalsWidgetProps) {
       {goals.map((goal, i) => (
         <div
           key={i}
-          className="rounded-lg bg-white px-4 pt-2.5 pb-4"
+          className="rounded-lg px-4 pt-2.5 pb-4"
         >
           <p
             className="truncate text-sm font-bold text-[#222428] leading-[1.4]"
