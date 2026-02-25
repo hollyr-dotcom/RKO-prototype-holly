@@ -217,16 +217,16 @@ function InvitationStall({ invitations, days }: { invitations: number; days: num
 function GanttIllustration() {
   return (
     <svg width="296" height="168" viewBox="0 0 296 168" preserveAspectRatio="xMidYMid meet">
-      {/* Phase 1 bar — light grey, short, left of today line */}
-      <rect x="35" y="37" width="113" height="22" rx="4" fill="#d1d5db" />
-      {/* Phase 2 bar — light grey, longer, crosses today line */}
-      <rect x="35" y="77" width="202" height="22" rx="4" fill="#d1d5db" />
+      {/* Phase 1 bar — secondary, short, left of today line */}
+      <rect x="35" y="37" width="113" height="22" rx="4" style={{ fill: "var(--space-bg)" }} />
+      {/* Phase 2 bar — secondary, longer, crosses today line */}
+      <rect x="35" y="77" width="202" height="22" rx="4" style={{ fill: "var(--space-bg)" }} />
       {/* Today vertical line */}
       <line x1="149" y1="20" x2="149" y2="168" stroke="#9ca3af" strokeWidth="1.5" />
-      {/* Delay marker — red */}
-      <rect x="115" y="116" width="28" height="22" rx="3" fill="#EF4444" />
-      {/* Active phase bar — cyan */}
-      <rect x="148" y="116" width="121" height="22" rx="4" fill="#22D3EE" />
+      {/* Delay marker — secondary */}
+      <rect x="115" y="116" width="28" height="22" rx="3" style={{ fill: "var(--space-secondary)" }} />
+      {/* Active phase bar — accent (highlighted) */}
+      <rect x="148" y="116" width="121" height="22" rx="4" style={{ fill: "var(--space-accent)" }} />
     </svg>
   );
 }
@@ -235,12 +235,12 @@ function GanttIllustration() {
 function TimelineConflictIllustration() {
   return (
     <svg width="234" height="148" viewBox="0 0 234 148" fill="none">
-      {/* Pink bar — top, left-aligned with yellow */}
-      <rect x="10" y="30" width="95" height="22" rx="4" fill="#F9A8D4" />
-      {/* Yellow bar — middle, same left edge as pink, wider */}
-      <rect x="10" y="63" width="185" height="22" rx="4" fill="#FBBF24" />
-      {/* Cyan bar — bottom, starts near today line, extends to right edge */}
-      <rect x="90" y="96" width="140" height="22" rx="4" fill="#7DD3FC" />
+      {/* Top bar — secondary */}
+      <rect x="10" y="30" width="95" height="22" rx="4" style={{ fill: "var(--space-secondary)" }} />
+      {/* Middle bar — highlighted (accent) */}
+      <rect x="10" y="63" width="185" height="22" rx="4" style={{ fill: "var(--space-accent)" }} />
+      {/* Bottom bar — secondary */}
+      <rect x="90" y="96" width="140" height="22" rx="4" style={{ fill: "var(--space-secondary)" }} />
       {/* Today vertical line */}
       <line x1="105" y1="16" x2="105" y2="132" stroke="#1E1E2E" strokeWidth="1.5" />
     </svg>
@@ -307,9 +307,9 @@ function OkrRingIllustration() {
 
   return (
     <svg width="194" height="194" viewBox="0 0 194 194" fill="none">
-      <path d={grayPath} stroke="#E5E7EB" strokeWidth={strokeW} strokeLinecap="round" fill="none" />
-      <path d={goldPath} stroke="#FBBF24" strokeWidth={strokeW} strokeLinecap="round" fill="none" />
-      <text x={cx} y={cy + 4} textAnchor="middle" dominantBaseline="middle" fontSize="28" fontWeight="700" fill="#374151">3/8</text>
+      <path d={grayPath} stroke="var(--space-bg)" strokeWidth={strokeW} strokeLinecap="round" fill="none" />
+      <path d={goldPath} stroke="var(--space-accent)" strokeWidth={strokeW} strokeLinecap="round" fill="none" />
+      <text x={cx} y={cy + 4} textAnchor="middle" dominantBaseline="middle" fontSize="28" fontWeight="700" style={{ fill: "var(--space-accent)" }}>3/8</text>
     </svg>
   );
 }
