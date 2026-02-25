@@ -62,6 +62,9 @@ import { setFocusedDocId } from "@/lib/focusModeStore";
 import { PlacementEngine, getCategoryForTool } from "@/lib/placementEngine";
 import { ConnectorHandles } from "./ConnectorHandles";
 import { AI_CURSOR_COLOR, getSharedAIState } from "@/lib/ai-presence";
+import { useAICursor } from "@/hooks/useAICursor";
+import { useCameraTracking } from "@/hooks/useCameraTracking";
+import { FollowModeIndicator } from "./canvas/FollowModeIndicator";
 
 // Animation variants
 const sidebarVariants = {
@@ -949,6 +952,18 @@ export function Canvas() {
   useEffect(() => {
     voiceRef.current = voice;
   }, [voice]);
+
+  // AI cursor presence — wrap editor state in a ref for useAICursor
+  const editorRefForCursor = useRef<Editor | null>(null);
+  editorRefForCursor.current = editor;
+  const aiCursor = useAICursor(editorRefForCursor);
+
+  // Camera tracking — follows AI cursor across the canvas
+  const cameraTracker = useCameraTracking({
+    editor,
+    cursorOnTargetChange: aiCursor.onTargetChange,
+    cursorGetState: aiCursor.getCurrentState,
+  });
 
   // Handle sidebar close (instant, no animation)
   const handleCloseChat = useCallback((dismissPlan = true) => {
@@ -5463,6 +5478,16 @@ export function Canvas() {
           )}
         </AnimatePresence>
 
+
+        {/* Follow mode indicator — bottom-left, near zoom controls area */}
+        <div className="absolute bottom-6 left-6 z-[70] pointer-events-auto" onWheel={(e) => e.stopPropagation()}>
+          <FollowModeIndicator
+            isEnabled={cameraTracker.isEnabled}
+            isPaused={cameraTracker.isPaused}
+            isAIActive={aiCursor.state !== "idle"}
+            onToggle={cameraTracker.toggle}
+          />
+        </div>
 
         {/* Floating UI wrapper */}
         <div className="absolute inset-0 z-[60] pointer-events-none" onWheel={(e) => e.stopPropagation()} style={{ visibility: focusedShape ? "hidden" : "visible" }}>
