@@ -396,7 +396,7 @@ export function ScrollFeedCard({ item, isActive = false, suppressHover = false, 
         className={`relative ${isHero ? "w-[475px] h-[634px]" : "w-[432px] h-[576px]"} rounded-3xl overflow-hidden flex flex-col border transition-[border-color] duration-300 ${
           isDecision
             ? `border-transparent holo-card${isEngaged ? " holo-active" : ""}`
-            : "bg-transparent border-neutral-200"
+            : "bg-white border-neutral-200"
         }`}
         style={{ transitionTimingFunction: EASE }}
       >

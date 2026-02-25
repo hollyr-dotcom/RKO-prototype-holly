@@ -137,7 +137,7 @@ export function FeedCard({ item, spaceName, variant = "default" }: FeedCardProps
     return (
       <motion.div
         variants={staggerItem}
-        className="group relative rounded-[24px] overflow-hidden transition-shadow duration-200 hover:shadow-card bg-gray-200"
+        className="group relative rounded-[24px] overflow-hidden transition-shadow duration-200 hover:shadow-card bg-white"
         style={{ border: "0.5px solid var(--color-gray-300)", width: 712 }}
       >
         <div className="flex">
