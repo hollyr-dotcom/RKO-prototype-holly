@@ -141,7 +141,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
       {/* Single scroll container — header scrolls out, sidebar sticks */}
       <div className="h-full overflow-y-auto">
         {/* Header — scrolls with content, aligned to feed+sidebar width */}
-        <div className="flex justify-center px-4">
+        <div className="flex justify-center px-16">
           <div style={{ width: hasSidebar ? 712 + 48 + 320 : 712 }}>
             {space ? (
               <SpaceHeader
@@ -161,7 +161,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
 
         {/* Feed + sidebar row — only render once header data is loaded */}
         {!space ? null : (
-        <div className="flex justify-center px-4">
+        <div className="flex justify-center px-16">
           <div className={`flex ${hasSidebar ? "gap-12" : ""} items-start`}>
             {/* Feed column */}
             <div style={{ width: 712 }}>
@@ -240,7 +240,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
       </div>
 
       {/* Gradient fade + prompt bar — aligned to feed column via same flex layout */}
-      <div className="absolute bottom-0 left-0 right-0 z-[19] flex justify-center px-4 pointer-events-none">
+      <div className="absolute bottom-0 left-0 right-0 z-[19] flex justify-center px-16 pointer-events-none">
         <div className={`flex ${hasSidebar ? "gap-12" : ""} items-end`}>
           <div style={{ width: 712 }}>
             {/* Gradient overlay */}

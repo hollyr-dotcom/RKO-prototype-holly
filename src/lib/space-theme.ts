@@ -13,6 +13,8 @@
  * ## Graph colour rule
  *
  * Two-colour graphs use **light** (`--space-bg`) and **dark** (`--space-accent`) only.
+ * The primary chart component (filled slice, active ring, trend line) and its value
+ * label (e.g. "$4.2M", "62%") always use `--space-accent`.
  * The **mid** colour (`--space-secondary`) is reserved for callouts within graphs
  * (highlighted stats, annotations, labels that need to stand out).
  */

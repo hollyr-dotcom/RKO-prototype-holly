@@ -139,16 +139,16 @@ function GapIndicator({ confidence }: { confidence: number }) {
   return (
     <div className="relative">
       <svg width="120" height="120" viewBox="0 0 120 120" className="transform -rotate-90">
-        <circle cx="60" cy="60" r={r} stroke="#e5e7eb" strokeWidth="10" fill="none" />
+        <circle cx="60" cy="60" r={r} stroke="var(--space-bg)" strokeWidth="10" fill="none" />
         <circle
           cx="60" cy="60" r={r}
-          stroke="#6366f1" strokeWidth="10" fill="none"
+          stroke="var(--space-accent)" strokeWidth="10" fill="none"
           strokeDasharray={circumference} strokeDashoffset={offset}
           strokeLinecap="round"
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-3xl font-bold text-gray-800 leading-none">{percentage}%</div>
+        <div className="text-3xl font-bold leading-none" style={{ color: 'var(--space-accent)' }}>{percentage}%</div>
         <div className="text-xs font-medium text-gray-400 mt-0.5">Confidence</div>
       </div>
     </div>
@@ -251,10 +251,10 @@ function TimelineConflictIllustration() {
 function ClaimsSparkIllustration() {
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="text-[40px] font-bold text-gray-800 tracking-tight leading-none">34%</div>
+      <div className="text-[40px] font-bold tracking-tight leading-none" style={{ color: "var(--space-accent)" }}>34%</div>
       <svg width="242" height="90" viewBox="0 0 242 90" fill="none">
         <path d="M242 82L0 82" stroke="black" />
-        <path d="M118.13 74L151.971 39.0432L184.131 59L233.205 12.2705" stroke="#FF0909" strokeWidth="6" strokeLinecap="round" />
+        <path d="M118.13 74L151.971 39.0432L184.131 59L233.205 12.2705" style={{ stroke: "var(--space-accent)" }} strokeWidth="6" strokeLinecap="round" />
       </svg>
     </div>
   );
@@ -267,10 +267,10 @@ function ActivationDropIllustration() {
       className="flex flex-col items-center justify-center"
       style={{ width: 240, height: 184, padding: 32 }}
     >
-      <div className="text-[40px] font-bold text-gray-800 tracking-tight leading-none">12%</div>
+      <div className="text-[40px] font-bold tracking-tight leading-none" style={{ color: "var(--space-accent)" }}>12%</div>
       <svg viewBox="0 0 242 90" fill="none" className="w-full">
         <path d="M242 82L0 82" stroke="black" />
-        <path d="M118.13 74L151.971 39.0432L184.131 59L233.205 12.2705" stroke="#FF0909" strokeWidth="6" strokeLinecap="round" />
+        <path d="M118.13 74L151.971 39.0432L184.131 59L233.205 12.2705" style={{ stroke: "var(--space-accent)" }} strokeWidth="6" strokeLinecap="round" />
       </svg>
     </div>
   );
