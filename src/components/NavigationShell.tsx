@@ -49,10 +49,10 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   : "0",
             padding: 0,
             margin: isCollapsed ? 0 : 3,
-            borderTop: (!isCollapsed && !showSecondary) ? "1px solid var(--color-gray-100)" : "none",
-            borderBottom: (!isCollapsed && !showSecondary) ? "1px solid var(--color-gray-100)" : "none",
-            borderLeft: (!isCollapsed && !showSecondary) ? "1px solid var(--color-gray-100)" : "none",
-            borderRight: "none",
+            borderTop: `1px solid ${(!isCollapsed && !showSecondary) ? "var(--color-gray-100)" : "transparent"}`,
+            borderBottom: `1px solid ${(!isCollapsed && !showSecondary) ? "var(--color-gray-100)" : "transparent"}`,
+            borderLeft: `1px solid ${(!isCollapsed && !showSecondary) ? "var(--color-gray-100)" : "transparent"}`,
+            borderRight: "1px solid transparent",
             transition: `${contentTransition}, border-color 0.15s ease`,
           }}
         >

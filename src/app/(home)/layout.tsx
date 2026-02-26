@@ -136,7 +136,7 @@ export default function HomeLayout({
           animate="center"
           exit="exit"
           transition={spring.default}
-          className="absolute inset-0"
+          className="absolute inset-0 bg-gray-50"
         >
           <FrozenRouter>{children}</FrozenRouter>
         </motion.div>

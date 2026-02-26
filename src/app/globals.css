@@ -81,6 +81,9 @@ html, body {
   --color-blue-950: #04183D;
   --color-blue-1000: #010C25;
 
+  /* ── Colors — Canvas ── */
+  --color-canvas-bg: #F4F4F2;
+
   /* ── Colors — Semantic ── */
   --color-red-500: #EF4444;
   --color-green-500: #22C55E;

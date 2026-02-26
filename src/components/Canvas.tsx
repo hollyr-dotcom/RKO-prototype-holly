@@ -774,7 +774,7 @@ function CustomGrid({ x, y, z }: TLGridProps) {
 }
 
 function CustomBackground() {
-  return <div style={{ position: 'absolute', inset: 0, backgroundColor: '#f8f8f8' }} />;
+  return <div style={{ position: 'absolute', inset: 0, backgroundColor: 'var(--color-canvas-bg)' }} />;
 }
 
 // Custom Miro-style cursor with fill + stroke matching DS palette.
