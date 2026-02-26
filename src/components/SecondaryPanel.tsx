@@ -427,12 +427,12 @@ export function SecondaryPanel() {
 
   return (
     <aside
-      className="h-full flex-shrink-0 overflow-hidden rounded-l-[2.5rem] shadow-surface-nav"
+      className="h-full flex-shrink-0 overflow-hidden rounded-l-[2rem] shadow-surface-nav"
       style={{ backgroundColor: "#FFFFFF", width: SECONDARY_WIDTH }}
     >
       <div className="h-full flex flex-col">
         {/* Space header — single click to edit */}
-        <div className="px-6 pt-6 pb-0">
+        <div className="px-6 pb-0" style={{ paddingTop: 36 }}>
           <div className="flex items-center pb-5">
             {loading ? (
               <div className="h-5 w-3/5 bg-gray-100 rounded animate-pulse" />
@@ -703,7 +703,7 @@ function GroupedBoardList({
       axis="y"
       values={orderedSections}
       onReorder={handleSectionsReorder}
-      className="flex flex-col gap-3"
+      className="flex flex-col gap-2"
       as="div"
     >
       {orderedSections.map((section) => {
@@ -781,16 +781,16 @@ function BoardSectionItem({
     >
       {/* Section header — tap to toggle, drag to reorder */}
       <motion.div
-        className="flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full cursor-pointer text-gray-700"
+        className="group flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full cursor-pointer font-semibold text-gray-500"
         onTap={() => { if (!didDrag.current) onToggle(); }}
       >
-        <span className="flex-1 text-left">{section.label}</span>
+        <span className="text-left">{section.label}</span>
         <svg
           width="16"
           height="16"
           viewBox="0 0 16 16"
           fill="none"
-          className={`flex-shrink-0 transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`}
+          className={`flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200 ${isCollapsed ? "-rotate-90" : ""}`}
         >
           <path
             d="M4 6L8 10L12 6"

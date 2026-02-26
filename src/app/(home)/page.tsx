@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconArrowLeft, IconLightning } from "@mirohq/design-system-icons";
 import { ChatInput } from "@/components/toolbar/ChatInput";
-import { PromptBar } from "@/components/PromptBar";
 import { CardFan } from "@/components/home/CardFan";
 import {
   attentionCards,
@@ -17,6 +16,7 @@ import {
 import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/hooks/useAuth";
 import { spring } from "@/lib/motion";
+import { PageHeader } from "@/components/PageHeader";
 
 // ---------------------------------------------------------------------------
 // Tabs
@@ -196,26 +196,40 @@ export default function HomePage() {
   }
 
   return (
-    <div className="relative h-full w-full bg-white overflow-hidden">
-      {/* Miro logo — top-left of content area */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/miro-logo.svg" alt="Miro" className="absolute top-7 left-7 z-10 w-[56px] h-[20px]" />
-
-      {/* Create new button — fixed top-right */}
-      <button
-        onClick={handleCreateEmptyCanvas}
-        disabled={isCreating}
-        className="fixed top-5 right-6 z-[9900] px-4 py-2 bg-gray-100 text-gray-900 text-sm font-heading font-medium rounded-full hover:bg-gray-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
-      >
-        {isCreating ? (
-          <span className="flex items-center gap-2">
-            <span className="w-3.5 h-3.5 border-2 border-gray-400/30 border-t-gray-700 rounded-full animate-spin" />
-            Creating...
-          </span>
-        ) : (
-          "+ Create new"
-        )}
-      </button>
+    <div className="relative h-full w-full bg-gray-50 overflow-hidden">
+      {/* Page header — fixed at top */}
+      <div className="absolute top-0 left-0 right-0 z-10">
+        <PageHeader
+          actions={
+            <button
+              onClick={handleCreateEmptyCanvas}
+              disabled={isCreating}
+              className="flex items-center gap-1 text-md font-heading font-medium text-white rounded-full cursor-pointer hover:brightness-110 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+              style={{
+                background: "#1a1a1a",
+                padding: "8px 16px",
+              }}
+            >
+              {isCreating ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Creating...
+                </span>
+              ) : (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 4V20M4 12H20" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                  Create
+                </>
+              )}
+            </button>
+          }
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/miro-logo.svg" alt="Miro" className="w-[56px] h-[20px]" />
+        </PageHeader>
+      </div>
 
       <AnimatePresence mode="wait">
         {selectedCard ? (
@@ -380,28 +394,28 @@ export default function HomePage() {
           >
             {/* Greeting */}
             <motion.h1
-              className="text-5xl font-heading font-medium tracking-tight text-zinc-900"
+              className="font-heading font-medium tracking-tight text-zinc-900"
+              style={{ fontSize: 80 }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...spring.gentle, delay: 0.05 }}
             >
-              Hey {firstName}
+              <span className="font-serif">Hello {firstName}</span>
             </motion.h1>
-
+{/* 
             <motion.h2
-              className="mt-3 text-3xl font-heading font-medium text-zinc-400"
+              className="text-2xl font-heading font-medium text-zinc-400"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...spring.gentle, delay: 0.15 }}
             >
               How are you going to save the world today?
-            </motion.h2>
+            </motion.h2> */}
 
             {/* Card fan */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
-                className="mt-12"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -454,12 +468,15 @@ export default function HomePage() {
       <div className="absolute bottom-8 left-0 right-0 flex justify-center px-4">
         <div style={{ width: 712 }}>
           <div className="mx-auto max-w-3xl px-6">
-            <PromptBar
-              onSubmit={handleSubmit}
-              isLoading={isLoading}
-              autoFocus
-              inputBg="#f2f2f2"
-            />
+            <div
+              className="bg-white rounded-full"
+              style={{
+                padding: 6,
+                boxShadow: "0px 6px 16px 0px rgba(34,36,40,0.12), 0px 0px 8px 0px rgba(34,36,40,0.06)",
+              }}
+            >
+              <ChatInput onSubmit={handleSubmit} isLoading={isLoading} />
+            </div>
           </div>
         </div>
       </div>

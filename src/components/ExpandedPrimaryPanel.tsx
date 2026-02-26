@@ -326,8 +326,8 @@ export function ExpandedPrimaryPanel() {
 
   return (
     <aside
-      className="h-full flex flex-col py-5 px-4 flex-shrink-0"
-      style={{ width: EXPANDED_PRIMARY_WIDTH, backgroundColor: navPalette.base }}
+      className="h-full flex flex-col pb-5 px-4 flex-shrink-0"
+      style={{ width: EXPANDED_PRIMARY_WIDTH, backgroundColor: navPalette.base, paddingTop: 28 }}
     >
       {/* Brand header: logo + workspace name + team switcher */}
       <div className="relative mb-5">
@@ -463,23 +463,20 @@ export function ExpandedPrimaryPanel() {
         })}
       </nav>
 
-      {/* Divider */}
-      <div className="mx-1 my-3 border-t" style={{ borderColor: navPalette.divider }} />
-
+      
       {/* Spaces section */}
-      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
+      <div className="flex-1 overflow-y-auto mt-8" style={{ scrollbarWidth: "none" }}>
         {/* Header */}
         <div className="flex items-center h-8 pl-3 pr-1 mb-1">
           <span
-            className="flex-1 text-sm font-bold"
+            className="flex-1 text-sm font-semibold"
             style={{ color: navPalette.textPrimary }}
           >
             Spaces
           </span>
           <button
             onClick={handleCreateSpace}
-            className="flex items-center justify-center w-6 h-6 rounded transition-colors duration-200 -mr-1"
-            style={{ color: navPalette.iconMuted }}
+            className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200/60 transition-colors duration-200 -mr-1"
             title="Add space"
           >
             <IconPlus css={{ width: 16, height: 16 }} />
@@ -587,7 +584,7 @@ function GroupedSpaceList({
       axis="y"
       values={orderedSections}
       onReorder={handleSectionsReorder}
-      className="flex flex-col gap-3"
+      className="flex flex-col gap-2"
       as="div"
     >
       {orderedSections.map((section) => {
@@ -688,16 +685,16 @@ function SpaceSectionItem({
     >
       {/* Section header — tap to toggle, drag to reorder */}
       <motion.div
-        className="flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full cursor-pointer text-gray-700"
+        className="group flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full cursor-pointer font-semibold text-gray-500"
         onTap={() => { if (!didDrag.current) onToggle(); }}
       >
-        <span className="flex-1 text-left">{section.label}</span>
+        <span className="text-left">{section.label}</span>
         <svg
           width="16"
           height="16"
           viewBox="0 0 16 16"
           fill="none"
-          className={`flex-shrink-0 transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`}
+          className={`flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200 ${isCollapsed ? "-rotate-90" : ""}`}
         >
           <path
             d="M4 6L8 10L12 6"

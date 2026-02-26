@@ -35,8 +35,8 @@ export function PrimaryRail() {
 
   return (
     <aside
-      className="h-full flex flex-col items-center py-4.5 px-3 gap-5 flex-shrink-0"
-      style={{ width: RAIL_WIDTH, backgroundColor: navPalette.base }}
+      className="h-full flex flex-col items-center pb-5 px-3 gap-5 flex-shrink-0"
+      style={{ width: RAIL_WIDTH, backgroundColor: navPalette.base, paddingTop: 28 }}
     >
       {/* Brand icon in rounded-lg tonal container */}
       <Link href="/" className="flex-shrink-0">

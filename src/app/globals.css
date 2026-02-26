@@ -11,6 +11,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Apris";
+  src: url("/fonts/AprisTrial-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Embla carousel viewport */
 .embla__viewport { overflow: hidden; }
 
@@ -36,6 +44,7 @@ html, body {
     "Noto Sans JP", sans-serif;
   --font-heading: "Roobert PRO", "Roobert", "Noto Sans KR", "Noto Sans JP",
     sans-serif;
+  --font-serif: "Apris", "Georgia", "Times New Roman", serif;
 
   /* ── Typography — Font sizes ── */
   --text-xs: 11px;

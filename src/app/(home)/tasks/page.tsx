@@ -7,8 +7,8 @@ import { useTasks, type TaskFilters as HookTaskFilters } from "@/hooks/useTasks"
 import { TaskListView } from "@/components/tasks/TaskListView";
 import { WorkspaceSidebar } from "@/components/tasks/WorkspaceSidebar";
 import { ChatInput } from "@/components/toolbar/ChatInput";
-import { useChat } from "@/hooks/useChat";
 import { spring } from "@/lib/motion";
+import { PageHeader } from "@/components/PageHeader";
 import type { TaskPriority } from "@/types/task";
 
 type StatusFilter = "active" | "completed" | null;
@@ -32,20 +32,8 @@ export default function TasksPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
-  // Chat setup
-  const { append, isLoading, openFullscreen, registerHandlers } = useChat();
-
-  useEffect(() => {
-    registerHandlers({
-      handleToolCall: () => {},
-      getCanvasState: () => ({ frames: [], orphans: [], arrows: [] }),
-      getUserEdits: () => [],
-    });
-  }, [registerHandlers]);
-
-  const handleSubmit = (text: string) => {
-    openFullscreen(true);
-    append({ role: "user", content: text });
+  const handleSubmit = () => {
+    // No-op for now — chat from tasks page not yet designed
   };
 
   // Close filter dropdown on outside click
@@ -148,20 +136,23 @@ export default function TasksPage() {
   );
 
   return (
-    <div className="h-full w-full bg-white overflow-y-auto">
-      <div className="max-w-5xl mx-auto px-6 py-10">
-        {/* Heading */}
-        <motion.div
-          className="mb-8"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={spring.gentle}
-        >
-          <h1 className="text-5xl font-bold tracking-tight text-zinc-900">
-            What's on deck?
-          </h1>
-        </motion.div>
+    <div className="h-full w-full bg-white relative overflow-hidden">
+      {/* Page header — fixed at top */}
+      <div className="absolute top-0 left-0 right-0 z-10">
+        <PageHeader>
+          <motion.h1
+            className="text-5xl font-bold tracking-tight text-zinc-900"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={spring.gentle}
+          >
+            What&apos;s on deck?
+          </motion.h1>
+        </PageHeader>
+      </div>
 
+      <div className="h-full overflow-y-auto" style={{ paddingTop: 56 }}>
+      <div className="max-w-5xl mx-auto px-6">
         <div className="flex gap-12">
           {/* Workspace sidebar */}
           <WorkspaceSidebar
@@ -226,18 +217,19 @@ export default function TasksPage() {
           </div>
         </div>
       </div>
+      </div>
 
       {/* Chat input */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70]" style={{ width: 420 }}>
-        <ChatInput
-          onSubmit={handleSubmit}
-          onFocusChange={() => {}}
-          isLoading={isLoading}
-          hasMessages={false}
-          hasPendingQuestion={false}
-          canvasState={{ frames: [], orphans: [], arrows: [] }}
-          voiceState="idle"
-        />
+        <div
+          className="bg-white rounded-full"
+          style={{
+            padding: 6,
+            boxShadow: "0px 6px 16px 0px rgba(34,36,40,0.12), 0px 0px 8px 0px rgba(34,36,40,0.06)",
+          }}
+        >
+          <ChatInput onSubmit={handleSubmit} />
+        </div>
       </div>
     </div>
   );

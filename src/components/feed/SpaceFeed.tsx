@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { FeedItem } from "@/types/feed";
 import { FeedCard } from "./FeedCard";
-import { SpaceHeader } from "./SpaceHeader";
-import { PromptBar } from "@/components/PromptBar";
+import { SpaceHeader, SpaceTitleBlock } from "./SpaceHeader";
+import { ChatInput } from "@/components/toolbar/ChatInput";
 import {
   GoalsWidget,
   StatsWidget,
@@ -135,13 +135,20 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
 
   return (
     <div className="h-full relative overflow-hidden" style={{ backgroundColor: theme.bg, ...cssVars } as React.CSSProperties}>
-      {/* Single scroll container — header scrolls out, sidebar sticks */}
-      <div className="h-full overflow-y-auto">
-        {/* Header — scrolls with content, aligned to feed+sidebar width */}
-        <div className="flex justify-center px-16">
+      {/* Header bar — fixed at top, outside scroll flow */}
+      {space && (
+        <div className="absolute top-0 left-0 right-0 z-10">
+          <SpaceHeader space={space} />
+        </div>
+      )}
+
+      {/* Scroll container — padded top to clear fixed header */}
+      <div className="h-full overflow-y-auto" style={{ paddingTop: space ? 56 : 0 }}>
+        {/* Title block — in page body flow, centered with content */}
+        <div className="flex justify-center px-16 mb-8">
           <div style={{ width: hasSidebar ? 712 + 48 + 320 : 712 }}>
             {space ? (
-              <SpaceHeader
+              <SpaceTitleBlock
                 space={space}
                 onNameChange={handleNameChange}
                 onDescriptionChange={handleDescriptionChange}
@@ -244,7 +251,15 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
             {/* Prompt bar */}
             <div className="relative pb-8 pointer-events-auto">
               <div className="mx-auto max-w-3xl px-6">
-                <PromptBar onSubmit={() => {}} inputBg={theme.bg} />
+                <div
+                  className="bg-white rounded-full"
+                  style={{
+                    padding: 6,
+                    boxShadow: "0px 6px 16px 0px rgba(34,36,40,0.12), 0px 0px 8px 0px rgba(34,36,40,0.06)",
+                  }}
+                >
+                  <ChatInput onSubmit={() => {}} />
+                </div>
               </div>
             </div>
           </div>
