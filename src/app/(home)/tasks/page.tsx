@@ -16,7 +16,7 @@ export default function TasksPage() {
   return (
     <div className="h-full w-full relative overflow-hidden">
       <div ref={scrollRef} className="h-full overflow-y-auto" style={{ paddingTop: 56 }}>
-        <TasksSection />
+        <TasksSection scrollRef={scrollRef} />
       </div>
     </div>
   );

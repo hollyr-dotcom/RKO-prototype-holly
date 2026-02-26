@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef, type RefObject } from "react";
 import { motion } from "framer-motion";
 import { IconChevronDown } from "@mirohq/design-system-icons";
 import { useTasks, type TaskFilters as HookTaskFilters } from "@/hooks/useTasks";
@@ -21,13 +21,31 @@ const FILTER_OPTIONS = [
   { label: "Completed", value: "status:completed" },
 ] as const;
 
-export function TasksSection() {
+interface TasksSectionProps {
+  scrollRef?: RefObject<HTMLElement | null>;
+}
+
+export function TasksSection({ scrollRef }: TasksSectionProps) {
   const [activeSpace, setActiveSpace] = useState<string | null>(null);
   const [activePriority, setActivePriority] = useState<TaskPriority | null>(null);
   const [activeStatus, setActiveStatus] = useState<StatusFilter>(null);
   const [sort, setSort] = useState<SortOption>("due_date");
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
+  const [titleOpacity, setTitleOpacity] = useState(1);
+
+  // Fade title out over 150px of scroll
+  useEffect(() => {
+    const el = scrollRef?.current;
+    if (!el) return;
+    const onScroll = () => {
+      const progress = Math.min(el.scrollTop / 150, 1);
+      setTitleOpacity(1 - progress);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [scrollRef]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -127,10 +145,10 @@ export function TasksSection() {
 
   return (
     <div className="max-w-5xl mx-auto px-6">
-      {/* Centred title */}
+      {/* Centred title — fades out on scroll */}
       <motion.h1
         className="text-center font-serif tracking-tight text-zinc-900 py-12"
-        style={{ fontSize: 80 }}
+        style={{ fontSize: 80, opacity: titleOpacity }}
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={spring.gentle}
@@ -138,13 +156,16 @@ export function TasksSection() {
         What&apos;s on deck?
       </motion.h1>
       <div className="flex gap-12">
-        <WorkspaceSidebar
-          spaces={spaces}
-          activeSpaceId={activeSpace}
-          taskCountBySpace={taskCountBySpace}
-          totalCount={allTasks.length}
-          onSpaceSelect={setActiveSpace}
-        />
+        {/* Workspace sidebar — sticky */}
+        <div className="sticky top-0 self-start">
+          <WorkspaceSidebar
+            spaces={spaces}
+            activeSpaceId={activeSpace}
+            taskCountBySpace={taskCountBySpace}
+            totalCount={allTasks.length}
+            onSpaceSelect={setActiveSpace}
+          />
+        </div>
 
         <div className="flex-1 max-w-2xl">
           {/* Filter dropdown + Sort */}

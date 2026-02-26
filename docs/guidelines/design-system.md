@@ -39,22 +39,22 @@ Color scales are generated from seed hex colors using OKLCH color math.
 Hue and chroma derive from the seed; lightness follows the Tailwind distribution curve.
 To regenerate after changing a seed: `npm run generate:colors`
 
-**Gray** (seed: `#4B5563`):
+**Gray** (seed: `#62615B`):
 
 | Token | Value | Role |
 |-------|-------|------|
-| `gray-50` | `#F9FAFB` | App background |
-| `gray-100` | `#F2F4F6` | Subtle background |
-| `gray-200` | `#E5E7EB` | Component background, borders |
-| `gray-300` | `#D1D5DB` | Component hover |
-| `gray-400` | `#9BA3AF` | Muted icons, secondary text |
-| `gray-500` | `#697380` | Subtle border |
-| `gray-600` | `#4B5563` | Default border, secondary text |
-| `gray-700` | `#364151` | Strong border |
-| `gray-800` | `#1F2937` | Solid color |
-| `gray-900` | `#0F1927` | Primary text, headings |
-| `gray-950` | `#040C1A` | High-contrast text |
-| `gray-1000` | `#000410` | Ultra-high-contrast text |
+| `gray-50` | `#FBFAF7` | App background |
+| `gray-100` | `#F4F4F1` | Subtle background |
+| `gray-200` | `#E7E7E5` | Component background, borders |
+| `gray-300` | `#D5D5D2` | Component hover |
+| `gray-400` | `#A4A39E` | Muted icons, secondary text |
+| `gray-500` | `#73726C` | Subtle border |
+| `gray-600` | `#55544E` | Default border, secondary text |
+| `gray-700` | `#42413A` | Strong border |
+| `gray-800` | `#2A2923` | Solid color |
+| `gray-900` | `#191812` | Primary text, headings |
+| `gray-950` | `#0D0C07` | High-contrast text |
+| `gray-1000` | `#050402` | Ultra-high-contrast text |
 | `white` | `#FFFFFF` | Card backgrounds, chrome surfaces |
 
 **Blue** (seed: `#3B82F6`):
@@ -112,18 +112,40 @@ The palette auto-detects whether the base is light or dark (via WCAG relative lu
 - To change the navigation color, update the `navColor` prop on `SidebarProvider`
 - The logo icon sits inside a `rounded-lg` container with `navPalette.logoContainer` background
 
-### Space Theme Palette (Hue-Derived)
+### Space Theme Palette (OKLCH 12-Step Scale)
 
-Each space has a **base hue** (set in `src/lib/space-theme.ts`) from which colour tokens are derived and injected as CSS custom properties on the space feed container:
+Each space has a **base hue** (set in `src/lib/space-theme.ts`) from which a full 12-step OKLCH color scale is generated at runtime via `src/lib/oklch.ts`. The scale is injected as CSS custom properties on the space feed container.
 
-| CSS Variable | Role | HSL Formula | FF26 (H=260) |
-|---|---|---|---|
-| `--space-bg` | Light surface / fill | `hsl(H-10, 80%, 96%)` | `#F0EDFD` |
-| `--space-widget-bg` | Widget panel background | `hsl(H-10, 100%, 93%)` | `#E1DBFF` |
-| `--space-secondary` | Mid accent | `hsl(H-10, 77%, 72%)` | `#9381EF` |
-| `--space-accent` | Dark accent | `hsl(H, 68%, 28%)` | `#371778` |
+**Scale generation:** `generateScaleFromHue(hue)` in `src/lib/oklch.ts` produces 12 hex values using:
+- **Lightness curve** — Tailwind-compatible distribution from 0.970 (step 50) to 0.160 (step 1000)
+- **Chroma curve** — peaks at step 500 (reference chroma: 0.15), tapers at extremes
+- No runtime dependencies (hand-rolled OKLCH→hex math)
 
-Lighter tones shift 10° cooler to stay perceptually "the same colour" (Abney effect).
+**Full scale** (`--space-50` through `--space-1000`):
+
+| CSS Variable | Step | Lightness | Chroma × | Role |
+|---|---|---|---|---|
+| `--space-50` | 50 | 0.970 | 0.08 | Light surface background |
+| `--space-100` | 100 | 0.940 | 0.14 | Subtle background |
+| `--space-200` | 200 | 0.890 | 0.25 | Widget panel background |
+| `--space-300` | 300 | 0.830 | 0.40 | Component hover |
+| `--space-400` | 400 | 0.760 | 0.70 | Component active |
+| `--space-500` | 500 | 0.623 | 1.00 | Mid accent (stats, callouts) |
+| `--space-600` | 600 | 0.530 | 0.90 | Accent hover |
+| `--space-700` | 700 | 0.450 | 0.80 | Strong accent |
+| `--space-800` | 800 | 0.370 | 0.65 | Solid accent |
+| `--space-900` | 900 | 0.290 | 0.50 | Primary dark |
+| `--space-950` | 950 | 0.220 | 0.40 | Dark accent (buttons, headings) |
+| `--space-1000` | 1000 | 0.160 | 0.30 | Ultra-dark |
+
+**Backwards-compatible aliases** (existing components use these):
+
+| CSS Variable | Maps to | Role |
+|---|---|---|
+| `--space-bg` | `--space-50` | Light surface / fill |
+| `--space-100` | `--space-200` | Widget panel background |
+| `--space-secondary` | `--space-500` | Mid accent |
+| `--space-accent` | `--space-950` | Dark accent |
 
 **Graph colour rule:**
 - Two-colour graphs use **light** (`--space-bg`) and **dark** (`--space-accent`) only.
@@ -134,7 +156,7 @@ Lighter tones shift 10° cooler to stay perceptually "the same colour" (Abney ef
 **Usage:**
 - Buttons, headings, highlighted elements → `var(--space-accent)`
 - Stats, role tags, callout labels → `var(--space-secondary)`
-- Widget/panel backgrounds (sidebar widgets, stat cards) → `var(--space-widget-bg)`
+- Widget/panel backgrounds (sidebar widgets, stat cards) → `var(--space-100)`
 - Surface backgrounds, graph fills, calendar cells → `var(--space-bg)`
 - Never hardcode space colours in components — always reference CSS variables
 

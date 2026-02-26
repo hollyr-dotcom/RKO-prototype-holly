@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { FeedItem } from "@/types/feed";
 import { FeedCard } from "./FeedCard";
@@ -21,7 +21,7 @@ import {
 } from "@/components/space-widgets";
 import { SIDEBAR_WIDGET_DATA } from "@/data/sidebar-widget-data";
 import { FF26_WIDGETS, FIRSTFLEX_WIDGETS } from "@/data/space-widgets-data";
-import { getSpaceHue, generateSpaceTheme, spaceThemeToCssVars } from "@/lib/space-theme";
+import { generateSpaceTheme, spaceThemeToCssVars, parseSpaceColor } from "@/lib/space-theme";
 
 interface SpaceFeedProps {
   spaceId: string;
@@ -125,20 +125,79 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
     [spaceId]
   );
 
+  // ── Space color (hue + chroma) state ──
+  const initialColor = useMemo(
+    () => parseSpaceColor(space?.color, spaceId),
+    [space?.color, spaceId]
+  );
+  const [hue, setHue] = useState(initialColor.hue);
+  const [chroma, setChroma] = useState(initialColor.chroma);
+  const colorDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync state when space data loads or changes
+  useEffect(() => {
+    const parsed = parseSpaceColor(space?.color, spaceId);
+    setHue(parsed.hue);
+    setChroma(parsed.chroma);
+  }, [space?.color, spaceId]);
+
+  // Debounced persistence of color changes
+  const persistColor = useCallback(
+    (newHue: number, newChroma: number) => {
+      if (colorDebounceRef.current) clearTimeout(colorDebounceRef.current);
+      colorDebounceRef.current = setTimeout(() => {
+        fetch(`/api/spaces/${spaceId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ color: JSON.stringify({ hue: newHue, chroma: newChroma }) }),
+        })
+          .then(() => {
+            window.dispatchEvent(
+              new CustomEvent("space-updated", { detail: { spaceId } })
+            );
+          })
+          .catch(() => {});
+      }, 400);
+    },
+    [spaceId]
+  );
+
+  const handleHueChange = useCallback(
+    (newHue: number) => {
+      setHue(newHue);
+      persistColor(newHue, chroma);
+    },
+    [chroma, persistColor]
+  );
+
+  const handleChromaChange = useCallback(
+    (newChroma: number) => {
+      setChroma(newChroma);
+      persistColor(hue, newChroma);
+    },
+    [hue, persistColor]
+  );
+
   const spaceWidgets = SPACE_WIDGETS[spaceId];
   const firstflexWidgets = FIRSTFLEX_SPACE_WIDGETS[spaceId];
   const widgetData = SIDEBAR_WIDGET_DATA[spaceId];
   const hasSidebar = !!(spaceWidgets || firstflexWidgets || widgetData);
 
-  const theme = generateSpaceTheme(getSpaceHue(spaceId));
+  const theme = generateSpaceTheme(hue, chroma);
   const cssVars = spaceThemeToCssVars(theme);
 
   return (
-    <div className="h-full relative overflow-hidden" style={{ backgroundColor: theme.bg, ...cssVars } as React.CSSProperties}>
+    <div className="h-full relative overflow-hidden" style={{ backgroundColor: "var(--space-bg)", ...cssVars } as React.CSSProperties}>
       {/* Header bar — fixed at top, outside scroll flow */}
       {space && (
         <div className="absolute top-0 left-0 right-0 z-10">
-          <SpaceHeader space={space} />
+          <SpaceHeader
+            space={space}
+            hue={hue}
+            chroma={chroma}
+            onHueChange={handleHueChange}
+            onChromaChange={handleChromaChange}
+          />
         </div>
       )}
 
@@ -245,7 +304,7 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
               style={{
                 width: 712,
                 height: "calc(128px + 2rem)",
-                background: `linear-gradient(180deg, hsla(${theme.tintHue},80%,96%,0) 0%, hsla(${theme.tintHue},80%,96%,0.8) 60%, hsla(${theme.tintHue},80%,96%,0.98) 100%)`,
+                background: `linear-gradient(180deg, color-mix(in srgb, var(--space-50) 0%, transparent) 0%, color-mix(in srgb, var(--space-50) 80%, transparent) 60%, color-mix(in srgb, var(--space-50) 98%, transparent) 100%)`,
               }}
             />
             {/* Prompt bar */}

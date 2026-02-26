@@ -18,6 +18,7 @@ import { EXPANDED_PRIMARY_WIDTH } from "@/providers/SidebarProvider";
 import { NavList, NavListItem, NavMenuAction } from "@/components/NavList";
 import { BoardEmoji } from "@/components/BoardEmoji";
 import { SPACE_SECTIONS } from "@/data/space-sections";
+import { getSpaceDisplayColor } from "@/lib/space-theme";
 
 // Same nav items as PrimaryRail — identical icons, IDs, hrefs
 const navItems = [
@@ -169,7 +170,7 @@ export function ExpandedPrimaryPanel() {
       <span
         className="w-5 h-5 text-xs leading-5 text-center flex-shrink-0 rounded flex items-center justify-center"
         style={{
-          backgroundColor: space.color || navPalette.logoContainer,
+          backgroundColor: getSpaceDisplayColor(space.color, space.id),
           color: navPalette.textPrimary,
         }}
       >
@@ -623,7 +624,7 @@ function GroupedSpaceList({
             <span
               className="w-4 h-4 text-[10px] leading-4 text-center rounded flex items-center justify-center"
               style={{
-                backgroundColor: space.color || navPalette.logoContainer,
+                backgroundColor: getSpaceDisplayColor(space.color, space.id),
                 color: navPalette.textPrimary,
               }}
             >

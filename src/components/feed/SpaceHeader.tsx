@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { BoardEmoji } from "@/components/BoardEmoji";
 import { PageHeader } from "@/components/PageHeader";
+import { SpaceColorSettings } from "./SpaceColorSettings";
 
 interface SpaceHeaderProps {
   space: {
@@ -13,6 +14,14 @@ interface SpaceHeaderProps {
   };
   onNameChange?: (name: string) => void;
   onDescriptionChange?: (description: string) => void;
+}
+
+interface SpaceHeaderBarProps {
+  space: { id: string };
+  hue?: number;
+  chroma?: number;
+  onHueChange?: (hue: number) => void;
+  onChromaChange?: (chroma: number) => void;
 }
 
 /** Avatar overrides for 1:1 spaces */
@@ -57,8 +66,9 @@ function NotificationIcon() {
 }
 
 /** Edge-to-edge header bar with avatars, notification, and create button */
-export function SpaceHeader({ space }: { space: { id: string } }) {
+export function SpaceHeader({ space, hue, chroma, onHueChange, onChromaChange }: SpaceHeaderBarProps) {
   const members = SPACE_MEMBERS[space.id];
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <PageHeader
@@ -85,19 +95,31 @@ export function SpaceHeader({ space }: { space: { id: string } }) {
             </div>
           )}
 
-          {/* Bell icon */}
-          <button
-            className="flex items-center justify-center rounded-full transition-colors hover:bg-black/[0.04]"
-            style={{ width: 32, height: 32, color: "var(--color-gray-800)" }}
-          >
-            <NotificationIcon />
-          </button>
+          {/* Bell / settings icon */}
+          <div className="relative">
+            <button
+              onClick={() => setSettingsOpen((prev) => !prev)}
+              className="flex items-center justify-center rounded-full transition-colors hover:bg-black/[0.04]"
+              style={{ width: 32, height: 32, color: "var(--color-gray-800)" }}
+            >
+              <NotificationIcon />
+            </button>
+            {settingsOpen && hue !== undefined && chroma !== undefined && onHueChange && onChromaChange && (
+              <SpaceColorSettings
+                hue={hue}
+                chroma={chroma}
+                onHueChange={onHueChange}
+                onChromaChange={onChromaChange}
+                onClose={() => setSettingsOpen(false)}
+              />
+            )}
+          </div>
 
           {/* Create button */}
           <button
             className="flex items-center gap-1 text-md font-heading font-medium text-white rounded-full cursor-pointer hover:brightness-110 transition-all"
             style={{
-              background: "var(--space-accent)",
+              background: "var(--space-700)",
               padding: "8px 16px",
             }}
           >

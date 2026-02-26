@@ -11,7 +11,7 @@ import { NavList, NavListItem } from "@/components/NavList";
 import { BoardEmoji } from "@/components/BoardEmoji";
 import { generateAndSetEmoji } from "@/lib/canvasUtils";
 import { BOARD_SECTIONS } from "@/data/board-sections";
-import { getSpaceHue, generateSpaceTheme } from "@/lib/space-theme";
+import { generateSpaceTheme, spaceThemeToCssVars, parseSpaceColor } from "@/lib/space-theme";
 
 type Canvas = {
   id: string;
@@ -423,12 +423,14 @@ export function SecondaryPanel() {
 
   const spaceName = space?.name || "Space";
 
-  const sidebarTheme = generateSpaceTheme(params.spaceId ? getSpaceHue(params.spaceId) : 260);
+  const { hue: sidebarHue, chroma: sidebarChroma } = parseSpaceColor(space?.color, params.spaceId || "");
+  const sidebarTheme = generateSpaceTheme(sidebarHue, sidebarChroma);
+  const sidebarCssVars = spaceThemeToCssVars(sidebarTheme);
 
   return (
     <aside
       className="h-full flex-shrink-0 overflow-hidden rounded-l-[2rem] shadow-surface-nav"
-      style={{ backgroundColor: "#FFFFFF", width: SECONDARY_WIDTH }}
+      style={{ backgroundColor: "#FFFFFF", width: SECONDARY_WIDTH, ...sidebarCssVars } as React.CSSProperties}
     >
       <div className="h-full flex flex-col">
         {/* Space header — single click to edit */}
@@ -511,8 +513,8 @@ export function SecondaryPanel() {
                     isSelected={selectedCapability === "overview"}
                     onClick={() => setSelectedCapability("overview")}
                     href={`/space/${params.spaceId}`}
-                    highlightColor={`hsl(${sidebarTheme.tintHue}, 80%, 91%)`}
-                    activeTextColor={sidebarTheme.accent}
+                    highlightColor="var(--space-100)"
+                    activeTextColor="var(--space-accent)"
                   />
                 </motion.div>
                 {(params.spaceId && SPACE_SECTIONS[params.spaceId] || []).map((section) => (
@@ -521,8 +523,8 @@ export function SecondaryPanel() {
                       label={section.label}
                       isSelected={false}
                       onClick={() => {}}
-                      highlightColor={`hsl(${sidebarTheme.tintHue}, 80%, 91%)`}
-                      activeTextColor={sidebarTheme.accent}
+                      highlightColor="var(--space-100)"
+                      activeTextColor="var(--space-accent)"
                     />
                   </motion.div>
                 ))}

@@ -14,6 +14,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { spring } from "@/lib/motion";
 import { useOverscrollNavigation } from "@/hooks/useOverscrollNavigation";
+import { useShrinkingHeader } from "@/hooks/useShrinkingHeader";
 
 // ---------------------------------------------------------------------------
 // Tabs
@@ -138,6 +139,7 @@ export default function HomePage() {
   }, []);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { fontSize: headerFontSize, isSticky: headerIsSticky } = useShrinkingHeader({ scrollRef });
   const messages = useStreamingChat(selectedCard?.id ?? null);
 
   useOverscrollNavigation({
@@ -156,7 +158,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div ref={scrollRef} className="relative h-full w-full overflow-hidden">
+    <div ref={scrollRef} className="relative h-full w-full overflow-y-auto">
       <AnimatePresence mode="wait">
         {selectedCard ? (
           /* ─── Detail view ─── */
@@ -312,22 +314,34 @@ export default function HomePage() {
           /* ─── Home view ─── */
           <motion.div
             key="home"
-            className="relative z-10 flex flex-1 h-full flex-col items-center justify-center"
+            className="relative z-10 flex flex-col items-center pt-[20vh]"
+            style={{ minHeight: "150vh" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {/* Greeting */}
-            <motion.h1
-              className="font-heading font-medium tracking-tight text-zinc-900"
-              style={{ fontSize: 80 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...spring.gentle, delay: 0.05 }}
+            {/* Greeting — shrinks on scroll, sticks at min size */}
+            <div
+              className="text-center w-full"
+              style={{
+                position: headerIsSticky ? "sticky" : "relative",
+                top: headerIsSticky ? 0 : undefined,
+                zIndex: headerIsSticky ? 5 : undefined,
+                paddingTop: headerIsSticky ? 16 : 0,
+                paddingBottom: headerIsSticky ? 16 : 0,
+              }}
             >
-              <span className="font-serif">{greeting}, {firstName}</span>
-            </motion.h1>
+              <motion.h1
+                className="font-heading font-medium tracking-tight text-zinc-900"
+                style={{ fontSize: headerFontSize }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...spring.gentle, delay: 0.05 }}
+              >
+                <span className="font-serif">{greeting}, {firstName}</span>
+              </motion.h1>
+            </div>
 {/*
             <motion.h2
               className="text-2xl font-heading font-medium text-zinc-400"

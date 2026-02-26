@@ -23,7 +23,7 @@ const roleColorMap: Record<RoleColor, { bg: string; border: string; text: string
 
 export function StaffWidget({ title, members }: StaffWidgetProps) {
   return (
-    <div className="rounded-[24px] p-[24px] overflow-hidden" style={{ backgroundColor: "var(--space-widget-bg)" }}>
+    <div className="rounded-[24px] p-[24px] overflow-hidden" style={{ backgroundColor: "var(--space-100)" }}>
       <h3 className="text-[20px] font-semibold text-[var(--color-gray-800)] mb-4">{title}</h3>
       <div className="flex flex-col gap-2">
         {members.map((member, i) => {

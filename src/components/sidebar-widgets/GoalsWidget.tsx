@@ -24,7 +24,7 @@ function progressColor(value: number): string {
 
 export function GoalsWidget({ goals }: GoalsWidgetProps) {
   return (
-    <div className="flex flex-col gap-2.5 rounded-xl py-3" style={{ backgroundColor: "var(--space-widget-bg)" }}>
+    <div className="flex flex-col gap-2.5 rounded-xl py-3" style={{ backgroundColor: "var(--space-100)" }}>
       {goals.map((goal, i) => (
         <div
           key={i}
