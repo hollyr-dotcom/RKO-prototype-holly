@@ -228,28 +228,23 @@ export function SpaceFeed({ spaceId }: SpaceFeedProps) {
         )}
       </div>
 
-      {/* Gradient fade + prompt bar — aligned to feed column via same flex layout */}
+      {/* Gradient fade + prompt bar — centered across full content area */}
       <div className="absolute bottom-0 left-0 right-0 z-[19] flex justify-center px-16 pointer-events-none">
-        <div className={`flex ${hasSidebar ? "gap-12" : ""} items-end`}>
-          <div style={{ width: 712 }}>
-            {/* Gradient overlay */}
-            <div
-              className="absolute bottom-0 pointer-events-none"
-              style={{
-                width: 712,
-                height: "calc(128px + 2rem)",
-                background: `linear-gradient(180deg, hsla(${theme.tintHue},80%,96%,0) 0%, hsla(${theme.tintHue},80%,96%,0.8) 60%, hsla(${theme.tintHue},80%,96%,0.98) 100%)`,
-              }}
-            />
-            {/* Prompt bar */}
-            <div className="relative pb-8 pointer-events-auto">
-              <div className="mx-auto max-w-3xl px-6">
-                <PromptBar onSubmit={() => {}} inputBg={theme.bg} />
-              </div>
+        <div className="relative" style={{ width: hasSidebar ? 712 + 48 + 320 : 712 }}>
+          {/* Gradient overlay spanning full container */}
+          <div
+            className="absolute bottom-0 left-0 right-0 pointer-events-none"
+            style={{
+              height: "calc(128px + 2rem)",
+              background: `linear-gradient(180deg, hsla(${theme.tintHue},80%,96%,0) 0%, hsla(${theme.tintHue},80%,96%,0.8) 60%, hsla(${theme.tintHue},80%,96%,0.98) 100%)`,
+            }}
+          />
+          {/* Prompt bar — centered */}
+          <div className="relative pb-8 flex justify-center pointer-events-auto">
+            <div className="w-full max-w-3xl px-6">
+              <PromptBar onSubmit={() => {}} inputBg={theme.bg} />
             </div>
           </div>
-          {/* Invisible spacer matching sidebar width so feed column stays aligned */}
-          {hasSidebar && <div style={{ width: 320 }} className="flex-shrink-0" />}
         </div>
       </div>
 

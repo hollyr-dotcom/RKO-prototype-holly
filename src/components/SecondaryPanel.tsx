@@ -147,16 +147,14 @@ export function SecondaryPanel() {
   // Derive which capability is active from the route.
   // On a canvas route, no capability is selected. On the space root, default to "overview".
   const isOnCanvas = pathname.includes("/canvas/");
-  const [selectedCapability, setSelectedCapability] = useState<string | null>("overview");
-
-  // Clear capability selection when navigating to a canvas, restore when back on space root
-  useEffect(() => {
-    if (isOnCanvas) {
-      setSelectedCapability(null);
-    } else {
-      setSelectedCapability((prev) => prev ?? "overview");
-    }
-  }, [isOnCanvas]);
+  // Derive selected capability from pathname rather than local state
+  const selectedCapability = (() => {
+    if (isOnCanvas) return null;
+    const spaceRoot = `/space/${params.spaceId}`;
+    if (pathname === spaceRoot || pathname === `${spaceRoot}/`) return "overview";
+    const suffix = pathname.slice(spaceRoot.length + 1); // e.g. "schedule"
+    return suffix || "overview";
+  })();
 
   // Fetch space data
   useEffect(() => {
@@ -519,8 +517,9 @@ export function SecondaryPanel() {
                   <motion.div key={section.id} variants={staggerItem}>
                     <CapabilityItem
                       label={section.label}
-                      isSelected={false}
+                      isSelected={selectedCapability === section.id}
                       onClick={() => {}}
+                      href={`/space/${params.spaceId}/${section.id}`}
                       highlightColor={`hsl(${sidebarTheme.tintHue}, 80%, 91%)`}
                       activeTextColor={sidebarTheme.accent}
                     />
