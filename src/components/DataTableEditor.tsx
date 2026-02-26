@@ -90,7 +90,7 @@ function EditableHeader({
   if (isHeaderEditing) {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-        <span style={{ color: "#9ca3af", display: "flex" }}>
+        <span style={{ color: "var(--color-gray-400)", display: "flex" }}>
           <ColumnTypeIcon type={column.type} size={14} />
         </span>
         <input
@@ -114,7 +114,7 @@ function EditableHeader({
             background: "transparent",
             fontSize: 12,
             fontWeight: 600,
-            color: "#374151",
+            color: "var(--color-gray-700)",
             padding: 0,
             margin: 0,
             minWidth: 0,
@@ -153,7 +153,7 @@ function EditableHeader({
           }
         }}
       >
-        <span style={{ color: "#9ca3af", display: "flex", flexShrink: 0 }}>
+        <span style={{ color: "var(--color-gray-400)", display: "flex", flexShrink: 0 }}>
           <ColumnTypeIcon type={column.type} size={14} />
         </span>
         <span
@@ -167,7 +167,7 @@ function EditableHeader({
           {column.name}
         </span>
         {sortDirection && (
-          <span style={{ fontSize: 10, color: "#6b7280", flexShrink: 0 }}>
+          <span style={{ fontSize: 10, color: "var(--color-gray-500)", flexShrink: 0 }}>
             {sortDirection === "asc" ? "▲" : "▼"}
           </span>
         )}
@@ -181,7 +181,7 @@ function EditableHeader({
             border: "none",
             background: "transparent",
             cursor: isEditing ? "pointer" : "default",
-            color: "#9ca3af",
+            color: "var(--color-gray-400)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -565,7 +565,7 @@ function DataTableGrid({
       <div
         style={{
           padding: "12px 14px",
-          borderBottom: "1px solid #f3f4f6",
+          borderBottom: "1px solid var(--color-gray-100)",
           flexShrink: 0,
           display: "flex",
           alignItems: "center",
@@ -573,12 +573,12 @@ function DataTableGrid({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <IconTable css={{ width: 16, height: 16, flexShrink: 0, color: '#9ca3af' }} />
+          <IconTable css={{ width: 16, height: 16, flexShrink: 0, color: 'var(--color-gray-400)' }} />
           <span
             style={{
               fontSize: 13,
               fontWeight: 600,
-              color: "#374151",
+              color: "var(--color-gray-700)",
               lineHeight: "18px",
               whiteSpace: "nowrap",
               overflow: "hidden",
@@ -621,10 +621,10 @@ function DataTableGrid({
                       style={{
                         width: header.getSize(),
                         padding: "6px 8px",
-                        borderBottom: "1px solid #e5e7eb",
-                        borderRight: "1px solid #f3f4f6",
-                        background: "#f9fafb",
-                        color: isRowNum ? "#9ca3af" : "#374151",
+                        borderBottom: "1px solid var(--color-gray-200)",
+                        borderRight: "1px solid var(--color-gray-100)",
+                        background: "var(--color-gray-50)",
+                        color: isRowNum ? "var(--color-gray-400)" : "var(--color-gray-700)",
                         fontSize: isRowNum ? 11 : 12,
                         fontWeight: isRowNum ? 500 : 600,
                         textAlign: isRowNum ? "center" : "left",
@@ -659,10 +659,10 @@ function DataTableGrid({
                                 width: "100%",
                                 marginTop: 4,
                                 padding: "2px 4px",
-                                border: "1px solid #e5e7eb",
+                                border: "1px solid var(--color-gray-200)",
                                 borderRadius: 3,
                                 fontSize: 11,
-                                color: "#374151",
+                                color: "var(--color-gray-700)",
                                 background: "#ffffff",
                                 outline: "none",
                                 boxSizing: "border-box",
@@ -689,7 +689,7 @@ function DataTableGrid({
                           }}
                           onMouseEnter={(e) => {
                             if (!header.column.getIsResizing()) {
-                              e.currentTarget.style.background = "#d1d5db";
+                              e.currentTarget.style.background = "var(--color-gray-300)";
                             }
                           }}
                           onMouseLeave={(e) => {
@@ -707,8 +707,8 @@ function DataTableGrid({
                   style={{
                     width: 32,
                     padding: "6px 4px",
-                    borderBottom: "1px solid #e5e7eb",
-                    background: "#f9fafb",
+                    borderBottom: "1px solid var(--color-gray-200)",
+                    background: "var(--color-gray-50)",
                     position: "sticky",
                     top: 0,
                     zIndex: 2,
@@ -723,10 +723,10 @@ function DataTableGrid({
                       style={{
                         width: 20,
                         height: 20,
-                        border: "1px solid #e5e7eb",
+                        border: "1px solid var(--color-gray-200)",
                         borderRadius: 4,
                         background: "#ffffff",
-                        color: "#9ca3af",
+                        color: "var(--color-gray-400)",
                         fontSize: 14,
                         lineHeight: "18px",
                         cursor: "pointer",
@@ -766,10 +766,10 @@ function DataTableGrid({
                       style={{
                         width: cell.column.getSize(),
                         padding: isRowNum ? "5px 4px" : 0,
-                        borderBottom: "1px solid #f3f4f6",
-                        borderRight: "1px solid #f3f4f6",
-                        background: isRowNum ? "#f9fafb" : "transparent",
-                        color: isRowNum ? "#9ca3af" : undefined,
+                        borderBottom: "1px solid var(--color-gray-100)",
+                        borderRight: "1px solid var(--color-gray-100)",
+                        background: isRowNum ? "var(--color-gray-50)" : "transparent",
+                        color: isRowNum ? "var(--color-gray-400)" : undefined,
                         fontSize: isRowNum ? 11 : undefined,
                         fontWeight: isRowNum ? 500 : undefined,
                         textAlign: isRowNum ? "center" : undefined,
@@ -781,7 +781,7 @@ function DataTableGrid({
                   );
                 })}
                 {/* Spacer for add-column button column — always rendered to keep layout stable */}
-                <td style={{ borderBottom: "1px solid #f3f4f6" }} />
+                <td style={{ borderBottom: "1px solid var(--color-gray-100)" }} />
               </tr>
             ))}
           </tbody>
@@ -800,11 +800,11 @@ function DataTableGrid({
             padding: "6px 12px",
             border: "none",
             background: "transparent",
-            color: "#9ca3af",
+            color: "var(--color-gray-400)",
             fontSize: 12,
             cursor: "pointer",
             width: "100%",
-            borderTop: "1px solid #f3f4f6",
+            borderTop: "1px solid var(--color-gray-100)",
           }}
           title="Add row"
         >
@@ -883,7 +883,7 @@ export function DataTableEditor({
           alignItems: "center",
           justifyContent: "center",
           height: "100%",
-          color: "#9ca3af",
+          color: "var(--color-gray-400)",
           fontSize: 13,
         }}
       >
@@ -915,17 +915,17 @@ export function DataTableEditor({
             <div
               style={{
                 padding: "10px 14px 6px",
-                borderBottom: "1px solid #f3f4f6",
+                borderBottom: "1px solid var(--color-gray-100)",
                 flexShrink: 0,
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <IconTable css={{ width: 16, height: 16, flexShrink: 0, color: '#9ca3af' }} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{title}</span>
+                <IconTable css={{ width: 16, height: 16, flexShrink: 0, color: 'var(--color-gray-400)' }} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--color-gray-700)" }}>{title}</span>
               </div>
             </div>
             <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 12, color: "#9ca3af" }}>Loading table...</span>
+              <span style={{ fontSize: 12, color: "var(--color-gray-400)" }}>Loading table...</span>
             </div>
           </div>
         }

@@ -298,8 +298,8 @@ function NavListRow({
                             action.onClick(item.id);
                           }}
                           className="w-full flex items-center gap-2 text-left cursor-pointer border-none bg-transparent"
-                          style={{ padding: "7px 12px", fontSize: 13, color: action.danger ? "#dc2626" : "#374151" }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = action.danger ? "#fef2f2" : "#f3f4f6")}
+                          style={{ padding: "7px 12px", fontSize: 13, color: action.danger ? "#dc2626" : "var(--color-gray-700)" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = action.danger ? "#fef2f2" : "var(--color-gray-100)")}
                           onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                         >
                           {action.icon && (

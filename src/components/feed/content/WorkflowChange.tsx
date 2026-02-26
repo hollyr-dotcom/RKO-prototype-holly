@@ -34,7 +34,7 @@ export function WorkflowChangeContent({ item }: WorkflowChangeProps) {
             <div
               className="absolute inset-0 rounded-full"
               style={{
-                background: "linear-gradient(to right, #9ca3af, #22c55e)",
+                background: "linear-gradient(to right, var(--color-gray-400), #22c55e)",
               }}
             />
             {/* Arrow head */}

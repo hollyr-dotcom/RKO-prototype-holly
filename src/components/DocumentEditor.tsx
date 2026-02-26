@@ -233,7 +233,7 @@ function TiptapEditor({
         padding: 74,
         fontSize: 13,
         lineHeight: 1.6,
-        color: "#1f2937",
+        color: "var(--color-gray-800)",
         height: "100%",
       }}
       className="document-editor-content"
@@ -263,7 +263,7 @@ function TiptapEditor({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#9ca3af",
+            color: "var(--color-gray-400)",
             fontSize: 13,
           }}
         >
@@ -318,7 +318,7 @@ export function DocumentEditor({
           alignItems: "center",
           justifyContent: "center",
           height: "100%",
-          color: "#9ca3af",
+          color: "var(--color-gray-400)",
           fontSize: 13,
         }}
       >

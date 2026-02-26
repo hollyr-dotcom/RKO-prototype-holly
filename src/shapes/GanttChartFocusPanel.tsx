@@ -67,7 +67,7 @@ export function GanttChartFocusPanel({
           display: "flex",
           alignItems: "center",
           padding: "12px 16px",
-          borderBottom: "1px solid #e5e7eb",
+          borderBottom: "1px solid var(--color-gray-200)",
           flexShrink: 0,
         }}
       >
@@ -84,7 +84,7 @@ export function GanttChartFocusPanel({
             background: "transparent",
             fontSize: 16,
             fontWeight: 600,
-            color: "#111827",
+            color: "var(--color-gray-900)",
             border: "none",
             outline: "none",
             padding: 0,

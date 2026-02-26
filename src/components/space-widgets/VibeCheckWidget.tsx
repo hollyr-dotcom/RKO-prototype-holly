@@ -15,8 +15,8 @@ interface VibeCheckWidgetProps {
 
 export function VibeCheckWidget({ title, responses }: VibeCheckWidgetProps) {
   return (
-    <div className="rounded-[24px] p-[24px]" style={{ backgroundColor: "var(--space-widget-bg)" }}>
-      <h3 className="text-[20px] font-semibold text-[#222428] mb-5">{title}</h3>
+    <div className="rounded-[24px] p-[24px]" style={{ backgroundColor: "var(--space-100)" }}>
+      <h3 className="text-[20px] font-semibold text-[var(--color-gray-800)] mb-5">{title}</h3>
       {/* Emoji endpoints */}
       <div className="flex items-center justify-between mb-2">
         <span className="text-[20px]">😴</span>

@@ -80,7 +80,7 @@ function hslToHex(h: number, s: number, l: number): string {
 
 function generateBannerGradient(color?: string): string {
   if (!color) {
-    return "linear-gradient(142deg, #374151, #4B5563)";
+    return "linear-gradient(142deg, var(--color-gray-700), var(--color-gray-600))";
   }
 
   const [h, s] = hexToHsl(color);
@@ -232,8 +232,8 @@ function BannerOverflowMenu({
                     onRandomizeColor();
                   }}
                   className="w-full flex items-center gap-2 text-left cursor-pointer border-none bg-transparent"
-                  style={{ padding: "7px 12px", fontSize: 13, color: "#374151" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
+                  style={{ padding: "7px 12px", fontSize: 13, color: "var(--color-gray-700)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-gray-100)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 >
                   <span

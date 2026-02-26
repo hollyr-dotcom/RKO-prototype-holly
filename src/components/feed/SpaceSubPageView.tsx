@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PromptBar } from "@/components/PromptBar";
-import { getSpaceHue, generateSpaceTheme, spaceThemeToCssVars } from "@/lib/space-theme";
+import { ChatInput } from "@/components/toolbar/ChatInput";
+import { generateSpaceTheme, spaceThemeToCssVars, parseSpaceColor } from "@/lib/space-theme";
 import { SPACE_MEMBERS } from "@/data/space-members";
 import { FF26_WIDGETS, FIRSTFLEX_WIDGETS } from "@/data/space-widgets-data";
 import { SIDEBAR_WIDGET_DATA } from "@/data/sidebar-widget-data";
@@ -47,7 +47,7 @@ interface SpaceSubPageViewProps {
 }
 
 export function SpaceSubPageView({ spaceId, sectionId }: SpaceSubPageViewProps) {
-  const [space, setSpace] = useState<{ id: string; name: string } | null>(null);
+  const [space, setSpace] = useState<{ id: string; name: string; color?: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,7 +58,8 @@ export function SpaceSubPageView({ spaceId, sectionId }: SpaceSubPageViewProps) 
     return () => { cancelled = true; };
   }, [spaceId]);
 
-  const theme = generateSpaceTheme(getSpaceHue(spaceId));
+  const { hue, chroma } = parseSpaceColor(space?.color, spaceId);
+  const theme = generateSpaceTheme(hue, chroma);
   const cssVars = spaceThemeToCssVars(theme);
 
   const members = SPACE_MEMBERS[spaceId];
@@ -135,13 +136,21 @@ export function SpaceSubPageView({ spaceId, sectionId }: SpaceSubPageViewProps) 
             className="absolute bottom-0 left-0 right-0 pointer-events-none"
             style={{
               height: "calc(128px + 2rem)",
-              background: `linear-gradient(180deg, hsla(${theme.tintHue},80%,96%,0) 0%, hsla(${theme.tintHue},80%,96%,0.8) 60%, hsla(${theme.tintHue},80%,96%,0.98) 100%)`,
+              background: `linear-gradient(180deg, color-mix(in srgb, var(--space-50) 0%, transparent) 0%, color-mix(in srgb, var(--space-50) 80%, transparent) 60%, color-mix(in srgb, var(--space-50) 98%, transparent) 100%)`,
             }}
           />
           {/* Prompt bar — centered */}
           <div className="relative pb-8 flex justify-center pointer-events-auto">
             <div className="w-full max-w-3xl px-6">
-              <PromptBar onSubmit={() => {}} inputBg={theme.bg} />
+              <div
+                className="bg-white rounded-full"
+                style={{
+                  padding: 6,
+                  boxShadow: "0px 6px 16px 0px rgba(34,36,40,0.12), 0px 0px 8px 0px rgba(34,36,40,0.06)",
+                }}
+              >
+                <ChatInput onSubmit={() => {}} />
+              </div>
             </div>
           </div>
         </div>

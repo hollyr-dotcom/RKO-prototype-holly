@@ -58,7 +58,7 @@ export function ColumnTypePicker({
       style={{
         position: "absolute",
         background: "#ffffff",
-        border: "1px solid #e5e7eb",
+        border: "1px solid var(--color-gray-200)",
         borderRadius: 8,
         boxShadow:
           "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
@@ -73,7 +73,7 @@ export function ColumnTypePicker({
           padding: "6px 12px 4px",
           fontSize: 11,
           fontWeight: 600,
-          color: "#9ca3af",
+          color: "var(--color-gray-400)",
           textTransform: "uppercase",
           letterSpacing: "0.05em",
         }}
@@ -97,17 +97,17 @@ export function ColumnTypePicker({
               cursor: "pointer",
               textAlign: "left",
               fontSize: 13,
-              color: "#374151",
+              color: "var(--color-gray-700)",
               lineHeight: "20px",
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.background = "#f3f4f6")
+              (e.currentTarget.style.background = "var(--color-gray-100)")
             }
             onMouseLeave={(e) =>
               (e.currentTarget.style.background = "transparent")
             }
           >
-            <span style={{ color: "#6b7280", display: "flex" }}>
+            <span style={{ color: "var(--color-gray-500)", display: "flex" }}>
               <ColumnTypeIcon type={type} size={16} />
             </span>
             <span>{info.label}</span>

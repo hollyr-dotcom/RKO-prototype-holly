@@ -10,7 +10,7 @@ export function TeamAnnouncementContent({ item }: { item: TeamAnnouncementItem }
   const typeConfig = {
     "new-hire": { label: "New hire", color: "bg-blue-100 text-blue-700", accent: "#3b82f6" },
     "promotion": { label: "Promotion", color: "bg-purple-100 text-purple-700", accent: "#8b5cf6" },
-    "departure": { label: "Departure", color: "bg-gray-100 text-gray-600", accent: "#6b7280" },
+    "departure": { label: "Departure", color: "bg-gray-100 text-gray-600", accent: "var(--color-gray-500)" },
   };
 
   const config = typeConfig[announcementType];

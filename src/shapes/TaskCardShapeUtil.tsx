@@ -36,7 +36,7 @@ type ITaskCardShape = TLShape<typeof TASKCARD_SHAPE_TYPE>;
 
 // Status config — colored dot + semi-transparent background
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  not_started: { label: "Not Started", color: "#6B7280" },
+  not_started: { label: "Not Started", color: "var(--color-gray-500)" },
   in_progress: { label: "In Progress", color: "#F59E0B" },
   complete: { label: "Complete", color: "#10B981" },
 };
@@ -150,7 +150,7 @@ export class TaskCardShapeUtil extends ShapeUtil<ITaskCardShape> {
           height: shape.props.h,
           overflow: "hidden",
           borderRadius: 16,
-          border: "1px solid #e5e7eb",
+          border: "1px solid var(--color-gray-200)",
           background: "#ffffff",
           boxShadow: isSelected
             ? "0 4px 12px rgba(0,0,0,0.08)"
@@ -182,7 +182,7 @@ export class TaskCardShapeUtil extends ShapeUtil<ITaskCardShape> {
               width: 28,
               height: 28,
               borderRadius: 8,
-              border: "1px solid #e5e7eb",
+              border: "1px solid var(--color-gray-200)",
               background: "white",
               display: "flex",
               alignItems: "center",
@@ -191,7 +191,7 @@ export class TaskCardShapeUtil extends ShapeUtil<ITaskCardShape> {
               boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
             }}
           >
-            <IconArrowsOutSimple css={{ width: 14, height: 14, color: "#6b7280" }} />
+            <IconArrowsOutSimple css={{ width: 14, height: 14, color: "var(--color-gray-500)" }} />
           </button>
         )}
 
@@ -211,7 +211,7 @@ export class TaskCardShapeUtil extends ShapeUtil<ITaskCardShape> {
             style={{
               fontSize: 14,
               fontWeight: 600,
-              color: "#111827",
+              color: "var(--color-gray-900)",
               lineHeight: "20px",
               display: "-webkit-box",
               WebkitLineClamp: 2,
@@ -294,7 +294,7 @@ export class TaskCardShapeUtil extends ShapeUtil<ITaskCardShape> {
                 );
               })}
               {overflowCount > 0 && (
-                <span style={{ fontSize: 9, fontWeight: 500, color: "#9CA3AF" }}>
+                <span style={{ fontSize: 9, fontWeight: 500, color: "var(--color-gray-400)" }}>
                   +{overflowCount}
                 </span>
               )}
@@ -327,7 +327,7 @@ export class TaskCardShapeUtil extends ShapeUtil<ITaskCardShape> {
                   width: 24,
                   height: 24,
                   borderRadius: "50%",
-                  border: "1px dashed #d1d5db",
+                  border: "1px dashed var(--color-gray-300)",
                   flexShrink: 0,
                   marginLeft: 8,
                 }}

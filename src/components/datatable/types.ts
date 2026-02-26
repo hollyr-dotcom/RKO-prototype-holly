@@ -64,7 +64,7 @@ export function getRandomOptionColor(): string {
 /** Get text color for a given background option color */
 export function getOptionTextColor(bgColor: string): string {
   const found = OPTION_COLORS.find((c) => c.bg === bgColor);
-  return found?.text ?? "#374151";
+  return found?.text ?? "var(--color-gray-700)";
 }
 
 /** Migrate legacy columns (string[]) to ColumnConfig[] */

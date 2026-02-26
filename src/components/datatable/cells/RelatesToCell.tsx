@@ -42,8 +42,8 @@ export function RelatesToCell({ value }: RelatesToCellProps) {
               borderRadius: 3,
               fontSize: 11,
               fontWeight: 500,
-              background: "#f3f4f6",
-              color: "#374151",
+              background: "var(--color-gray-100)",
+              color: "var(--color-gray-700)",
               lineHeight: "18px",
             }}
           >
@@ -52,7 +52,7 @@ export function RelatesToCell({ value }: RelatesToCellProps) {
           </span>
         ))
       ) : (
-        <span style={{ color: "#d1d5db", fontStyle: "italic", fontSize: 11 }}>
+        <span style={{ color: "var(--color-gray-300)", fontStyle: "italic", fontSize: 11 }}>
           Relates to
         </span>
       )}

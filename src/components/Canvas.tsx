@@ -261,11 +261,11 @@ function FloatingProgressIndicator({
   // ── Connector cycling animation at start of execution ──
   // Uses elapsed time from a stable start timestamp (not fragile setTimeout timers)
   const connectorSources: { name: string; icon: React.ReactNode }[] = [
-    { name: "Jira", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21.202 2H12c0 1.107.437 2.169 1.217 2.954a5.16 5.16 0 003.937 1.224h1.695v1.646C18.85 10.13 20.708 12 23 12V2.803A.803.803 0 0021.202 2z" fill="#9ca3af"/><path d="M16.202 7H7c0 1.107.437 2.169 1.217 2.954a5.16 5.16 0 003.937 1.224h1.695v1.646C13.85 15.13 15.708 17 18 17V7.803A.803.803 0 0016.202 7z" fill="#9ca3af"/><path d="M11.202 12H2c0 1.107.437 2.169 1.217 2.954a5.16 5.16 0 003.937 1.224h1.695v1.646C8.85 20.13 10.708 22 13 22v-9.197A.803.803 0 0011.202 12z" fill="#9ca3af"/></svg> },
-    { name: "Miro Insights", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M15 2a3 3 0 013 3v1.618l2.105.371a3 3 0 012.434 3.476l-1.736 9.849a3 3 0 01-3.476 2.433L7.48 21.01A3 3 0 015.001 18 3 3 0 012 15V5a3 3 0 013-3h10zm3 13a3 3 0 01-3 3H7.003a1 1 0 00.824 1.041l9.848 1.736a1 1 0 001.158-.811l1.736-9.848a1 1 0 00-.81-1.159L18 8.649V15zM5 4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5z" fill="#9ca3af"/></svg> },
-    { name: "Salesforce", icon: <svg width="14" height="14" viewBox="0 0 512 512" fill="none"><path d="M481 239.1c0 61.6-56.3 108.6-116.3 95.9-12.9 23.2-49.7 49.7-93 29.3-28.9 67.5-125.1 64.8-150.3-3.6C37.3 377.5-4.3 263.4 68.5 220.6 44.1 164.7 84.4 98.5 148.9 98.5c27.2 0 52.8 12.7 69.3 34.2 14.6-15 34.7-24.5 57.1-24.5 29.8 0 55.5 16.5 69.5 41.2C410 120.8 481 169.3 481 239.1z" fill="#9ca3af"/></svg> },
-    { name: "Asana", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M17.65 12.62a4.35 4.35 0 100 8.7 4.35 4.35 0 000-8.7zm-11.3 0a4.35 4.35 0 100 8.7 4.35 4.35 0 000-8.7zM16.35 7.183a4.35 4.35 0 11-8.7 0 4.35 4.35 0 018.7 0z" fill="#9ca3af"/></svg> },
-    { name: "Google Drive", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6.835 21l3.08-6h12.072L18.656 21H6.835zM15.325 14h6.662L15.325 3H8.662l6.663 11zM2 15l3.331 6 5.663-11L7.662 4 2 15z" fill="#9ca3af"/></svg> },
+    { name: "Jira", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21.202 2H12c0 1.107.437 2.169 1.217 2.954a5.16 5.16 0 003.937 1.224h1.695v1.646C18.85 10.13 20.708 12 23 12V2.803A.803.803 0 0021.202 2z" fill="var(--color-gray-400)"/><path d="M16.202 7H7c0 1.107.437 2.169 1.217 2.954a5.16 5.16 0 003.937 1.224h1.695v1.646C13.85 15.13 15.708 17 18 17V7.803A.803.803 0 0016.202 7z" fill="var(--color-gray-400)"/><path d="M11.202 12H2c0 1.107.437 2.169 1.217 2.954a5.16 5.16 0 003.937 1.224h1.695v1.646C8.85 20.13 10.708 22 13 22v-9.197A.803.803 0 0011.202 12z" fill="var(--color-gray-400)"/></svg> },
+    { name: "Miro Insights", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M15 2a3 3 0 013 3v1.618l2.105.371a3 3 0 012.434 3.476l-1.736 9.849a3 3 0 01-3.476 2.433L7.48 21.01A3 3 0 015.001 18 3 3 0 012 15V5a3 3 0 013-3h10zm3 13a3 3 0 01-3 3H7.003a1 1 0 00.824 1.041l9.848 1.736a1 1 0 001.158-.811l1.736-9.848a1 1 0 00-.81-1.159L18 8.649V15zM5 4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5z" fill="var(--color-gray-400)"/></svg> },
+    { name: "Salesforce", icon: <svg width="14" height="14" viewBox="0 0 512 512" fill="none"><path d="M481 239.1c0 61.6-56.3 108.6-116.3 95.9-12.9 23.2-49.7 49.7-93 29.3-28.9 67.5-125.1 64.8-150.3-3.6C37.3 377.5-4.3 263.4 68.5 220.6 44.1 164.7 84.4 98.5 148.9 98.5c27.2 0 52.8 12.7 69.3 34.2 14.6-15 34.7-24.5 57.1-24.5 29.8 0 55.5 16.5 69.5 41.2C410 120.8 481 169.3 481 239.1z" fill="var(--color-gray-400)"/></svg> },
+    { name: "Asana", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M17.65 12.62a4.35 4.35 0 100 8.7 4.35 4.35 0 000-8.7zm-11.3 0a4.35 4.35 0 100 8.7 4.35 4.35 0 000-8.7zM16.35 7.183a4.35 4.35 0 11-8.7 0 4.35 4.35 0 018.7 0z" fill="var(--color-gray-400)"/></svg> },
+    { name: "Google Drive", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6.835 21l3.08-6h12.072L18.656 21H6.835zM15.325 14h6.662L15.325 3H8.662l6.663 11zM2 15l3.331 6 5.663-11L7.662 4 2 15z" fill="var(--color-gray-400)"/></svg> },
     { name: "Looker", icon: null },
     { name: "Amplitude", icon: null },
     { name: "GitHub", icon: null },
@@ -561,7 +561,7 @@ function FloatingProgressIndicator({
           <span
             className="text-sm font-medium truncate flex-1 min-w-0 text-left flex items-center gap-1.5"
             style={isLoading ? {
-              background: 'linear-gradient(90deg, #9ca3af 0%, #9ca3af 40%, #d1d5db 50%, #9ca3af 60%, #9ca3af 100%)',
+              background: 'linear-gradient(90deg, var(--color-gray-400) 0%, var(--color-gray-400) 40%, var(--color-gray-300) 50%, var(--color-gray-400) 60%, var(--color-gray-400) 100%)',
               backgroundSize: '200% 100%',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -726,7 +726,7 @@ function measureDocumentHeight(html: string, shapeWidth: number = 780, minHeight
   el.style.cssText = `
     position:absolute; left:-9999px; top:0;
     width:${shapeWidth}px; box-sizing:border-box;
-    padding:74px; font-size:13px; line-height:1.6; color:#1f2937;
+    padding:74px; font-size:13px; line-height:1.6; color:var(--color-gray-800);
     word-wrap:break-word; overflow-wrap:break-word;
   `;
   // Inject Tiptap-matching heading/paragraph styles so measurement is pixel-accurate
@@ -774,7 +774,7 @@ function CustomGrid({ x, y, z }: TLGridProps) {
 }
 
 function CustomBackground() {
-  return <div style={{ position: 'absolute', inset: 0, backgroundColor: '#f8f8f8' }} />;
+  return <div style={{ position: 'absolute', inset: 0, backgroundColor: 'var(--color-canvas-bg)' }} />;
 }
 
 // Custom Miro-style cursor with fill + stroke matching DS palette.

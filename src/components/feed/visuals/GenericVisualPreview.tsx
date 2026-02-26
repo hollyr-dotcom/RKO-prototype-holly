@@ -13,10 +13,10 @@ function getTitle(data: Record<string, unknown>): string | null {
 function LineChartShape() {
   return (
     <svg width="100%" height="80" viewBox="0 0 240 80" preserveAspectRatio="xMidYMid meet">
-      <path d="M20 60 L60 45 L100 50 L140 30 L180 35 L220 15" stroke="#9ca3af" strokeWidth="2" fill="none" strokeLinecap="round" />
-      <line x1="20" y1="70" x2="220" y2="70" stroke="#d1d5db" strokeWidth="1" />
+      <path d="M20 60 L60 45 L100 50 L140 30 L180 35 L220 15" stroke="var(--color-gray-400)" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <line x1="20" y1="70" x2="220" y2="70" stroke="var(--color-gray-300)" strokeWidth="1" />
       {[20, 60, 100, 140, 180, 220].map((x, i) => (
-        <circle key={i} cx={x} cy={[60, 45, 50, 30, 35, 15][i]} r="3" fill="#9ca3af" />
+        <circle key={i} cx={x} cy={[60, 45, 50, 30, 35, 15][i]} r="3" fill="var(--color-gray-400)" />
       ))}
     </svg>
   );
@@ -32,9 +32,9 @@ function BarChartShape() {
         { x: 145, h: 65 },
         { x: 185, h: 48 },
       ].map((bar, i) => (
-        <rect key={i} x={bar.x} y={75 - bar.h} width="30" height={bar.h} rx="3" fill="#d1d5db" />
+        <rect key={i} x={bar.x} y={75 - bar.h} width="30" height={bar.h} rx="3" fill="var(--color-gray-300)" />
       ))}
-      <line x1="15" y1="75" x2="225" y2="75" stroke="#e5e7eb" strokeWidth="1" />
+      <line x1="15" y1="75" x2="225" y2="75" stroke="var(--color-gray-200)" strokeWidth="1" />
     </svg>
   );
 }
@@ -42,8 +42,8 @@ function BarChartShape() {
 function DonutChartShape() {
   return (
     <svg width="80" height="80" viewBox="0 0 80 80">
-      <circle cx="40" cy="40" r="28" stroke="#e5e7eb" strokeWidth="10" fill="none" />
-      <circle cx="40" cy="40" r="28" stroke="#d1d5db" strokeWidth="10" fill="none"
+      <circle cx="40" cy="40" r="28" stroke="var(--color-gray-200)" strokeWidth="10" fill="none" />
+      <circle cx="40" cy="40" r="28" stroke="var(--color-gray-300)" strokeWidth="10" fill="none"
         strokeDasharray="44 132" strokeDashoffset="0" />
       <circle cx="40" cy="40" r="28" stroke="#c4c8cc" strokeWidth="10" fill="none"
         strokeDasharray="35 141" strokeDashoffset="-44" />
@@ -378,7 +378,7 @@ function JourneyMapShape() {
           </div>
           {i < 5 && (
             <svg width="8" height="8" viewBox="0 0 8 8" className="flex-shrink-0">
-              <path d="M2 1L6 4L2 7" stroke="#d1d5db" strokeWidth="1.5" fill="none" />
+              <path d="M2 1L6 4L2 7" stroke="var(--color-gray-300)" strokeWidth="1.5" fill="none" />
             </svg>
           )}
         </div>

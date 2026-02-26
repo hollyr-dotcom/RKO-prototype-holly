@@ -65,7 +65,7 @@ export function ColumnHeaderMenu({
       style={{
         position: "absolute",
         background: "#ffffff",
-        border: "1px solid #e5e7eb",
+        border: "1px solid var(--color-gray-200)",
         borderRadius: 8,
         boxShadow:
           "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
@@ -80,7 +80,7 @@ export function ColumnHeaderMenu({
         style={{
           padding: "6px 12px",
           fontSize: 11,
-          color: "#9ca3af",
+          color: "var(--color-gray-400)",
           display: "flex",
           alignItems: "center",
           gap: 6,
@@ -93,7 +93,7 @@ export function ColumnHeaderMenu({
       <div
         style={{
           height: 1,
-          background: "#f3f4f6",
+          background: "var(--color-gray-100)",
           margin: "4px 0",
         }}
       />
@@ -112,21 +112,21 @@ export function ColumnHeaderMenu({
           cursor: "pointer",
           textAlign: "left",
           fontSize: 13,
-          color: "#374151",
+          color: "var(--color-gray-700)",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-gray-100)")}
         onMouseLeave={(e) =>
           (e.currentTarget.style.background = "transparent")
         }
       >
-        <IconChevronUpDown css={{ width: 14, height: 14, flexShrink: 0, color: '#6b7280' }} />
+        <IconChevronUpDown css={{ width: 14, height: 14, flexShrink: 0, color: 'var(--color-gray-500)' }} />
         Change type
       </button>
 
       <div
         style={{
           height: 1,
-          background: "#f3f4f6",
+          background: "var(--color-gray-100)",
           margin: "4px 0",
         }}
       />

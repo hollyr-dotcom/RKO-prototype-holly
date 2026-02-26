@@ -185,7 +185,7 @@ export function StartingPromptCards({
           className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-card"
           title="Dismiss"
         >
-          <IconCross css={{ width: 14, height: 14, color: '#4b5563' }} />
+          <IconCross css={{ width: 14, height: 14, color: 'var(--color-gray-600)' }} />
         </button>
         <button
           onClick={() => setShuffleKey(k => k + 1)}

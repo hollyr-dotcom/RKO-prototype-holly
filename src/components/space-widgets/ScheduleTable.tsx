@@ -9,7 +9,7 @@ const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
   Workshop:  { bg: "#dcfce7", text: "#166534" },
   Panel:     { bg: "#ffedd5", text: "#9a3412" },
   "All-Hands":{ bg: "#fef9c3", text: "#854d0e" },
-  Break:     { bg: "#f3f4f6", text: "#4b5563" },
+  Break:     { bg: "var(--color-gray-100)", text: "var(--color-gray-600)" },
   Social:    { bg: "#fce7f3", text: "#9d174d" },
 };
 
@@ -53,7 +53,7 @@ const COL = {
 };
 
 function TypeBadge({ type }: { type: string }) {
-  const colors = TYPE_COLORS[type] ?? { bg: "#f3f4f6", text: "#4b5563" };
+  const colors = TYPE_COLORS[type] ?? { bg: "var(--color-gray-100)", text: "var(--color-gray-600)" };
   return (
     <span
       style={{
@@ -73,9 +73,9 @@ function TypeBadge({ type }: { type: string }) {
   );
 }
 
-const BORDER_ROW  = "1px solid #f3f4f6";
-const BORDER_HEAD = "1px solid #e5e7eb";
-const BG_HEAD     = "#f9fafb";
+const BORDER_ROW  = "1px solid var(--color-gray-100)";
+const BORDER_HEAD = "1px solid var(--color-gray-200)";
+const BG_HEAD     = "var(--color-gray-50)";
 
 export function ScheduleTable() {
   return (
@@ -99,12 +99,12 @@ export function ScheduleTable() {
           flexShrink: 0,
         }}
       >
-        <IconTable css={{ width: 16, height: 16, flexShrink: 0, color: "#9ca3af" }} />
+        <IconTable css={{ width: 16, height: 16, flexShrink: 0, color: "var(--color-gray-400)" }} />
         <span
           style={{
             fontSize: 13,
             fontWeight: 600,
-            color: "#374151",
+            color: "var(--color-gray-700)",
             lineHeight: "18px",
           }}
         >
@@ -173,7 +173,7 @@ function thStyle({ center = false, rowNum = false }: { center?: boolean; rowNum?
     borderBottom: BORDER_HEAD,
     borderRight: BORDER_ROW,
     background: BG_HEAD,
-    color: rowNum ? "#9ca3af" : "#374151",
+    color: rowNum ? "var(--color-gray-400)" : "var(--color-gray-700)",
     fontSize: rowNum ? 11 : 12,
     fontWeight: rowNum ? 500 : 600,
     textAlign: center ? ("center" as const) : ("left" as const),
@@ -190,7 +190,7 @@ function tdStyle({ rowNum = false, muted = false }: { rowNum?: boolean; muted?: 
     borderBottom: BORDER_ROW,
     borderRight: BORDER_ROW,
     background: rowNum ? BG_HEAD : "transparent",
-    color: rowNum ? "#9ca3af" : muted ? "#6b7280" : "#1f2937",
+    color: rowNum ? "var(--color-gray-400)" : muted ? "var(--color-gray-500)" : "var(--color-gray-800)",
     fontSize: rowNum ? 11 : 12,
     fontWeight: rowNum ? 500 : 400,
     textAlign: rowNum ? ("center" as const) : ("left" as const),

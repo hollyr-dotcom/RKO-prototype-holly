@@ -11,7 +11,7 @@ import { NavList, NavListItem } from "@/components/NavList";
 import { BoardEmoji } from "@/components/BoardEmoji";
 import { generateAndSetEmoji } from "@/lib/canvasUtils";
 import { BOARD_SECTIONS } from "@/data/board-sections";
-import { getSpaceHue, generateSpaceTheme } from "@/lib/space-theme";
+import { generateSpaceTheme, spaceThemeToCssVars, parseSpaceColor } from "@/lib/space-theme";
 
 type Canvas = {
   id: string;
@@ -421,16 +421,18 @@ export function SecondaryPanel() {
 
   const spaceName = space?.name || "Space";
 
-  const sidebarTheme = generateSpaceTheme(params.spaceId ? getSpaceHue(params.spaceId) : 260);
+  const { hue: sidebarHue, chroma: sidebarChroma } = parseSpaceColor(space?.color, params.spaceId || "");
+  const sidebarTheme = generateSpaceTheme(sidebarHue, sidebarChroma);
+  const sidebarCssVars = spaceThemeToCssVars(sidebarTheme);
 
   return (
     <aside
-      className="h-full flex-shrink-0 overflow-hidden rounded-l-[2.5rem] shadow-surface-nav"
-      style={{ backgroundColor: "#FFFFFF", width: SECONDARY_WIDTH }}
+      className="h-full flex-shrink-0 overflow-hidden rounded-l-[2rem] shadow-surface-nav"
+      style={{ backgroundColor: "#FFFFFF", width: SECONDARY_WIDTH, ...sidebarCssVars } as React.CSSProperties}
     >
       <div className="h-full flex flex-col">
         {/* Space header — single click to edit */}
-        <div className="px-6 pt-6 pb-0">
+        <div className="px-6 pb-0" style={{ paddingTop: 36 }}>
           <div className="flex items-center pb-5">
             {loading ? (
               <div className="h-5 w-3/5 bg-gray-100 rounded animate-pulse" />
@@ -507,10 +509,10 @@ export function SecondaryPanel() {
                   <CapabilityItem
                     label="Overview"
                     isSelected={selectedCapability === "overview"}
-                    onClick={() => setSelectedCapability("overview")}
+                    onClick={() => {}}
                     href={`/space/${params.spaceId}`}
-                    highlightColor={`hsl(${sidebarTheme.tintHue}, 80%, 91%)`}
-                    activeTextColor={sidebarTheme.accent}
+                    highlightColor="var(--space-100)"
+                    activeTextColor="var(--space-accent)"
                   />
                 </motion.div>
                 {(params.spaceId && SPACE_SECTIONS[params.spaceId] || []).map((section) => (
@@ -520,8 +522,8 @@ export function SecondaryPanel() {
                       isSelected={selectedCapability === section.id}
                       onClick={() => {}}
                       href={`/space/${params.spaceId}/${section.id}`}
-                      highlightColor={`hsl(${sidebarTheme.tintHue}, 80%, 91%)`}
-                      activeTextColor={sidebarTheme.accent}
+                      highlightColor="var(--space-100)"
+                      activeTextColor="var(--space-accent)"
                     />
                   </motion.div>
                 ))}
@@ -702,7 +704,7 @@ function GroupedBoardList({
       axis="y"
       values={orderedSections}
       onReorder={handleSectionsReorder}
-      className="flex flex-col gap-3"
+      className="flex flex-col gap-2"
       as="div"
     >
       {orderedSections.map((section) => {
@@ -780,16 +782,16 @@ function BoardSectionItem({
     >
       {/* Section header — tap to toggle, drag to reorder */}
       <motion.div
-        className="flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full cursor-pointer text-gray-700"
+        className="group flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full cursor-pointer font-semibold text-gray-500"
         onTap={() => { if (!didDrag.current) onToggle(); }}
       >
-        <span className="flex-1 text-left">{section.label}</span>
+        <span className="text-left">{section.label}</span>
         <svg
           width="16"
           height="16"
           viewBox="0 0 16 16"
           fill="none"
-          className={`flex-shrink-0 transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`}
+          className={`flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200 ${isCollapsed ? "-rotate-90" : ""}`}
         >
           <path
             d="M4 6L8 10L12 6"
@@ -820,7 +822,7 @@ function BoardSectionItem({
                 onRename={onRename}
                 onDelete={onDelete}
                 emptyMessage="No boards"
-                itemColor="#222428"
+                itemColor="var(--color-gray-800)"
               />
             </div>
           </motion.div>

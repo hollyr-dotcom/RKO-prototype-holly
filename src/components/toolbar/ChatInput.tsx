@@ -61,34 +61,36 @@ function VoiceHoverButton({ onClick }: { onClick?: () => void }) {
 
 interface ChatInputProps {
   onSubmit: (message: string) => void;
-  onFocusChange: (focused: boolean) => void;
+  onFocusChange?: (focused: boolean) => void;
   onVoiceStart?: () => void;
-  isLoading: boolean;
-  hasMessages: boolean;
-  hasPendingQuestion: boolean;
-  canvasState: { frames: any[]; orphans: any[]; arrows: any[] };
+  isLoading?: boolean;
+  hasMessages?: boolean;
+  hasPendingQuestion?: boolean;
+  canvasState?: { frames: any[]; orphans: any[]; arrows: any[] };
   onSuggestionsVisibilityChange?: (visible: boolean) => void;
   onInputChange?: (hasText: boolean) => void;
   responseToast?: string | null;
   onDismissToast?: () => void;
   onOpenChat?: () => void;
-  voiceState: "idle" | "connecting" | "listening" | "speaking" | "error";
+  voiceState?: "idle" | "connecting" | "listening" | "speaking" | "error";
 }
+
+const EMPTY_CANVAS = { frames: [], orphans: [], arrows: [] };
 
 export function ChatInput({
   onSubmit,
   onFocusChange,
   onVoiceStart,
-  isLoading,
-  hasMessages,
-  hasPendingQuestion,
-  canvasState,
+  isLoading = false,
+  hasMessages = false,
+  hasPendingQuestion = false,
+  canvasState = EMPTY_CANVAS,
   onSuggestionsVisibilityChange,
   onInputChange,
   responseToast,
   onDismissToast,
   onOpenChat,
-  voiceState,
+  voiceState = "idle",
 }: ChatInputProps) {
   const [value, setValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -275,11 +277,11 @@ export function ChatInput({
             onKeyDown={handleKeyDown}
             onFocus={() => {
               setIsFocused(true);
-              onFocusChange(true);
+              onFocusChange?.(true);
             }}
             onBlur={() => {
               setIsFocused(false);
-              onFocusChange(false);
+              onFocusChange?.(false);
             }}
             placeholder={
               isLoading || hasMessages

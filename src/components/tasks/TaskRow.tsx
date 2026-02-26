@@ -160,7 +160,7 @@ export function TaskRow({ task, onToggleStatus, onUpdateTitle, onDelete, dragHan
               <motion.span
                 onDoubleClick={handleDoubleClick}
                 className="truncate cursor-default text-base"
-                animate={{ color: isComplete ? "#9ca3af" : "#111827" }}
+                animate={{ color: isComplete ? "var(--color-gray-400)" : "var(--color-gray-900)" }}
                 transition={{ duration: 0.3 }}
               >
                 {task.title}

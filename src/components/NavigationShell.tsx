@@ -25,7 +25,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
 
       {/* Wrapper: horizontal flex so ChatShell spacer can push main content left */}
       <div
-        className="flex-1 flex relative z-10 pt-2 pb-2"
+        className={`flex-1 flex relative z-10 ${!isCollapsed ? "pt-2 pb-2" : ""}`}
         style={{
           backgroundColor: !isCollapsed
             ? (showSecondary || isChatSidePanel)
@@ -41,13 +41,18 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
           className="h-full flex-1 flex flex-col overflow-hidden bg-white"
           style={{
             borderRadius: contentHasRounding && isChatSidePanel
-              ? "2.5rem"
+              ? "2rem"
               : contentHasRounding
-                ? "2.5rem 0 0 2.5rem"
+                ? "2rem 0 0 2rem"
                 : isChatSidePanel
-                  ? "0 2.5rem 2.5rem 0"
+                  ? "0 2rem 2rem 0"
                   : "0",
-            margin: 3,
+            padding: 0,
+            margin: isCollapsed ? 0 : 3,
+            borderTop: `1px solid ${(!isCollapsed && !showSecondary) ? "var(--color-gray-100)" : "transparent"}`,
+            borderBottom: `1px solid ${(!isCollapsed && !showSecondary) ? "var(--color-gray-100)" : "transparent"}`,
+            borderLeft: `1px solid ${(!isCollapsed && !showSecondary) ? "var(--color-gray-100)" : "transparent"}`,
+            borderRight: "1px solid transparent",
             transition: `${contentTransition}, border-color 0.15s ease`,
           }}
         >

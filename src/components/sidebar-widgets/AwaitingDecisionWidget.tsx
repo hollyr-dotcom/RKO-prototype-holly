@@ -26,7 +26,7 @@ export function AwaitingDecisionWidget({
   onSeeAll,
 }: AwaitingDecisionWidgetProps) {
   return (
-    <div className="rounded-2xl px-3 py-6" style={{ backgroundColor: "var(--space-widget-bg)" }}>
+    <div className="rounded-2xl px-3 py-6" style={{ backgroundColor: "var(--space-100)" }}>
       <p
         className="text-xl font-semibold text-[#656b81] leading-[1.4] mb-3"
         style={{ fontFamily: "var(--font-heading)" }}
@@ -49,10 +49,10 @@ export function AwaitingDecisionWidget({
             </div>
             {/* Content */}
             <div className="flex flex-col gap-2 min-w-0">
-              <p className="text-sm text-[#222428] leading-[1.4] line-clamp-2">
+              <p className="text-sm text-[var(--color-gray-800)] leading-[1.4] line-clamp-2">
                 {item.title}
               </p>
-              <p className="text-xs text-[#222428] leading-[1.5] truncate">
+              <p className="text-xs text-[var(--color-gray-800)] leading-[1.5] truncate">
                 {item.description}
               </p>
               {item.badge && (
@@ -71,7 +71,7 @@ export function AwaitingDecisionWidget({
         <div className="mt-1 flex justify-end">
           <button
             onClick={onSeeAll}
-            className="text-sm text-[#222428] underline hover:text-[#656b81]"
+            className="text-sm text-[var(--color-gray-800)] underline hover:text-[#656b81]"
           >
             See all
           </button>

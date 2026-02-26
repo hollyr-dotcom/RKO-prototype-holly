@@ -140,7 +140,7 @@ export class PeopleListShapeUtil extends ShapeUtil<IPeopleListShape> {
             style={{
               background: "#ffffff",
               borderRadius: 12,
-              border: "1px solid #e5e7eb",
+              border: "1px solid var(--color-gray-200)",
               padding: "16px 20px",
               display: "flex",
               flexDirection: "column",
@@ -182,7 +182,7 @@ export class PeopleListShapeUtil extends ShapeUtil<IPeopleListShape> {
                     style={{
                       fontSize: 13,
                       fontWeight: 600,
-                      color: "#111827",
+                      color: "var(--color-gray-900)",
                       lineHeight: "16px",
                       whiteSpace: "nowrap",
                       overflow: "hidden",
@@ -195,7 +195,7 @@ export class PeopleListShapeUtil extends ShapeUtil<IPeopleListShape> {
                     style={{
                       fontSize: 12,
                       fontWeight: 400,
-                      color: "#6B7280",
+                      color: "var(--color-gray-500)",
                       lineHeight: "16px",
                       whiteSpace: "nowrap",
                       overflow: "hidden",

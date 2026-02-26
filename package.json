@@ -12,7 +12,9 @@
     "deploy:vercel:preview": "vercel pull --yes --environment=preview && vercel build && vercel deploy --prebuilt",
     "ship": "bash scripts/ship.sh",
     "generate:viz": "node scripts/generate-feed-viz.mjs",
-    "generate:viz:one": "node scripts/generate-feed-viz.mjs"
+    "generate:viz:one": "node scripts/generate-feed-viz.mjs",
+    "generate:colors": "node scripts/generate-color-scale.mjs",
+    "generate:colors:preview": "node scripts/generate-color-scale.mjs --preview"
   },
   "dependencies": {
     "@ai-sdk/openai": "0.0.40",
@@ -81,6 +83,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "culori": "^4.0.2",
     "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.12",

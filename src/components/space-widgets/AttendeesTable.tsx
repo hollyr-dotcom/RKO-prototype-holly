@@ -5,7 +5,7 @@ import { IconUser } from "@mirohq/design-system-icons";
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   "Confirmed":    { bg: "#dcfce7", text: "#166534" },
   "Maybe":        { bg: "#fef9c3", text: "#854d0e" },
-  "Can't attend": { bg: "#f3f4f6", text: "#4b5563" },
+  "Can't attend": { bg: "var(--color-gray-100)", text: "var(--color-gray-600)" },
 };
 
 const TICKET_COLORS: Record<string, { bg: string; text: string }> = {
@@ -13,7 +13,7 @@ const TICKET_COLORS: Record<string, { bg: string; text: string }> = {
   "VIP":      { bg: "#fef3c7", text: "#92400e" },
   "General":  { bg: "#dbeafe", text: "#1e40af" },
   "Press":    { bg: "#ccfbf1", text: "#115e59" },
-  "Staff":    { bg: "#f3f4f6", text: "#374151" },
+  "Staff":    { bg: "var(--color-gray-100)", text: "var(--color-gray-700)" },
 };
 
 const ATTENDEES: {
@@ -70,9 +70,9 @@ const ATTENDEES: {
   { name: "Layla Hassan",       initials: "LH", title: "Chief People Officer",        company: "Talabat",            status: "Confirmed",    ticket: "Speaker"  },
 ];
 
-const BORDER_ROW  = "1px solid #f3f4f6";
-const BORDER_HEAD = "1px solid #e5e7eb";
-const BG_HEAD     = "#f9fafb";
+const BORDER_ROW  = "1px solid var(--color-gray-100)";
+const BORDER_HEAD = "1px solid var(--color-gray-200)";
+const BG_HEAD     = "var(--color-gray-50)";
 
 function Badge({ label, colors }: { label: string; colors: { bg: string; text: string } }) {
   return (
@@ -106,20 +106,20 @@ function Avatar({ name, avatar, initials }: { name: string; avatar?: string; ini
           width: 24,
           height: 24,
           borderRadius: "50%",
-          background: "#e5e7eb",
+          background: "var(--color-gray-200)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
           fontSize: 9,
           fontWeight: 600,
-          color: "#6b7280",
+          color: "var(--color-gray-500)",
           letterSpacing: "0.02em",
         }}>
           {initials}
         </div>
       )}
-      <span style={{ color: "#1f2937", fontWeight: 500 }}>{name}</span>
+      <span style={{ color: "var(--color-gray-800)", fontWeight: 500 }}>{name}</span>
     </div>
   );
 }
@@ -130,7 +130,7 @@ function thStyle(opts: { center?: boolean; rowNum?: boolean } = {}) {
     borderBottom: BORDER_HEAD,
     borderRight: BORDER_ROW,
     background: BG_HEAD,
-    color: opts.rowNum ? "#9ca3af" : "#374151",
+    color: opts.rowNum ? "var(--color-gray-400)" : "var(--color-gray-700)",
     fontSize: opts.rowNum ? 11 : 12,
     fontWeight: opts.rowNum ? 500 : 600,
     textAlign: (opts.center ? "center" : "left") as "center" | "left",
@@ -147,7 +147,7 @@ function tdStyle(opts: { rowNum?: boolean; muted?: boolean } = {}) {
     borderBottom: BORDER_ROW,
     borderRight: BORDER_ROW,
     background: opts.rowNum ? BG_HEAD : "transparent",
-    color: opts.rowNum ? "#9ca3af" : opts.muted ? "#6b7280" : "#1f2937",
+    color: opts.rowNum ? "var(--color-gray-400)" : opts.muted ? "var(--color-gray-500)" : "var(--color-gray-800)",
     fontSize: opts.rowNum ? 11 : 12,
     fontWeight: opts.rowNum ? 500 : 400,
     textAlign: (opts.rowNum ? "center" : "left") as "center" | "left",
@@ -175,8 +175,8 @@ export function AttendeesTable() {
         gap: 6,
         flexShrink: 0,
       }}>
-        <IconUser css={{ width: 16, height: 16, flexShrink: 0, color: "#9ca3af" }} />
-        <span style={{ fontSize: 13, fontWeight: 600, color: "#374151", lineHeight: "18px" }}>
+        <IconUser css={{ width: 16, height: 16, flexShrink: 0, color: "var(--color-gray-400)" }} />
+        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--color-gray-700)", lineHeight: "18px" }}>
           Attendees · FlexForward 26
         </span>
       </div>

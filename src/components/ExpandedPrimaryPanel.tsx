@@ -18,6 +18,7 @@ import { EXPANDED_PRIMARY_WIDTH } from "@/providers/SidebarProvider";
 import { NavList, NavListItem, NavMenuAction } from "@/components/NavList";
 import { BoardEmoji } from "@/components/BoardEmoji";
 import { SPACE_SECTIONS } from "@/data/space-sections";
+import { getSpaceDisplayColor } from "@/lib/space-theme";
 
 // Same nav items as PrimaryRail — identical icons, IDs, hrefs
 const navItems = [
@@ -169,7 +170,7 @@ export function ExpandedPrimaryPanel() {
       <span
         className="w-5 h-5 text-xs leading-5 text-center flex-shrink-0 rounded flex items-center justify-center"
         style={{
-          backgroundColor: space.color || navPalette.logoContainer,
+          backgroundColor: getSpaceDisplayColor(space.color, space.id),
           color: navPalette.textPrimary,
         }}
       >
@@ -326,8 +327,8 @@ export function ExpandedPrimaryPanel() {
 
   return (
     <aside
-      className="h-full flex flex-col py-5 px-4 flex-shrink-0"
-      style={{ width: EXPANDED_PRIMARY_WIDTH, backgroundColor: navPalette.base }}
+      className="h-full flex flex-col pb-5 px-4 flex-shrink-0"
+      style={{ width: EXPANDED_PRIMARY_WIDTH, backgroundColor: navPalette.base, paddingTop: 28 }}
     >
       {/* Brand header: logo + workspace name + team switcher */}
       <div className="relative mb-5">
@@ -385,7 +386,7 @@ export function ExpandedPrimaryPanel() {
                       }}
                       className="w-full flex items-center gap-2 px-3 h-8 text-sm transition-colors duration-150"
                       style={{
-                        color: isSelected ? "#050038" : "#6B6B6B",
+                        color: isSelected ? "#050038" : "var(--color-gray-500)",
                         fontWeight: isSelected ? 500 : 400,
                       }}
                       onMouseEnter={(e) => {
@@ -463,23 +464,20 @@ export function ExpandedPrimaryPanel() {
         })}
       </nav>
 
-      {/* Divider */}
-      <div className="mx-1 my-3 border-t" style={{ borderColor: navPalette.divider }} />
-
+      
       {/* Spaces section */}
-      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
+      <div className="flex-1 overflow-y-auto mt-8" style={{ scrollbarWidth: "none" }}>
         {/* Header */}
         <div className="flex items-center h-8 pl-3 pr-1 mb-1">
           <span
-            className="flex-1 text-sm font-bold"
+            className="flex-1 text-sm font-semibold"
             style={{ color: navPalette.textPrimary }}
           >
             Spaces
           </span>
           <button
             onClick={handleCreateSpace}
-            className="flex items-center justify-center w-6 h-6 rounded transition-colors duration-200 -mr-1"
-            style={{ color: navPalette.iconMuted }}
+            className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200/60 transition-colors duration-200 -mr-1"
             title="Add space"
           >
             <IconPlus css={{ width: 16, height: 16 }} />
@@ -529,7 +527,9 @@ function GroupedSpaceList({
   menuActions?: NavMenuAction[];
 }) {
   const [orderedSections, setOrderedSections] = useState(initialSections);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [expandedSection, setExpandedSection] = useState<string | null>(
+    initialSections[0]?.label ?? null
+  );
 
   // Sync if initial sections change
   useEffect(() => {
@@ -537,7 +537,7 @@ function GroupedSpaceList({
   }, [initialSections]);
 
   const toggle = useCallback((label: string) => {
-    setCollapsed((prev) => ({ ...prev, [label]: !prev[label] }));
+    setExpandedSection((prev) => (prev === label ? null : label));
   }, []);
 
   const spaceMap = new Map(spaces.map((s) => [s.id, s]));
@@ -587,7 +587,7 @@ function GroupedSpaceList({
       axis="y"
       values={orderedSections}
       onReorder={handleSectionsReorder}
-      className="flex flex-col gap-3"
+      className="flex flex-col gap-2"
       as="div"
     >
       {orderedSections.map((section) => {
@@ -624,7 +624,7 @@ function GroupedSpaceList({
             <span
               className="w-4 h-4 text-[10px] leading-4 text-center rounded flex items-center justify-center"
               style={{
-                backgroundColor: space.color || navPalette.logoContainer,
+                backgroundColor: getSpaceDisplayColor(space.color, space.id),
                 color: navPalette.textPrimary,
               }}
             >
@@ -637,7 +637,7 @@ function GroupedSpaceList({
           <SpaceSectionItem
             key={section.label}
             section={section}
-            isCollapsed={collapsed[section.label] ?? false}
+            isCollapsed={expandedSection !== section.label}
             onToggle={() => toggle(section.label)}
             navItems={sectionNavItems}
             activePath={activePath}
@@ -688,16 +688,16 @@ function SpaceSectionItem({
     >
       {/* Section header — tap to toggle, drag to reorder */}
       <motion.div
-        className="flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full cursor-pointer text-gray-700"
+        className="group flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full cursor-pointer font-semibold text-gray-500"
         onTap={() => { if (!didDrag.current) onToggle(); }}
       >
-        <span className="flex-1 text-left">{section.label}</span>
+        <span className="text-left">{section.label}</span>
         <svg
           width="16"
           height="16"
           viewBox="0 0 16 16"
           fill="none"
-          className={`flex-shrink-0 transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`}
+          className={`flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200 ${isCollapsed ? "-rotate-90" : ""}`}
         >
           <path
             d="M4 6L8 10L12 6"
@@ -728,7 +728,7 @@ function SpaceSectionItem({
                 onRename={onRename}
                 menuActions={menuActions}
                 emptyMessage="No spaces"
-                itemColor="#222428"
+                itemColor="var(--color-gray-800)"
               />
             </div>
           </motion.div>

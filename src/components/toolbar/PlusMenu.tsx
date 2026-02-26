@@ -198,10 +198,19 @@ export function PlusMenu({ open, onClose, onSelectItem }: PlusMenuProps) {
                   </div>
                 ) : (
                   <motion.div
+                    key="search-grid"
                     className="grid grid-cols-4 gap-1 px-1"
-                    variants={staggerContainerVariants}
                     initial="hidden"
                     animate="visible"
+                    variants={{
+                      hidden: {},
+                      visible: {
+                        transition: {
+                          staggerChildren: motionDelay.stagger,
+                          delayChildren: 0.05,
+                        },
+                      },
+                    }}
                   >
                     {searchResults.map((tool) => (
                       <motion.div key={tool.id} variants={searchResultVariants}>
@@ -213,6 +222,7 @@ export function PlusMenu({ open, onClose, onSelectItem }: PlusMenuProps) {
               ) : (
                 // Categorized grid
                 <motion.div
+                  key="category-grid"
                   variants={staggerContainerVariants}
                   initial="hidden"
                   animate="visible"

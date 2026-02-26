@@ -11,7 +11,7 @@ export function FormulaCell({ value, formula }: FormulaCellProps) {
       style={{
         padding: "5px 8px",
         fontSize: 12,
-        color: value ? "#1f2937" : "#d1d5db",
+        color: value ? "var(--color-gray-800)" : "var(--color-gray-300)",
         minHeight: 28,
         lineHeight: "18px",
         display: "flex",
@@ -27,7 +27,7 @@ export function FormulaCell({ value, formula }: FormulaCellProps) {
           <span>{value}</span>
         </>
       ) : (
-        <span style={{ color: "#d1d5db", fontStyle: "italic", fontSize: 11 }}>
+        <span style={{ color: "var(--color-gray-300)", fontStyle: "italic", fontSize: 11 }}>
           Formula
         </span>
       )}

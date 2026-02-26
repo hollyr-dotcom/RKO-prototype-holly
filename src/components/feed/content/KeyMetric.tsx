@@ -5,7 +5,7 @@ import type { FeedItem } from "@/types/feed";
 type KeyMetricItem = Extract<FeedItem, { type: "key-metric" }>;
 
 function TrendArrow({ trend, changePercent }: { trend: "up" | "down" | "flat"; changePercent: number }) {
-  const color = trend === "up" ? "#10b981" : trend === "down" ? "#ef4444" : "#6b7280";
+  const color = trend === "up" ? "#10b981" : trend === "down" ? "#ef4444" : "var(--color-gray-500)";
   const sign = trend === "up" ? "+" : trend === "down" ? "-" : "";
 
   return (

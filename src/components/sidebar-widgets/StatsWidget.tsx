@@ -28,7 +28,7 @@ export function StatsWidget({ stats }: StatsWidgetProps) {
         <div
           key={i}
           className="flex flex-1 flex-col justify-between rounded-2xl px-4 pt-6 pb-4"
-          style={{ backgroundColor: "var(--space-widget-bg)", minHeight: 143 }}
+          style={{ backgroundColor: "var(--space-100)", minHeight: 143 }}
         >
           <p
             className="text-xl font-semibold text-[#656b81] leading-[1.4]"
@@ -38,7 +38,7 @@ export function StatsWidget({ stats }: StatsWidgetProps) {
           </p>
           <div className="flex flex-col gap-1">
             <p
-              className="text-[40px] font-semibold text-[#222428] leading-[1.4]"
+              className="text-[40px] font-semibold text-[var(--color-gray-800)] leading-[1.4]"
               style={{ fontFamily: "var(--font-heading)" }}
             >
               {stat.value}

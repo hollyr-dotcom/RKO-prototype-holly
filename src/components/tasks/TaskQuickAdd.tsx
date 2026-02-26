@@ -67,7 +67,7 @@ export function TaskQuickAdd({ onAdd }: TaskQuickAddProps) {
             css={{
               width: 16,
               height: 16,
-              color: isActive ? "#3b82f6" : "#9ca3af",
+              color: isActive ? "#3b82f6" : "var(--color-gray-400)",
               flexShrink: 0,
             }}
           />

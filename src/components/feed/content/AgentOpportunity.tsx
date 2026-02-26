@@ -51,9 +51,9 @@ function WeatherIcon({ condition }: { condition: string }) {
   if (condition === "cloudy") {
     return (
       <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
-        <circle cx="24" cy="20" r="11" fill="#d1d5db" />
-        <circle cx="15" cy="24" r="7" fill="#e5e7eb" />
-        <circle cx="33" cy="24" r="7" fill="#e5e7eb" />
+        <circle cx="24" cy="20" r="11" fill="var(--color-gray-300)" />
+        <circle cx="15" cy="24" r="7" fill="var(--color-gray-200)" />
+        <circle cx="33" cy="24" r="7" fill="var(--color-gray-200)" />
       </svg>
     );
   }
@@ -113,12 +113,12 @@ function ConvergenceDiagram({ sources, target }: { sources: Array<{ label: strin
         ))}
       </div>
       <svg width="120" height="90" viewBox="0 0 200 120" className="flex-shrink-0">
-        <path d="M30 20 Q100 20, 160 60" stroke="#d1d5db" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-        <path d="M30 60 L160 60" stroke="#d1d5db" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-        <path d="M30 100 Q100 100, 160 60" stroke="#d1d5db" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-        <circle cx="20" cy="20" r="6" fill="#d1d5db" />
-        <circle cx="20" cy="60" r="6" fill="#d1d5db" />
-        <circle cx="20" cy="100" r="6" fill="#d1d5db" />
+        <path d="M30 20 Q100 20, 160 60" stroke="var(--color-gray-300)" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <path d="M30 60 L160 60" stroke="var(--color-gray-300)" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <path d="M30 100 Q100 100, 160 60" stroke="var(--color-gray-300)" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <circle cx="20" cy="20" r="6" fill="var(--color-gray-300)" />
+        <circle cx="20" cy="60" r="6" fill="var(--color-gray-300)" />
+        <circle cx="20" cy="100" r="6" fill="var(--color-gray-300)" />
         <path d="M155 57 L160 60 L155 63" stroke="#10b981" strokeWidth="2" fill="none" strokeLinecap="round" />
         <circle cx="170" cy="60" r="10" fill="#10b981" />
       </svg>
@@ -199,8 +199,8 @@ function InvitationStall({ invitations, days }: { invitations: number; days: num
         {Array.from({ length: invitations }, (_, i) => (
           <div key={i} className="relative">
             <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
-              <rect x="4" y="8" width="24" height="16" rx="2" fill="#f3f4f6" stroke="#d1d5db" strokeWidth="1.5" />
-              <path d="M4 10L16 18L28 10" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" />
+              <rect x="4" y="8" width="24" height="16" rx="2" fill="var(--color-gray-100)" stroke="var(--color-gray-300)" strokeWidth="1.5" />
+              <path d="M4 10L16 18L28 10" stroke="var(--color-gray-400)" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
             <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 flex items-center justify-center text-white text-[9px] font-bold">?</div>
           </div>
@@ -222,7 +222,7 @@ function GanttIllustration() {
       {/* Phase 2 bar — secondary, longer, crosses today line */}
       <rect x="35" y="77" width="202" height="22" rx="4" style={{ fill: "var(--space-bg)" }} />
       {/* Today vertical line */}
-      <line x1="149" y1="20" x2="149" y2="168" stroke="#9ca3af" strokeWidth="1.5" />
+      <line x1="149" y1="20" x2="149" y2="168" stroke="var(--color-gray-400)" strokeWidth="1.5" />
       {/* Delay marker — secondary */}
       <rect x="115" y="116" width="28" height="22" rx="3" style={{ fill: "var(--space-secondary)" }} />
       {/* Active phase bar — accent (highlighted) */}

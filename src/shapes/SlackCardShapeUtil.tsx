@@ -108,7 +108,7 @@ function EditableTitle({
         style={{
           fontSize: 14,
           fontWeight: 600,
-          color: "#111827",
+          color: "var(--color-gray-900)",
           lineHeight: "20px",
           wordBreak: "break-word",
           whiteSpace: "pre-wrap",
@@ -136,7 +136,7 @@ function EditableTitle({
       style={{
         fontSize: 14,
         fontWeight: 600,
-        color: "#111827",
+        color: "var(--color-gray-900)",
         lineHeight: "20px",
         background: "transparent",
         border: "none",
@@ -198,7 +198,7 @@ export class SlackCardShapeUtil extends ShapeUtil<ISlackCardShape> {
     const { title } = shape.props;
     const editor = this.editor;
 
-    const borderColor = isConnected || isSelected ? "#7C3AED" : "#e5e7eb";
+    const borderColor = isConnected || isSelected ? "#7C3AED" : "var(--color-gray-200)";
     const shadow = isConnected
       ? undefined // handled by CSS animation
       : isSelected

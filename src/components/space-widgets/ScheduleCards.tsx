@@ -32,8 +32,8 @@ const TYPE_BADGE: Record<SessionType, { bg: string; text: string }> = {
   Workshop:   { bg: "var(--space-bg)",         text: "var(--space-accent)"  },
   Panel:      { bg: "var(--space-bg)",         text: "var(--space-accent)"  },
   "All-Hands":{ bg: "var(--space-bg)",         text: "var(--space-accent)"  },
-  Break:      { bg: "transparent",             text: "#9ca3af"              },
-  Social:     { bg: "transparent",             text: "#9ca3af"              },
+  Break:      { bg: "transparent",             text: "var(--color-gray-400)" },
+  Social:     { bg: "transparent",             text: "var(--color-gray-400)" },
 };
 
 const DAYS: { label: string; date: string; sessions: Session[] }[] = [
@@ -231,13 +231,13 @@ function BreakRow({ session }: { session: Session }) {
   return (
     <div
       className="flex items-center gap-4"
-      style={{ padding: "10px 0", borderBottom: "1px solid #f3f4f6" }}
+      style={{ padding: "10px 0", borderBottom: "1px solid var(--color-gray-100)" }}
     >
-      <span style={{ fontSize: 12, fontWeight: 500, color: "#9ca3af", width: 40, flexShrink: 0 }}>
+      <span style={{ fontSize: 12, fontWeight: 500, color: "var(--color-gray-400)", width: 40, flexShrink: 0 }}>
         {session.time}
       </span>
-      <span style={{ fontSize: 13, color: "#9ca3af" }}>{session.title}</span>
-      <span style={{ fontSize: 12, color: "#d1d5db", marginLeft: "auto" }}>{session.location}</span>
+      <span style={{ fontSize: 13, color: "var(--color-gray-400)" }}>{session.title}</span>
+      <span style={{ fontSize: 12, color: "var(--color-gray-300)", marginLeft: "auto" }}>{session.location}</span>
     </div>
   );
 }
@@ -271,13 +271,13 @@ function SessionCard({ session }: { session: Session }) {
             )}
             {session.speakerTitle && (
               <>
-                <span style={{ color: "#d1d5db", fontSize: 12 }}>·</span>
+                <span style={{ color: "var(--color-gray-300)", fontSize: 12 }}>·</span>
                 <span className="text-sm text-gray-400 truncate">{session.speakerTitle}</span>
               </>
             )}
             <div className="flex items-center gap-2 ml-auto flex-shrink-0">
               <span className="text-sm text-gray-400">{session.time}</span>
-              <span style={{ color: "#d1d5db", fontSize: 12 }}>·</span>
+              <span style={{ color: "var(--color-gray-300)", fontSize: 12 }}>·</span>
               <span className="text-sm text-gray-400">{session.location}</span>
               <TypeBadge type={session.type} />
             </div>

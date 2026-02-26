@@ -258,6 +258,7 @@ export const toolCategories: ToolCategory[] = [
     label: "Customizable Widgets",
     tools: [
       { id: "action-shortcut", label: "Action Shortcut", icon: IconLightning, group: "placeholder", description: "Add an action shortcut button", categoryId: "widgets" },
+      { id: "approve", label: "Approve button", icon: ApproveButtonIcon, group: "custom", description: "Add an interactive approve button", categoryId: "widgets" },
       { id: "ai-instruction", label: "AI instruction", icon: IconAiText, group: "placeholder", description: "Add an AI instruction widget", categoryId: "widgets" },
       { id: "counter-widget", label: "Counter", icon: IconCounter, group: "placeholder", description: "Add a counter widget", categoryId: "widgets" },
     ],

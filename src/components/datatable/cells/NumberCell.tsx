@@ -75,7 +75,7 @@ export function NumberCell({
           outline: "none",
           background: "transparent",
           fontSize: 12,
-          color: "#1f2937",
+          color: "var(--color-gray-800)",
           padding: "5px 8px",
           margin: 0,
           boxSizing: "border-box",
@@ -90,7 +90,7 @@ export function NumberCell({
       style={{
         padding: "5px 8px",
         fontSize: 12,
-        color: value ? "#1f2937" : "#d1d5db",
+        color: value ? "var(--color-gray-800)" : "var(--color-gray-300)",
         minHeight: 28,
         lineHeight: "18px",
         cursor: isEditing ? "text" : "default",

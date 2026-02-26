@@ -5,9 +5,9 @@
   --wx-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     sans-serif;
   --wx-font-size: 13px;
-  --wx-border-color: #e5e7eb;
-  --wx-color-secondary: #f3f4f6;
-  --wx-border: 1px solid #e5e7eb;
+  --wx-border-color: var(--color-gray-200);
+  --wx-color-secondary: var(--color-gray-100);
+  --wx-border: 1px solid var(--color-gray-200);
 }
 
 /* ── Hide progress indicator inside all bars ── */
