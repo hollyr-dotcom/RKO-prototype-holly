@@ -10,7 +10,7 @@ interface PersonCellProps {
 
 // Simple color generation from string
 function stringToColor(str: string): string {
-  if (!str) return "#9ca3af";
+  if (!str) return "var(--color-gray-400)";
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -83,7 +83,7 @@ export function PersonCell({
           outline: "none",
           background: "transparent",
           fontSize: 12,
-          color: "#1f2937",
+          color: "var(--color-gray-800)",
           padding: "5px 8px",
           margin: 0,
           boxSizing: "border-box",
@@ -97,7 +97,7 @@ export function PersonCell({
       style={{
         padding: "4px 8px",
         fontSize: 12,
-        color: value ? "#1f2937" : "#d1d5db",
+        color: value ? "var(--color-gray-800)" : "var(--color-gray-300)",
         minHeight: 28,
         lineHeight: "18px",
         cursor: isEditing ? "pointer" : "default",

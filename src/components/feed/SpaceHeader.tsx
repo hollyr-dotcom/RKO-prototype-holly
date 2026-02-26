@@ -88,7 +88,7 @@ export function SpaceHeader({ space }: { space: { id: string } }) {
           {/* Bell icon */}
           <button
             className="flex items-center justify-center rounded-full transition-colors hover:bg-black/[0.04]"
-            style={{ width: 32, height: 32, color: "#222428" }}
+            style={{ width: 32, height: 32, color: "var(--color-gray-800)" }}
           >
             <NotificationIcon />
           </button>

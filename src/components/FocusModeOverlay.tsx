@@ -134,7 +134,7 @@ export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayPro
             width: 28,
             height: 28,
             borderRadius: 8,
-            border: "1px solid #e5e7eb",
+            border: "1px solid var(--color-gray-200)",
             background: "white",
             display: "flex",
             alignItems: "center",
@@ -144,7 +144,7 @@ export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayPro
             padding: 0,
           }}
         >
-          <IconArrowsInSimple css={{ width: 14, height: 14, color: "#6b7280" }} />
+          <IconArrowsInSimple css={{ width: 14, height: 14, color: "var(--color-gray-500)" }} />
         </button>
 
         {/* Gantt chart container */}
@@ -181,7 +181,7 @@ export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayPro
             width: 28,
             height: 28,
             borderRadius: 8,
-            border: "1px solid #e5e7eb",
+            border: "1px solid var(--color-gray-200)",
             background: "white",
             display: "flex",
             alignItems: "center",
@@ -191,7 +191,7 @@ export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayPro
             padding: 0,
           }}
         >
-          <IconArrowsInSimple css={{ width: 14, height: 14, color: "#6b7280" }} />
+          <IconArrowsInSimple css={{ width: 14, height: 14, color: "var(--color-gray-500)" }} />
         </button>
         <div style={{ flex: 1, overflow: "hidden" }}>
           {shape.kanbanId && editor && (
@@ -255,7 +255,7 @@ export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayPro
                 width: 28,
                 height: 28,
                 borderRadius: 8,
-                border: "1px solid #e5e7eb",
+                border: "1px solid var(--color-gray-200)",
                 background: "white",
                 display: "flex",
                 alignItems: "center",
@@ -265,7 +265,7 @@ export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayPro
                 padding: 0,
               }}
             >
-              <IconArrowsInSimple css={{ width: 14, height: 14, color: "#6b7280" }} />
+              <IconArrowsInSimple css={{ width: 14, height: 14, color: "var(--color-gray-500)" }} />
             </button>
             <div style={{ flex: 1, overflowY: "auto" }}>
               {shape.taskId && editor && (
@@ -302,7 +302,7 @@ export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayPro
           width: 28,
           height: 28,
           borderRadius: 8,
-          border: "1px solid #e5e7eb",
+          border: "1px solid var(--color-gray-200)",
           background: "white",
           display: "flex",
           alignItems: "center",
@@ -312,7 +312,7 @@ export function FocusModeOverlay({ shape, onClose, editor }: FocusModeOverlayPro
           padding: 0,
         }}
       >
-        <IconArrowsInSimple css={{ width: 14, height: 14, color: "#6b7280" }} />
+        <IconArrowsInSimple css={{ width: 14, height: 14, color: "var(--color-gray-500)" }} />
       </button>
 
       {/* Editor container */}

@@ -1,6 +1,6 @@
 interface PageHeaderProps {
   /** Title area — left/bottom-aligned content (title, subtitle, emoji, etc.) */
-  children: React.ReactNode;
+  children?: React.ReactNode;
   /** Action buttons — right-aligned, vertically aligned to bottom of header */
   actions?: React.ReactNode;
   /** Optional top-right meta row (e.g. members, avatars on space pages) */

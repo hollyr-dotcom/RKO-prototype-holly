@@ -122,7 +122,7 @@ export function SelectCell({
             {selectedOption.label}
           </span>
         ) : value ? (
-          <span style={{ color: "#1f2937" }}>{value}</span>
+          <span style={{ color: "var(--color-gray-800)" }}>{value}</span>
         ) : isEditing ? (
           "\u00A0"
         ) : null}
@@ -170,7 +170,7 @@ export function SelectCell({
             outline: "none",
             background: "transparent",
             fontSize: 12,
-            color: "#1f2937",
+            color: "var(--color-gray-800)",
             padding: "2px 0",
             margin: 0,
           }}
@@ -183,7 +183,7 @@ export function SelectCell({
           left: 0,
           right: 0,
           background: "#ffffff",
-          border: "1px solid #e5e7eb",
+          border: "1px solid var(--color-gray-200)",
           borderRadius: 6,
           boxShadow:
             "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
@@ -205,17 +205,17 @@ export function SelectCell({
               width: "100%",
               padding: "5px 10px",
               border: "none",
-              background: value === opt.label ? "#f3f4f6" : "transparent",
+              background: value === opt.label ? "var(--color-gray-100)" : "transparent",
               cursor: "pointer",
               textAlign: "left",
               fontSize: 12,
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.background = "#f3f4f6")
+              (e.currentTarget.style.background = "var(--color-gray-100)")
             }
             onMouseLeave={(e) =>
               (e.currentTarget.style.background =
-                value === opt.label ? "#f3f4f6" : "transparent")
+                value === opt.label ? "var(--color-gray-100)" : "transparent")
             }
           >
             <span
@@ -233,7 +233,7 @@ export function SelectCell({
               {opt.label}
             </span>
             {value === opt.label && (
-              <IconCheckMark css={{ width: 12, height: 12, marginLeft: 'auto', flexShrink: 0, color: '#374151' }} />
+              <IconCheckMark css={{ width: 12, height: 12, marginLeft: 'auto', flexShrink: 0, color: 'var(--color-gray-700)' }} />
             )}
           </button>
         ))}
@@ -251,10 +251,10 @@ export function SelectCell({
               cursor: "pointer",
               textAlign: "left",
               fontSize: 12,
-              color: "#6b7280",
+              color: "var(--color-gray-500)",
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.background = "#f3f4f6")
+              (e.currentTarget.style.background = "var(--color-gray-100)")
             }
             onMouseLeave={(e) =>
               (e.currentTarget.style.background = "transparent")
@@ -281,7 +281,7 @@ export function SelectCell({
             style={{
               padding: "8px 10px",
               fontSize: 12,
-              color: "#9ca3af",
+              color: "var(--color-gray-400)",
               textAlign: "center",
             }}
           >

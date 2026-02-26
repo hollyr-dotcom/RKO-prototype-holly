@@ -65,13 +65,13 @@ export interface SelectOpt {
 }
 
 export const STATUS_OPTIONS: SelectOpt[] = [
-  { value: "not_started", label: "Not Started", color: "#6B7280" },
+  { value: "not_started", label: "Not Started", color: "var(--color-gray-500)" },
   { value: "in_progress", label: "In Progress", color: "#F59E0B" },
   { value: "complete", label: "Complete", color: "#10B981" },
 ];
 
 export const PRIORITY_OPTIONS: SelectOpt[] = [
-  { value: "low", label: "Low", color: "#6B7280" },
+  { value: "low", label: "Low", color: "var(--color-gray-500)" },
   { value: "medium", label: "Medium", color: "#F59E0B" },
   { value: "high", label: "High", color: "#EF4444" },
 ];
@@ -360,7 +360,7 @@ export class KanbanBoardShapeUtil extends ShapeUtil<IKanbanBoardShape> {
               width: 28,
               height: 28,
               borderRadius: 8,
-              border: "1px solid #e5e7eb",
+              border: "1px solid var(--color-gray-200)",
               background: "white",
               display: "flex",
               alignItems: "center",
@@ -371,7 +371,7 @@ export class KanbanBoardShapeUtil extends ShapeUtil<IKanbanBoardShape> {
             }}
           >
             <IconArrowsOutSimple
-              css={{ width: 14, height: 14, color: "#6b7280" }}
+              css={{ width: 14, height: 14, color: "var(--color-gray-500)" }}
             />
           </button>
         )}
@@ -399,7 +399,7 @@ export class KanbanBoardShapeUtil extends ShapeUtil<IKanbanBoardShape> {
               style={{
                 fontSize: 13,
                 fontWeight: 600,
-                color: "#111827",
+                color: "var(--color-gray-900)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",

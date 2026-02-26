@@ -97,7 +97,7 @@ export class WorkdayCardShapeUtil extends ShapeUtil<IWorkdayCardShape> {
           height: shape.props.h,
           overflow: "hidden",
           borderRadius: 16,
-          border: `1px solid ${isSelected ? WORKDAY_ORANGE : "#e5e7eb"}`,
+          border: `1px solid ${isSelected ? WORKDAY_ORANGE : "var(--color-gray-200)"}`,
           background: "#ffffff",
           boxShadow: isSelected
             ? `0 4px 12px rgba(246, 141, 46, 0.15)`
@@ -146,7 +146,7 @@ export class WorkdayCardShapeUtil extends ShapeUtil<IWorkdayCardShape> {
             style={{
               fontSize: 14,
               fontWeight: 600,
-              color: "#111827",
+              color: "var(--color-gray-900)",
               lineHeight: "20px",
               display: "-webkit-box",
               WebkitLineClamp: 2,
@@ -161,7 +161,7 @@ export class WorkdayCardShapeUtil extends ShapeUtil<IWorkdayCardShape> {
             <div
               style={{
                 fontSize: 12,
-                color: "#6B7280",
+                color: "var(--color-gray-500)",
                 lineHeight: "16px",
                 display: "-webkit-box",
                 WebkitLineClamp: 2,
@@ -186,8 +186,8 @@ export class WorkdayCardShapeUtil extends ShapeUtil<IWorkdayCardShape> {
                     lineHeight: "16px",
                   }}
                 >
-                  <span style={{ color: "#9CA3AF", fontWeight: 500 }}>{field.label}</span>
-                  <span style={{ color: "#374151", fontWeight: 500 }}>{field.value}</span>
+                  <span style={{ color: "var(--color-gray-400)", fontWeight: 500 }}>{field.label}</span>
+                  <span style={{ color: "var(--color-gray-700)", fontWeight: 500 }}>{field.value}</span>
                 </div>
               ))}
             </div>

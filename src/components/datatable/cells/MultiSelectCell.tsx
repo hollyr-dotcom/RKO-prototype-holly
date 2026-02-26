@@ -229,7 +229,7 @@ export function MultiSelectCell({
             outline: "none",
             background: "transparent",
             fontSize: 12,
-            color: "#1f2937",
+            color: "var(--color-gray-800)",
             padding: "2px 0",
             margin: 0,
           }}
@@ -242,7 +242,7 @@ export function MultiSelectCell({
           left: 0,
           right: 0,
           background: "#ffffff",
-          border: "1px solid #e5e7eb",
+          border: "1px solid var(--color-gray-200)",
           borderRadius: 6,
           boxShadow:
             "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
@@ -272,7 +272,7 @@ export function MultiSelectCell({
                 fontSize: 12,
               }}
               onMouseEnter={(e) =>
-                (e.currentTarget.style.background = "#f3f4f6")
+                (e.currentTarget.style.background = "var(--color-gray-100)")
               }
               onMouseLeave={(e) =>
                 (e.currentTarget.style.background = "transparent")
@@ -285,7 +285,7 @@ export function MultiSelectCell({
                   borderRadius: 3,
                   border: isSelected
                     ? "none"
-                    : "1.5px solid #d1d5db",
+                    : "1.5px solid var(--color-gray-300)",
                   background: isSelected ? "#3b82f6" : "transparent",
                   display: "flex",
                   alignItems: "center",
@@ -328,10 +328,10 @@ export function MultiSelectCell({
               cursor: "pointer",
               textAlign: "left",
               fontSize: 12,
-              color: "#6b7280",
+              color: "var(--color-gray-500)",
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.background = "#f3f4f6")
+              (e.currentTarget.style.background = "var(--color-gray-100)")
             }
             onMouseLeave={(e) =>
               (e.currentTarget.style.background = "transparent")
@@ -358,7 +358,7 @@ export function MultiSelectCell({
             style={{
               padding: "8px 10px",
               fontSize: 12,
-              color: "#9ca3af",
+              color: "var(--color-gray-400)",
               textAlign: "center",
             }}
           >

@@ -138,7 +138,7 @@ export function FloatingQuestionCard({
                   </span>
                   <span className="text-left flex-1">{option}</span>
                   {selectedIndex === i && (
-                    <IconArrowRight css={{ width: 18, height: 18, color: '#9ca3af' }} />
+                    <IconArrowRight css={{ width: 18, height: 18, color: 'var(--color-gray-400)' }} />
                   )}
                 </button>
               ))}

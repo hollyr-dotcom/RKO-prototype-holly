@@ -31,7 +31,7 @@ export function GoalsWidget({ goals }: GoalsWidgetProps) {
           className="rounded-lg px-4 pt-2.5 pb-4"
         >
           <p
-            className="truncate text-sm font-bold text-[#222428] leading-[1.4]"
+            className="truncate text-sm font-bold text-[var(--color-gray-800)] leading-[1.4]"
             title={goal.title}
           >
             {goal.title}
@@ -50,7 +50,7 @@ export function GoalsWidget({ goals }: GoalsWidgetProps) {
               <span className="relative text-xs text-[#656b81] shrink-0">
                 {typeConfig[goal.type].icon}
               </span>
-              <span className="relative text-xs text-[#222428] truncate">
+              <span className="relative text-xs text-[var(--color-gray-800)] truncate">
                 {typeConfig[goal.type].label}
               </span>
             </div>

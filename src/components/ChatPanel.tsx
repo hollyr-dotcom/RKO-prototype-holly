@@ -26,7 +26,7 @@ import { FloatingQuestionCard } from "./FloatingQuestionCard";
 
 // Shimmer animation for loading text (Claude-style glimmer)
 const shimmerStyle = {
-  background: "linear-gradient(90deg, #9ca3af 0%, #9ca3af 40%, #d1d5db 50%, #9ca3af 60%, #9ca3af 100%)",
+  background: "linear-gradient(90deg, var(--color-gray-400) 0%, var(--color-gray-400) 40%, var(--color-gray-300) 50%, var(--color-gray-400) 60%, var(--color-gray-400) 100%)",
   backgroundSize: "200% 100%",
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
@@ -246,7 +246,7 @@ function TaskProgressHeader({
         className="rounded-2xl overflow-hidden"
         style={{
           border: "1px solid transparent",
-          backgroundImage: `linear-gradient(white, white), linear-gradient(${gradientAngle}deg, #e5e7eb 0%, #e5e7eb 60%, #93bbfd 85%, #3b82f6 100%)`,
+          backgroundImage: `linear-gradient(white, white), linear-gradient(${gradientAngle}deg, var(--color-gray-200) 0%, var(--color-gray-200) 60%, #93bbfd 85%, #3b82f6 100%)`,
           backgroundOrigin: "border-box",
           backgroundClip: "padding-box, border-box",
         }}
@@ -268,7 +268,7 @@ function TaskProgressHeader({
                   <path
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     fill="none"
-                    stroke="#e5e7eb"
+                    stroke="var(--color-gray-200)"
                     strokeWidth="3"
                   />
                   <path
@@ -700,7 +700,7 @@ function ArtifactCard({
             </span>
             {isClickable && (
               <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-                <IconArrowRight css={{ width: 12, height: 12, color: "#9ca3af" }} />
+                <IconArrowRight css={{ width: 12, height: 12, color: "var(--color-gray-400)" }} />
               </span>
             )}
           </button>
@@ -738,7 +738,7 @@ function ArtifactCard({
               </span>
               {isClickable && (
                 <span className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 flex items-center">
-                  <IconArrowRight css={{ width: 12, height: 12, color: "#9ca3af" }} />
+                  <IconArrowRight css={{ width: 12, height: 12, color: "var(--color-gray-400)" }} />
                 </span>
               )}
             </div>
@@ -825,7 +825,7 @@ function CheckpointBlock({
         className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 transition-colors group mb-3 text-left"
       >
         <span>{completed}</span>
-        <IconArrowRight css={{ width: 16, height: 16, color: '#9ca3af', flexShrink: 0 }} />
+        <IconArrowRight css={{ width: 16, height: 16, color: 'var(--color-gray-400)', flexShrink: 0 }} />
       </button>
       <div className="flex gap-2">
         <button
@@ -1758,7 +1758,7 @@ export function ChatPanel({
                 <span
                   className="text-sm text-slate-400 flex items-center gap-1.5"
                   style={{
-                    background: 'linear-gradient(90deg, #9ca3af 0%, #9ca3af 40%, #d1d5db 50%, #9ca3af 60%, #9ca3af 100%)',
+                    background: 'linear-gradient(90deg, var(--color-gray-400) 0%, var(--color-gray-400) 40%, var(--color-gray-300) 50%, var(--color-gray-400) 60%, var(--color-gray-400) 100%)',
                     backgroundSize: '200% 100%',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -1862,7 +1862,7 @@ export function ChatPanel({
                 style={{
                   width: 340,
                   border: "1px solid transparent",
-                  backgroundImage: `linear-gradient(white, white), linear-gradient(${planGradientAngle}deg, #e5e7eb 0%, #e5e7eb 60%, #93bbfd 85%, #3b82f6 100%)`,
+                  backgroundImage: `linear-gradient(white, white), linear-gradient(${planGradientAngle}deg, var(--color-gray-200) 0%, var(--color-gray-200) 60%, #93bbfd 85%, #3b82f6 100%)`,
                   backgroundOrigin: "border-box",
                   backgroundClip: "padding-box, border-box",
                 }}

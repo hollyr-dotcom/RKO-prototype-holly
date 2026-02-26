@@ -21,9 +21,9 @@ export function CompetitorThreatContent({ item }: { item: CompetitorThreatItem }
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 2L18 17H2L10 2Z" stroke="#6b7280" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
-              <line x1="10" y1="8" x2="10" y2="12" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
-              <circle cx="10" cy="14.5" r="0.8" fill="#6b7280" />
+              <path d="M10 2L18 17H2L10 2Z" stroke="var(--color-gray-500)" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
+              <line x1="10" y1="8" x2="10" y2="12" stroke="var(--color-gray-500)" strokeWidth="1.5" strokeLinecap="round" />
+              <circle cx="10" cy="14.5" r="0.8" fill="var(--color-gray-500)" />
             </svg>
           </div>
           <div className="flex-1">

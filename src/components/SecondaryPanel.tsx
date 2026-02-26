@@ -821,7 +821,7 @@ function BoardSectionItem({
                 onRename={onRename}
                 onDelete={onDelete}
                 emptyMessage="No boards"
-                itemColor="#222428"
+                itemColor="var(--color-gray-800)"
               />
             </div>
           </motion.div>

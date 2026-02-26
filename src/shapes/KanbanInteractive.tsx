@@ -57,7 +57,7 @@ function KanbanCardView({
     <div
       style={{
         background: "#ffffff",
-        border: isSelected ? "2px solid #3B82F6" : "1px solid #e5e7eb",
+        border: isSelected ? "2px solid #3B82F6" : "1px solid var(--color-gray-200)",
         borderRadius: 12,
         padding: 12,
         cursor: dragProps ? "grab" : "default",
@@ -81,7 +81,7 @@ function KanbanCardView({
         style={{
           fontSize: 13,
           fontWeight: 600,
-          color: "#111827",
+          color: "var(--color-gray-900)",
           lineHeight: "18px",
           overflow: "hidden",
           display: "-webkit-box",
@@ -155,7 +155,7 @@ function KanbanCardView({
             );
           })}
           {overflowCount > 0 && (
-            <span style={{ fontSize: 9, fontWeight: 500, color: "#9CA3AF" }}>
+            <span style={{ fontSize: 9, fontWeight: 500, color: "var(--color-gray-400)" }}>
               +{overflowCount}
             </span>
           )}
@@ -186,7 +186,7 @@ function KanbanCardView({
               width: 24,
               height: 24,
               borderRadius: "50%",
-              border: "1px dashed #d1d5db",
+              border: "1px dashed var(--color-gray-300)",
               flexShrink: 0,
             }}
           />
@@ -341,7 +341,7 @@ function DroppableLane({
               flex: 1,
               fontSize: 13,
               fontWeight: 600,
-              color: "#111827",
+              color: "var(--color-gray-900)",
               border: "none",
               outline: "none",
               background: "transparent",
@@ -360,7 +360,7 @@ function DroppableLane({
               textAlign: "left",
               fontSize: 13,
               fontWeight: 600,
-              color: "#111827",
+              color: "var(--color-gray-900)",
               background: "transparent",
               border: "none",
               cursor: "pointer",
@@ -378,8 +378,8 @@ function DroppableLane({
           style={{
             fontSize: 11,
             fontWeight: 500,
-            color: "#9CA3AF",
-            backgroundColor: "#f3f4f6",
+            color: "var(--color-gray-400)",
+            backgroundColor: "var(--color-gray-100)",
             borderRadius: 9999,
             padding: "2px 8px",
             flexShrink: 0,
@@ -401,7 +401,7 @@ function DroppableLane({
               border: "none",
               background: "transparent",
               cursor: "pointer",
-              color: "#9CA3AF",
+              color: "var(--color-gray-400)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -420,7 +420,7 @@ function DroppableLane({
                 marginTop: 4,
                 minWidth: 140,
                 borderRadius: 8,
-                border: "1px solid #e5e7eb",
+                border: "1px solid var(--color-gray-200)",
                 background: "white",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 padding: 4,
@@ -465,8 +465,8 @@ function DroppableLane({
           borderRadius: 12,
           border: isOver
             ? "1px solid rgba(59,130,246,0.3)"
-            : "1px solid #e5e7eb",
-          background: isOver ? "rgba(59,130,246,0.04)" : "#f9fafb",
+            : "1px solid var(--color-gray-200)",
+          background: isOver ? "rgba(59,130,246,0.04)" : "var(--color-gray-50)",
           padding: 10,
           transition: "background 0.15s, border-color 0.15s",
           minHeight: 100,
@@ -494,7 +494,7 @@ function DroppableLane({
               justifyContent: "center",
               padding: "24px 0",
               fontSize: 12,
-              color: "#9CA3AF",
+              color: "var(--color-gray-400)",
               fontStyle: "italic",
             }}
           >
@@ -516,7 +516,7 @@ function DroppableLane({
             background: "transparent",
             cursor: "pointer",
             fontSize: 12,
-            color: "#9CA3AF",
+            color: "var(--color-gray-400)",
           }}
         >
           <IconPlus css={{ width: 14, height: 14 }} />
@@ -588,7 +588,7 @@ function StaticLane({
             flex: 1,
             fontSize: 13,
             fontWeight: 600,
-            color: "#111827",
+            color: "var(--color-gray-900)",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -600,8 +600,8 @@ function StaticLane({
           style={{
             fontSize: 11,
             fontWeight: 500,
-            color: "#9CA3AF",
-            backgroundColor: "#f3f4f6",
+            color: "var(--color-gray-400)",
+            backgroundColor: "var(--color-gray-100)",
             borderRadius: 9999,
             padding: "2px 8px",
             flexShrink: 0,
@@ -619,8 +619,8 @@ function StaticLane({
           flexDirection: "column",
           gap: 8,
           borderRadius: 12,
-          border: "1px solid #e5e7eb",
-          background: "#f9fafb",
+          border: "1px solid var(--color-gray-200)",
+          background: "var(--color-gray-50)",
           padding: 10,
           minHeight: 100,
         }}
@@ -637,7 +637,7 @@ function StaticLane({
               justifyContent: "center",
               padding: "24px 0",
               fontSize: 12,
-              color: "#9CA3AF",
+              color: "var(--color-gray-400)",
               fontStyle: "italic",
             }}
           >
@@ -905,7 +905,7 @@ export function KanbanInteractive({
     const newLane: KanbanLane = {
       id: `lane-${Date.now()}`,
       title: "New Lane",
-      color: "#6B7280",
+      color: "var(--color-gray-500)",
       statusMapping: "",
     };
     setLocalLanes((prev) => [...prev, newLane]);
@@ -1022,11 +1022,11 @@ export function KanbanInteractive({
                 gap: 8,
                 padding: "32px 24px",
                 borderRadius: 12,
-                border: "2px dashed #d1d5db",
+                border: "2px dashed var(--color-gray-300)",
                 background: "transparent",
                 cursor: "pointer",
                 fontSize: 13,
-                color: "#9CA3AF",
+                color: "var(--color-gray-400)",
               }}
             >
               <IconPlus css={{ width: 16, height: 16 }} />

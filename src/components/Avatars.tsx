@@ -21,7 +21,7 @@ function useAvatarUsers() {
       return {
         connectionId: other.connectionId,
         name: p?.userName || info?.name || `User ${other.connectionId}`,
-        color: p?.color || "#999",
+        color: p?.color || "var(--color-gray-400)",
         avatar: info?.avatar || null,
       };
     })

@@ -115,9 +115,9 @@
   },
   {
     "id": "task-011",
-    "title": "Draft embedded finance API spec",
+    "title": "sdfnsdlfsn",
     "description": "Write the OpenAPI specification for the white-label financial services endpoints.",
-    "status": "complete",
+    "status": "not_started",
     "priority": "high",
     "dueDate": "2026-02-20T17:00:00Z",
     "assigneeId": null,
@@ -130,7 +130,7 @@
     ],
     "order": 0,
     "createdAt": "2026-02-05T09:00:00Z",
-    "updatedAt": "2026-02-20T14:00:00Z"
+    "updatedAt": "2026-02-26T09:58:47.298Z"
   },
   {
     "id": "task-1772017810070",

@@ -303,7 +303,7 @@ export class GanttChartShapeUtil extends ShapeUtil<IGanttChartShape> {
               width: 28,
               height: 28,
               borderRadius: 8,
-              border: "1px solid #e5e7eb",
+              border: "1px solid var(--color-gray-200)",
               background: "white",
               display: "flex",
               alignItems: "center",
@@ -314,7 +314,7 @@ export class GanttChartShapeUtil extends ShapeUtil<IGanttChartShape> {
             }}
           >
             <IconArrowsOutSimple
-              css={{ width: 14, height: 14, color: "#6b7280" }}
+              css={{ width: 14, height: 14, color: "var(--color-gray-500)" }}
             />
           </button>
         )}
@@ -343,7 +343,7 @@ export class GanttChartShapeUtil extends ShapeUtil<IGanttChartShape> {
               style={{
                 fontSize: 13,
                 fontWeight: 600,
-                color: "#111827",
+                color: "var(--color-gray-900)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",

@@ -385,7 +385,7 @@ export function ExpandedPrimaryPanel() {
                       }}
                       className="w-full flex items-center gap-2 px-3 h-8 text-sm transition-colors duration-150"
                       style={{
-                        color: isSelected ? "#050038" : "#6B6B6B",
+                        color: isSelected ? "#050038" : "var(--color-gray-500)",
                         fontWeight: isSelected ? 500 : 400,
                       }}
                       onMouseEnter={(e) => {
@@ -526,7 +526,9 @@ function GroupedSpaceList({
   menuActions?: NavMenuAction[];
 }) {
   const [orderedSections, setOrderedSections] = useState(initialSections);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [expandedSection, setExpandedSection] = useState<string | null>(
+    initialSections[0]?.label ?? null
+  );
 
   // Sync if initial sections change
   useEffect(() => {
@@ -534,7 +536,7 @@ function GroupedSpaceList({
   }, [initialSections]);
 
   const toggle = useCallback((label: string) => {
-    setCollapsed((prev) => ({ ...prev, [label]: !prev[label] }));
+    setExpandedSection((prev) => (prev === label ? null : label));
   }, []);
 
   const spaceMap = new Map(spaces.map((s) => [s.id, s]));
@@ -634,7 +636,7 @@ function GroupedSpaceList({
           <SpaceSectionItem
             key={section.label}
             section={section}
-            isCollapsed={collapsed[section.label] ?? false}
+            isCollapsed={expandedSection !== section.label}
             onToggle={() => toggle(section.label)}
             navItems={sectionNavItems}
             activePath={activePath}
@@ -725,7 +727,7 @@ function SpaceSectionItem({
                 onRename={onRename}
                 menuActions={menuActions}
                 emptyMessage="No spaces"
-                itemColor="#222428"
+                itemColor="var(--color-gray-800)"
               />
             </div>
           </motion.div>

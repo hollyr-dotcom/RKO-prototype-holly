@@ -91,7 +91,7 @@ export class DocumentShapeUtil extends ShapeUtil<IDocumentShape> {
           height: shape.props.h,
           overflow: "hidden",
           borderRadius: 16,
-          border: `1.5px solid ${isConnected ? "#7C3AED" : "#d0d5dd"}`,
+          border: `1.5px solid ${isConnected ? "#7C3AED" : "var(--color-gray-300)"}`,
           background: "#ffffff",
           pointerEvents: "all",
         }}
@@ -128,7 +128,7 @@ export class DocumentShapeUtil extends ShapeUtil<IDocumentShape> {
               width: 28,
               height: 28,
               borderRadius: 8,
-              border: "1px solid #e5e7eb",
+              border: "1px solid var(--color-gray-200)",
               background: "white",
               display: "flex",
               alignItems: "center",
@@ -137,7 +137,7 @@ export class DocumentShapeUtil extends ShapeUtil<IDocumentShape> {
               boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
             }}
           >
-            <IconArrowsOutSimple css={{ width: 14, height: 14, color: "#6b7280" }} />
+            <IconArrowsOutSimple css={{ width: 14, height: 14, color: "var(--color-gray-500)" }} />
           </button>
         )}
         <AutoSizeWrapper shapeId={shape.id} shapeType={DOCUMENT_SHAPE_TYPE} shapeH={shape.props.h} editor={this.editor} growOnly>

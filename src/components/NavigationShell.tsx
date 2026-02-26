@@ -48,7 +48,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   ? "0 2rem 2rem 0"
                   : "0",
             margin: 3,
-            border: (!isCollapsed && !showSecondary) ? "1px solid #E5E7EB" : "none",
+            border: (!isCollapsed && !showSecondary) ? "1px solid var(--color-gray-100)" : "none",
             transition: `${contentTransition}, border-color 0.15s ease`,
           }}
         >

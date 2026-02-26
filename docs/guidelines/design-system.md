@@ -33,21 +33,48 @@ Build custom for anything that defines the canvas experience:
 
 ## Colour Palette
 
-### Foundation (Miro Brand)
+### Foundation (Generated OKLCH Scales)
 
-Use Miro's colour system as the base. Key values observed in the codebase:
+Color scales are generated from seed hex colors using OKLCH color math.
+Hue and chroma derive from the seed; lightness follows the Tailwind distribution curve.
+To regenerate after changing a seed: `npm run generate:colors`
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `gray-50` | `#F9FAFB` | Subtle backgrounds, hover states |
-| `gray-100` | `#F3F4F6` | Active nav items, section backgrounds |
-| `gray-200` | `#E5E7EB` | Borders, separators |
-| `gray-400` | `#9CA3AF` | Muted icons, secondary text |
-| `gray-600` | `#4B5563` | Secondary text |
-| `gray-900` | `#111827` | Primary text, headings |
+**Gray** (seed: `#4B5563`):
+
+| Token | Value | Role |
+|-------|-------|------|
+| `gray-50` | `#F9FAFB` | App background |
+| `gray-100` | `#F2F4F6` | Subtle background |
+| `gray-200` | `#E5E7EB` | Component background, borders |
+| `gray-300` | `#D1D5DB` | Component hover |
+| `gray-400` | `#9BA3AF` | Muted icons, secondary text |
+| `gray-500` | `#697380` | Subtle border |
+| `gray-600` | `#4B5563` | Default border, secondary text |
+| `gray-700` | `#364151` | Strong border |
+| `gray-800` | `#1F2937` | Solid color |
+| `gray-900` | `#0F1927` | Primary text, headings |
+| `gray-950` | `#040C1A` | High-contrast text |
+| `gray-1000` | `#000410` | Ultra-high-contrast text |
 | `white` | `#FFFFFF` | Card backgrounds, chrome surfaces |
+
+**Blue** (seed: `#3B82F6`):
+
+| Token | Value | Role |
+|-------|-------|------|
 | `blue-50` | `#EFF6FF` | Active canvas item background |
-| `blue-900` | `#1E3A5F` | Active canvas item text |
+| `blue-100` | `#E1ECFD` | Subtle tinted background |
+| `blue-200` | `#C9DCFB` | Component background |
+| `blue-300` | `#ABC9F9` | Component hover |
+| `blue-400` | `#7FB1FF` | Component active |
+| `blue-500` | `#3B82F6` | Primary action/accent |
+| `blue-600` | `#2967CB` | Accent hover |
+| `blue-700` | `#1B50A7` | Strong accent |
+| `blue-800` | `#133C7F` | Solid accent |
+| `blue-900` | `#0B2959` | Active canvas item text |
+| `blue-950` | `#04183D` | High-contrast accent text |
+| `blue-1000` | `#010C25` | Ultra-high-contrast accent text |
+
+Generation script: `scripts/generate-color-scale.mjs` (uses `culori` for OKLCH conversions)
 
 ### AI Palette
 

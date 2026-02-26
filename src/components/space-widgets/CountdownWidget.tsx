@@ -33,12 +33,12 @@ function CalendarTile({ value, label }: { value: number; label: string }) {
         <div className="shrink-0" style={{ height: 11, backgroundColor: "var(--space-accent)" }} />
         {/* Number */}
         <div className="flex flex-1 items-center justify-center">
-          <span className="text-[24px] font-bold leading-none text-[#222428]">
+          <span className="text-[24px] font-bold leading-none text-[var(--color-gray-800)]">
             {value}
           </span>
         </div>
       </div>
-      <span className="text-[14px] text-[#222428]">{label}</span>
+      <span className="text-[14px] text-[var(--color-gray-800)]">{label}</span>
     </div>
   );
 }
@@ -56,7 +56,7 @@ export function CountdownWidget({ title, targetDate }: CountdownWidgetProps) {
 
   return (
     <div className="rounded-[24px] p-[24px]" style={{ backgroundColor: "var(--space-widget-bg)" }}>
-      <h3 className="text-[20px] font-semibold text-[#222428] mb-5">{title}</h3>
+      <h3 className="text-[20px] font-semibold text-[var(--color-gray-800)] mb-5">{title}</h3>
       <div className="flex justify-between gap-[24px]">
         <CalendarTile value={countdown.days} label="DAYS" />
         <CalendarTile value={countdown.hrs} label="HRS" />

@@ -37,13 +37,13 @@ interface SelectOpt {
 }
 
 const STATUS_OPTIONS: SelectOpt[] = [
-  { value: "not_started", label: "Not Started", color: "#6B7280" },
+  { value: "not_started", label: "Not Started", color: "var(--color-gray-500)" },
   { value: "in_progress", label: "In Progress", color: "#F59E0B" },
   { value: "complete", label: "Complete", color: "#10B981" },
 ];
 
 const PRIORITY_OPTIONS: SelectOpt[] = [
-  { value: "low", label: "Low", color: "#6B7280" },
+  { value: "low", label: "Low", color: "var(--color-gray-500)" },
   { value: "medium", label: "Medium", color: "#F59E0B" },
   { value: "high", label: "High", color: "#EF4444" },
 ];
@@ -115,7 +115,7 @@ function extractProps(raw: Record<string, unknown>): TaskCardData {
 // ── Separator ──
 
 function Separator() {
-  return <div style={{ height: 1, backgroundColor: "#e5e7eb", width: "100%" }} />;
+  return <div style={{ height: 1, backgroundColor: "var(--color-gray-200)", width: "100%" }} />;
 }
 
 // ── InlineDropdown ──
@@ -161,7 +161,7 @@ function InlineDropdown<T>({
           background: "transparent",
           border: "none",
           cursor: "pointer",
-          color: "#111827",
+          color: "var(--color-gray-900)",
           width: "100%",
         }}
         className="task-sidebar-hover-bg"
@@ -181,7 +181,7 @@ function InlineDropdown<T>({
               marginTop: 4,
               minWidth: 160,
               borderRadius: 8,
-              border: "1px solid #e5e7eb",
+              border: "1px solid var(--color-gray-200)",
               background: "white",
               boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
               overflow: "hidden",
@@ -207,7 +207,7 @@ function InlineDropdown<T>({
                   background: "transparent",
                   border: "none",
                   cursor: "pointer",
-                  color: "#111827",
+                  color: "var(--color-gray-900)",
                 }}
                 className="task-sidebar-hover-bg"
               >
@@ -250,7 +250,7 @@ function SelectValue({
             <span style={{ fontSize: 14 }}>{current.label}</span>
           </span>
         ) : (
-          <span style={{ fontSize: 14, color: "#9CA3AF" }}>Empty</span>
+          <span style={{ fontSize: 14, color: "var(--color-gray-400)" }}>Empty</span>
         )
       }
       items={options}
@@ -324,7 +324,7 @@ function MultiSelectValue({
       })}
       {available.length > 0 && (
         <InlineDropdown<{ value: string; color: string }>
-          trigger={<IconPlus css={{ width: 12, height: 12, color: "#9CA3AF" }} />}
+          trigger={<IconPlus css={{ width: 12, height: 12, color: "var(--color-gray-400)" }} />}
           items={available}
           renderItem={(opt) => (
             <>
@@ -345,7 +345,7 @@ function MultiSelectValue({
       )}
       {values.length === 0 && available.length > 0 && (
         <InlineDropdown<{ value: string; color: string }>
-          trigger={<span style={{ fontSize: 14, color: "#9CA3AF" }}>Empty</span>}
+          trigger={<span style={{ fontSize: 14, color: "var(--color-gray-400)" }}>Empty</span>}
           items={available}
           renderItem={(opt) => (
             <>
@@ -402,7 +402,7 @@ function PersonValue({
             <span style={{ fontSize: 14 }}>{value}</span>
           </span>
         ) : (
-          <span style={{ display: "flex", alignItems: "center", gap: 8, color: "#9CA3AF" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--color-gray-400)" }}>
             <IconUser css={{ width: 16, height: 16 }} />
             <span style={{ fontSize: 14 }}>Empty</span>
           </span>
@@ -432,7 +432,7 @@ function PersonValue({
             <span>{m.name}</span>
           </>
         ) : (
-          <span style={{ color: "#9CA3AF" }}>Unassigned</span>
+          <span style={{ color: "var(--color-gray-400)" }}>Unassigned</span>
         )
       }
       onSelect={(m) => onChange(m ? m.name : "")}
@@ -469,11 +469,11 @@ function PropertyRow({
           padding: "10px 16px",
         }}
       >
-        <span style={{ color: "#9CA3AF", flexShrink: 0, display: "flex" }}>{icon}</span>
+        <span style={{ color: "var(--color-gray-400)", flexShrink: 0, display: "flex" }}>{icon}</span>
         <span
           style={{
             fontSize: 14,
-            color: "#9CA3AF",
+            color: "var(--color-gray-400)",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -512,10 +512,10 @@ function SubtaskSection({
   return (
     <div style={{ padding: "12px 16px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <span style={{ color: "#9CA3AF", display: "flex" }}>
+        <span style={{ color: "var(--color-gray-400)", display: "flex" }}>
           <IconCheckBoxLines css={{ width: 16, height: 16 }} />
         </span>
-        <span style={{ fontSize: 14, color: "#9CA3AF" }}>
+        <span style={{ fontSize: 14, color: "var(--color-gray-400)" }}>
           Subtasks{subtasks.length > 0 ? ` (${completedCount}/${subtasks.length})` : ""}
         </span>
       </div>
@@ -556,7 +556,7 @@ function SubtaskSection({
                 outline: "none",
                 background: "transparent",
                 fontSize: 14,
-                color: subtask.completed ? "#9CA3AF" : "#111827",
+                color: subtask.completed ? "var(--color-gray-400)" : "var(--color-gray-900)",
                 textDecoration: subtask.completed ? "line-through" : "none",
                 padding: "2px 0",
               }}
@@ -569,7 +569,7 @@ function SubtaskSection({
                 background: "none",
                 cursor: "pointer",
                 padding: 2,
-                color: "#9CA3AF",
+                color: "var(--color-gray-400)",
                 display: "flex",
                 flexShrink: 0,
                 opacity: 0.5,
@@ -596,11 +596,11 @@ function SubtaskSection({
             placeholder="Add subtask..."
             style={{
               flex: 1,
-              border: "1px solid #e5e7eb",
+              border: "1px solid var(--color-gray-200)",
               borderRadius: 6,
               padding: "6px 10px",
               fontSize: 14,
-              color: "#111827",
+              color: "var(--color-gray-900)",
               outline: "none",
             }}
           />
@@ -610,12 +610,12 @@ function SubtaskSection({
             style={{
               padding: "6px 12px",
               borderRadius: 6,
-              border: "1px solid #e5e7eb",
-              background: "#F9FAFB",
+              border: "1px solid var(--color-gray-200)",
+              background: "var(--color-gray-50)",
               fontSize: 13,
               fontWeight: 500,
               cursor: "pointer",
-              color: "#4B5563",
+              color: "var(--color-gray-600)",
               whiteSpace: "nowrap",
             }}
           >
@@ -722,7 +722,7 @@ export function TaskCardFocusPanel({ shapeId, editor }: TaskCardFocusPanelProps)
             background: "transparent",
             fontSize: 17,
             fontWeight: 600,
-            color: "#111827",
+            color: "var(--color-gray-900)",
             border: "none",
             outline: "none",
             padding: 0,
@@ -771,7 +771,7 @@ export function TaskCardFocusPanel({ shapeId, editor }: TaskCardFocusPanelProps)
                 border: "none",
                 outline: "none",
                 fontSize: 14,
-                color: localProps.dueDate ? "#111827" : "#9CA3AF",
+                color: localProps.dueDate ? "var(--color-gray-900)" : "var(--color-gray-400)",
                 padding: "4px 8px",
                 borderRadius: 4,
                 cursor: "pointer",
@@ -793,10 +793,10 @@ export function TaskCardFocusPanel({ shapeId, editor }: TaskCardFocusPanelProps)
         {/* Description */}
         <div style={{ padding: "12px 16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <span style={{ color: "#9CA3AF", display: "flex" }}>
+            <span style={{ color: "var(--color-gray-400)", display: "flex" }}>
               <IconBoxLinesTextarea css={iconSize} />
             </span>
-            <span style={{ fontSize: 14, color: "#9CA3AF" }}>Description</span>
+            <span style={{ fontSize: 14, color: "var(--color-gray-400)" }}>Description</span>
           </div>
           <textarea
             defaultValue={localProps.description}
@@ -810,7 +810,7 @@ export function TaskCardFocusPanel({ shapeId, editor }: TaskCardFocusPanelProps)
               border: "none",
               outline: "none",
               fontSize: 14,
-              color: "#111827",
+              color: "var(--color-gray-900)",
               background: "transparent",
               padding: "4px 8px",
               borderRadius: 4,
@@ -914,7 +914,7 @@ export function TaskCardSidebar({ isOpen, shapeId, editor, onClose }: TaskCardSi
             width: 380,
             display: "flex",
             flexDirection: "column",
-            borderLeft: "1px solid #e5e7eb",
+            borderLeft: "1px solid var(--color-gray-200)",
             background: "#ffffff",
             boxShadow: "-4px 0 12px rgba(0,0,0,0.04)",
           }}
@@ -940,7 +940,7 @@ export function TaskCardSidebar({ isOpen, shapeId, editor, onClose }: TaskCardSi
                 background: "transparent",
                 fontSize: 16,
                 fontWeight: 600,
-                color: "#111827",
+                color: "var(--color-gray-900)",
                 border: "none",
                 outline: "none",
                 padding: 0,
@@ -956,7 +956,7 @@ export function TaskCardSidebar({ isOpen, shapeId, editor, onClose }: TaskCardSi
                 border: "none",
                 background: "transparent",
                 cursor: "pointer",
-                color: "#9CA3AF",
+                color: "var(--color-gray-400)",
                 display: "flex",
               }}
               className="task-sidebar-hover-bg"
@@ -1010,7 +1010,7 @@ export function TaskCardSidebar({ isOpen, shapeId, editor, onClose }: TaskCardSi
                     border: "none",
                     outline: "none",
                     fontSize: 14,
-                    color: localProps.dueDate ? "#111827" : "#9CA3AF",
+                    color: localProps.dueDate ? "var(--color-gray-900)" : "var(--color-gray-400)",
                     padding: "4px 8px",
                     borderRadius: 4,
                     cursor: "pointer",
@@ -1033,10 +1033,10 @@ export function TaskCardSidebar({ isOpen, shapeId, editor, onClose }: TaskCardSi
             {/* Description */}
             <div style={{ padding: "12px 16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <span style={{ color: "#9CA3AF", display: "flex" }}>
+                <span style={{ color: "var(--color-gray-400)", display: "flex" }}>
                   <IconBoxLinesTextarea css={iconSize} />
                 </span>
-                <span style={{ fontSize: 14, color: "#9CA3AF" }}>Description</span>
+                <span style={{ fontSize: 14, color: "var(--color-gray-400)" }}>Description</span>
               </div>
               <textarea
                 defaultValue={localProps.description}
@@ -1050,7 +1050,7 @@ export function TaskCardSidebar({ isOpen, shapeId, editor, onClose }: TaskCardSi
                   border: "none",
                   outline: "none",
                   fontSize: 14,
-                  color: "#111827",
+                  color: "var(--color-gray-900)",
                   background: "transparent",
                   padding: "4px 8px",
                   borderRadius: 4,

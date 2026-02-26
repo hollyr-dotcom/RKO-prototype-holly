@@ -89,7 +89,7 @@ function InlineDropdown<T>({
           background: "transparent",
           border: "none",
           cursor: "pointer",
-          color: "#111827",
+          color: "var(--color-gray-900)",
           width: "100%",
         }}
         className="kanban-hover-bg"
@@ -109,7 +109,7 @@ function InlineDropdown<T>({
               marginTop: 4,
               minWidth: 160,
               borderRadius: 8,
-              border: "1px solid #e5e7eb",
+              border: "1px solid var(--color-gray-200)",
               background: "white",
               boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
               overflow: "hidden",
@@ -135,7 +135,7 @@ function InlineDropdown<T>({
                   background: "transparent",
                   border: "none",
                   cursor: "pointer",
-                  color: "#111827",
+                  color: "var(--color-gray-900)",
                 }}
                 className="kanban-hover-bg"
               >
@@ -176,7 +176,7 @@ function SelectValue({
             <span style={{ fontSize: 14 }}>{current.label}</span>
           </span>
         ) : (
-          <span style={{ fontSize: 14, color: "#9CA3AF" }}>Empty</span>
+          <span style={{ fontSize: 14, color: "var(--color-gray-400)" }}>Empty</span>
         )
       }
       items={options}
@@ -250,7 +250,7 @@ function MultiSelectValue({
       })}
       {available.length > 0 && values.length > 0 && (
         <InlineDropdown<{ value: string; color: string }>
-          trigger={<IconPlus css={{ width: 12, height: 12, color: "#9CA3AF" }} />}
+          trigger={<IconPlus css={{ width: 12, height: 12, color: "var(--color-gray-400)" }} />}
           items={available}
           renderItem={(opt) => (
             <>
@@ -271,7 +271,7 @@ function MultiSelectValue({
       )}
       {values.length === 0 && available.length > 0 && (
         <InlineDropdown<{ value: string; color: string }>
-          trigger={<span style={{ fontSize: 14, color: "#9CA3AF" }}>Empty</span>}
+          trigger={<span style={{ fontSize: 14, color: "var(--color-gray-400)" }}>Empty</span>}
           items={available}
           renderItem={(opt) => (
             <>
@@ -328,7 +328,7 @@ function PersonValue({
             <span style={{ fontSize: 14 }}>{value}</span>
           </span>
         ) : (
-          <span style={{ display: "flex", alignItems: "center", gap: 8, color: "#9CA3AF" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--color-gray-400)" }}>
             <IconUser css={{ width: 16, height: 16 }} />
             <span style={{ fontSize: 14 }}>Empty</span>
           </span>
@@ -358,7 +358,7 @@ function PersonValue({
             <span>{m.name}</span>
           </>
         ) : (
-          <span style={{ color: "#9CA3AF" }}>Unassigned</span>
+          <span style={{ color: "var(--color-gray-400)" }}>Unassigned</span>
         )
       }
       onSelect={(m) => onChange(m ? m.name : "")}
@@ -390,11 +390,11 @@ function PropertyRow({
           padding: "10px 16px",
         }}
       >
-        <span style={{ color: "#9CA3AF", flexShrink: 0, display: "flex" }}>{icon}</span>
+        <span style={{ color: "var(--color-gray-400)", flexShrink: 0, display: "flex" }}>{icon}</span>
         <span
           style={{
             fontSize: 14,
-            color: "#9CA3AF",
+            color: "var(--color-gray-400)",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -431,10 +431,10 @@ function SubtaskSection({
   return (
     <div style={{ padding: "12px 16px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <span style={{ color: "#9CA3AF", display: "flex" }}>
+        <span style={{ color: "var(--color-gray-400)", display: "flex" }}>
           <IconCheckBoxLines css={{ width: 16, height: 16 }} />
         </span>
-        <span style={{ fontSize: 14, color: "#9CA3AF" }}>
+        <span style={{ fontSize: 14, color: "var(--color-gray-400)" }}>
           Subtasks{subtasks.length > 0 ? ` (${completedCount}/${subtasks.length})` : ""}
         </span>
       </div>
@@ -469,7 +469,7 @@ function SubtaskSection({
                 outline: "none",
                 background: "transparent",
                 fontSize: 14,
-                color: subtask.completed ? "#9CA3AF" : "#111827",
+                color: subtask.completed ? "var(--color-gray-400)" : "var(--color-gray-900)",
                 textDecoration: subtask.completed ? "line-through" : "none",
                 padding: "2px 0",
               }}
@@ -482,7 +482,7 @@ function SubtaskSection({
                 background: "none",
                 cursor: "pointer",
                 padding: 2,
-                color: "#9CA3AF",
+                color: "var(--color-gray-400)",
                 display: "flex",
                 flexShrink: 0,
                 opacity: 0.5,
@@ -509,11 +509,11 @@ function SubtaskSection({
             placeholder="Add subtask..."
             style={{
               flex: 1,
-              border: "1px solid #e5e7eb",
+              border: "1px solid var(--color-gray-200)",
               borderRadius: 6,
               padding: "6px 10px",
               fontSize: 14,
-              color: "#111827",
+              color: "var(--color-gray-900)",
               outline: "none",
             }}
           />
@@ -523,12 +523,12 @@ function SubtaskSection({
             style={{
               padding: "6px 12px",
               borderRadius: 6,
-              border: "1px solid #e5e7eb",
-              background: "#F9FAFB",
+              border: "1px solid var(--color-gray-200)",
+              background: "var(--color-gray-50)",
               fontSize: 13,
               fontWeight: 500,
               cursor: "pointer",
-              color: "#4B5563",
+              color: "var(--color-gray-600)",
               whiteSpace: "nowrap",
             }}
           >
@@ -645,7 +645,7 @@ function DroppableLane({
               flex: 1,
               fontSize: 13,
               fontWeight: 600,
-              color: "#111827",
+              color: "var(--color-gray-900)",
               border: "none",
               outline: "none",
               background: "transparent",
@@ -664,7 +664,7 @@ function DroppableLane({
               textAlign: "left",
               fontSize: 13,
               fontWeight: 600,
-              color: "#111827",
+              color: "var(--color-gray-900)",
               background: "transparent",
               border: "none",
               cursor: "pointer",
@@ -682,8 +682,8 @@ function DroppableLane({
           style={{
             fontSize: 11,
             fontWeight: 500,
-            color: "#9CA3AF",
-            backgroundColor: "#f3f4f6",
+            color: "var(--color-gray-400)",
+            backgroundColor: "var(--color-gray-100)",
             borderRadius: 9999,
             padding: "2px 8px",
             flexShrink: 0,
@@ -705,7 +705,7 @@ function DroppableLane({
               border: "none",
               background: "transparent",
               cursor: "pointer",
-              color: "#9CA3AF",
+              color: "var(--color-gray-400)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -725,7 +725,7 @@ function DroppableLane({
                 marginTop: 4,
                 minWidth: 140,
                 borderRadius: 8,
-                border: "1px solid #e5e7eb",
+                border: "1px solid var(--color-gray-200)",
                 background: "white",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 padding: 4,
@@ -769,8 +769,8 @@ function DroppableLane({
           flexDirection: "column",
           gap: 8,
           borderRadius: 12,
-          border: isOver ? "1px solid rgba(59,130,246,0.3)" : "1px solid #e5e7eb",
-          background: isOver ? "rgba(59,130,246,0.04)" : "#f9fafb",
+          border: isOver ? "1px solid rgba(59,130,246,0.3)" : "1px solid var(--color-gray-200)",
+          background: isOver ? "rgba(59,130,246,0.04)" : "var(--color-gray-50)",
           padding: 10,
           transition: "background 0.15s, border-color 0.15s",
           minHeight: 100,
@@ -795,7 +795,7 @@ function DroppableLane({
               justifyContent: "center",
               padding: "24px 0",
               fontSize: 12,
-              color: "#9CA3AF",
+              color: "var(--color-gray-400)",
               fontStyle: "italic",
             }}
           >
@@ -817,7 +817,7 @@ function DroppableLane({
             background: "transparent",
             cursor: "pointer",
             fontSize: 12,
-            color: "#9CA3AF",
+            color: "var(--color-gray-400)",
           }}
           className="kanban-hover-bg"
         >
@@ -858,7 +858,7 @@ function SortableCard({
       style={{
         ...style,
         background: "#ffffff",
-        border: isSelected ? "2px solid #3B82F6" : "1px solid #e5e7eb",
+        border: isSelected ? "2px solid #3B82F6" : "1px solid var(--color-gray-200)",
         borderRadius: 12,
         padding: 12,
         cursor: "grab",
@@ -878,7 +878,7 @@ function SortableCard({
         style={{
           fontSize: 13,
           fontWeight: 600,
-          color: "#111827",
+          color: "var(--color-gray-900)",
           lineHeight: "18px",
           overflow: "hidden",
           display: "-webkit-box",
@@ -945,7 +945,7 @@ function SortableCard({
             );
           })}
           {overflowCount > 0 && (
-            <span style={{ fontSize: 9, fontWeight: 500, color: "#9CA3AF" }}>+{overflowCount}</span>
+            <span style={{ fontSize: 9, fontWeight: 500, color: "var(--color-gray-400)" }}>+{overflowCount}</span>
           )}
         </div>
 
@@ -974,7 +974,7 @@ function SortableCard({
               width: 24,
               height: 24,
               borderRadius: "50%",
-              border: "1px dashed #d1d5db",
+              border: "1px dashed var(--color-gray-300)",
               flexShrink: 0,
             }}
           />
@@ -993,7 +993,7 @@ function DragOverlayCard({ card }: { card: KanbanCard }) {
       style={{
         width: 268,
         background: "#ffffff",
-        border: "1px solid #e5e7eb",
+        border: "1px solid var(--color-gray-200)",
         borderRadius: 12,
         padding: 12,
         cursor: "grabbing",
@@ -1005,7 +1005,7 @@ function DragOverlayCard({ card }: { card: KanbanCard }) {
         style={{
           fontSize: 13,
           fontWeight: 600,
-          color: "#111827",
+          color: "var(--color-gray-900)",
           lineHeight: "18px",
           overflow: "hidden",
           display: "-webkit-box",
@@ -1074,7 +1074,7 @@ function DragOverlayCard({ card }: { card: KanbanCard }) {
               width: 24,
               height: 24,
               borderRadius: "50%",
-              border: "1px dashed #d1d5db",
+              border: "1px dashed var(--color-gray-300)",
               flexShrink: 0,
             }}
           />
@@ -1114,7 +1114,7 @@ function CardDetailEditor({
       style={{
         width: 360,
         flexShrink: 0,
-        borderLeft: "1px solid #e5e7eb",
+        borderLeft: "1px solid var(--color-gray-200)",
         background: "#ffffff",
         display: "flex",
         flexDirection: "column",
@@ -1146,7 +1146,7 @@ function CardDetailEditor({
             background: "transparent",
             fontSize: 16,
             fontWeight: 600,
-            color: "#111827",
+            color: "var(--color-gray-900)",
             border: "none",
             outline: "none",
             padding: 0,
@@ -1162,7 +1162,7 @@ function CardDetailEditor({
             border: "none",
             background: "transparent",
             cursor: "pointer",
-            color: "#9CA3AF",
+            color: "var(--color-gray-400)",
             display: "flex",
           }}
           className="kanban-hover-bg"
@@ -1171,7 +1171,7 @@ function CardDetailEditor({
         </button>
       </div>
 
-      <div style={{ height: 1, backgroundColor: "#e5e7eb" }} />
+      <div style={{ height: 1, backgroundColor: "var(--color-gray-200)" }} />
 
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: "auto" }}>
@@ -1211,7 +1211,7 @@ function CardDetailEditor({
                 border: "none",
                 outline: "none",
                 fontSize: 14,
-                color: card.dueDate ? "#111827" : "#9CA3AF",
+                color: card.dueDate ? "var(--color-gray-900)" : "var(--color-gray-400)",
                 padding: "4px 8px",
                 borderRadius: 4,
                 cursor: "pointer",
@@ -1228,15 +1228,15 @@ function CardDetailEditor({
           </PropertyRow>
         </div>
 
-        <div style={{ height: 1, backgroundColor: "#e5e7eb" }} />
+        <div style={{ height: 1, backgroundColor: "var(--color-gray-200)" }} />
 
         {/* Description */}
         <div style={{ padding: "12px 16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <span style={{ color: "#9CA3AF", display: "flex" }}>
+            <span style={{ color: "var(--color-gray-400)", display: "flex" }}>
               <IconBoxLinesTextarea css={iconSize} />
             </span>
-            <span style={{ fontSize: 14, color: "#9CA3AF" }}>Description</span>
+            <span style={{ fontSize: 14, color: "var(--color-gray-400)" }}>Description</span>
           </div>
           <textarea
             defaultValue={card.description}
@@ -1250,7 +1250,7 @@ function CardDetailEditor({
               border: "none",
               outline: "none",
               fontSize: 14,
-              color: "#111827",
+              color: "var(--color-gray-900)",
               background: "transparent",
               padding: "4px 8px",
               borderRadius: 4,
@@ -1263,7 +1263,7 @@ function CardDetailEditor({
           />
         </div>
 
-        <div style={{ height: 1, backgroundColor: "#e5e7eb" }} />
+        <div style={{ height: 1, backgroundColor: "var(--color-gray-200)" }} />
 
         {/* Subtasks */}
         <SubtaskSection
@@ -1523,7 +1523,7 @@ export function KanbanBoardFocusPanel({ shapeId, editor }: KanbanBoardFocusPanel
     const newLane: KanbanLane = {
       id: `lane-${Date.now()}`,
       title: "New Lane",
-      color: "#6B7280",
+      color: "var(--color-gray-500)",
       statusMapping: "",
     };
     setLocalLanes((prev) => [...prev, newLane]);
@@ -1599,7 +1599,7 @@ export function KanbanBoardFocusPanel({ shapeId, editor }: KanbanBoardFocusPanel
           display: "flex",
           alignItems: "center",
           padding: "12px 16px",
-          borderBottom: "1px solid #e5e7eb",
+          borderBottom: "1px solid var(--color-gray-200)",
           flexShrink: 0,
         }}
       >
@@ -1616,7 +1616,7 @@ export function KanbanBoardFocusPanel({ shapeId, editor }: KanbanBoardFocusPanel
             background: "transparent",
             fontSize: 16,
             fontWeight: 600,
-            color: "#111827",
+            color: "var(--color-gray-900)",
             border: "none",
             outline: "none",
             padding: 0,
@@ -1685,11 +1685,11 @@ export function KanbanBoardFocusPanel({ shapeId, editor }: KanbanBoardFocusPanel
                   gap: 8,
                   padding: "32px 24px",
                   borderRadius: 12,
-                  border: "2px dashed #d1d5db",
+                  border: "2px dashed var(--color-gray-300)",
                   background: "transparent",
                   cursor: "pointer",
                   fontSize: 13,
-                  color: "#9CA3AF",
+                  color: "var(--color-gray-400)",
                 }}
                 className="kanban-hover-bg"
               >

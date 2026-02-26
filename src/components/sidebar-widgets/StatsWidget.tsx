@@ -38,7 +38,7 @@ export function StatsWidget({ stats }: StatsWidgetProps) {
           </p>
           <div className="flex flex-col gap-1">
             <p
-              className="text-[40px] font-semibold text-[#222428] leading-[1.4]"
+              className="text-[40px] font-semibold text-[var(--color-gray-800)] leading-[1.4]"
               style={{ fontFamily: "var(--font-heading)" }}
             >
               {stat.value}

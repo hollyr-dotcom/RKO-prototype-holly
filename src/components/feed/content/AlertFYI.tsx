@@ -25,9 +25,9 @@ function WeatherIcon({ condition }: { condition: string }) {
   if (condition === "cloudy") {
     return (
       <svg width="48" height="48" viewBox="0 0 48 48" fill="none" className="mx-auto">
-        <circle cx="24" cy="20" r="11" fill="#9ca3af" opacity="0.7" />
-        <circle cx="15" cy="24" r="7" fill="#d1d5db" opacity="0.8" />
-        <circle cx="33" cy="24" r="7" fill="#d1d5db" opacity="0.8" />
+        <circle cx="24" cy="20" r="11" fill="var(--color-gray-400)" opacity="0.7" />
+        <circle cx="15" cy="24" r="7" fill="var(--color-gray-300)" opacity="0.8" />
+        <circle cx="33" cy="24" r="7" fill="var(--color-gray-300)" opacity="0.8" />
       </svg>
     );
   }

@@ -17,7 +17,7 @@ class GanttErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#999", fontSize: 13, padding: 20, textAlign: "center" }}>
+        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-gray-400)", fontSize: 13, padding: 20, textAlign: "center" }}>
           Timeline preview unavailable — click to expand and edit
         </div>
       );

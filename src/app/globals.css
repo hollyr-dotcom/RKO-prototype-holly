@@ -53,18 +53,35 @@ html, body {
   --text-lg: 18px;
   --text-xl: 20px;
 
-  /* ── Colors — Gray ramp ── */
-  --color-gray-50: #F9FAFB;
-  --color-gray-100: #F3F4F6;
-  --color-gray-200: #E5E7EB;
-  --color-gray-400: #9CA3AF;
-  --color-gray-600: #4B5563;
-  --color-gray-900: #111827;
+  /* ── Colors — gray ramp (generated from #62615B) ── */
+  --color-gray-50: #FBFAF7;
+  --color-gray-100: #F4F4F1;
+  --color-gray-200: #E7E7E5;
+  --color-gray-300: #D5D5D2;
+  --color-gray-400: #A4A39E;
+  --color-gray-500: #73726C;
+  --color-gray-600: #55544E;
+  --color-gray-700: #42413A;
+  --color-gray-800: #2A2923;
+  --color-gray-900: #191812;
+  --color-gray-950: #0D0C07;
+  --color-gray-1000: #050402;
+
+  /* ── Colors — blue ramp (generated from #3B82F6) ── */
+  --color-blue-50: #EFF6FF;
+  --color-blue-100: #E1ECFD;
+  --color-blue-200: #C9DCFB;
+  --color-blue-300: #ABC9F9;
+  --color-blue-400: #7FB1FF;
+  --color-blue-500: #3B82F6;
+  --color-blue-600: #2967CB;
+  --color-blue-700: #1B50A7;
+  --color-blue-800: #133C7F;
+  --color-blue-900: #0B2959;
+  --color-blue-950: #04183D;
+  --color-blue-1000: #010C25;
 
   /* ── Colors — Semantic ── */
-  --color-blue-50: #EFF6FF;
-  --color-blue-500: #3B82F6;
-  --color-blue-900: #1E3A5F;
   --color-red-500: #EF4444;
   --color-green-500: #22C55E;
   --color-yellow-500: #EAB308;
@@ -155,21 +172,21 @@ html, body {
 }
 
 .document-editor-content .tiptap blockquote {
-  border-left: 3px solid #e5e7eb;
+  border-left: 3px solid var(--color-gray-200);
   padding-left: 0.8em;
   margin: 0.8em 0;
-  color: #6b7280;
+  color: var(--color-gray-500);
 }
 
 .document-editor-content .tiptap code {
-  background: #f3f4f6;
+  background: var(--color-gray-100);
   border-radius: 3px;
   padding: 0.1em 0.3em;
   font-size: 0.9em;
 }
 
 .document-editor-content .tiptap pre {
-  background: #f3f4f6;
+  background: var(--color-gray-100);
   border-radius: 6px;
   padding: 0.6em 0.8em;
   margin: 0 0 0.4em;
@@ -311,7 +328,7 @@ html, body {
 .tl-frame__body {
   rx: 24px;
   ry: 24px;
-  stroke: #d0d5dd !important;
+  stroke: var(--color-gray-300) !important;
   stroke-width: 1.5px !important;
   stroke-dasharray: 8 6 !important;
   fill: rgba(255, 255, 255, 0.4) !important;

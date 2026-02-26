@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconArrowLeft, IconLightning } from "@mirohq/design-system-icons";
-import { ChatInput } from "@/components/toolbar/ChatInput";
 import { CardFan } from "@/components/home/CardFan";
 import {
   attentionCards,
@@ -13,10 +11,9 @@ import {
   type FanCardData,
   type ChatMessage,
 } from "@/components/home/card-data";
-import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/hooks/useAuth";
 import { spring } from "@/lib/motion";
-import { PageHeader } from "@/components/PageHeader";
+import { useOverscrollNavigation } from "@/hooks/useOverscrollNavigation";
 
 // ---------------------------------------------------------------------------
 // Tabs
@@ -117,15 +114,38 @@ function ChatBubble({ message }: { message: ChatMessage }) {
 // Main component
 // ---------------------------------------------------------------------------
 
+const GREETINGS = [
+  "Hello",
+  "Howdy",
+  "Buongiorno",
+  "Hola",
+  "Bonjour",
+  "Hey",
+  "Ciao",
+  "Aloha",
+  "Hej",
+  "Salut",
+];
+
 export default function HomePage() {
-  const router = useRouter();
-  const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("What needs my attention");
   const [selectedCard, setSelectedCard] = useState<FanCardData | null>(null);
   const { user } = useAuth();
   const firstName = user?.displayName?.split(" ")[0] || "Andy";
+  const [greeting, setGreeting] = useState(GREETINGS[0]);
+  useEffect(() => {
+    setGreeting(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
+  }, []);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
   const messages = useStreamingChat(selectedCard?.id ?? null);
+
+  useOverscrollNavigation({
+    scrollRef,
+    direction: "down",
+    targetPath: "/tasks",
+    enabled: !selectedCard,
+  });
 
   const handleSelect = useCallback((card: FanCardData) => {
     setSelectedCard(card);
@@ -135,102 +155,8 @@ export default function HomePage() {
     setSelectedCard(null);
   }, []);
 
-  // Pre-warm the canvas route
-  useEffect(() => {
-    router.prefetch("/space/unassigned/canvas/warmup");
-  }, [router]);
-
-  // Use chat from provider
-  const { append, isLoading, openFullscreen, registerHandlers } = useChat();
-
-  // Register no-op handlers on mount
-  useEffect(() => {
-    registerHandlers({
-      handleToolCall: () => {},
-      getCanvasState: () => ({ frames: [], orphans: [], arrows: [] }),
-      getUserEdits: () => [],
-    });
-  }, [registerHandlers]);
-
-  const handleSubmit = (text: string) => {
-    openFullscreen(true);
-    append({ role: "user", content: text });
-  };
-
-  const handleCreateEmptyCanvas = async () => {
-    if (isCreating) return;
-    setIsCreating(true);
-
-    try {
-      const response = await fetch("/api/canvases", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "Untitled" }),
-      });
-
-      if (!response.ok) {
-        console.error("Failed to create canvas");
-        setIsCreating(false);
-        return;
-      }
-
-      const newCanvas = await response.json();
-      const space = newCanvas.spaceId || "unassigned";
-      localStorage.setItem("chatMode", "minimized");
-      router.push(`/space/${space}/canvas/${newCanvas.id}`);
-    } catch {
-      setIsCreating(false);
-    }
-  };
-
-  // Full-page loading when navigating to canvas
-  if (isCreating) {
-    return (
-      <div className="h-full w-full flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-          <p className="text-sm text-gray-500">Setting up your canvas...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="relative h-full w-full bg-gray-50 overflow-hidden">
-      {/* Page header — fixed at top */}
-      <div className="absolute top-0 left-0 right-0 z-10">
-        <PageHeader
-          actions={
-            <button
-              onClick={handleCreateEmptyCanvas}
-              disabled={isCreating}
-              className="flex items-center gap-1 text-md font-heading font-medium text-white rounded-full cursor-pointer hover:brightness-110 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
-              style={{
-                background: "#1a1a1a",
-                padding: "8px 16px",
-              }}
-            >
-              {isCreating ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Creating...
-                </span>
-              ) : (
-                <>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 4V20M4 12H20" stroke="white" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                  Create
-                </>
-              )}
-            </button>
-          }
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/miro-logo.svg" alt="Miro" className="w-[56px] h-[20px]" />
-        </PageHeader>
-      </div>
-
+    <div ref={scrollRef} className="relative h-full w-full overflow-hidden">
       <AnimatePresence mode="wait">
         {selectedCard ? (
           /* ─── Detail view ─── */
@@ -400,9 +326,9 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...spring.gentle, delay: 0.05 }}
             >
-              <span className="font-serif">Hello {firstName}</span>
+              <span className="font-serif">{greeting}, {firstName}</span>
             </motion.h1>
-{/* 
+{/*
             <motion.h2
               className="text-2xl font-heading font-medium text-zinc-400"
               initial={{ opacity: 0, y: 16 }}
@@ -439,16 +365,16 @@ export default function HomePage() {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`relative rounded-full px-4 py-1.5 text-sm font-heading transition-colors ${
+                  className={`relative rounded-full px-3 py-3 text-md font-heading transition-colors ${
                     activeTab === tab
-                      ? "font-medium text-zinc-900"
-                      : "font-medium text-zinc-400 hover:text-zinc-600"
+                      ? "font-medium text-gray-900"
+                      : "font-medium text-gray-400 hover:text-gray-700"
                   }`}
                 >
                   {activeTab === tab && (
                     <motion.div
                       layoutId="card-home-tab-bg"
-                      className="absolute inset-0 rounded-full bg-white shadow-sm"
+                      className="absolute inset-0 rounded-full bg-gray-200"
                       transition={{
                         type: "spring",
                         stiffness: 400,
@@ -463,23 +389,6 @@ export default function HomePage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Prompt bar */}
-      <div className="absolute bottom-8 left-0 right-0 flex justify-center px-4">
-        <div style={{ width: 712 }}>
-          <div className="mx-auto max-w-3xl px-6">
-            <div
-              className="bg-white rounded-full"
-              style={{
-                padding: 6,
-                boxShadow: "0px 6px 16px 0px rgba(34,36,40,0.12), 0px 0px 8px 0px rgba(34,36,40,0.06)",
-              }}
-            >
-              <ChatInput onSubmit={handleSubmit} isLoading={isLoading} />
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
