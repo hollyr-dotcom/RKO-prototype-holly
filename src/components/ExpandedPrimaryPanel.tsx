@@ -82,6 +82,8 @@ export function ExpandedPrimaryPanel() {
   const router = useRouter();
   const { toggleSidebar, navPalette } = useSidebar();
   const [hoveredNavId, setHoveredNavId] = useState<string | null>(null);
+  const [hoveredInsightId, setHoveredInsightId] = useState<string | null>(null);
+  const [insightsExpanded, setInsightsExpanded] = useState(true);
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState(teams[0].id);
   const [teamPopoverOpen, setTeamPopoverOpen] = useState(false);
@@ -465,8 +467,9 @@ export function ExpandedPrimaryPanel() {
       </nav>
 
       
-      {/* Spaces section */}
-      <div className="flex-1 overflow-y-auto mt-8" style={{ scrollbarWidth: "none" }}>
+      {/* Spaces + Insights sections */}
+      <div className="flex-1 overflow-y-auto mt-6" style={{ scrollbarWidth: "none" }}>
+        {/* Spaces section */}
         {/* Header */}
         <div className="flex items-center h-8 pl-3 pr-1 mb-1">
           <span
@@ -494,6 +497,81 @@ export function ExpandedPrimaryPanel() {
           onRename={handleRenameSpace}
           menuActions={spaceMenuActions}
         />
+
+        {/* Insights section */}
+        <div className="mt-4">
+          <div className="flex items-center h-8 pl-3 pr-1 mb-1">
+            <span
+              className="flex-1 text-sm font-semibold"
+              style={{ color: navPalette.textPrimary }}
+            >
+              Insights
+            </span>
+            <button
+              onClick={() => setInsightsExpanded((prev) => !prev)}
+              className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200/60 transition-colors duration-200 -mr-1"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                {insightsExpanded ? (
+                  <path d="M4 8H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                ) : (
+                  <path d="M8 4V12M4 8H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                )}
+              </svg>
+            </button>
+          </div>
+          <AnimatePresence initial={false}>
+            {insightsExpanded && (
+              <motion.div
+                key="insights-content"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-col gap-1">
+                  {[
+                    { id: "overview", label: "Overview", href: "/insights/overview" },
+                    { id: "themes", label: "Themes", href: "/insights/themes" },
+                    { id: "signals", label: "Signals", href: "/insights/signals" },
+                  ].map((item) => {
+                    const isActive = pathname.startsWith(item.href);
+                    const isHovered = hoveredInsightId === item.id;
+                    const isHighlighted = isHovered || isActive;
+                    return (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        className="relative flex items-center h-10 pl-3 pr-2.5 rounded-lg"
+                        onMouseEnter={() => setHoveredInsightId(item.id)}
+                        onMouseLeave={() => setHoveredInsightId(null)}
+                      >
+                        {isHighlighted && (
+                          <motion.div
+                            layoutId="insights-indicator"
+                            className="absolute inset-0 rounded-lg"
+                            style={{ backgroundColor: navPalette.indicator }}
+                            transition={indicatorTransition}
+                          />
+                        )}
+                        <span
+                          className="relative z-10 text-sm"
+                          style={{
+                            color: isHighlighted ? navPalette.textPrimary : navPalette.textSecondary,
+                            fontWeight: isHighlighted ? 500 : 400,
+                          }}
+                        >
+                          {item.label}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </aside>
   );
