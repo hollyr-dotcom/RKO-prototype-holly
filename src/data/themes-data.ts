@@ -284,3 +284,166 @@ export const THEME_CARDS: ThemeCard[] = [
     secondaryAction: { label: 'View details' },
   },
 ]
+
+export const THEME_ANALYSIS: Record<string, { response: string; prompts?: string[] }> = {
+  'analysis-1': {
+    response: `**Jira custom fields demand surged +65% this quarter** is your highest-confidence theme at 99% — and it's still climbing (+1%).
+
+**Confidence drivers:**
+
+**1. Unprompted, repeated mentions** — Multiple enterprise accounts raised Jira custom fields independently across discovery calls, with no prompting from the sales team. Spontaneous recurrence is the strongest signal type.
+
+**2. Sustained NPS verbatims** — "Jira" and "fields" appear together in NPS detractor comments across three consecutive quarters, pointing to a persistent unmet need rather than a passing complaint.
+
+**3. Competitor parity risk** — Market signals show Notion and Linear have already shipped custom field parity. Every week this ships is a week competitors can close the gap.
+
+**4. Sales call pattern** — Custom fields rank in the top 3 unmet needs when prospects compare Miro against Confluence alternatives. This is actively costing deals.
+
+**Recommended action:** The confidence and ARR impact ($2.3M) justify fast-tracking. Move to "Next" on the roadmap this sprint.`,
+    prompts: ["What's the risk if we delay this?", 'Show me the signals behind this theme', 'How does this compare to other urgent themes?'],
+  },
+  'analysis-2': {
+    response: `**Adoption plateau signals mismatch between vision and usage** sits at 88% confidence (+1%) — a steady signal pointing to a structural product-market fit issue.
+
+**Confidence drivers:**
+
+**1. Flat DAU/MAU ratio** — Daily active users relative to monthly actives has been flat for six weeks despite new feature releases, suggesting features aren't reaching the core use case.
+
+**2. Low feature uptake** — Adoption of template and diagram tools is below 15% across the active user base. Users are creating, but not using the tools designed to drive retention.
+
+**3. Session recording patterns** — Recordings show users repeatedly returning to familiar, simple canvas interactions rather than exploring higher-value features.
+
+**4. High creation, low revisit** — Product analytics show strong first-session board creation, but boards are rarely revisited or built upon — a sign of shallow engagement.
+
+**Recommended action:** Re-align the roadmap to actual usage patterns. The suggestion to double down on the feature with proven revenue lift is the right call.`,
+    prompts: ['Which features have proven revenue lift?', 'What does the usage data look like?', 'How do we re-align the roadmap?'],
+  },
+  'analysis-3': {
+    response: `**3 enterprise accounts mentioned "portfolio view"** sits at 80% confidence with a strong +5% jump this week — a fast-rising signal worth watching closely.
+
+**Confidence drivers:**
+
+**1. Unprompted, cross-account pattern** — Three separate enterprise accounts raised "portfolio view" or "all projects" independently in discovery calls. Unprompted repetition across accounts is a high-quality signal.
+
+**2. Heavy multi-board usage** — All three accounts are managing five or more active boards simultaneously, creating a genuine navigation problem the product doesn't currently solve.
+
+**3. Support ticket trend** — Tickets referencing "overview" and "all projects" are up 22% this quarter, showing the need extends beyond just these three accounts.
+
+**4. Confidence accelerating** — The +5% jump came after a fourth account raised the same need this week. The signal is broadening, not narrowing.
+
+**Recommended action:** Prioritise discovery to scope a lightweight portfolio view. The signal is still forming but the trajectory is clear.`,
+    prompts: ['Who are the accounts raising this?', 'What would a portfolio view look like?', 'Are there existing solutions we could build on?'],
+  },
+  'analysis-4': {
+    response: `**AI sticky note clustering saves facilitators 40+ minutes per session** is at 94% confidence (+3%) with the highest ARR potential on the board at $4.1M. This is your most urgent theme.
+
+**Confidence drivers:**
+
+**1. Quantified time savings** — 47 beta tester surveys reported 40+ minute savings per session, with consistent results across team sizes and session types. Quantified impact is rare and valuable.
+
+**2. Competitor shipped parity** — FigJam shipped a comparable clustering feature last sprint. Every week without parity is a week the competitive window closes.
+
+**3. Top use case by volume** — Workshop facilitation is a top-3 session type by frequency. A feature that directly accelerates the most-used workflow has compounding impact.
+
+**4. AI upgrade correlation** — Users who engaged with any AI feature showed 2.4× higher upgrade rates. This theme directly strengthens that pattern.
+
+**Recommended action:** This is the highest-urgency theme on the board. Move to "Next" immediately and protect it from sprint de-prioritisation.`,
+    prompts: ['How urgent is the competitor risk?', "What's the upgrade rate impact?", "What's the MVP scope for this?"],
+  },
+  'analysis-5': {
+    response: `**Real-time cursor lag on boards with 50+ objects drives session abandonment** sits at 91% confidence (+2%) and is actively costing enterprise renewals.
+
+**Confidence drivers:**
+
+**1. Churn interview evidence** — 12 enterprise accounts explicitly cited canvas lag during churn interviews. When customers name a specific technical issue at the point of churn, the signal is unambiguous.
+
+**2. Performance data confirms the threshold** — Engineering data shows a 40% frame rate drop above 50 objects. The threshold is clearly defined and reproducible.
+
+**3. Support volume rising** — "Slow board" support tickets increased 18% this quarter, indicating the problem is spreading as customers build more complex boards.
+
+**4. Renewals at risk** — Three enterprise accounts have put renewal conversations on hold pending performance improvements. This is a direct revenue blocker.
+
+**Recommended action:** File and prioritise the bug report. This is a retention risk, not just a UX issue. Consider proactive outreach to the three at-risk accounts.`,
+    prompts: ['Which accounts are at risk of churning?', "What's the engineering effort to fix this?", 'How do we communicate progress to at-risk accounts?'],
+  },
+  'analysis-6': {
+    response: `**Template library depth is a top-3 purchase criteria for mid-market buyers** is at 76% confidence with the fastest-rising momentum this week at +8%.
+
+**Confidence drivers:**
+
+**1. Sales call transcripts** — Gong analysis shows 68% of mid-market deals include an explicit template comparison. This isn't an edge case — it's a routine part of the buying conversation.
+
+**2. Named competitors** — Lucidspark and Conceptboard are referenced by name in 14 calls this quarter when discussing templates. Prospects are doing the comparison work themselves.
+
+**3. Objection doubling** — Template count objections doubled since last quarter, suggesting competitors are actively using this gap in their positioning.
+
+**4. Confidence jump** — The +8% rise this week came directly from the Gong analysis surfacing the pattern systematically for the first time. The underlying signal had been there longer.
+
+**Recommended action:** Quantify the exact gap (340 vs 600+ templates) and build a roadmap plan to close it. This is a sales conversion problem as much as a product one.`,
+    prompts: ['Which template categories are most requested?', 'How quickly can we close the gap with competitors?', 'Should we partner for template content?'],
+  },
+  'analysis-7': {
+    response: `**Mobile editing experience cited in 18% of negative NPS responses** sits at 72% confidence and is the only weakening signal on the board at -2%.
+
+**Confidence drivers:**
+
+**1. NPS verbatim volume** — "Mobile" appears in 18% of detractor comments — a significant share, but the absolute NPS impact is moderate given overall response volume.
+
+**2. Documented UX issues** — Session recordings on iOS 17 show specific touch target and zoom behaviour problems. The issues are real and reproducible.
+
+**3. Signal weakening** — The -2% confidence drop reflects a key contextual shift: post-pandemic, desktop-first habits have persisted. Mobile editing demand is real, but less urgent than it appeared in 2021-22.
+
+**4. Lower ARR impact** — At $0.9M, this is the lowest ARR-weighted theme on the board. Mobile editing remains a secondary use case for most enterprise buyers.
+
+**Recommended action:** Don't archive, but don't prioritise ahead of higher-impact themes. A focused fix on the iOS touch target issues would address the sharpest complaints with minimal engineering cost.`,
+    prompts: ['What are the specific iOS issues to fix?', 'Is mobile editing growing or shrinking as a use case?', 'How does this compare to competitor mobile experiences?'],
+  },
+  'analysis-8': {
+    response: `**Async video comments reduce meeting load — users want it on every object** is at 88% confidence with strong momentum at +4% and $2.7M ARR impact.
+
+**Confidence drivers:**
+
+**1. Measurable meeting reduction** — Teams using Loom embeds self-report 30% fewer sync meetings. Measurable behavioural change, not just satisfaction, is the strongest possible signal type.
+
+**2. Expansion demand pattern** — 28 feature requests explicitly ask to expand async video from sticky notes to shapes, connectors, and frames. The demand is specific and actionable.
+
+**3. Market tailwind** — Async-first workflows are a top enterprise productivity trend for 2024-25. This theme has macro momentum behind it, not just product-level demand.
+
+**4. Accelerating confidence** — The +4% rise reflects new signal volume from teams doubling down on async workflows after hybrid work norms solidified.
+
+**Recommended action:** Move to "Next." The case for expanding native async video is strong — scoped to high-value object types first (frames, then connectors).`,
+    prompts: ['Which object types should we expand to first?', "What's the competitive landscape for async video?", 'How do we measure success after shipping?'],
+  },
+  'analysis-9': {
+    response: `**Smart shape suggestions during diagramming cut creation time by half** is at 86% confidence and strengthening fast (+6%) — a standout product opportunity.
+
+**Confidence drivers:**
+
+**1. Controlled beta results** — 2× faster diagram completion across 120 beta users is a compelling, reproducible result. Controlled studies are higher quality than survey data.
+
+**2. Top use case alignment** — Flowchart and org chart are the top two diagram types by session volume. Improving the core workflow for the most-used diagrams has compounding impact.
+
+**3. Abandonment reduction** — 34% of diagrams are abandoned before completion. Shape suggestions specifically address the point where users get stuck — reducing abandonment is a direct retention lever.
+
+**4. Rising AI expectations** — The +6% confidence jump reflects broader market expectation shifts: users now expect AI assistance in creation workflows as a baseline, not a differentiator.
+
+**Recommended action:** Move to "Next." This has high confidence, clear user impact, and strengthening market momentum. Prioritise the flowchart and org chart use cases for the first release.`,
+    prompts: ['What does the beta data tell us about edge cases?', 'How do we avoid suggestions feeling intrusive?', 'Which diagram types should ship in v1?'],
+  },
+  'analysis-10': {
+    response: `**Guest access limitations blocking external contractor collaboration** sits at 83% confidence (+3%) — a concrete enterprise blocker backed by strong qualitative evidence.
+
+**Confidence drivers:**
+
+**1. Account volume** — 23 enterprise accounts explicitly raised contractor access as a blocker to wider rollout. When 23 accounts name the same specific limitation, the signal is highly reliable.
+
+**2. Support ticket trend** — Guest permission tickets are up 31% this quarter, showing the problem extends well beyond the accounts that raised it proactively in calls.
+
+**3. Clear use case pattern** — The blocker is specific: agencies and freelancers need section-level edit access on client boards without full workspace access. The requirement is well-defined and scoped.
+
+**4. Growing demand signal** — Feature request votes for "scoped guest access" tripled in the last 90 days, indicating the problem is becoming more widely felt as teams scale collaboration.
+
+**Recommended action:** Edit the roadmap to include scoped guest access. The use case is well-defined enough for engineering to scope quickly — this is not an ambiguous discovery problem.`,
+    prompts: ['What level of access control do enterprise accounts need?', 'How do competitors handle guest access?', "What's the security implication of section-level access?"],
+  },
+}
