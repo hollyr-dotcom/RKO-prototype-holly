@@ -472,7 +472,7 @@ function CategoryCard({
   );
 }
 
-function ThemeCardItem({ card, index }: { card: ThemeCard; index: number }) {
+function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number; aiOpen?: boolean }) {
   const router = useRouter();
   const navigateToDetail = () => router.push(`/insights/themes/${card.id}`);
   return (
@@ -544,7 +544,7 @@ function ThemeCardItem({ card, index }: { card: ThemeCard; index: number }) {
         <div className="flex items-center gap-2 mt-0.5">
           <button
             onClick={(e) => e.stopPropagation()}
-            className={`h-8 px-3 rounded-lg text-sm font-medium transition-colors ${
+            className={`${aiOpen ? 'min-h-8 h-auto py-1.5' : 'h-8'} px-3 rounded-lg text-sm font-medium transition-colors ${
               card.primaryAction.variant === "outline"
                 ? "border border-[#e0e2e8] text-[#222428] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428]"
                 : ""
@@ -560,7 +560,7 @@ function ThemeCardItem({ card, index }: { card: ThemeCard; index: number }) {
           {card.secondaryAction && (
             <button
               onClick={(e) => { e.stopPropagation(); navigateToDetail(); }}
-              className="h-8 px-3 rounded-lg text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors"
+              className={`${aiOpen ? 'min-h-8 h-auto py-1.5' : 'h-8'} px-3 rounded-lg text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors`}
             >
               {card.secondaryAction.label}
             </button>
@@ -734,7 +734,7 @@ export default function ThemesPage() {
           {/* Theme cards */}
           <div className="flex-1 min-w-0 flex flex-col gap-8">
             {visibleCards.map((card, i) => (
-              <ThemeCardItem key={card.id} card={card} index={i} />
+              <ThemeCardItem key={card.id} card={card} index={i} aiOpen={aiOpen} />
             ))}
           </div>
 
