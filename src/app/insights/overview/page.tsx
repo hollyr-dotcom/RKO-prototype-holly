@@ -78,10 +78,10 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
 
           {/* Welcome + description */}
           <div className="flex flex-col gap-2">
-            <p className="text-[#222428] text-[20px] font-semibold leading-[1.4]" style={{ fontFamily: 'Roobert, sans-serif' }}>
-              Welcome back, Kajsa
+            <p className="text-[#222428] text-[28px] font-serif leading-[1.4]">
+              Hi, Kajsa
             </p>
-            <div className="text-[#222428] text-[16px] leading-[1.5]">
+            <div className="text-[#656b81] text-[16px] leading-[1.5]">
               <p>
                 Since last time: a comprehensive review of &lsquo;Fiesta Insights&rsquo; was conducted to
                 identify competitor strategies. An in-depth analysis of user feedback on party
@@ -103,10 +103,9 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
                 className="flex items-center gap-1 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[14px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit"
               >
                 {/* Article / document icon */}
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 opacity-70">
-                  <rect x="3" y="2" width="10" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-                  <path d="M5.5 5.5h5M5.5 8h5M5.5 10.5h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                </svg>
+                <span className="shrink-0 opacity-70 leading-[0] flex items-center justify-center">
+                  <IconSparksFilled css={{ width: 16, height: 16 }} />
+                </span>
                 <span className="pr-1">{chip}</span>
               </button>
             ))}
@@ -184,7 +183,7 @@ export default function InsightsOverviewPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
             className="rounded-xl p-8 pt-[132px] mb-[60px] relative min-h-[440px] shadow-sm"
-            style={{ backgroundColor: '#2B2D33' }}
+            style={{ backgroundColor: '#2A2A2D' }}
             aria-labelledby="overview-heading"
           >
             {/* Top-right badges */}
@@ -220,7 +219,7 @@ export default function InsightsOverviewPage() {
           </motion.section>
 
           {/* Metric cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-[60px]">
+          <div className={`grid gap-4 mb-[60px] ${aiOpen ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'}`}>
             <MetricCard
               label="Feature adoption"
               value="+8.5%"
@@ -277,8 +276,8 @@ export default function InsightsOverviewPage() {
           </div>
 
           {/* Charts row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-            <SentimentChart />
+          <div className={`grid gap-4 mb-6 ${aiOpen ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
+            <SentimentChart onOpenChat={() => setAiOpen(true)} />
             <ThemeMatrix />
           </div>
 
@@ -288,18 +287,6 @@ export default function InsightsOverviewPage() {
       {/* AI panel */}
       <AIPanel open={aiOpen} onClose={() => setAiOpen(false)} />
 
-      {/* Trigger to reopen */}
-      {!aiOpen && (
-        <button
-          onClick={() => setAiOpen(true)}
-          className="fixed bottom-6 right-6 w-10 h-10 rounded-full flex items-center justify-center shadow-md z-30"
-          style={{ backgroundColor: '#3859FF' }}
-        >
-          <span className="text-white leading-[0] flex items-center justify-center">
-            <IconSparksFilled css={{ width: 16, height: 16 }} />
-          </span>
-        </button>
-      )}
     </div>
   )
 }

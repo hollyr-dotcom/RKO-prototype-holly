@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Users } from "lucide-react";
-import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconDollarSignCurrency, IconRocket, IconThumbsUp, IconChatLinesTwo } from "@mirohq/design-system-icons";
+import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconDollarSignCurrency, IconRocket, IconThumbsUp, IconChatLinesTwo, IconBoard } from "@mirohq/design-system-icons";
 import InsightsTopBar from "@/components/InsightsTopBar";
+import { THEME_CARDS, type ThemeCard, type ThemeTag } from "@/data/themes-data";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -15,529 +17,6 @@ const AI_DOCS = [
   { icon: "board", label: "Roadmap summary slides", time: "7 days" },
 ];
 
-type ThemeTag = { label: string };
-
-type ThemeCard = {
-  id: string;
-  image?: string;
-  tags: ThemeTag[];
-  title: string;
-  description: string;
-  meta: {
-    sources: number;
-    arr: string;
-    confidence: string;
-    confidenceDelta: string;
-    likes: number;
-    comments?: number;
-  };
-  primaryAction: { label: string; variant: "filled" | "outline" };
-  secondaryAction?: { label: string };
-};
-
-const THEME_CARDS: ThemeCard[] = [
-  {
-    id: "1",
-    tags: [{ label: "New" }, { label: "Customer" }, { label: "Market" }],
-    title: "Jira custom fields demand surged +65% this quarter",
-    description:
-      "Time-sensitive — competitor gap is closing. Demand accelerating while the window for differentiation narrows.",
-    meta: {
-      sources: 0,
-      arr: "$2.3 Million ARR",
-      confidence: "99%",
-      confidenceDelta: "+1%",
-      likes: 1,
-      comments: 1,
-    },
-    primaryAction: { label: "Move to \"Next\"", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "2",
-    tags: [{ label: "New" }, { label: "Customer" }],
-    title: "Adoption plateau signals mismatch between vision and usage",
-    description:
-      "Suggestion created: Re-align roadmap to actual usage patterns and double down on the feature with proven revenue lift, rather than continuing to fund lower-impact bets.",
-    meta: {
-      sources: 0,
-      arr: "$2.3 Million ARR",
-      confidence: "88%",
-      confidenceDelta: "+1%",
-      likes: 3,
-    },
-    primaryAction: { label: "Edit roadmap", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "3",
-    tags: [{ label: "New" }, { label: "Customer" }],
-    title:
-      "3 enterprise accounts mentioned \"portfolio view\" — wasn't in your top 20",
-    description:
-      "Feature adoption dropped below 5% threshold — silent abandonment",
-    meta: {
-      sources: 1,
-      arr: "$2.3 Million ARR",
-      confidence: "80%",
-      confidenceDelta: "+5%",
-      likes: 1,
-      comments: 1,
-    },
-    primaryAction: { label: "View details", variant: "outline" },
-  },
-  {
-    id: "4",
-    tags: [{ label: "Urgent" }, { label: "Customer" }, { label: "Market" }],
-    title: "AI sticky note clustering saves facilitators 40+ minutes per session",
-    description:
-      "Users running retrospectives and workshops report AI summarisation as the single biggest time-saver. Competitor parity risk — Figma FigJam shipped a similar feature last sprint.",
-    meta: {
-      sources: 3,
-      arr: "$4.1 Million ARR",
-      confidence: "94%",
-      confidenceDelta: "+3%",
-      likes: 7,
-      comments: 3,
-    },
-    primaryAction: { label: "Move to \"Next\"", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "5",
-    tags: [{ label: "Strengthening" }, { label: "Customer" }],
-    title: "Real-time cursor lag on boards with 50+ objects drives session abandonment",
-    description:
-      "Performance degradation consistently cited in enterprise churn interviews. 12 accounts flagged canvas lag as a blocker to wider team rollout.",
-    meta: {
-      sources: 2,
-      arr: "$3.6 Million ARR",
-      confidence: "91%",
-      confidenceDelta: "+2%",
-      likes: 5,
-      comments: 2,
-    },
-    primaryAction: { label: "File bug report", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "6",
-    tags: [{ label: "New" }, { label: "Market" }],
-    title: "Template library depth is a top-3 purchase criteria for mid-market buyers",
-    description:
-      "Sales call analysis shows prospects comparing template counts directly against Lucidspark and Conceptboard. Current gap: 340 vs 600+ competitor templates.",
-    meta: {
-      sources: 4,
-      arr: "$1.8 Million ARR",
-      confidence: "76%",
-      confidenceDelta: "+8%",
-      likes: 4,
-    },
-    primaryAction: { label: "Edit roadmap", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "7",
-    tags: [{ label: "Weakening" }, { label: "Customer" }],
-    title: "Mobile editing experience cited in 18% of negative NPS responses",
-    description:
-      "Touch target sizing and zoom behaviour on iOS prevent meaningful contribution from mobile. Signal weakening as desktop-first habits persist post-pandemic.",
-    meta: {
-      sources: 0,
-      arr: "$0.9 Million ARR",
-      confidence: "72%",
-      confidenceDelta: "-2%",
-      likes: 2,
-      comments: 1,
-    },
-    primaryAction: { label: "View details", variant: "outline" },
-  },
-  {
-    id: "8",
-    tags: [{ label: "Urgent" }, { label: "Customer" }],
-    title: "Async video comments reduce meeting load — users want it on every object",
-    description:
-      "Teams using Loom embeds report 30% fewer sync meetings. Demand to expand native async video to shapes, connectors, and frames — not just sticky notes.",
-    meta: {
-      sources: 2,
-      arr: "$2.7 Million ARR",
-      confidence: "88%",
-      confidenceDelta: "+4%",
-      likes: 9,
-      comments: 5,
-    },
-    primaryAction: { label: "Move to \"Next\"", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "9",
-    tags: [{ label: "Customer" }, { label: "Strengthening" }],
-    title: "Smart shape suggestions during diagramming cut creation time by half",
-    description:
-      "Users building flowcharts and org charts want AI to auto-suggest the next shape based on context. Early beta testers show 2x faster diagram completion rates.",
-    meta: {
-      sources: 3,
-      arr: "$3.2 Million ARR",
-      confidence: "86%",
-      confidenceDelta: "+6%",
-      likes: 11,
-      comments: 4,
-    },
-    primaryAction: { label: "Move to \"Next\"", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "10",
-    tags: [{ label: "New" }, { label: "Customer" }],
-    title: "Guest access limitations blocking external contractor collaboration",
-    description:
-      "Freelancers and agency partners can't edit specific sections without full workspace access. 23 enterprise accounts raised this as a blocker to wider rollout.",
-    meta: {
-      sources: 2,
-      arr: "$1.9 Million ARR",
-      confidence: "83%",
-      confidenceDelta: "+3%",
-      likes: 6,
-      comments: 2,
-    },
-    primaryAction: { label: "Edit roadmap", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "11",
-    tags: [{ label: "Urgent" }, { label: "Market" }],
-    title: "Presentation mode lacking speaker notes drives users back to PowerPoint",
-    description:
-      "Product managers and designers need speaker notes during live walkthroughs. 40% of users who churn back to slide tools cite this gap as their primary reason.",
-    meta: {
-      sources: 4,
-      arr: "$4.5 Million ARR",
-      confidence: "92%",
-      confidenceDelta: "+2%",
-      likes: 14,
-      comments: 7,
-    },
-    primaryAction: { label: "Move to \"Next\"", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "12",
-    tags: [{ label: "Customer" }, { label: "Strengthening" }],
-    title: "Cross-board search returning incomplete results frustrates power users",
-    description:
-      "Enterprise teams with 500+ boards report search missing sticky notes and embedded content. Confidence in search has dropped — users resort to manual browsing.",
-    meta: {
-      sources: 1,
-      arr: "$2.1 Million ARR",
-      confidence: "79%",
-      confidenceDelta: "+1%",
-      likes: 5,
-      comments: 3,
-    },
-    primaryAction: { label: "File bug report", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "13",
-    tags: [{ label: "New" }, { label: "Customer" }, { label: "Market" }],
-    title: "Unlimited undo history is now table stakes — 50-step limit causes friction",
-    description:
-      "Figma and Notion both offer deep undo history. Users running long workshops hit the limit mid-session and lose significant work, driving negative NPS responses.",
-    meta: {
-      sources: 3,
-      arr: "$1.4 Million ARR",
-      confidence: "81%",
-      confidenceDelta: "+4%",
-      likes: 8,
-      comments: 2,
-    },
-    primaryAction: { label: "Edit roadmap", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "14",
-    tags: [{ label: "Strengthening" }, { label: "Customer" }],
-    title: "Nested frames enable structured content — demand up 55% from design teams",
-    description:
-      "Design and product teams use nested frames to represent component hierarchies and page layouts. Current flat frame model forces workarounds with grouped shapes.",
-    meta: {
-      sources: 2,
-      arr: "$2.8 Million ARR",
-      confidence: "85%",
-      confidenceDelta: "+7%",
-      likes: 10,
-      comments: 4,
-    },
-    primaryAction: { label: "Move to \"Next\"", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "15",
-    tags: [{ label: "New" }, { label: "Market" }],
-    title: "Custom brand colour palettes per workspace requested by 60% of agencies",
-    description:
-      "Creative agencies need to lock workspace colours to client brand guidelines. Current workaround of saving hex codes in a sticky note is cited as unprofessional in pitches.",
-    meta: {
-      sources: 2,
-      arr: "$1.7 Million ARR",
-      confidence: "77%",
-      confidenceDelta: "+3%",
-      likes: 7,
-      comments: 1,
-    },
-    primaryAction: { label: "Edit roadmap", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "16",
-    tags: [{ label: "Weakening" }, { label: "Customer" }],
-    title: "Comment threading diluted by lack of resolution states",
-    description:
-      "Design review comments pile up with no way to mark them resolved or assign follow-ups. Signal weakening as teams migrate feedback workflows to Linear and Notion.",
-    meta: {
-      sources: 1,
-      arr: "$0.8 Million ARR",
-      confidence: "68%",
-      confidenceDelta: "-3%",
-      likes: 3,
-    },
-    primaryAction: { label: "View details", variant: "outline" },
-  },
-  {
-    id: "17",
-    tags: [{ label: "Urgent" }, { label: "Customer" }, { label: "Market" }],
-    title: "Notion integration tops third-party request list for two consecutive quarters",
-    description:
-      "Product and engineering teams want to embed live Notion pages in boards and push Miro frames as Notion documents. Zapier workarounds add 20+ minutes to weekly rituals.",
-    meta: {
-      sources: 5,
-      arr: "$5.1 Million ARR",
-      confidence: "96%",
-      confidenceDelta: "+2%",
-      likes: 18,
-      comments: 9,
-    },
-    primaryAction: { label: "Move to \"Next\"", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "18",
-    tags: [{ label: "New" }, { label: "Customer" }],
-    title: "Whiteboard session recording unlocks async review for distributed teams",
-    description:
-      "Remote-first teams want to record facilitated sessions with cursor playback for members in different time zones. Competitors Mural and FigJam both ship this in Q3.",
-    meta: {
-      sources: 3,
-      arr: "$3.0 Million ARR",
-      confidence: "84%",
-      confidenceDelta: "+5%",
-      likes: 12,
-      comments: 6,
-    },
-    primaryAction: { label: "Edit roadmap", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "19",
-    tags: [{ label: "Strengthening" }, { label: "Market" }],
-    title: "Advanced table widget closing the gap with Airtable for lightweight data tasks",
-    description:
-      "Users managing sprint trackers and OKR tables inside Miro want sorting, filtering, and formula support. Signal strengthening as Miro becomes the single source of truth for more teams.",
-    meta: {
-      sources: 2,
-      arr: "$2.4 Million ARR",
-      confidence: "80%",
-      confidenceDelta: "+5%",
-      likes: 8,
-      comments: 3,
-    },
-    primaryAction: { label: "Move to \"Next\"", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "20",
-    tags: [{ label: "New" }, { label: "Customer" }],
-    title: "AI meeting facilitation reduces facilitator prep time by 60%",
-    description:
-      "Teams want AI to auto-generate agendas, timers, and icebreakers based on meeting type. Early interest strongest in HR and L&D personas running large-scale workshops.",
-    meta: {
-      sources: 2,
-      arr: "$3.8 Million ARR",
-      confidence: "78%",
-      confidenceDelta: "+9%",
-      likes: 13,
-      comments: 5,
-    },
-    primaryAction: { label: "Edit roadmap", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "21",
-    tags: [{ label: "Weakening" }, { label: "Customer" }],
-    title: "Keyboard shortcut discoverability below industry standard",
-    description:
-      "Power users report Miro's shortcut coverage is comprehensive but invisible. Requests for a command palette (Cmd+K) have plateaued — signal weakening as habit forms around mouse-only workflows.",
-    meta: {
-      sources: 0,
-      arr: "$0.5 Million ARR",
-      confidence: "65%",
-      confidenceDelta: "-1%",
-      likes: 2,
-    },
-    primaryAction: { label: "View details", variant: "outline" },
-  },
-  {
-    id: "22",
-    tags: [{ label: "Urgent" }, { label: "Customer" }],
-    title: "Board loading time exceeds 8 seconds for teams with embedded media",
-    description:
-      "Boards containing video embeds, large PDFs, and Figma frames take 8–15 seconds to load. Five enterprise accounts have opened support tickets flagging this as a retention risk.",
-    meta: {
-      sources: 3,
-      arr: "$3.3 Million ARR",
-      confidence: "93%",
-      confidenceDelta: "+1%",
-      likes: 6,
-      comments: 4,
-    },
-    primaryAction: { label: "File bug report", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "23",
-    tags: [{ label: "New" }, { label: "Market" }],
-    title: "Custom fonts support is a hard blocker for brand-conscious enterprise buyers",
-    description:
-      "Legal, financial, and pharmaceutical enterprises require specific typefaces for compliance. Three six-figure deals stalled at procurement due to absence of custom font upload.",
-    meta: {
-      sources: 2,
-      arr: "$6.2 Million ARR",
-      confidence: "89%",
-      confidenceDelta: "+4%",
-      likes: 15,
-      comments: 3,
-    },
-    primaryAction: { label: "Move to \"Next\"", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "24",
-    tags: [{ label: "Strengthening" }, { label: "Customer" }, { label: "Market" }],
-    title: "WCAG AA compliance gaps affecting public sector and education deals",
-    description:
-      "Screen reader support and keyboard navigation fall short of WCAG AA standards. EU accessibility legislation effective 2025 is accelerating urgency across 14 enterprise accounts.",
-    meta: {
-      sources: 4,
-      arr: "$4.7 Million ARR",
-      confidence: "91%",
-      confidenceDelta: "+6%",
-      likes: 10,
-      comments: 5,
-    },
-    primaryAction: { label: "Edit roadmap", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "25",
-    tags: [{ label: "Customer" }, { label: "Strengthening" }],
-    title: "Offline mode for field teams unlocks manufacturing and healthcare use cases",
-    description:
-      "Field engineers and clinical teams operate in connectivity-limited environments. Offline board access with sync-on-reconnect would open two entirely new market verticals.",
-    meta: {
-      sources: 2,
-      arr: "$2.9 Million ARR",
-      confidence: "74%",
-      confidenceDelta: "+3%",
-      likes: 7,
-      comments: 2,
-    },
-    primaryAction: { label: "Edit roadmap", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "26",
-    tags: [{ label: "New" }, { label: "Customer" }],
-    title: "Live voting and polling in sticky note clusters accelerates consensus",
-    description:
-      "Facilitators running dot-voting sessions use workarounds with emoji reactions. Native polling with real-time result visualisation is the top request from agile coaches.",
-    meta: {
-      sources: 2,
-      arr: "$1.6 Million ARR",
-      confidence: "82%",
-      confidenceDelta: "+4%",
-      likes: 9,
-      comments: 3,
-    },
-    primaryAction: { label: "Edit roadmap", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "27",
-    tags: [{ label: "Urgent" }, { label: "Market" }],
-    title: "Miro's pricing jump at 10 seats is causing mid-market churn to Lucidspark",
-    description:
-      "Teams of 8–15 report sticker shock when crossing the 10-seat threshold. Competitor analysis shows Lucidspark's flat-rate plan captures 34% of churned Miro mid-market accounts.",
-    meta: {
-      sources: 5,
-      arr: "$7.4 Million ARR",
-      confidence: "95%",
-      confidenceDelta: "+2%",
-      likes: 20,
-      comments: 11,
-    },
-    primaryAction: { label: "View details", variant: "outline" },
-  },
-  {
-    id: "28",
-    tags: [{ label: "New" }, { label: "Customer" }, { label: "Market" }],
-    title: "Real-time translation for global teams removes language as a collaboration barrier",
-    description:
-      "Multinational enterprises with non-English-speaking stakeholders want sticky note and comment auto-translation. Signal emerging strongly from APAC and LATAM expansion cohorts.",
-    meta: {
-      sources: 2,
-      arr: "$2.2 Million ARR",
-      confidence: "71%",
-      confidenceDelta: "+8%",
-      likes: 11,
-      comments: 4,
-    },
-    primaryAction: { label: "Edit roadmap", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-  {
-    id: "29",
-    tags: [{ label: "Weakening" }, { label: "Customer" }],
-    title: "Mind map mode adoption plateauing as Miro users default to sticky notes",
-    description:
-      "Mind map feature usage has flatlined at 8% MAU after initial spike. Users prefer freeform sticky note layouts over structured mind map constraints.",
-    meta: {
-      sources: 1,
-      arr: "$0.6 Million ARR",
-      confidence: "63%",
-      confidenceDelta: "-4%",
-      likes: 2,
-      comments: 1,
-    },
-    primaryAction: { label: "View details", variant: "outline" },
-  },
-  {
-    id: "30",
-    tags: [{ label: "Strengthening" }, { label: "Customer" }],
-    title: "Sprint planning templates driving 3x retention in engineering teams",
-    description:
-      "Engineering teams who use the sprint planning template during onboarding show 3x 90-day retention vs. those who start with a blank board. Signal strengthening with each new template added.",
-    meta: {
-      sources: 3,
-      arr: "$4.0 Million ARR",
-      confidence: "90%",
-      confidenceDelta: "+5%",
-      likes: 16,
-      comments: 6,
-    },
-    primaryAction: { label: "Move to \"Next\"", variant: "filled" },
-    secondaryAction: { label: "View details" },
-  },
-];
 
 const TAG_COUNTS = Object.fromEntries(
   ["New", "Urgent", "Customer", "Market", "Strengthening", "Weakening"].map((label) => [
@@ -559,12 +38,56 @@ const CATEGORY_FILTERS = [
 // ─── AI Panel ─────────────────────────────────────────────────────────────────
 
 const PROMPT_CHIPS = [
-  'Give me a more detailed update',
-  'Tell me about items in triage',
-  'Add triage items to ideas',
+  'What are the strongest signals this week?',
+  'Which themes should we prioritise next sprint?',
+  'Show me themes with the highest ARR impact',
 ]
 
-function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+const DOC_CHAT: Record<string, { response: string; prompts?: string[] }> = {
+  'Q4 ideation workshop': {
+    response: `Based on Miro Insights customer feedback, here are the top ways teams run effective ideation workshops:
+
+**1. Start with a warm-up**
+Customers consistently report that a 5–10 minute warm-up activity dramatically increases participation. Use a simple icebreaker board to get everyone comfortable with the canvas before diving in.
+
+**2. Use structured templates**
+Teams that start from a template — like a brainwriting grid or a How Might We board — generate 40% more ideas than those starting from a blank canvas. Miro's template library has pre-built flows for this.
+
+**3. Time-box divergent thinking**
+Set a visible timer (15–20 mins) for the ideation phase. Customers say time pressure encourages quantity over quality — exactly what you want early on. Use Miro's built-in timer widget.
+
+**4. Vote to converge**
+Use dot voting to surface the most resonant ideas quickly. Customers running workshops with 10+ participants say voting reduces group-think and gives quieter voices equal weight.
+
+**5. Capture action items before you leave the board**
+The most common regret: not turning sticky clusters into clear next steps. Assign an owner and due date to each top idea before closing the session.`,
+  },
+  'Product Requirement Documents': {
+    response: `Based on Miro Insights customer feedback, here's how top teams write effective PRDs on Miro:
+
+**1. Lead with the problem, not the solution**
+Customers report that PRDs which open with a clear problem statement get 2× faster sign-off. Anchor every requirement to a customer signal or a measurable outcome.
+
+**2. Embed evidence directly in the doc**
+Link sticky note clusters, Gong call clips, and theme cards inline. Reviewers are far more likely to approve requirements when the evidence is one click away.
+
+**3. Use a consistent requirement format**
+Teams that adopt a standard format — User story, Acceptance criteria, Edge cases — reduce back-and-forth with engineering by ~35% according to feedback from enterprise accounts.
+
+**4. Version with intention**
+Label every significant change. Customers say unversioned PRDs are the single biggest source of misalignment between PM and engineering at handoff.
+
+**5. Close the loop after launch**
+The best PRDs have a post-launch section. Teams that track whether shipped features matched original requirements build faster feedback loops into the next planning cycle.`,
+    prompts: [
+      'What makes a strong acceptance criteria?',
+      'How do I link customer signals to requirements?',
+      'Show me a PRD template for this theme',
+    ],
+  },
+}
+
+function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; onClose: () => void; chatPrompt?: string; onClearChat?: () => void }) {
   const [input, setInput] = useState('')
 
   if (!open) return null
@@ -603,62 +126,141 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto flex flex-col justify-end px-6 pb-0 pt-24">
-        <div className="flex flex-col gap-6 px-4">
-
-          {/* Agent avatar pill */}
-          <div className="flex items-start">
-            <div className="flex items-center gap-1 bg-[#C6DCFF] rounded-full pr-2">
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                style={{ backgroundColor: '#3859FF' }}
+      <div className={`flex-1 overflow-y-auto flex flex-col px-6 pb-0 pt-24 ${chatPrompt ? '' : 'justify-end'}`}>
+        {chatPrompt ? (
+          /* ── Chat mode ── */
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={chatPrompt}
+              className="flex flex-col gap-6 px-4 pb-4"
+            >
+              {/* User message */}
+              <motion.div
+                className="flex justify-end"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
               >
-                <span className="text-white leading-[0] flex items-center justify-center">
-                  <IconSparksFilled css={{ width: 16, height: 16 }} />
-                </span>
-              </div>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 6L8 10L12 6" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
+                <div className="max-w-[80%] bg-[#f1f2f5] rounded-[12px] px-4 py-3">
+                  <p className="text-[14px] text-[#222428]">{chatPrompt}</p>
+                </div>
+              </motion.div>
 
-          {/* Welcome + description */}
-          <div className="flex flex-col gap-2">
-            <p className="text-[#222428] text-[20px] font-semibold leading-[1.4]" style={{ fontFamily: 'Roobert, sans-serif' }}>
-              Welcome back, Kajsa
-            </p>
-            <div className="text-[#222428] text-[16px] leading-[1.5]">
-              <p>
-                Since last time: a comprehensive review of &lsquo;Fiesta Insights&rsquo; was conducted to
-                identify competitor strategies. An in-depth analysis of user feedback on party
-                preferences and emerging trends was also performed. These insights have been
-                synthesized to enhance the Invites roadmap, ensuring alignment with user
-                expectations and market dynamics.
-              </p>
-              <p className="mt-4">
-                There are two items in triage, ready for review. What&apos;s the plan?
-              </p>
-            </div>
-          </div>
-
-          {/* Prompt chips */}
-          <div className="flex flex-col gap-3">
-            {PROMPT_CHIPS.map((chip) => (
-              <button
-                key={chip}
-                className="flex items-center gap-1 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[14px] text-[#222428] hover:bg-[#C6DCFF] transition-colors text-left w-fit"
+              {/* AI response */}
+              <motion.div
+                className="flex items-start gap-3"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.2, ease: [0.2, 0, 0, 1] }}
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 opacity-70">
-                  <rect x="3" y="2" width="10" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-                  <path d="M5.5 5.5h5M5.5 8h5M5.5 10.5h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#3859FF' }}>
+                  <span className="text-white leading-[0] flex items-center justify-center">
+                    <IconSparksFilled css={{ width: 14, height: 14 }} />
+                  </span>
+                </div>
+                <div className="flex-1 flex flex-col gap-3">
+                  {(DOC_CHAT[chatPrompt ?? '']?.response ?? '').split('\n\n').map((para, i) => (
+                    <motion.p
+                      key={i}
+                      className="text-[14px] text-[#222428] leading-[1.6]"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.35 + i * 0.08, ease: [0.2, 0, 0, 1] }}
+                    >
+                      {para.split(/\*\*(.*?)\*\*/g).map((part, j) =>
+                        j % 2 === 1 ? <strong key={j}>{part}</strong> : part
+                      )}
+                    </motion.p>
+                  ))}
+                  {DOC_CHAT[chatPrompt ?? '']?.prompts && (
+                    <motion.div
+                      className="flex flex-col gap-2 mt-2"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.35 + (DOC_CHAT[chatPrompt ?? '']?.response ?? '').split('\n\n').length * 0.08 + 0.05, ease: [0.2, 0, 0, 1] }}
+                    >
+                      {DOC_CHAT[chatPrompt ?? '']!.prompts!.map((chip) => (
+                        <button
+                          key={chip}
+                          className="flex items-center gap-1.5 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[13px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit"
+                        >
+                          <span className="shrink-0 leading-[0] flex items-center justify-center opacity-70">
+                            <IconSparksFilled css={{ width: 14, height: 14 }} />
+                          </span>
+                          <span className="pr-1">{chip}</span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                  <motion.button
+                    onClick={onClearChat}
+                    className="self-start mt-2 h-8 px-3 rounded-lg text-sm font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.35 + (DOC_CHAT[chatPrompt ?? '']?.response ?? '').split('\n\n').length * 0.08 + 0.2, ease: [0.2, 0, 0, 1] }}
+                  >
+                    Go to overview
+                  </motion.button>
+                </div>
+              </motion.div>
+            </motion.div>
+          </AnimatePresence>
+        ) : (
+          /* ── Default mode ── */
+          <div className="flex flex-col gap-6 px-4">
+
+            {/* Agent avatar pill */}
+            <div className="flex items-start">
+              <div className="flex items-center gap-1 bg-[#C6DCFF] rounded-full pr-2">
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: '#3859FF' }}
+                >
+                  <span className="text-white leading-[0] flex items-center justify-center">
+                    <IconSparksFilled css={{ width: 16, height: 16 }} />
+                  </span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M4 6L8 10L12 6" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <span className="pr-1">{chip}</span>
-              </button>
-            ))}
-          </div>
+              </div>
+            </div>
 
-        </div>
+            {/* Welcome + description */}
+            <div className="flex flex-col gap-2">
+              <p className="text-[#222428] text-[28px] font-serif leading-[1.4]">
+                Hi, Kajsa
+              </p>
+              <div className="text-[#656b81] text-[16px] leading-[1.5]">
+                <p>
+                  Since last time: 7 new themes have emerged from customer calls and market signals.
+                  The Jira custom fields theme has strengthened to 99% confidence, and two urgent
+                  themes around enterprise security and async video have moved up in priority.
+                </p>
+                <p className="mt-4">
+                  Three themes are weakening and may be ready to archive. One new theme — real-time
+                  translation — is gaining momentum in APAC and LATAM. Ready to dig in?
+                </p>
+              </div>
+            </div>
+
+            {/* Prompt chips */}
+            <div className="flex flex-col gap-3">
+              {PROMPT_CHIPS.map((chip) => (
+                <button
+                  key={chip}
+                  className="flex items-start gap-1 min-h-8 py-1.5 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[14px] text-[#222428] hover:bg-[#C6DCFF] transition-colors text-left w-fit"
+                >
+                  <span className="shrink-0 opacity-70 leading-[0] flex items-center justify-center mt-0.5">
+                    <IconSparksFilled css={{ width: 16, height: 16 }} />
+                  </span>
+                  <span className="pr-1">{chip}</span>
+                </button>
+              ))}
+            </div>
+
+          </div>
+        )}
       </div>
 
       {/* Input */}
@@ -785,12 +387,7 @@ function CheckIcon() {
 }
 
 function ThumbsUpIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M4 6.5L6 2C6 2 7 2 7 3.5V5.5H11.5L10.5 10H4V6.5Z" stroke="#656b81" strokeWidth="1.2" strokeLinejoin="round" />
-      <path d="M4 6H2.5V10H4" stroke="#656b81" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+  return <IconThumbsUp css={{ width: 14, height: 14 }} />;
 }
 
 function CommentIcon() {
@@ -841,11 +438,11 @@ function SourceIcon() {
 const TAG_ACTIVE_COLORS: Record<string, string> = {
   All: "#222428",
   New: "#DBFAAD",
-  Urgent: "#FFD8D8",
-  Customer: "#DEDAFF",
-  Market: "#F8D3AF",
-  Strengthening: "#F5EDAB",
-  Weakening: "#C6DCFF",
+  Urgent: "#FFABEC",
+  Customer: "#FFED7B",
+  Market: "#A0C4FB",
+  Strengthening: "#FFBD83",
+  Weakening: "#B5A9FF",
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -864,9 +461,8 @@ function CategoryCard({
   return (
     <button
       onClick={onClick}
-      className="relative flex flex-col items-start p-4 rounded-xl border transition-colors text-left"
+      className="relative flex flex-col items-start p-4 rounded-xl transition-all text-left shadow-sm hover:shadow-md duration-200 cursor-pointer"
       style={{
-        borderColor: active ? TAG_ACTIVE_COLORS[label] ?? "#3859FF" : "#e0e2e8",
         backgroundColor: active ? TAG_ACTIVE_COLORS[label] ?? "#3859FF" : "white",
       }}
     >
@@ -877,12 +473,15 @@ function CategoryCard({
 }
 
 function ThemeCardItem({ card, index }: { card: ThemeCard; index: number }) {
+  const router = useRouter();
+  const navigateToDetail = () => router.push(`/insights/themes/${card.id}`);
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.1 + index * 0.07, ease: [0.2, 0, 0, 1] }}
-      className="border border-[#e0e2e8] rounded-xl p-6 bg-white flex gap-4"
+      onClick={navigateToDetail}
+      className="rounded-xl p-6 bg-white flex gap-4 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
     >
       {/* Thumbnail */}
       {card.image && (
@@ -900,8 +499,8 @@ function ThemeCardItem({ card, index }: { card: ThemeCard; index: number }) {
               key={tag.label}
               className="flex items-center gap-1 py-2 px-3 rounded-full border text-xs text-[#222428]"
               style={{
-                backgroundColor: tag.label === "New" ? "#DBFAAD" : tag.label === "Customer" ? "#DEDAFF" : tag.label === "Market" ? "#F8D3AF" : tag.label === "Urgent" ? "#FFD8D8" : tag.label === "Strengthening" ? "#F5EDAB" : tag.label === "Weakening" ? "#C6DCFF" : "white",
-                borderColor: tag.label === "New" ? "#DBFAAD" : tag.label === "Customer" ? "#DEDAFF" : tag.label === "Market" ? "#F8D3AF" : tag.label === "Urgent" ? "#FFD8D8" : tag.label === "Strengthening" ? "#F5EDAB" : tag.label === "Weakening" ? "#C6DCFF" : "#e0e2e8",
+                backgroundColor: tag.label === "New" ? "#DBFAAD" : tag.label === "Customer" ? "#FFED7B" : tag.label === "Market" ? "#A0C4FB" : tag.label === "Urgent" ? "#FFABEC" : tag.label === "Strengthening" ? "#FFBD83" : tag.label === "Weakening" ? "#B5A9FF" : "white",
+                borderColor: tag.label === "New" ? "#DBFAAD" : tag.label === "Customer" ? "#FFED7B" : tag.label === "Market" ? "#A0C4FB" : tag.label === "Urgent" ? "#FFABEC" : tag.label === "Strengthening" ? "#FFBD83" : tag.label === "Weakening" ? "#B5A9FF" : "#e0e2e8",
               }}
             >
               {tag.label === "New" ? <GiftIcon size={16} /> : tag.label === "Customer" ? <IconSmileyChat css={{ width: 16, height: 16 }} /> : tag.label === "Market" ? <IconGlobe css={{ width: 16, height: 16 }} /> : tag.label === "Urgent" ? <IconExclamationPointCircle css={{ width: 16, height: 16 }} /> : tag.label === "Strengthening" ? <IconChartLine css={{ width: 16, height: 16 }} /> : tag.label === "Weakening" ? <IconArrowDown css={{ width: 16, height: 16 }} /> : <BoardIcon size={12} />}
@@ -944,17 +543,25 @@ function ThemeCardItem({ card, index }: { card: ThemeCard; index: number }) {
         {/* Actions */}
         <div className="flex items-center gap-2 mt-0.5">
           <button
-            className="h-8 px-3 rounded-lg text-sm font-medium transition-colors"
+            onClick={(e) => e.stopPropagation()}
+            className={`h-8 px-3 rounded-lg text-sm font-medium transition-colors ${
+              card.primaryAction.variant === "outline"
+                ? "border border-[#e0e2e8] text-[#222428] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428]"
+                : ""
+            }`}
             style={
               card.primaryAction.variant === "filled"
                 ? { backgroundColor: "#222428", color: "white" }
-                : { border: "1px solid #e0e2e8", color: "#222428", backgroundColor: "white" }
+                : undefined
             }
           >
             {card.primaryAction.label}
           </button>
           {card.secondaryAction && (
-            <button className="h-8 px-3 rounded-lg text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#C6DCFF] transition-colors">
+            <button
+              onClick={(e) => { e.stopPropagation(); navigateToDetail(); }}
+              className="h-8 px-3 rounded-lg text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors"
+            >
               {card.secondaryAction.label}
             </button>
           )}
@@ -975,6 +582,7 @@ function ThemeCardItem({ card, index }: { card: ThemeCard; index: number }) {
 export default function ThemesPage() {
   const [filters, setFilters] = useState(CATEGORY_FILTERS);
   const [aiOpen, setAiOpen] = useState(true);
+  const [aiChatPrompt, setAiChatPrompt] = useState<string | undefined>(undefined);
 
   const toggle = (label: string) => {
     if (label === "All") {
@@ -997,7 +605,7 @@ export default function ThemesPage() {
   const visibleCards = isAllActive
     ? THEME_CARDS
     : THEME_CARDS.filter((card) =>
-        card.tags.some((tag) => activeLabels.includes(tag.label))
+        activeLabels.every((label) => card.tags.some((tag) => tag.label === label))
       );
 
   return (
@@ -1015,7 +623,7 @@ export default function ThemesPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
           className="rounded-xl p-8 pt-[132px] mb-[60px] relative min-h-[440px] shadow-sm"
-          style={{ backgroundColor: '#2B2D33' }}
+          style={{ backgroundColor: '#2A2A2D' }}
           aria-labelledby="themes-heading"
         >
           {/* Top-right badges */}
@@ -1099,7 +707,7 @@ export default function ThemesPage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: 0.2, ease: [0.2, 0, 0, 1] }}
-              className="border border-[#e0e2e8] rounded-xl p-4 bg-white"
+              className="rounded-xl p-4 bg-white shadow-sm"
             >
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-semibold text-[#222428]">AI generated</p>
@@ -1109,10 +717,11 @@ export default function ThemesPage() {
                 {AI_DOCS.map((doc) => (
                   <button
                     key={doc.label}
-                    className="flex items-center gap-2 h-8 px-1 rounded-lg hover:bg-[#C6DCFF] transition-colors text-left w-full"
+                    onClick={() => { setAiOpen(true); setAiChatPrompt(doc.label); }}
+                    className="flex items-center gap-2 h-10 px-1 rounded-lg hover:bg-[#E7E7E5] transition-colors text-left w-full"
                   >
                     <span className="text-[#656b81] shrink-0">
-                      {doc.icon === "doc" ? <DocIcon /> : <BoardIcon />}
+                      {doc.icon === "doc" ? <DocIcon size={16} /> : <IconBoard css={{ width: 16, height: 16 }} />}
                     </span>
                     <span className="text-sm text-[#222428] flex-1 truncate">{doc.label}</span>
                     <span className="text-xs text-[#aeb2c0] shrink-0">{doc.time}</span>
@@ -1134,20 +743,8 @@ export default function ThemesPage() {
       </div>
 
       {/* AI panel */}
-      <AIPanel open={aiOpen} onClose={() => setAiOpen(false)} />
+      <AIPanel open={aiOpen} onClose={() => { setAiOpen(false); setAiChatPrompt(undefined); }} chatPrompt={aiChatPrompt} onClearChat={() => setAiChatPrompt(undefined)} />
 
-      {/* Trigger to reopen */}
-      {!aiOpen && (
-        <button
-          onClick={() => setAiOpen(true)}
-          className="fixed bottom-6 right-6 w-10 h-10 rounded-full flex items-center justify-center shadow-md z-30"
-          style={{ backgroundColor: '#3859FF' }}
-        >
-          <span className="text-white leading-[0] flex items-center justify-center">
-            <IconSparksFilled css={{ width: 16, height: 16 }} />
-          </span>
-        </button>
-      )}
     </div>
   );
 }
