@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, Play, Search, SlidersHorizontal, ChevronDown, RotateCcw } from 'lucide-react'
 import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconThumbsUp, IconChatLinesTwo } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
-import { THEME_CARDS, type ThemeCard } from '@/data/themes-data'
+import { THEME_CARDS, THEME_ANALYSIS, type ThemeCard } from '@/data/themes-data'
 
 // ─── Tag colour map ────────────────────────────────────────────────────────────
 
@@ -251,8 +251,9 @@ const DETAIL_SIGNALS = [
 
 // ─── AI Panel ─────────────────────────────────────────────────────────────────
 
-function AIPanel({ open, onClose, theme }: { open: boolean; onClose: () => void; theme: ThemeCard }) {
+function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis }: { open: boolean; onClose: () => void; theme: ThemeCard; showAnalysis?: boolean; onDismissAnalysis?: () => void }) {
   const [input, setInput] = useState('')
+  const analysisData = THEME_ANALYSIS['analysis-' + theme.id]
   if (!open) return null
   return (
     <motion.aside
@@ -278,43 +279,116 @@ function AIPanel({ open, onClose, theme }: { open: boolean; onClose: () => void;
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto flex flex-col justify-end px-6 pb-0 pt-24">
-        <div className="flex flex-col gap-6 px-4">
-          <div className="flex items-start">
-            <div className="flex items-center gap-1 bg-[#f1f2f5] rounded-full pr-2">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#3859FF' }}>
-                <span className="text-white leading-[0] flex items-center justify-center">
-                  <IconSparksFilled css={{ width: 16, height: 16 }} />
-                </span>
+      <div className={`flex-1 overflow-y-auto flex flex-col px-6 pb-0 pt-24 ${showAnalysis ? '' : 'justify-end'}`}>
+        {showAnalysis ? (
+          <AnimatePresence mode="wait">
+            <motion.div key="analysis" className="flex flex-col gap-6 px-4 pb-4">
+              {/* User bubble */}
+              <motion.div
+                className="flex justify-end"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
+              >
+                <div className="max-w-[80%] bg-[#f1f2f5] rounded-[12px] px-4 py-3">
+                  <p className="text-[14px] text-[#222428]">View analysis</p>
+                </div>
+              </motion.div>
+
+              {/* AI response */}
+              <motion.div
+                className="flex items-start gap-3"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.2, ease: [0.2, 0, 0, 1] }}
+              >
+                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#3859FF' }}>
+                  <span className="text-white leading-[0] flex items-center justify-center">
+                    <IconSparksFilled css={{ width: 14, height: 14 }} />
+                  </span>
+                </div>
+                <div className="flex-1 flex flex-col gap-3">
+                  {(analysisData?.response ?? '').split('\n\n').map((para, i) => (
+                    <motion.p
+                      key={i}
+                      className="text-[14px] text-[#222428] leading-[1.6]"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.35 + i * 0.08, ease: [0.2, 0, 0, 1] }}
+                    >
+                      {para.split(/\*\*(.*?)\*\*/g).map((part, j) =>
+                        j % 2 === 1 ? <strong key={j}>{part}</strong> : part
+                      )}
+                    </motion.p>
+                  ))}
+                  {analysisData?.prompts && (
+                    <motion.div
+                      className="flex flex-col gap-2 mt-2"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.8, ease: [0.2, 0, 0, 1] }}
+                    >
+                      {analysisData.prompts.map((chip) => (
+                        <button key={chip} className="flex items-center gap-1.5 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[13px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit">
+                          <span className="shrink-0 leading-[0] flex items-center justify-center opacity-70">
+                            <IconSparksFilled css={{ width: 14, height: 14 }} />
+                          </span>
+                          <span className="pr-1">{chip}</span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                  <motion.button
+                    onClick={onDismissAnalysis}
+                    className="self-start mt-2 h-8 px-3 rounded-lg text-sm font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 1.0, ease: [0.2, 0, 0, 1] }}
+                  >
+                    Back to overview
+                  </motion.button>
+                </div>
+              </motion.div>
+            </motion.div>
+          </AnimatePresence>
+        ) : (
+          <div className="flex flex-col gap-6 px-4">
+            <div className="flex items-start">
+              <div className="flex items-center gap-1 bg-[#f1f2f5] rounded-full pr-2">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#3859FF' }}>
+                  <span className="text-white leading-[0] flex items-center justify-center">
+                    <IconSparksFilled css={{ width: 16, height: 16 }} />
+                  </span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M4 6L8 10L12 6" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </div>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 6L8 10L12 6" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-[#222428] text-[28px] font-serif leading-[1.4]">Theme deep-dive</p>
+              <div className="text-[#656b81] text-[16px] leading-[1.5]">
+                <p>
+                  This theme has a confidence score of {theme.meta.confidence} and {theme.meta.confidenceDelta} movement this week.
+                  {' '}{theme.meta.likes} team members have upvoted it, signalling strong internal alignment.
+                </p>
+                <p className="mt-4">
+                  I can help you map signals to this theme, draft a recommendation for the roadmap, or pull in related customer quotes.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3">
+              {['Summarise signals for this theme', 'Draft a roadmap recommendation', 'Show related customer quotes'].map((chip) => (
+                <button key={chip} className="flex items-center gap-1 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[14px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit">
+                  <span className="shrink-0 opacity-70 leading-[0] flex items-center justify-center">
+                    <IconSparksFilled css={{ width: 16, height: 16 }} />
+                  </span>
+                  <span className="pr-1">{chip}</span>
+                </button>
+              ))}
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <p className="text-[#222428] text-[28px] font-serif leading-[1.4]">Theme deep-dive</p>
-            <div className="text-[#656b81] text-[16px] leading-[1.5]">
-              <p>
-                This theme has a confidence score of {theme.meta.confidence} and {theme.meta.confidenceDelta} movement this week.
-                {' '}{theme.meta.likes} team members have upvoted it, signalling strong internal alignment.
-              </p>
-              <p className="mt-4">
-                I can help you map signals to this theme, draft a recommendation for the roadmap, or pull in related customer quotes.
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-3">
-            {['Summarise signals for this theme', 'Draft a roadmap recommendation', 'Show related customer quotes'].map((chip) => (
-              <button key={chip} className="flex items-center gap-1 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[14px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit">
-                <span className="shrink-0 opacity-70 leading-[0] flex items-center justify-center">
-                  <IconSparksFilled css={{ width: 16, height: 16 }} />
-                </span>
-                <span className="pr-1">{chip}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
 
       <div className="px-6 pb-6 pt-6 shrink-0">
@@ -361,6 +435,7 @@ export default function ThemeDetailPage() {
   const [currentPage, setCurrentPage] = useState(0)
   const [direction, setDirection] = useState(1)
   const [activeTab, setActiveTab] = useState<'signals' | 'details' | 'comments' | 'updates'>('signals')
+  const [showAnalysis, setShowAnalysis] = useState(false)
 
   const theme = THEME_CARDS.find((c) => c.id === String(params.id))
 
@@ -471,7 +546,7 @@ export default function ThemeDetailPage() {
           <section className="mb-8">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[24px] font-serif text-[#222428]">Confidence drivers</h2>
-              <button className="flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[#222428] text-sm font-medium text-white hover:bg-[#2e3036] transition-colors">
+              <button onClick={() => { setShowAnalysis(true); setAiOpen(true); }} className="flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[#222428] text-sm font-medium text-white hover:bg-[#2e3036] transition-colors">
                 <span className="leading-[0]"><IconSparksFilled css={{ width: 14, height: 14 }} /></span>
                 View analysis
               </button>
@@ -747,7 +822,7 @@ export default function ThemeDetailPage() {
         </main>
       </div>
 
-      <AIPanel open={aiOpen} onClose={() => setAiOpen(false)} theme={theme} />
+      <AIPanel open={aiOpen} onClose={() => { setAiOpen(false); setShowAnalysis(false); }} theme={theme} showAnalysis={showAnalysis} onDismissAnalysis={() => setShowAnalysis(false)} />
     </div>
   )
 }
