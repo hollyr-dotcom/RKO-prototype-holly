@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source not "../../.local/**";
 @import "@liveblocks/react-tiptap/styles.css";
 @import "@liveblocks/react-ui/styles.css";
 
