@@ -1,8 +1,18 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+let _supabase: SupabaseClient | null = null;
 
-// Server-side only client using service role key (bypasses RLS).
-// This module should never be imported from client-side code.
-export const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+function getSupabase(): SupabaseClient {
+  if (_supabase) return _supabase;
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set");
+  _supabase = createClient(url, key);
+  return _supabase;
+}
+
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_target, prop) {
+    return (getSupabase() as Record<string | symbol, unknown>)[prop];
+  },
+});

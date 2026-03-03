@@ -1,15 +1,18 @@
 import { Liveblocks } from "@liveblocks/node";
 import { requireAuth } from "@/lib/auth/serverAuth";
 
-const liveblocks = new Liveblocks({
-  secret: process.env.LIVEBLOCKS_SECRET_KEY!,
-});
+function getLiveblocks() {
+  const secret = process.env.LIVEBLOCKS_SECRET_KEY;
+  if (!secret) throw new Error("LIVEBLOCKS_SECRET_KEY is not set");
+  return new Liveblocks({ secret });
+}
 
 export async function POST(req: Request) {
   try {
     const user = await requireAuth();
 
-    // Read the room ID from the request body (sent by the Liveblocks client)
+    const liveblocks = getLiveblocks();
+
     const { room } = await req.json();
 
     const session = liveblocks.prepareSession(user.uid, {
@@ -20,7 +23,6 @@ export async function POST(req: Request) {
       },
     });
 
-    // Grant full access to the requested room (all rooms belong to org)
     if (room) {
       session.allow(room, session.FULL_ACCESS);
     }
