@@ -1020,12 +1020,13 @@ export default function SignalsPage() {
 
           {/* ── Signals table ── */}
           <section>
-            <div className="flex items-center gap-2 mb-5">
-              <h2 className="text-[24px] font-serif text-[#222428]">Signals</h2>
-              <span className="text-[14px] text-[#656b81]">14 results</span>
-              <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium" style={{ backgroundColor: '#DBFAAD', color: '#222428' }}>6 new</span>
-            </div>
-            <div className="flex items-center justify-between mb-5">
+            <div className="sticky top-0 z-10 bg-[#FBFAF7] pb-5">
+              <div className="flex items-center gap-2 mb-5">
+                <h2 className="text-[24px] font-serif text-[#222428]">Signals</h2>
+                <span className="text-[14px] text-[#656b81]">14 results</span>
+                <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium" style={{ backgroundColor: '#DBFAAD', color: '#222428' }}>6 new</span>
+              </div>
+              <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 {([
                   { id: 'signals' as const, label: 'Signals', count: 0 },
@@ -1059,6 +1060,7 @@ export default function SignalsPage() {
                   <SlidersHorizontal className="w-4 h-4" />
                 </button>
               </div>
+            </div>
             </div>
 
             {tableTab === 'signals' && (
