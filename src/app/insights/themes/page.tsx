@@ -61,6 +61,32 @@ Use dot voting to surface the most resonant ideas quickly. Customers running wor
 
 **5. Capture action items before you leave the board**
 The most common regret: not turning sticky clusters into clear next steps. Assign an owner and due date to each top idea before closing the session.`,
+    prompts: [
+      'Which themes should we ideate on this quarter?',
+      'Which signals are most urgent for Q4?',
+      'How do I run a signal-to-theme mapping session?',
+    ],
+  },
+  'Which themes should we ideate on this quarter?': {
+    response: `Based on the current signal landscape, three themes are strong candidates for Q4 ideation:\n\n**Canvas Performance** — 8 signals, confidence at 84%. Three enterprise accounts have flagged it as a churn risk. It has the clearest problem statement and the most evidence behind it — good raw material for a solution-focused session.\n\n**AI UX Controls** — New signal this week. Users want inline rejection of AI suggestions without disabling the feature entirely. There's a real product design challenge here that benefits from divergent thinking.\n\n**Guest Access & Permissions** — 2 unreviewed signals, both from enterprise accounts. The constraint space is well-defined, which makes it well-suited for a constraints-led ideation format.\n\nI'd suggest running Canvas Performance and AI UX Controls in parallel breakouts, then converging on prioritisation at the end of the session.`,
+    prompts: [
+      'Which signals are most urgent for Q4?',
+      'How do I run a signal-to-theme mapping session?',
+    ],
+  },
+  'Which signals are most urgent for Q4?': {
+    response: `**3 signals stand out for Q4** based on recency, source credibility, and business impact:\n\n**"Canvas lag when 40+ users are active on a single board"** — flagged by Spotify as a near-dealbreaker. Enterprise sales cycle peaks in Q3/Q4, which makes this time-sensitive.\n\n**"SSO enforcement not available for guest accounts"** — compliance requirement for regulated-industry accounts. Two enterprise renewals in Q4 are at risk if this isn't addressed.\n\n**"AI sticky note clustering saves facilitators 40+ minutes per session"** — this one is a positive signal. It's a feature working well that could be expanded. Ideating on where else this capability applies could be high-leverage.\n\nFor your workshop, I'd frame the first two as problem spaces and the third as an opportunity space — mixing problem-solving with opportunity-expansion tends to produce more energised sessions.`,
+    prompts: [
+      'Which themes should we ideate on this quarter?',
+      'How do I run a signal-to-theme mapping session?',
+    ],
+  },
+  'How do I run a signal-to-theme mapping session?': {
+    response: `A signal-to-theme mapping session helps your team align on which themes are real before you ideate on solutions. Here's a format that works well:\n\n**Step 1 — Print the signals (10 mins)**\nBring the top 10–15 signals into the board as sticky notes. Include the source type and account name so participants can assess credibility.\n\n**Step 2 — Silent grouping (15 mins)**\nEach participant groups signals into clusters independently. No talking. This surfaces genuine pattern recognition vs. groupthink.\n\n**Step 3 — Name the themes (10 mins)**\nAs a group, name each cluster. If two people named the same cluster differently, that's a signal the theme boundary isn't clear yet.\n\n**Step 4 — Prioritise by impact (10 mins)**\nDot vote on which themes deserve immediate action. Weight by signals that have churn risk or revenue attached.\n\nThis format typically takes 45 minutes and produces a prioritised theme list you can hand directly to the roadmap review.`,
+    prompts: [
+      'Which themes should we ideate on this quarter?',
+      'Which signals are most urgent for Q4?',
+    ],
   },
   'Product Requirement Documents': {
     response: `Based on Miro Insights customer feedback, here's how top teams write effective PRDs on Miro:
@@ -89,6 +115,9 @@ The best PRDs have a post-launch section. Teams that track whether shipped featu
 
 function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; onClose: () => void; chatPrompt?: string; onClearChat?: () => void }) {
   const [input, setInput] = useState('')
+  const [activeChip, setActiveChip] = useState<string | null>(null)
+
+  const activePrompt = activeChip ?? chatPrompt
 
   if (!open) return null
 
@@ -126,12 +155,12 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; on
       </div>
 
       {/* Body */}
-      <div className={`flex-1 overflow-y-auto flex flex-col px-6 pb-0 pt-24 ${chatPrompt ? '' : 'justify-end'}`}>
-        {chatPrompt ? (
+      <div className={`flex-1 overflow-y-auto flex flex-col px-6 pb-0 pt-24 ${activePrompt ? '' : 'justify-end'}`}>
+        {activePrompt ? (
           /* ── Chat mode ── */
           <AnimatePresence mode="wait">
             <motion.div
-              key={chatPrompt}
+              key={activePrompt}
               className="flex flex-col gap-6 px-4 pb-4"
             >
               {/* User message */}
@@ -142,7 +171,7 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; on
                 transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
               >
                 <div className="max-w-[80%] bg-[#f1f2f5] rounded-[12px] px-4 py-3">
-                  <p className="text-[14px] text-[#222428]">{chatPrompt}</p>
+                  <p className="text-[14px] text-[#222428]">{activePrompt}</p>
                 </div>
               </motion.div>
 
@@ -159,7 +188,7 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; on
                   </span>
                 </div>
                 <div className="flex-1 flex flex-col gap-3">
-                  {(DOC_CHAT[chatPrompt ?? '']?.response ?? '').split('\n\n').map((para, i) => (
+                  {(DOC_CHAT[activePrompt]?.response ?? '').split('\n\n').map((para, i) => (
                     <motion.p
                       key={i}
                       className="text-[14px] text-[#222428] leading-[1.6]"
@@ -172,16 +201,17 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; on
                       )}
                     </motion.p>
                   ))}
-                  {DOC_CHAT[chatPrompt ?? '']?.prompts && (
+                  {DOC_CHAT[activePrompt]?.prompts && (
                     <motion.div
                       className="flex flex-col gap-2 mt-2"
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.35 + (DOC_CHAT[chatPrompt ?? '']?.response ?? '').split('\n\n').length * 0.08 + 0.05, ease: [0.2, 0, 0, 1] }}
+                      transition={{ duration: 0.3, delay: 0.35 + (DOC_CHAT[activePrompt]?.response ?? '').split('\n\n').length * 0.08 + 0.05, ease: [0.2, 0, 0, 1] }}
                     >
-                      {DOC_CHAT[chatPrompt ?? '']!.prompts!.map((chip) => (
+                      {DOC_CHAT[activePrompt]!.prompts!.map((chip) => (
                         <button
                           key={chip}
+                          onClick={() => setActiveChip(chip)}
                           className="flex items-center gap-1.5 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[13px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit"
                         >
                           <span className="shrink-0 leading-[0] flex items-center justify-center opacity-70">
@@ -193,11 +223,11 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; on
                     </motion.div>
                   )}
                   <motion.button
-                    onClick={onClearChat}
+                    onClick={() => { setActiveChip(null); onClearChat?.(); }}
                     className="self-start mt-2 h-8 px-3 rounded-lg text-sm font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors"
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.35 + (DOC_CHAT[chatPrompt ?? '']?.response ?? '').split('\n\n').length * 0.08 + 0.2, ease: [0.2, 0, 0, 1] }}
+                    transition={{ duration: 0.3, delay: 0.35 + (DOC_CHAT[activePrompt]?.response ?? '').split('\n\n').length * 0.08 + 0.2, ease: [0.2, 0, 0, 1] }}
                   >
                     Go to overview
                   </motion.button>
