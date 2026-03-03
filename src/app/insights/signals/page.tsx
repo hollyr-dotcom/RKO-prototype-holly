@@ -786,6 +786,68 @@ const PROMPT_RESPONSES: Record<string, { response: string; followUps: string[] }
     response: `They're related but distinct, and it's worth keeping them separate.\n\n**AI UX Controls** is about how users interact with AI — surfacing suggestions, rejecting them, understanding what triggered them. The core problem is control and transparency.\n\n**AI Accuracy** is about whether the AI output is correct — clustering quality, summarisation fidelity, relevance of suggestions. The core problem is trust.\n\nIn practice they do overlap: when accuracy is low, users lose trust in the controls entirely and turn AI features off. Two signals sit on the boundary — one where a user rejected a correct suggestion because it looked wrong, and one where accepting a suggestion caused unintended changes.\n\n**Recommendation**: Keep them separate for now but link them. If accuracy improves, you may see UX Controls signals drop naturally.`,
     followUps: ['Show me the boundary signals', 'Show AI Accuracy signals', 'How do users currently turn off AI features?'],
   },
+
+  // Follow-up chips
+  'Map the permission signal to a theme': {
+    response: `Done. **"Permission model blocks cross-org board sharing"** has been mapped to **Permission Controls**.\n\nThe theme now has 4 signals total. Confidence score moves from 71% to **76%** with this addition — the new signal is from a named enterprise account with strong source credibility.\n\nI've also flagged **"Localisation gaps prevent rollout in APAC markets"** as 'watching' pending more signals. You'll get a notification if a second source surfaces within 14 days.`,
+    followUps: ['Show Permission Controls coverage', 'Which other signals are ready to map?', 'Which themes have low signal coverage?'],
+  },
+  'Show Permission Controls coverage': {
+    response: `**Permission Controls** has 4 signals across 3 source types:\n\n2 from **sales calls** — enterprise accounts asking about granular role assignment and guest access scoping.\n1 from **support tickets** — a team lead unable to restrict editing to specific frames.\n1 just added — **cross-org board sharing blocked by permission model**.\n\nCoverage is solid for the enterprise segment. The gap is **SMB and agency use cases** — no signals from those segments yet, even though the permission model likely affects them too.\n\nConfidence: **76%**. Theme status: Active.`,
+    followUps: ['Are there SMB signals on permissions?', 'Show all active themes', 'Which theme has the weakest coverage?'],
+  },
+  'Is APAC localisation a new theme?': {
+    response: `Not yet — but it could become one.\n\n**Localisation & i18n** already exists as a theme with 3 signals, mostly focused on RTL language support and date formatting. The APAC signal fits within that theme for now, but it's a different dimension: **market entry blockers** rather than language rendering bugs.\n\nIf two more signals come in specifically about APAC rollout friction, it would justify splitting into a dedicated **APAC Market Readiness** theme. I'd leave it under Localisation & i18n for this cycle and revisit in 3–4 weeks.`,
+    followUps: ['Show Localisation & i18n signals', 'Which themes are candidates for splitting?', 'Which themes have no new signals?'],
+  },
+  'Which accounts mentioned Canvas Performance?': {
+    response: `**3 enterprise accounts** flagged Canvas Performance this week:\n\n**Spotify** (sales call, Mon) — "We run design sprints with 40+ people on a single board. The lag when everyone is active at once is a dealbreaker."\n\n**Zalando** (support ticket, Wed) — Reported consistent cursor lag above 50 objects with live presence enabled. Opened as a bug, but the root cause is the same rendering bottleneck.\n\n**Shopify** (community post, Thu) — A power user compared Miro's performance unfavourably to Figma in a public thread. 34 upvotes.`,
+    followUps: ['What is Shopify\'s ARR?', 'Draft a roadmap recommendation', 'Show all Canvas Performance signals'],
+  },
+  'Draft a roadmap recommendation': {
+    response: `Here's a draft recommendation for **Canvas Performance**:\n\n**Recommendation**: Prioritise rendering performance for boards with 40+ concurrent users in Q2. Address cursor lag before the enterprise sales cycle peaks in Q3.\n\n**Evidence**: 8 signals across 3 enterprise accounts. Two flagged as churn risk. Direct competitor comparisons appearing in sales calls.\n\n**Suggested scope**: Investigate and resolve the rendering bottleneck that causes lag above 40 concurrent users. Target: <100ms cursor latency at 50 users on a standard board.\n\n**Impact**: Removes a stated blocker for 2 at-risk accounts. Reduces negative sentiment in enterprise sales conversations.`,
+    followUps: ['Add this to the Canvas Performance theme', 'Which other themes need roadmap recommendations?', 'Show all Canvas Performance signals'],
+  },
+  'Show all Canvas Performance signals': {
+    response: `**Canvas Performance** has 8 signals total:\n\n3 from **sales calls** — enterprise accounts citing lag as a blocker or comparison point against Figma.\n3 from **support tickets** — reported as bugs (cursor lag, slow frame loads, presence indicator delays).\n1 from a **community post** — public comparison to Figma with 34 upvotes.\n1 from an **NPS response** — "Performance on large boards is the one thing stopping us going all-in."\n\nAll 8 point to the same root cause: rendering bottleneck under concurrent load. The theme has strong signal breadth across source types.`,
+    followUps: ['Which accounts mentioned Canvas Performance?', 'Draft a roadmap recommendation', 'Which themes have the most signals?'],
+  },
+  'Tell me more about Mobile Parity': {
+    response: `**Mobile Parity** has 7 signals total, but this new one is different from the others.\n\nMost existing signals come from enterprise accounts where mobile use is incidental — someone checking a board on their phone, not actively editing. The new signal is from an **SMB facilitator** running a workshop where half the participants were on iOS tablets.\n\nThe specific complaint: touch targets on the toolbar are too small for reliable tapping during a fast-moving session. It caused delays and frustration in front of a client.\n\nThis is the first signal where mobile is the **primary device**, not a secondary one. It may indicate a different user segment starting to adopt Miro for facilitation on mobile.`,
+    followUps: ['Show all Mobile Parity signals', 'Are there other SMB signals this week?', 'Which themes affect non-enterprise users?'],
+  },
+  'Show me the Enterprise Security signals': {
+    response: `**Enterprise Security** has 5 signals total. The 2 new ones this week:\n\n**SSO enforcement for guests** (Spotify) — IT policy requires SSO for all board access. Guest accounts bypass it entirely.\n\n**Audit log granularity** (Zendesk) — Compliance needs shape-level edit history. Current logs are board-level only.\n\nThe 3 existing signals:\n- Admin controls for external sharing (flagged by 2 accounts)\n- IP allowlist not applying to embedded boards\n- No way to revoke access on a per-board basis for departing employees\n\nAll 5 point to gaps in the enterprise security model for regulated-industry customers.`,
+    followUps: ['Show Enterprise Security signals across both accounts', 'Are there more signals from regulated industries?', 'Which themes affect enterprise security most?'],
+  },
+  'Which theme needs the most attention?': {
+    response: `**Canvas Performance** needs the most attention right now.\n\nIt has the highest confidence score (**84%**), the most signals added this week (**2**), and is the only theme with active **churn risk** attached — two accounts explicitly described it as a blocker to wider rollout, not just a point of feedback.\n\n**Enterprise Security** is a close second. The signals there are lower volume but higher stakes — they're appearing in regulated-industry accounts where security gaps can block deals entirely.\n\nI'd recommend reviewing Canvas Performance this sprint and flagging Enterprise Security for the next product review.`,
+    followUps: ['Draft a roadmap recommendation', 'Show me the Enterprise Security signals', 'Which themes can wait another cycle?'],
+  },
+  'How does this compare to competitor audit features?': {
+    response: `Competitors are ahead on audit log granularity.\n\n**Figma** offers shape-level edit history in their enterprise plan, including who changed what and when. It's been a selling point in their enterprise sales motion for 18 months.\n\n**Notion** logs page-level edits with user attribution and timestamps — not as granular as Figma but good enough for most compliance use cases.\n\n**Miro** currently logs board-level actions only: who opened it, who shared it, who exported it. No edit-level trail.\n\nFor regulated-industry accounts (finance, healthcare, legal), this gap is material. It's not a feature request — it's a compliance requirement.`,
+    followUps: ['Are there more signals from regulated industries?', 'Show Enterprise Security signals across both accounts', 'Which themes have competitive signals?'],
+  },
+  'Are there more signals from regulated industries?': {
+    response: `Yes — **6 signals total** this month came from accounts in regulated industries (finance, healthcare, legal, government).\n\n3 map to **Enterprise Security** (SSO, audit logs, access revocation).\n2 map to **Export Fidelity** — a legal team needing pixel-perfect PDF exports for filing purposes.\n1 maps to **Sharing & Access** — a healthcare provider unable to restrict board access to specific departments.\n\nRegulated-industry accounts represent **23% of enterprise ARR** but are generating **43% of security and compliance signals** this month. The signal density is high relative to their size.`,
+    followUps: ['Show Export Fidelity signals', 'Show Sharing & Access signals', 'Which themes are most urgent for enterprise?'],
+  },
+  'Flag both signals as high priority': {
+    response: `Both Enterprise Security signals have been flagged as **high priority**.\n\n**"SSO enforcement not available for guest accounts"** — flagged. Assigned to the Identity & Access cluster. Renewal conversation with Spotify is in 6 weeks.\n\n**"Audit logs don't capture shape-level edit history"** — flagged. Assigned to the Compliance cluster. Zendesk's contract review is in Q2.\n\nI'd recommend adding both to the agenda for next week's enterprise review. The timing on both accounts makes these time-sensitive.`,
+    followUps: ['Show all high priority signals', 'Show Enterprise Security signals across both accounts', 'Which other signals should be flagged?'],
+  },
+  'Show me the boundary signals': {
+    response: `Two signals sit on the boundary between **AI UX Controls** and **AI Accuracy**:\n\n**Signal 1** — A user running a retrospective rejected AI clustering suggestions across the board, then manually recreated almost identical clusters. In the session recording, they said "I don't trust it" — but the AI output was objectively accurate. This is an accuracy-perception problem, not a controls problem.\n\n**Signal 2** — A facilitator accepted an AI summarisation of sticky notes mid-session. The summary was technically correct but stripped important nuance, causing confusion. They needed a way to partially accept it — which is a controls gap, not an accuracy gap.\n\nBoth signals are tagged to both themes for now.`,
+    followUps: ['Show AI Accuracy signals', 'Show AI UX Controls signals', 'Are AI UX Controls and AI Accuracy related?'],
+  },
+  'Show AI Accuracy signals': {
+    response: `**AI Accuracy** has 5 signals:\n\n2 from **session recordings** — AI clustering grouped unrelated sticky notes, causing facilitators to spend time correcting it mid-session.\n\n1 from a **support ticket** — AI summarisation removed key decisions from a design review summary. The team didn't catch it until after sharing with stakeholders.\n\n1 from a **community post** — A user compared Miro's AI clustering unfavourably to FigJam's, citing more coherent groupings.\n\n1 boundary signal shared with **AI UX Controls** — correct output, low perceived trust.\n\nCommon thread: accuracy issues are most visible in **high-stakes, time-pressured sessions** where there's no margin to verify AI output.`,
+    followUps: ['Are AI UX Controls and AI Accuracy related?', 'Which themes have competitive signals?', 'Show me the boundary signals'],
+  },
+  'How do users currently turn off AI features?': {
+    response: `Right now, there's no single toggle. Users have three partial options:\n\n**Board settings** — AI suggestions can be disabled per board by the board owner. Most users don't know this exists.\n\n**Dismissing suggestions** — Users can dismiss individual suggestions inline, but they reappear in future sessions.\n\n**Workspace admin settings** — Admins can disable AI features workspace-wide, but this is all-or-nothing and rarely used.\n\nThe gap: there's no way to say "don't suggest clustering, but keep summarisation on." Feature-level control is missing entirely.\n\nThis is the core of the **AI UX Controls** theme — and it's exactly what the new signal this week is pointing at.`,
+    followUps: ['Show AI UX Controls signals', 'Are AI UX Controls and AI Accuracy related?', 'Which AI features have the most signals?'],
+  },
 }
 
 function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
