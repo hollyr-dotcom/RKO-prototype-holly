@@ -758,9 +758,11 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 }
 
 const PROMPT_CHIPS = [
-  'What signals changed most this week?',
-  'Which signals should I act on now?',
-  'Summarise signals by theme',
+  'Walk me through the 2 unreviewed signals',
+  'Why is Canvas Performance strengthening?',
+  'Which themes have new signals this week?',
+  'Show Enterprise Security signals across both accounts',
+  'Are AI UX Controls and AI Accuracy related?',
 ]
 
 function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
