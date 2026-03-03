@@ -4,10 +4,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
-  const { user, loading, error, signInWithGoogle, isConfigured } = useAuth();
+  // Auth disabled for demo
+  return <>{children}</>;
 
-  // Bypass auth when not configured (local dev)
-  if (!isConfigured) return <>{children}</>;
+  const { user, loading, error, signInWithGoogle, isConfigured } = useAuth(); // eslint-disable-line
 
   if (loading) {
     return (
