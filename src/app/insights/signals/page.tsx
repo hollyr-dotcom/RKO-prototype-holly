@@ -761,8 +761,6 @@ const PROMPT_CHIPS = [
   'Walk me through the 2 unreviewed signals',
   'Why is Canvas Performance strengthening?',
   'Which themes have new signals this week?',
-  'Show Enterprise Security signals across both accounts',
-  'Are AI UX Controls and AI Accuracy related?',
 ]
 
 const PROMPT_RESPONSES: Record<string, { response: string; followUps: string[] }> = {
