@@ -1081,7 +1081,7 @@ export default function SignalsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25, delay: i * 0.05 }}
                     onClick={() => selectSignal(row)}
-                    className={`grid gap-4 px-5 py-3.5 items-center border-b border-[#e0e2e8] last:border-0 hover:bg-[#fafafa] transition-colors cursor-pointer ${selectedSignal?.id === row.id ? 'bg-[#f2f4fc]' : ''}`}
+                    className={`grid gap-4 px-5 py-3.5 items-center border-b border-[#e0e2e8] last:border-0 hover:bg-[#fafafa] transition-colors cursor-pointer ${selectedSignal?.id === row.id ? 'bg-[#E7E7E5]' : ''}`}
                     style={{ gridTemplateColumns: '24px 48px 1fr 1fr 180px 100px 100px' }}
                   >
                     <span className="text-xs text-[#aeb2c0]">{row.id}</span>
