@@ -988,9 +988,9 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
                 <button
                   key={chip}
                   onClick={() => setActivePrompt(chip)}
-                  className="flex items-center gap-1 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[14px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit"
+                  className="flex items-start gap-1 min-h-8 py-1.5 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[14px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit"
                 >
-                  <span className="shrink-0 opacity-70 leading-[0] flex items-center justify-center">
+                  <span className="shrink-0 opacity-70 leading-[0] flex items-center justify-center mt-[1px]">
                     <IconSparksFilled css={{ width: 16, height: 16 }} />
                   </span>
                   <span className="pr-1">{chip}</span>
