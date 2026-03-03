@@ -765,10 +765,36 @@ const PROMPT_CHIPS = [
   'Are AI UX Controls and AI Accuracy related?',
 ]
 
+const PROMPT_RESPONSES: Record<string, { response: string; followUps: string[] }> = {
+  'Walk me through the 2 unreviewed signals': {
+    response: `Two signals are waiting for review.\n\n**"Permission model blocks cross-org board sharing"** has 6 upvotes and maps cleanly to the **Permission Controls** theme — four enterprise accounts raised it in sales calls this week. It's high confidence and ready to add.\n\nThe second, **"Localisation gaps prevent rollout in APAC markets"**, is harder to place. It could sit under **Localisation & i18n**, but the signal is thin — only one source so far. I'd hold it for the next review cycle unless more signals come in.\n\n**Recommended action**: Map the permission signal now. Flag the APAC signal as 'watching'.`,
+    followUps: ['Map the permission signal to a theme', 'Show Permission Controls coverage', 'Is APAC localisation a new theme?'],
+  },
+  'Why is Canvas Performance strengthening?': {
+    response: `**Canvas Performance** now has 8 signals — up from 5 last month. Three things are driving this:\n\n**Enterprise scale** — accounts with 40+ concurrent users are hitting consistent lag during live sessions. It's not edge-case behaviour anymore.\n\n**Comparison pressure** — four sales calls this week included direct comparisons to Figma's performance. Prospects are using it as a decision criterion.\n\n**Churn risk** — two accounts flagged it as a blocker to wider rollout, not just a complaint. That's a different level of urgency.\n\nThe theme confidence is at **84%** — the highest of any active theme right now. It's moved from 'monitoring' to 'act now' territory.`,
+    followUps: ['Which accounts mentioned Canvas Performance?', 'Draft a roadmap recommendation', 'Show all Canvas Performance signals'],
+  },
+  'Which themes have new signals this week?': {
+    response: `**4 themes** picked up new signals since your last review:\n\n**Canvas Performance** — 2 new signals. Enterprise lag and a direct Figma comparison from a sales call.\n\n**Enterprise Security** — 2 new signals. SSO enforcement gaps and missing audit log granularity, both from regulated-industry accounts.\n\n**AI UX Controls** — 1 new signal. Users want to reject AI suggestions inline without turning the feature off entirely.\n\n**Mobile Parity** — 1 new signal. iOS touch target sizing during workshops. Notable because it's the first from a non-enterprise account this month — the problem may be broader than enterprise.`,
+    followUps: ['Tell me more about Mobile Parity', 'Show me the Enterprise Security signals', 'Which theme needs the most attention?'],
+  },
+  'Show Enterprise Security signals across both accounts': {
+    response: `Both signals come from enterprise accounts in regulated industries.\n\n**Signal 1 — "SSO enforcement not available for guest accounts"** (Spotify, sales call). Their IT team requires SSO for all users accessing boards — including external collaborators. Guest-level access currently bypasses this entirely.\n\n**Signal 2 — "Audit logs don't capture shape-level edit history"** (Zendesk, support ticket). Their compliance team needs a full edit trail for shared boards. Current logs only capture board-level actions, not individual edits.\n\nBoth map to **Enterprise Security**. Neither has been reviewed. These are the kind of signals that quietly block enterprise expansion — they rarely generate volume, but they carry high weight in renewal conversations.`,
+    followUps: ['How does this compare to competitor audit features?', 'Are there more signals from regulated industries?', 'Flag both signals as high priority'],
+  },
+  'Are AI UX Controls and AI Accuracy related?': {
+    response: `They're related but distinct, and it's worth keeping them separate.\n\n**AI UX Controls** is about how users interact with AI — surfacing suggestions, rejecting them, understanding what triggered them. The core problem is control and transparency.\n\n**AI Accuracy** is about whether the AI output is correct — clustering quality, summarisation fidelity, relevance of suggestions. The core problem is trust.\n\nIn practice they do overlap: when accuracy is low, users lose trust in the controls entirely and turn AI features off. Two signals sit on the boundary — one where a user rejected a correct suggestion because it looked wrong, and one where accepting a suggestion caused unintended changes.\n\n**Recommendation**: Keep them separate for now but link them. If accuracy improves, you may see UX Controls signals drop naturally.`,
+    followUps: ['Show me the boundary signals', 'Show AI Accuracy signals', 'How do users currently turn off AI features?'],
+  },
+}
+
 function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [input, setInput] = useState('')
+  const [activePrompt, setActivePrompt] = useState<string | null>(null)
 
   if (!open) return null
+
+  const promptData = activePrompt ? PROMPT_RESPONSES[activePrompt] : null
 
   return (
     <motion.aside
@@ -796,49 +822,125 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto flex flex-col justify-end px-6 pb-0 pt-24">
-        <div className="flex flex-col gap-6 px-4">
-          <div className="flex items-start">
-            <div className="flex items-center gap-1 bg-[#f1f2f5] rounded-full pr-2">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#3859FF' }}>
-                <span className="text-white leading-[0] flex items-center justify-center">
-                  <IconSparksFilled css={{ width: 16, height: 16 }} />
-                </span>
-              </div>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 6L8 10L12 6" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <p className="text-[#222428] text-[28px] font-serif leading-[1.4]">
-              Hi, Kajsa
-            </p>
-            <div className="text-[#656b81] text-[16px] leading-[1.5]">
-              <p>
-                Since last time: 14 new signals were captured across support tickets, sales calls,
-                and community posts. Signals linked to &lsquo;Canvas Performance&rsquo; have strengthened —
-                three enterprise accounts flagged it as a blocker this week.
-              </p>
-              <p className="mt-4">
-                Two high-priority signals are unreviewed and ready to be mapped to themes. Want me to walk you through them?
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-3">
-            {PROMPT_CHIPS.map((chip) => (
-              <button
-                key={chip}
-                className="flex items-center gap-1 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[14px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit"
+      <div className={`flex-1 overflow-y-auto flex flex-col px-6 pb-0 pt-24 ${activePrompt ? '' : 'justify-end'}`}>
+        {activePrompt && promptData ? (
+          <AnimatePresence mode="wait">
+            <motion.div key={activePrompt} className="flex flex-col gap-6 px-4 pb-4">
+              {/* User bubble */}
+              <motion.div
+                className="flex justify-end"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
               >
-                <span className="shrink-0 opacity-70 leading-[0] flex items-center justify-center">
-                  <IconSparksFilled css={{ width: 16, height: 16 }} />
-                </span>
-                <span className="pr-1">{chip}</span>
-              </button>
-            ))}
+                <div className="max-w-[80%] bg-[#f1f2f5] rounded-[12px] px-4 py-3">
+                  <p className="text-[14px] text-[#222428]">{activePrompt}</p>
+                </div>
+              </motion.div>
+
+              {/* AI response */}
+              <motion.div
+                className="flex items-start gap-3"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.2, ease: [0.2, 0, 0, 1] }}
+              >
+                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#3859FF' }}>
+                  <span className="text-white leading-[0] flex items-center justify-center">
+                    <IconSparksFilled css={{ width: 14, height: 14 }} />
+                  </span>
+                </div>
+                <div className="flex-1 flex flex-col gap-3">
+                  {promptData.response.split('\n\n').map((para, i) => (
+                    <motion.p
+                      key={i}
+                      className="text-[14px] text-[#222428] leading-[1.6]"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.35 + i * 0.08, ease: [0.2, 0, 0, 1] }}
+                    >
+                      {para.split(/\*\*(.*?)\*\*/g).map((part, j) =>
+                        j % 2 === 1 ? <strong key={j}>{part}</strong> : part
+                      )}
+                    </motion.p>
+                  ))}
+                  <motion.div
+                    className="flex flex-col gap-2 mt-2"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.8, ease: [0.2, 0, 0, 1] }}
+                  >
+                    {promptData.followUps.map((chip) => (
+                      <button
+                        key={chip}
+                        onClick={() => setActivePrompt(chip)}
+                        className="flex items-center gap-1.5 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[13px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit"
+                      >
+                        <span className="shrink-0 leading-[0] flex items-center justify-center opacity-70">
+                          <IconSparksFilled css={{ width: 14, height: 14 }} />
+                        </span>
+                        <span className="pr-1">{chip}</span>
+                      </button>
+                    ))}
+                  </motion.div>
+                  <motion.button
+                    onClick={() => setActivePrompt(null)}
+                    className="self-start mt-2 h-8 px-3 rounded-lg text-sm font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 1.0, ease: [0.2, 0, 0, 1] }}
+                  >
+                    Back to overview
+                  </motion.button>
+                </div>
+              </motion.div>
+            </motion.div>
+          </AnimatePresence>
+        ) : (
+          <div className="flex flex-col gap-6 px-4">
+            <div className="flex items-start">
+              <div className="flex items-center gap-1 bg-[#f1f2f5] rounded-full pr-2">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#3859FF' }}>
+                  <span className="text-white leading-[0] flex items-center justify-center">
+                    <IconSparksFilled css={{ width: 16, height: 16 }} />
+                  </span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M4 6L8 10L12 6" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-[#222428] text-[28px] font-serif leading-[1.4]">
+                Hi, Kajsa
+              </p>
+              <div className="text-[#656b81] text-[16px] leading-[1.5]">
+                <p>
+                  Since last time: 14 new signals were captured across support tickets, sales calls,
+                  and community posts. Signals linked to &lsquo;Canvas Performance&rsquo; have strengthened —
+                  three enterprise accounts flagged it as a blocker this week.
+                </p>
+                <p className="mt-4">
+                  Two high-priority signals are unreviewed and ready to be mapped to themes. Want me to walk you through them?
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3">
+              {PROMPT_CHIPS.map((chip) => (
+                <button
+                  key={chip}
+                  onClick={() => setActivePrompt(chip)}
+                  className="flex items-center gap-1 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[14px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit"
+                >
+                  <span className="shrink-0 opacity-70 leading-[0] flex items-center justify-center">
+                    <IconSparksFilled css={{ width: 16, height: 16 }} />
+                  </span>
+                  <span className="pr-1">{chip}</span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="px-6 pb-6 pt-6 shrink-0">
