@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Users } from "lucide-react";
-import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconDollarSignCurrency, IconRocket, IconThumbsUp, IconChatLinesTwo, IconBoard, IconChatTwo } from "@mirohq/design-system-icons";
+import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconRocket, IconThumbsUp, IconChatLinesTwo, IconBoard, IconChatTwo, IconInsights } from "@mirohq/design-system-icons";
 import InsightsTopBar from "@/components/InsightsTopBar";
 import { THEME_CARDS, type ThemeCard, type ThemeTag } from "@/data/themes-data";
 import { ChatInput } from "@/components/toolbar/ChatInput";
@@ -511,7 +511,6 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
               {/* Meta row */}
               <div className="flex items-center gap-2 flex-wrap my-2">
                 <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
-                  <IconDollarSignCurrency css={{ width: 16, height: 16 }} />
                   <span>{card.meta.arr}</span>
                 </div>
                 <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
@@ -623,6 +622,14 @@ export default function ThemesPage() {
         >
 
           <div className="absolute bottom-8 left-8">
+              <div
+                className="flex items-center justify-center flex-shrink-0 overflow-hidden mb-4"
+                style={{ width: 64, height: 64, borderRadius: 20, boxShadow: 'rgba(34,36,40,0.04) 0px 0px 12px, rgba(34,36,40,0.12) 0px 2px 8px', backgroundColor: 'rgba(255,255,255,0.1)' }}
+              >
+                <span className="inline-flex items-center justify-center flex-shrink-0 text-white" style={{ width: 38, height: 38 }}>
+                  <IconInsights css={{ width: 24, height: 24 }} />
+                </span>
+              </div>
             <h1 id="themes-heading" className="text-[60px] font-serif text-white mb-3">
               Themes
             </h1>

@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Bell, Users } from 'lucide-react'
-import { IconSparksFilled, IconChatTwo } from '@mirohq/design-system-icons'
+import { IconSparksFilled, IconChatTwo, IconFlag } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
 import { MetricCard } from '@/components/insights/MetricCard'
 import { SentimentChart } from '@/components/insights/SentimentChart'
@@ -129,6 +129,14 @@ export default function InsightsOverviewPage() {
           >
 
             <div className="absolute bottom-8 left-8">
+              <div
+                className="flex items-center justify-center flex-shrink-0 overflow-hidden mb-4"
+                style={{ width: 64, height: 64, borderRadius: 20, boxShadow: 'rgba(34,36,40,0.04) 0px 0px 12px, rgba(34,36,40,0.12) 0px 2px 8px', backgroundColor: 'rgba(255,255,255,0.1)' }}
+              >
+                <span className="inline-flex items-center justify-center flex-shrink-0 text-white" style={{ width: 38, height: 38 }}>
+                  <IconFlag css={{ width: 24, height: 24 }} />
+                </span>
+              </div>
               <h1 id="overview-heading" className="text-[60px] font-serif text-white mb-3">
                 Overview
               </h1>

@@ -9,7 +9,7 @@ import {
   YAxis,
   ResponsiveContainer,
 } from 'recharts'
-import { IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconDollarSignCurrency, IconRocket, IconThumbsUp, IconChatLinesTwo } from '@mirohq/design-system-icons'
+import { IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconRocket, IconThumbsUp, IconChatLinesTwo } from '@mirohq/design-system-icons'
 import { THEME_CARDS, type ThemeCard } from '@/data/themes-data'
 
 // ─── Tag pills ───────────────────────────────────────────────────────────────
@@ -168,7 +168,6 @@ function ThemeMatrixPopover({
 
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-            <IconDollarSignCurrency css={{ width: 14, height: 14 }} />
             <span>{card.meta.arr}</span>
           </div>
           <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>

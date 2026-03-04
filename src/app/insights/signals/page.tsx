@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, Users, Search, SlidersHorizontal, ChevronDown, ChevronRight, Play } from 'lucide-react'
-import { IconSparksFilled, IconSmileyChat, IconGlobe } from '@mirohq/design-system-icons'
+import { IconSparksFilled, IconSmileyChat, IconGlobe, IconRectanglesThreeOverlap } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
 import { ChatInput } from '@/components/toolbar/ChatInput'
 
@@ -1073,6 +1073,14 @@ export default function SignalsPage() {
           >
 
             <div className="absolute bottom-8 left-8">
+              <div
+                className="flex items-center justify-center flex-shrink-0 overflow-hidden mb-4"
+                style={{ width: 64, height: 64, borderRadius: 20, boxShadow: 'rgba(34,36,40,0.04) 0px 0px 12px, rgba(34,36,40,0.12) 0px 2px 8px', backgroundColor: 'rgba(255,255,255,0.1)' }}
+              >
+                <span className="inline-flex items-center justify-center flex-shrink-0 text-white" style={{ width: 38, height: 38 }}>
+                  <IconRectanglesThreeOverlap css={{ width: 24, height: 24 }} />
+                </span>
+              </div>
               <h1 id="signals-heading" className="text-[60px] font-serif text-white mb-3">
                 Signals
               </h1>
