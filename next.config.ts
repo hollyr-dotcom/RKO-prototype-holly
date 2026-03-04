@@ -5,7 +5,9 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   allowedDevOrigins: ['*.replit.dev', '*.replit.app', '*.worf.replit.dev'],
   images: {
-    domains: ['lh3.googleusercontent.com'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+    ],
   },
 };
 
