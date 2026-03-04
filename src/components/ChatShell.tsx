@@ -141,6 +141,14 @@ export function ChatShell() {
   const isSidePanel = chatMode === "sidepanel";
   const isFullscreen = chatMode === "fullscreen";
   const isHomePage = pathname === "/";
+  const isInsightsPage = pathname.startsWith("/insights/");
+
+  // Auto-minimize when navigating to insights pages (they have their own AI panel)
+  useEffect(() => {
+    if (isInsightsPage && !isMinimized) {
+      setChatMode("minimized");
+    }
+  }, [isInsightsPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Check for immediate open flag and disable transition BEFORE paint
   useLayoutEffect(() => {
@@ -155,6 +163,9 @@ export function ChatShell() {
       }
     }
   }, [isFullscreen]);
+
+  // Hide entirely on insights pages — must be after all hooks
+  if (isInsightsPage) return null;
 
   const chatPanel = (
     <ChatPanel

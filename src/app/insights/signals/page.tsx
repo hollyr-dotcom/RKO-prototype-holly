@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, Users, Search, SlidersHorizontal, ChevronDown, ChevronRight, Play } from 'lucide-react'
 import { IconSparksFilled, IconSmileyChat, IconGlobe } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
+import { ChatInput } from '@/components/toolbar/ChatInput'
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -1047,7 +1048,7 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
 }
 
 export default function SignalsPage() {
-  const [aiOpen, setAiOpen] = useState(true)
+  const [aiOpen, setAiOpen] = useState(false)
   const [selectedSignal, setSelectedSignal] = useState<typeof SIGNAL_ROWS[0] | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [direction, setDirection] = useState(1)
@@ -1075,7 +1076,7 @@ export default function SignalsPage() {
 
   return (
     <div className="relative h-full w-full flex flex-col" style={{ backgroundColor: '#FBFAF7' }}>
-      <InsightsTopBar onPromptClick={openAiPanel} />
+      <InsightsTopBar />
 
       <div
         className="flex-1 overflow-y-auto"
@@ -1315,6 +1316,18 @@ export default function SignalsPage() {
 
         </main>
       </div>
+
+      {/* Floating input bar */}
+      {!aiOpen && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20" style={{ width: 560 }}>
+          <div
+            className="bg-white rounded-full"
+            style={{ padding: 6, boxShadow: '0px 6px 16px 0px rgba(34,36,40,0.12), 0px 0px 8px 0px rgba(34,36,40,0.06)' }}
+          >
+            <ChatInput onSubmit={() => setAiOpen(true)} onOpenChat={() => setAiOpen(true)} onFocusChange={(focused) => { if (focused) setAiOpen(true) }} />
+          </div>
+        </div>
+      )}
 
       <AIPanel open={aiOpen} onClose={() => setAiOpen(false)} />
 

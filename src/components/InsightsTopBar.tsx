@@ -1,56 +1,32 @@
 "use client";
 
-import Image from "next/image";
-import { IconSparksFilled } from "@mirohq/design-system-icons";
-
-export default function InsightsTopBar({ onPromptClick }: { onPromptClick?: () => void }) {
+export default function InsightsTopBar() {
   return (
-    <div className="flex items-center justify-between h-14 px-4 shrink-0">
-      {/* Left: Miro logo */}
-      <div className="flex items-center">
-        <Image src="/miro-logo.svg" alt="Miro" width={56} height={20} priority />
-      </div>
-
-      {/* Right: AI prompt pill + bell + avatar */}
+    <div className="flex items-center justify-end h-14 px-4 shrink-0">
       <div className="flex items-center gap-3">
-        {/* AI prompt pill */}
-        <div
-          className="flex items-center gap-2 h-9 px-3 rounded-full bg-white cursor-pointer hover:shadow-sm transition-all"
-          style={{ width: 320 }}
-          onClick={onPromptClick}
-          role="button"
-          aria-label="Open AI assistant"
-        >
-          {/* AI sparks icon */}
-          <span className="shrink-0 text-[#3859ff] flex items-center" style={{ width: 16, height: 16 }}>
-            <IconSparksFilled />
-          </span>
-          <span className="flex-1 text-sm text-[#959aac] truncate">Morning Kajsa, how can I help?</span>
-          {/* Submit button */}
-          <button className="w-6 h-6 rounded-full bg-[#e9eaef] flex items-center justify-center shrink-0 hover:bg-[#d8dae0] transition-colors">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M6 9V3M3 6l3-3 3 3" stroke="#656b81" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Bell with badge */}
+        {/* Bell */}
         <div className="relative">
-          <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[#f1f2f5] transition-colors text-[#222428]">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 16.5c.825 0 1.5-.675 1.5-1.5h-3c0 .825.675 1.5 1.5 1.5zm4.5-4.5V8.25c0-2.303-1.223-4.23-3.375-4.74V3c0-.622-.503-1.125-1.125-1.125S7.875 2.378 7.875 3v.51C5.715 4.02 4.5 5.94 4.5 8.25V12L3 13.5V14.25h12V13.5L13.5 12z" fill="currentColor" />
+          <button
+            className="flex items-center justify-center rounded-full transition-colors hover:bg-black/[0.04]"
+            style={{ width: 32, height: 32, color: 'var(--color-gray-800, #222428)' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path fillRule="evenodd" clipRule="evenodd" d="M8.00228 1.33337C5.57825 1.33337 3.54861 3.17018 3.30741 5.58218L2.73229 11.3334H1.33301V12.6667H14.6689V11.3334H13.2723L12.6972 5.58217C12.456 3.17018 10.4263 1.33337 8.00228 1.33337ZM11.3704 5.71485L11.9323 11.3334H4.07227L4.63412 5.71485C4.80716 3.98445 6.26325 2.66671 8.00228 2.66671C9.7413 2.66671 11.1974 3.98445 11.3704 5.71485Z" fill="currentColor" />
+              <path d="M6.66634 13.3334H9.33301V14L8.66634 14.6667H7.33301L6.66634 14V13.3334Z" fill="currentColor" />
             </svg>
           </button>
-          {/* Badge */}
-          <div className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[#3859ff] flex items-center justify-center">
-            <span className="text-[10px] font-semibold text-white leading-none">9</span>
-          </div>
         </div>
 
-        {/* Avatar */}
-        <div className="w-8 h-8 rounded-full overflow-hidden shrink-0">
-          <Image src="/avatars/priya-sharma.png" alt="Kajsa" width={32} height={32} className="w-full h-full object-cover" />
-        </div>
+        {/* Create button */}
+        <button
+          className="flex items-center gap-1 text-md font-medium text-white rounded-full cursor-pointer hover:brightness-110 transition-all"
+          style={{ background: '#2A2A2D', padding: '8px 16px' }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4V20M4 12H20" stroke="white" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          Create
+        </button>
       </div>
     </div>
   );

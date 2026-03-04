@@ -7,6 +7,7 @@ import { Bell, Users } from "lucide-react";
 import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconDollarSignCurrency, IconRocket, IconThumbsUp, IconChatLinesTwo, IconBoard } from "@mirohq/design-system-icons";
 import InsightsTopBar from "@/components/InsightsTopBar";
 import { THEME_CARDS, type ThemeCard, type ThemeTag } from "@/data/themes-data";
+import { ChatInput } from "@/components/toolbar/ChatInput";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -611,7 +612,7 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
 
 export default function ThemesPage() {
   const [filters, setFilters] = useState(CATEGORY_FILTERS);
-  const [aiOpen, setAiOpen] = useState(true);
+  const [aiOpen, setAiOpen] = useState(false);
   const [aiChatPrompt, setAiChatPrompt] = useState<string | undefined>(undefined);
 
   const toggle = (label: string) => {
@@ -640,7 +641,7 @@ export default function ThemesPage() {
 
   return (
     <div className="relative h-full w-full flex flex-col" style={{ backgroundColor: '#FBFAF7' }}>
-      <InsightsTopBar onPromptClick={() => setAiOpen(true)} />
+      <InsightsTopBar />
       <div
         className="flex-1 overflow-y-auto"
         style={{ paddingRight: aiOpen ? 400 : 0, transition: 'padding-right 0.25s ease' }}
@@ -771,6 +772,18 @@ export default function ThemesPage() {
         </div>
       </main>
       </div>
+
+      {/* Floating input bar */}
+      {!aiOpen && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20" style={{ width: 560 }}>
+          <div
+            className="bg-white rounded-full"
+            style={{ padding: 6, boxShadow: '0px 6px 16px 0px rgba(34,36,40,0.12), 0px 0px 8px 0px rgba(34,36,40,0.06)' }}
+          >
+            <ChatInput onSubmit={() => setAiOpen(true)} onOpenChat={() => setAiOpen(true)} onFocusChange={(focused) => { if (focused) setAiOpen(true) }} />
+          </div>
+        </div>
+      )}
 
       {/* AI panel */}
       <AIPanel open={aiOpen} onClose={() => { setAiOpen(false); setAiChatPrompt(undefined); }} chatPrompt={aiChatPrompt} onClearChat={() => setAiChatPrompt(undefined)} />

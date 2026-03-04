@@ -8,6 +8,7 @@ import InsightsTopBar from '@/components/InsightsTopBar'
 import { MetricCard } from '@/components/insights/MetricCard'
 import { SentimentChart } from '@/components/insights/SentimentChart'
 import { ThemeMatrix } from '@/components/insights/ThemeMatrix'
+import { ChatInput } from '@/components/toolbar/ChatInput'
 
 // ─── AI Panel ─────────────────────────────────────────────────────────────────
 
@@ -165,11 +166,11 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function InsightsOverviewPage() {
-  const [aiOpen, setAiOpen] = useState(true)
+  const [aiOpen, setAiOpen] = useState(false)
 
   return (
     <div className="relative h-full w-full flex flex-col" style={{ backgroundColor: '#FBFAF7' }}>
-      <InsightsTopBar onPromptClick={() => setAiOpen(true)} />
+      <InsightsTopBar />
 
       <div
         className="flex-1 overflow-y-auto"
@@ -283,6 +284,18 @@ export default function InsightsOverviewPage() {
 
         </main>
       </div>
+
+      {/* Floating input bar */}
+      {!aiOpen && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20" style={{ width: 560 }}>
+          <div
+            className="bg-white rounded-full"
+            style={{ padding: 6, boxShadow: '0px 6px 16px 0px rgba(34,36,40,0.12), 0px 0px 8px 0px rgba(34,36,40,0.06)' }}
+          >
+            <ChatInput onSubmit={() => setAiOpen(true)} onOpenChat={() => setAiOpen(true)} onFocusChange={(focused) => { if (focused) setAiOpen(true) }} />
+          </div>
+        </div>
+      )}
 
       {/* AI panel */}
       <AIPanel open={aiOpen} onClose={() => setAiOpen(false)} />
