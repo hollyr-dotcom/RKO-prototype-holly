@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Users } from "lucide-react";
 import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconDollarSignCurrency, IconRocket, IconThumbsUp, IconChatLinesTwo, IconBoard } from "@mirohq/design-system-icons";
 import InsightsTopBar from "@/components/InsightsTopBar";
+import { InsightsSidebar } from "@/components/InsightsSidebar";
 import { THEME_CARDS, type ThemeCard, type ThemeTag } from "@/data/themes-data";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -639,7 +640,9 @@ export default function ThemesPage() {
       );
 
   return (
-    <div className="relative h-full w-full flex flex-col" style={{ backgroundColor: '#FBFAF7' }}>
+    <div className="relative h-full w-full flex flex-row">
+      <InsightsSidebar />
+      <div className="flex-1 flex flex-col min-w-0" style={{ backgroundColor: '#FBFAF7' }}>
       <InsightsTopBar onPromptClick={() => setAiOpen(true)} />
       <div
         className="flex-1 overflow-y-auto"
@@ -775,6 +778,7 @@ export default function ThemesPage() {
       {/* AI panel */}
       <AIPanel open={aiOpen} onClose={() => { setAiOpen(false); setAiChatPrompt(undefined); }} chatPrompt={aiChatPrompt} onClearChat={() => setAiChatPrompt(undefined)} />
 
+      </div>
     </div>
   );
 }

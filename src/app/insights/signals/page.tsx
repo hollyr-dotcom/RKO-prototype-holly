@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, Users, Search, SlidersHorizontal, ChevronDown, ChevronRight, Play } from 'lucide-react'
 import { IconSparksFilled, IconSmileyChat, IconGlobe } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
+import { InsightsSidebar } from '@/components/InsightsSidebar'
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -1074,7 +1075,9 @@ export default function SignalsPage() {
   }
 
   return (
-    <div className="relative h-full w-full flex flex-col" style={{ backgroundColor: '#FBFAF7' }}>
+    <div className="relative h-full w-full flex flex-row">
+      <InsightsSidebar />
+      <div className="flex-1 flex flex-col min-w-0" style={{ backgroundColor: '#FBFAF7' }}>
       <InsightsTopBar onPromptClick={openAiPanel} />
 
       <div
@@ -1327,6 +1330,7 @@ export default function SignalsPage() {
         )}
       </AnimatePresence>
 
+      </div>
     </div>
   )
 }
