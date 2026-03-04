@@ -6,6 +6,8 @@ import { Bell, Users, Search, SlidersHorizontal, ChevronDown, ChevronRight, Play
 import { IconSparksFilled, IconSmileyChat, IconGlobe } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
 import { ChatInput } from '@/components/toolbar/ChatInput'
+import { ChatPanel } from '@/components/ChatPanel'
+import { useChat } from '@/hooks/useChat'
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -758,297 +760,9 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
   )
 }
 
-const PROMPT_CHIPS = [
-  'Walk me through the 2 unreviewed signals',
-  'Why is Canvas Performance strengthening?',
-  'Which themes have new signals this week?',
-]
-
-const PROMPT_RESPONSES: Record<string, { response: string; followUps: string[] }> = {
-  'Walk me through the 2 unreviewed signals': {
-    response: `Two signals are waiting for review.\n\n**"Permission model blocks cross-org board sharing"** has 6 upvotes and maps cleanly to the **Permission Controls** theme — four enterprise accounts raised it in sales calls this week. It's high confidence and ready to add.\n\nThe second, **"Localisation gaps prevent rollout in APAC markets"**, is harder to place. It could sit under **Localisation & i18n**, but the signal is thin — only one source so far. I'd hold it for the next review cycle unless more signals come in.\n\n**Recommended action**: Map the permission signal now. Flag the APAC signal as 'watching'.`,
-    followUps: ['Map the permission signal to a theme', 'Show Permission Controls coverage', 'Is APAC localisation a new theme?'],
-  },
-  'Why is Canvas Performance strengthening?': {
-    response: `**Canvas Performance** now has 8 signals — up from 5 last month. Three things are driving this:\n\n**Enterprise scale** — accounts with 40+ concurrent users are hitting consistent lag during live sessions. It's not edge-case behaviour anymore.\n\n**Comparison pressure** — four sales calls this week included direct comparisons to Figma's performance. Prospects are using it as a decision criterion.\n\n**Churn risk** — two accounts flagged it as a blocker to wider rollout, not just a complaint. That's a different level of urgency.\n\nThe theme confidence is at **84%** — the highest of any active theme right now. It's moved from 'monitoring' to 'act now' territory.`,
-    followUps: ['Which accounts mentioned Canvas Performance?', 'Draft a roadmap recommendation', 'Show all Canvas Performance signals'],
-  },
-  'Which themes have new signals this week?': {
-    response: `**4 themes** picked up new signals since your last review:\n\n**Canvas Performance** — 2 new signals. Enterprise lag and a direct Figma comparison from a sales call.\n\n**Enterprise Security** — 2 new signals. SSO enforcement gaps and missing audit log granularity, both from regulated-industry accounts.\n\n**AI UX Controls** — 1 new signal. Users want to reject AI suggestions inline without turning the feature off entirely.\n\n**Mobile Parity** — 1 new signal. iOS touch target sizing during workshops. Notable because it's the first from a non-enterprise account this month — the problem may be broader than enterprise.`,
-    followUps: ['Tell me more about Mobile Parity', 'Show me the Enterprise Security signals', 'Which theme needs the most attention?'],
-  },
-  'Show Enterprise Security signals across both accounts': {
-    response: `Both signals come from enterprise accounts in regulated industries.\n\n**Signal 1 — "SSO enforcement not available for guest accounts"** (Spotify, sales call). Their IT team requires SSO for all users accessing boards — including external collaborators. Guest-level access currently bypasses this entirely.\n\n**Signal 2 — "Audit logs don't capture shape-level edit history"** (Zendesk, support ticket). Their compliance team needs a full edit trail for shared boards. Current logs only capture board-level actions, not individual edits.\n\nBoth map to **Enterprise Security**. Neither has been reviewed. These are the kind of signals that quietly block enterprise expansion — they rarely generate volume, but they carry high weight in renewal conversations.`,
-    followUps: ['How does this compare to competitor audit features?', 'Are there more signals from regulated industries?', 'Flag both signals as high priority'],
-  },
-  'Are AI UX Controls and AI Accuracy related?': {
-    response: `They're related but distinct, and it's worth keeping them separate.\n\n**AI UX Controls** is about how users interact with AI — surfacing suggestions, rejecting them, understanding what triggered them. The core problem is control and transparency.\n\n**AI Accuracy** is about whether the AI output is correct — clustering quality, summarisation fidelity, relevance of suggestions. The core problem is trust.\n\nIn practice they do overlap: when accuracy is low, users lose trust in the controls entirely and turn AI features off. Two signals sit on the boundary — one where a user rejected a correct suggestion because it looked wrong, and one where accepting a suggestion caused unintended changes.\n\n**Recommendation**: Keep them separate for now but link them. If accuracy improves, you may see UX Controls signals drop naturally.`,
-    followUps: ['Show me the boundary signals', 'Show AI Accuracy signals', 'How do users currently turn off AI features?'],
-  },
-  'Map the permission signal to a theme': {
-    response: `Done. **"Permission model blocks cross-org board sharing"** has been mapped to **Permission Controls**.\n\nThe theme now has 4 signals total. Confidence score moves from 71% to **76%** with this addition — the new signal is from a named enterprise account with strong source credibility.\n\nI've also flagged **"Localisation gaps prevent rollout in APAC markets"** as 'watching' pending more signals. You'll get a notification if a second source surfaces within 14 days.`,
-    followUps: ['Show Permission Controls coverage', 'Is APAC localisation a new theme?', 'Walk me through the 2 unreviewed signals'],
-  },
-  'Show Permission Controls coverage': {
-    response: `**Permission Controls** has 4 signals across 3 source types:\n\n2 from **sales calls** — enterprise accounts asking about granular role assignment and guest access scoping.\n1 from **support tickets** — a team lead unable to restrict editing to specific frames.\n1 just added — **cross-org board sharing blocked by permission model**.\n\nCoverage is solid for the enterprise segment. The gap is **SMB and agency use cases** — no signals from those segments yet, even though the permission model likely affects them too.\n\nConfidence: **76%**. Theme status: Active.`,
-    followUps: ['Which theme needs the most attention?', 'Are there more signals from regulated industries?', 'Is APAC localisation a new theme?'],
-  },
-  'Is APAC localisation a new theme?': {
-    response: `Not yet — but it could become one.\n\n**Localisation & i18n** already exists as a theme with 3 signals, mostly focused on RTL language support and date formatting. The APAC signal fits within that theme for now, but it's a different dimension: **market entry blockers** rather than language rendering bugs.\n\nIf two more signals come in specifically about APAC rollout friction, it would justify splitting into a dedicated **APAC Market Readiness** theme. I'd leave it under Localisation & i18n for this cycle and revisit in 3–4 weeks.`,
-    followUps: ['Which themes have new signals this week?', 'Which theme needs the most attention?', 'Walk me through the 2 unreviewed signals'],
-  },
-  'Which accounts mentioned Canvas Performance?': {
-    response: `**3 enterprise accounts** flagged Canvas Performance this week:\n\n**Spotify** (sales call, Mon) — "We run design sprints with 40+ people on a single board. The lag when everyone is active at once is a dealbreaker."\n\n**Zalando** (support ticket, Wed) — Reported consistent cursor lag above 50 objects with live presence enabled. Opened as a bug, but the root cause is the same rendering bottleneck.\n\n**Shopify** (community post, Thu) — A power user compared Miro's performance unfavourably to Figma in a public thread. 34 upvotes.`,
-    followUps: ['Why is Canvas Performance strengthening?', 'Draft a roadmap recommendation', 'Show all Canvas Performance signals'],
-  },
-  'Draft a roadmap recommendation': {
-    response: `Here's a draft recommendation for **Canvas Performance**:\n\n**Recommendation**: Prioritise rendering performance for boards with 40+ concurrent users in Q2. Address cursor lag before the enterprise sales cycle peaks in Q3.\n\n**Evidence**: 8 signals across 3 enterprise accounts. Two flagged as churn risk. Direct competitor comparisons appearing in sales calls.\n\n**Suggested scope**: Investigate and resolve the rendering bottleneck that causes lag above 40 concurrent users. Target: under 100ms cursor latency at 50 users on a standard board.\n\n**Impact**: Removes a stated blocker for 2 at-risk accounts. Reduces negative sentiment in enterprise sales conversations.`,
-    followUps: ['Which accounts mentioned Canvas Performance?', 'Which theme needs the most attention?', 'Show all Canvas Performance signals'],
-  },
-  'Show all Canvas Performance signals': {
-    response: `**Canvas Performance** has 8 signals total:\n\n3 from **sales calls** — enterprise accounts citing lag as a blocker or comparison point against Figma.\n3 from **support tickets** — reported as bugs (cursor lag, slow frame loads, presence indicator delays).\n1 from a **community post** — public comparison to Figma with 34 upvotes.\n1 from an **NPS response** — "Performance on large boards is the one thing stopping us going all-in."\n\nAll 8 point to the same root cause: rendering bottleneck under concurrent load. The theme has strong signal breadth across source types.`,
-    followUps: ['Which accounts mentioned Canvas Performance?', 'Draft a roadmap recommendation', 'Which theme needs the most attention?'],
-  },
-  'Tell me more about Mobile Parity': {
-    response: `**Mobile Parity** has 7 signals total, but this new one is different from the others.\n\nMost existing signals come from enterprise accounts where mobile use is incidental — someone checking a board on their phone, not actively editing. The new signal is from an **SMB facilitator** running a workshop where half the participants were on iOS tablets.\n\nThe specific complaint: touch targets on the toolbar are too small for reliable tapping during a fast-moving session. It caused delays and frustration in front of a client.\n\nThis is the first signal where mobile is the **primary device**, not a secondary one. It may indicate a different user segment starting to adopt Miro for facilitation on mobile.`,
-    followUps: ['Which themes have new signals this week?', 'Which theme needs the most attention?', 'Are there more signals from regulated industries?'],
-  },
-  'Show me the Enterprise Security signals': {
-    response: `**Enterprise Security** has 5 signals total. The 2 new ones this week:\n\n**SSO enforcement for guests** (Spotify) — IT policy requires SSO for all board access. Guest accounts bypass it entirely.\n\n**Audit log granularity** (Zendesk) — Compliance needs shape-level edit history. Current logs are board-level only.\n\nThe 3 existing signals:\n- Admin controls for external sharing (flagged by 2 accounts)\n- IP allowlist not applying to embedded boards\n- No way to revoke access on a per-board basis for departing employees\n\nAll 5 point to gaps in the enterprise security model for regulated-industry customers.`,
-    followUps: ['Show Enterprise Security signals across both accounts', 'Are there more signals from regulated industries?', 'How does this compare to competitor audit features?'],
-  },
-  'Which theme needs the most attention?': {
-    response: `**Canvas Performance** needs the most attention right now.\n\nIt has the highest confidence score (**84%**), the most signals added this week (**2**), and is the only theme with active **churn risk** attached — two accounts explicitly described it as a blocker to wider rollout, not just a point of feedback.\n\n**Enterprise Security** is a close second. The signals there are lower volume but higher stakes — they're appearing in regulated-industry accounts where security gaps can block deals entirely.\n\nI'd recommend reviewing Canvas Performance this sprint and flagging Enterprise Security for the next product review.`,
-    followUps: ['Draft a roadmap recommendation', 'Show me the Enterprise Security signals', 'Why is Canvas Performance strengthening?'],
-  },
-  'How does this compare to competitor audit features?': {
-    response: `Competitors are ahead on audit log granularity.\n\n**Figma** offers shape-level edit history in their enterprise plan, including who changed what and when. It's been a selling point in their enterprise sales motion for 18 months.\n\n**Notion** logs page-level edits with user attribution and timestamps — not as granular as Figma but good enough for most compliance use cases.\n\n**Miro** currently logs board-level actions only: who opened it, who shared it, who exported it. No edit-level trail.\n\nFor regulated-industry accounts (finance, healthcare, legal), this gap is material. It's not a feature request — it's a compliance requirement.`,
-    followUps: ['Are there more signals from regulated industries?', 'Show Enterprise Security signals across both accounts', 'Are AI UX Controls and AI Accuracy related?'],
-  },
-  'Are there more signals from regulated industries?': {
-    response: `Yes — **6 signals total** this month came from accounts in regulated industries (finance, healthcare, legal, government).\n\n3 map to **Enterprise Security** (SSO, audit logs, access revocation).\n2 map to **Export Fidelity** — a legal team needing pixel-perfect PDF exports for filing purposes.\n1 maps to **Sharing & Access** — a healthcare provider unable to restrict board access to specific departments.\n\nRegulated-industry accounts represent **23% of enterprise ARR** but are generating **43% of security and compliance signals** this month. The signal density is high relative to their size.`,
-    followUps: ['Show Enterprise Security signals across both accounts', 'How does this compare to competitor audit features?', 'Flag both signals as high priority'],
-  },
-  'Flag both signals as high priority': {
-    response: `Both Enterprise Security signals have been flagged as **high priority**.\n\n**"SSO enforcement not available for guest accounts"** — flagged. Assigned to the Identity & Access cluster. Renewal conversation with Spotify is in 6 weeks.\n\n**"Audit logs don't capture shape-level edit history"** — flagged. Assigned to the Compliance cluster. Zendesk's contract review is in Q2.\n\nI'd recommend adding both to the agenda for next week's enterprise review. The timing on both accounts makes these time-sensitive.`,
-    followUps: ['Are there more signals from regulated industries?', 'Show Enterprise Security signals across both accounts', 'How does this compare to competitor audit features?'],
-  },
-  'Show me the boundary signals': {
-    response: `Two signals sit on the boundary between **AI UX Controls** and **AI Accuracy**:\n\n**Signal 1** — A user running a retrospective rejected AI clustering suggestions across the board, then manually recreated almost identical clusters. In the session recording, they said "I don't trust it" — but the AI output was objectively accurate. This is an accuracy-perception problem, not a controls problem.\n\n**Signal 2** — A facilitator accepted an AI summarisation of sticky notes mid-session. The summary was technically correct but stripped important nuance, causing confusion. They needed a way to partially accept it — which is a controls gap, not an accuracy gap.\n\nBoth signals are tagged to both themes for now.`,
-    followUps: ['Show AI Accuracy signals', 'How do users currently turn off AI features?', 'Are AI UX Controls and AI Accuracy related?'],
-  },
-  'Show AI Accuracy signals': {
-    response: `**AI Accuracy** has 5 signals:\n\n2 from **session recordings** — AI clustering grouped unrelated sticky notes, causing facilitators to spend time correcting it mid-session.\n\n1 from a **support ticket** — AI summarisation removed key decisions from a design review summary. The team didn't catch it until after sharing with stakeholders.\n\n1 from a **community post** — A user compared Miro's AI clustering unfavourably to FigJam's, citing more coherent groupings.\n\n1 boundary signal shared with **AI UX Controls** — correct output, low perceived trust.\n\nCommon thread: accuracy issues are most visible in **high-stakes, time-pressured sessions** where there's no margin to verify AI output.`,
-    followUps: ['Are AI UX Controls and AI Accuracy related?', 'How do users currently turn off AI features?', 'Show me the boundary signals'],
-  },
-  'How do users currently turn off AI features?': {
-    response: `Right now, there's no single toggle. Users have three partial options:\n\n**Board settings** — AI suggestions can be disabled per board by the board owner. Most users don't know this exists.\n\n**Dismissing suggestions** — Users can dismiss individual suggestions inline, but they reappear in future sessions.\n\n**Workspace admin settings** — Admins can disable AI features workspace-wide, but this is all-or-nothing and rarely used.\n\nThe gap: there's no way to say "don't suggest clustering, but keep summarisation on." Feature-level control is missing entirely.\n\nThis is the core of the **AI UX Controls** theme — and it's exactly what the new signal this week is pointing at.`,
-    followUps: ['Show me the boundary signals', 'Are AI UX Controls and AI Accuracy related?', 'Show AI Accuracy signals'],
-  },
-}
-
-function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [input, setInput] = useState('')
-  const [activePrompt, setActivePrompt] = useState<string | null>(null)
-
-  if (!open) return null
-
-  const promptData = activePrompt ? PROMPT_RESPONSES[activePrompt] : null
-
-  return (
-    <motion.aside
-      initial={{ x: 40, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: 40, opacity: 0 }}
-      transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
-      className="fixed top-4 right-4 bottom-4 w-[400px] bg-white rounded-[20px] shadow-[0_0_12px_rgba(34,36,40,0.04),-2px_0_8px_rgba(34,36,40,0.12)] flex flex-col overflow-hidden z-30"
-    >
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-6 border-b border-[#e0e2e8] bg-white z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#3859FF' }}>
-            <span className="text-white leading-[0] flex items-center justify-center">
-              <IconSparksFilled css={{ width: 16, height: 16 }} />
-            </span>
-          </div>
-          <p className="text-[#222428] text-base font-semibold" style={{ fontFamily: 'Roobert, sans-serif' }}>
-            Insights Assistant
-          </p>
-        </div>
-        <button onClick={onClose} className="w-6 h-6 flex items-center justify-center text-[#656b81] hover:text-[#222428] transition-colors">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </button>
-      </div>
-
-      <div className={`flex-1 overflow-y-auto flex flex-col px-6 pb-0 pt-24 ${activePrompt ? '' : 'justify-end'}`}>
-        {activePrompt && promptData ? (
-          <AnimatePresence mode="wait">
-            <motion.div key={activePrompt} className="flex flex-col gap-6 px-4 pb-4">
-              {/* User bubble */}
-              <motion.div
-                className="flex justify-end"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
-              >
-                <div className="max-w-[80%] bg-[#f1f2f5] rounded-[12px] px-4 py-3">
-                  <p className="text-[14px] text-[#222428]">{activePrompt}</p>
-                </div>
-              </motion.div>
-
-              {/* AI response */}
-              <motion.div
-                className="flex items-start gap-3"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: 0.2, ease: [0.2, 0, 0, 1] }}
-              >
-                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#3859FF' }}>
-                  <span className="text-white leading-[0] flex items-center justify-center">
-                    <IconSparksFilled css={{ width: 14, height: 14 }} />
-                  </span>
-                </div>
-                <div className="flex-1 flex flex-col gap-3">
-                  {promptData.response.split('\n\n').map((para, i) => (
-                    <motion.p
-                      key={i}
-                      className="text-[14px] text-[#222428] leading-[1.6]"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.35 + i * 0.08, ease: [0.2, 0, 0, 1] }}
-                    >
-                      {para.split(/\*\*(.*?)\*\*/g).map((part, j) =>
-                        j % 2 === 1 ? <strong key={j}>{part}</strong> : part
-                      )}
-                    </motion.p>
-                  ))}
-                  <motion.div
-                    className="flex flex-col gap-2 mt-2"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.8, ease: [0.2, 0, 0, 1] }}
-                  >
-                    {promptData.followUps.map((chip) => (
-                      <button
-                        key={chip}
-                        onClick={() => setActivePrompt(chip)}
-                        className="flex items-center gap-1.5 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[13px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit"
-                      >
-                        <span className="shrink-0 leading-[0] flex items-center justify-center opacity-70">
-                          <IconSparksFilled css={{ width: 14, height: 14 }} />
-                        </span>
-                        <span className="pr-1">{chip}</span>
-                      </button>
-                    ))}
-                  </motion.div>
-                  <motion.button
-                    onClick={() => setActivePrompt(null)}
-                    className="self-start mt-2 h-8 px-3 rounded-lg text-sm font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 1.0, ease: [0.2, 0, 0, 1] }}
-                  >
-                    Back to overview
-                  </motion.button>
-                </div>
-              </motion.div>
-            </motion.div>
-          </AnimatePresence>
-        ) : (
-          <div className="flex flex-col gap-6 px-4">
-            <div className="flex items-start">
-              <div className="flex items-center gap-1 bg-[#f1f2f5] rounded-full pr-2">
-                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#3859FF' }}>
-                  <span className="text-white leading-[0] flex items-center justify-center">
-                    <IconSparksFilled css={{ width: 16, height: 16 }} />
-                  </span>
-                </div>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M4 6L8 10L12 6" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <p className="text-[#222428] text-[28px] font-serif leading-[1.4]">
-                Hi, Kajsa
-              </p>
-              <div className="text-[#656b81] text-[16px] leading-[1.5]">
-                <p>
-                  Since last time: 14 new signals were captured across support tickets, sales calls,
-                  and community posts. Signals linked to &lsquo;Canvas Performance&rsquo; have strengthened —
-                  three enterprise accounts flagged it as a blocker this week.
-                </p>
-                <p className="mt-4">
-                  Two high-priority signals are unreviewed and ready to be mapped to themes. Want me to walk you through them?
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              {PROMPT_CHIPS.map((chip) => (
-                <button
-                  key={chip}
-                  onClick={() => setActivePrompt(chip)}
-                  className="flex items-start gap-1 min-h-8 py-1.5 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[14px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit"
-                >
-                  <span className="shrink-0 opacity-70 leading-[0] flex items-center justify-center mt-[1px]">
-                    <IconSparksFilled css={{ width: 16, height: 16 }} />
-                  </span>
-                  <span className="pr-1">{chip}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="px-6 pb-6 pt-6 shrink-0">
-        <div className="border border-[#e0e2e8] rounded-[8px] overflow-hidden">
-          <div className="px-4 pt-4 pb-6">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="What can I do next?"
-              className="w-full text-[14px] text-[#222428] placeholder-[#7d8297] bg-transparent outline-none"
-            />
-          </div>
-          <div className="flex items-center justify-between px-2 py-2">
-            <div className="flex items-center">
-              <button className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="6.5" cy="6.5" r="3.5" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M9.5 9.5L13 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2.5 4h11M2.5 8h11M2.5 12h11" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-                  <circle cx="5.5" cy="4" r="1.5" fill="white" stroke="currentColor" strokeWidth="1.3" />
-                  <circle cx="10.5" cy="8" r="1.5" fill="white" stroke="currentColor" strokeWidth="1.3" />
-                  <circle cx="5.5" cy="12" r="1.5" fill="white" stroke="currentColor" strokeWidth="1.3" />
-                </svg>
-              </button>
-            </div>
-            <button className="w-8 h-8 flex items-center justify-center rounded bg-[#e9eaef] text-[#656b81]">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M8 12V4M4 8l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </motion.aside>
-  )
-}
-
 export default function SignalsPage() {
   const [aiOpen, setAiOpen] = useState(false)
+  const { messages, isLoading, input, setInput, append, startNewChat } = useChat()
   const [selectedSignal, setSelectedSignal] = useState<typeof SIGNAL_ROWS[0] | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [direction, setDirection] = useState(1)
@@ -1329,7 +1043,28 @@ export default function SignalsPage() {
         </div>
       )}
 
-      <AIPanel open={aiOpen} onClose={() => setAiOpen(false)} />
+      <AnimatePresence>
+        {aiOpen && (
+          <motion.aside
+            key="ai-panel"
+            initial={{ x: 40, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 40, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
+            className="fixed top-4 right-4 bottom-4 w-[400px] bg-white rounded-[20px] shadow-[0_0_12px_rgba(34,36,40,0.04),-2px_0_8px_rgba(34,36,40,0.12)] overflow-hidden z-30"
+          >
+            <ChatPanel
+              messages={messages}
+              isLoading={isLoading}
+              input={input}
+              setInput={setInput}
+              onSubmit={(text) => append({ role: 'user', content: text })}
+              onClose={() => setAiOpen(false)}
+              onNewChat={startNewChat}
+            />
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {selectedSignal && (
