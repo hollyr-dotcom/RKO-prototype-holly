@@ -3,6 +3,8 @@ import fs from "fs";
 import path from "path";
 import { requireAuth } from "@/lib/auth/serverAuth";
 
+export const dynamic = "force-dynamic";
+
 const FEED_PATH = path.join(process.cwd(), "src/data/feed-items.json");
 const SPACES_PATH = path.join(process.cwd(), "src/data/spaces.json");
 

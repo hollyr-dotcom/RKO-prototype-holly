@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/serverAuth";
 
+export const dynamic = "force-dynamic";
+
 const OPENAI_API_URL = "https://api.openai.com/v1/images/generations";
 
 function buildEmojiPrompt(input: string): string {
