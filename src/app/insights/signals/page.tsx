@@ -745,8 +745,8 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
         {activeTab === 'updates' && (
           <div className="flex flex-col gap-4">
             <div className="flex items-start gap-3">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#3859FF' }}>
-                <span className="text-white leading-[0] flex items-center justify-center">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#E7E7E5' }}>
+                <span className="text-[#222428] leading-[0] flex items-center justify-center">
                   <IconSparksFilled css={{ width: 14, height: 14 }} />
                 </span>
               </div>
@@ -893,8 +893,8 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
     >
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-6 border-b border-[#e0e2e8] bg-white z-10">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#3859FF' }}>
-            <span className="text-white leading-[0] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#E7E7E5' }}>
+            <span className="text-[#222428] leading-[0] flex items-center justify-center">
               <IconSparksFilled css={{ width: 16, height: 16 }} />
             </span>
           </div>
@@ -932,8 +932,8 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: 0.2, ease: [0.2, 0, 0, 1] }}
               >
-                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#3859FF' }}>
-                  <span className="text-white leading-[0] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#E7E7E5' }}>
+                  <span className="text-[#222428] leading-[0] flex items-center justify-center">
                     <IconSparksFilled css={{ width: 14, height: 14 }} />
                   </span>
                 </div>
@@ -987,18 +987,6 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
           </AnimatePresence>
         ) : (
           <div className="flex flex-col gap-6 px-4">
-            <div className="flex items-start">
-              <div className="flex items-center gap-1 bg-[#f1f2f5] rounded-full pr-2">
-                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#3859FF' }}>
-                  <span className="text-white leading-[0] flex items-center justify-center">
-                    <IconSparksFilled css={{ width: 16, height: 16 }} />
-                  </span>
-                </div>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M4 6L8 10L12 6" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-            </div>
             <div className="flex flex-col gap-2">
               <p className="text-[#222428] text-[28px] font-serif leading-[1.4]">
                 Hi, Kajsa

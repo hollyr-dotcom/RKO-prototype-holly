@@ -34,9 +34,9 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-            style={{ backgroundColor: '#3859FF' }}
+            style={{ backgroundColor: '#E7E7E5' }}
           >
-            <span className="text-white leading-[0] flex items-center justify-center">
+            <span className="text-[#222428] leading-[0] flex items-center justify-center">
               <IconSparksFilled css={{ width: 16, height: 16 }} />
             </span>
           </div>
@@ -57,23 +57,6 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
       {/* Body — flex-col justify-end so content sits at the bottom */}
       <div className="flex-1 overflow-y-auto flex flex-col justify-end px-6 pb-0 pt-24">
         <div className="flex flex-col gap-6 px-4">
-
-          {/* Agent avatar pill */}
-          <div className="flex items-start">
-            <div className="flex items-center gap-1 bg-[#f1f2f5] rounded-full pr-2">
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                style={{ backgroundColor: '#3859FF' }}
-              >
-                <span className="text-white leading-[0] flex items-center justify-center">
-                  <IconSparksFilled css={{ width: 16, height: 16 }} />
-                </span>
-              </div>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 6L8 10L12 6" stroke="#222428" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
 
           {/* Welcome + description */}
           <div className="flex flex-col gap-2">
