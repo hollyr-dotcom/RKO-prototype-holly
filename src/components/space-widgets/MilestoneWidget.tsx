@@ -9,7 +9,7 @@ interface MilestoneWidgetProps {
 export function MilestoneWidget({ title, name, date }: MilestoneWidgetProps) {
   return (
     <div className="rounded-[24px] p-[24px]" style={{ backgroundColor: "var(--space-100)" }}>
-      <h3 className="text-[20px] font-semibold text-[var(--color-gray-800)] mb-3">{title}</h3>
+      <h3 className="text-[24px] font-serif text-[var(--color-gray-800)] mb-3">{title}</h3>
       <div className="flex flex-col">
         <span className="text-[16px] font-semibold text-[var(--color-gray-800)] leading-[1.5]">
           {name}

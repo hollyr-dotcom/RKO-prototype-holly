@@ -438,7 +438,7 @@ function CategoryCard({
   return (
     <button
       onClick={onClick}
-      className="relative flex flex-col items-start p-4 rounded-xl transition-all text-left shadow-sm hover:shadow-md duration-200 cursor-pointer"
+      className="relative flex flex-col items-start p-4 rounded-[24px] transition-all text-left shadow-sm hover:shadow-md duration-200 cursor-pointer"
       style={{
         backgroundColor: active ? TAG_ACTIVE_COLORS[label] ?? "#3859FF" : "white",
       }}
@@ -461,7 +461,7 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
       onClick={navigateToDetail}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="rounded-xl p-6 bg-white flex gap-4 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+      className="rounded-[24px] p-6 bg-white flex gap-4 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
     >
       {/* Thumbnail */}
       {card.image && (
@@ -616,7 +616,7 @@ export default function ThemesPage() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
-          className="rounded-xl p-8 pt-[132px] mb-[60px] relative min-h-[390px] shadow-sm"
+          className="rounded-[24px] p-8 pt-[132px] mb-[60px] relative min-h-[390px] shadow-sm"
           style={{ backgroundColor: '#2A2A2D' }}
           aria-labelledby="themes-heading"
         >
@@ -688,7 +688,7 @@ export default function ThemesPage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: 0.2, ease: [0.2, 0, 0, 1] }}
-              className="rounded-xl p-4 bg-white shadow-sm"
+              className="rounded-[24px] p-4 bg-white shadow-sm"
             >
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-semibold text-[#222428]">AI generated</p>

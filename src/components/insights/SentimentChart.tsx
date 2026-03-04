@@ -193,7 +193,7 @@ export function SentimentChart({ onOpenChat }: { onOpenChat?: () => void }) {
   }
 
   return (
-    <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 flex flex-col">
+    <section className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-8 flex flex-col">
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-1">
           <h2 className="text-[24px] font-serif text-[#222428]">Customer sentiment</h2>

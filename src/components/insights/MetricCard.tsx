@@ -11,7 +11,7 @@ interface MetricCardProps {
 export function MetricCard({ label, value, sub, description, background = '#f1fecf' }: MetricCardProps) {
   return (
     <article
-      className="rounded-xl border border-transparent shadow-sm p-5 flex flex-col gap-2 hover:shadow-md transition-shadow duration-200 cursor-pointer"
+      className="rounded-[24px] border border-transparent shadow-sm p-5 flex flex-col gap-2 hover:shadow-md transition-shadow duration-200 cursor-pointer"
       style={{ backgroundColor: background }}
     >
       <p className="text-[14px] font-bold" style={{ fontFamily: 'Roobert, sans-serif', color: '#222428' }}>{label}</p>

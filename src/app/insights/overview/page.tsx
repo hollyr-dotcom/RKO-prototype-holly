@@ -123,7 +123,7 @@ export default function InsightsOverviewPage() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
-            className="rounded-xl p-8 pt-[132px] mb-[60px] relative min-h-[390px] shadow-sm"
+            className="rounded-[24px] p-8 pt-[132px] mb-[60px] relative min-h-[390px] shadow-sm"
             style={{ backgroundColor: '#2A2A2D' }}
             aria-labelledby="overview-heading"
           >

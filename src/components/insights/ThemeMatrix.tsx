@@ -252,7 +252,7 @@ export function ThemeMatrix() {
   }
 
   return (
-    <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 flex flex-col">
+    <section className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-8 flex flex-col">
       <div className="mb-4">
         <h2 className="text-[24px] font-serif text-[#222428] mb-1">Theme Matrix</h2>
         <p className="text-sm text-gray-500">Hover a dot to explore a theme</p>
