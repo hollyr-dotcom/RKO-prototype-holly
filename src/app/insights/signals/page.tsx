@@ -1151,7 +1151,7 @@ export default function SignalsPage() {
 
           {/* ── Signals table ── */}
           <section>
-            <div className="sticky top-0 z-10 bg-[#EFEDFD] pb-5">
+            <div className="sticky top-0 z-10 bg-[#FBFAF7] pb-5">
               <div className="flex items-center gap-2 mb-5">
                 <h2 className="text-[24px] font-serif text-[#222428]">Signals</h2>
                 <span className="text-[14px] text-[#656b81]">14 results</span>
