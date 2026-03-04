@@ -12,6 +12,9 @@ import {
   IconChevronUpDown,
   IconCheckMark,
   IconTrash,
+  IconInsights,
+  IconFlag,
+  IconRectanglesThreeOverlap,
 } from "@mirohq/design-system-icons";
 import { useSidebar } from "@/hooks/useSidebar";
 import { EXPANDED_PRIMARY_WIDTH } from "@/providers/SidebarProvider";
@@ -527,9 +530,9 @@ export function ExpandedPrimaryPanel() {
               >
                 <div className="pt-[6px] flex flex-col">
                   {[
-                    { id: "overview", label: "Overview", href: "/insights/overview" },
-                    { id: "themes", label: "Themes", href: "/insights/themes" },
-                    { id: "signals", label: "Signals", href: "/insights/signals" },
+                    { id: "overview", label: "Overview", href: "/insights/overview", icon: IconFlag },
+                    { id: "themes", label: "Themes", href: "/insights/themes", icon: IconInsights },
+                    { id: "signals", label: "Signals", href: "/insights/signals", icon: IconRectanglesThreeOverlap },
                   ].map((item) => {
                     const isActive = pathname.startsWith(item.href);
                     const isHovered = hoveredInsightId === item.id;
@@ -537,16 +540,19 @@ export function ExpandedPrimaryPanel() {
                       <Link
                         key={item.id}
                         href={item.href}
-                        className="flex items-center h-9 px-3 rounded-lg text-sm transition-colors duration-200"
+                        className="flex items-center gap-3 h-9 px-3 rounded-lg text-sm transition-colors duration-200"
                         style={{
-                          color: isActive || isHovered ? navPalette.textPrimary : navPalette.textSecondary,
-                          fontWeight: isActive || isHovered ? 500 : 400,
+                          color: isActive ? navPalette.textPrimary : navPalette.textSecondary,
+                          fontWeight: isActive ? 500 : 400,
                           backgroundColor: isActive || isHovered ? navPalette.hoverBg : "transparent",
                         }}
                         onMouseEnter={() => setHoveredInsightId(item.id)}
                         onMouseLeave={() => setHoveredInsightId(null)}
                       >
-                        {item.label}
+                        <span className="w-5 h-5 flex items-center justify-center flex-shrink-0 ml-1">
+                          <item.icon css={{ width: 16, height: 16 }} />
+                        </span>
+                        <span className="truncate flex-1" style={{ color: "#222428" }}>{item.label}</span>
                       </Link>
                     );
                   })}

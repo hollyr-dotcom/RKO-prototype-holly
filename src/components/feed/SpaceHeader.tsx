@@ -200,7 +200,7 @@ export function SpaceTitleBlock({ space, onNameChange, onDescriptionChange }: Sp
         value={name}
         onChange={(e) => handleNameChange(e.target.value)}
         placeholder="Untitled Space"
-        className="bg-transparent border-none outline-none p-0 font-heading font-medium leading-[1.2] w-full"
+        className="bg-transparent border-none outline-none p-0 font-serif leading-[1.2] w-full"
         style={{ fontSize: 52, letterSpacing: "-2px", color: "var(--space-accent)" }}
       />
       <textarea

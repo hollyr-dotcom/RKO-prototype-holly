@@ -1,11 +1,66 @@
 "use client";
 
-/**
- * BoardEmoji — renders either a generated image emoji (data URL) or a Unicode emoji.
- *
- * Detection: if the emoji string starts with "data:" it's a generated PNG image,
- * otherwise it's a Unicode emoji rendered as text.
- */
+import {
+  IconCreditCard, IconOffice, IconCog, IconPlug, IconRocket,
+  IconSmiley, IconShieldLock, IconSparksFilled, IconMap,
+  IconUsers, IconChartLine, IconOrgChart, IconMegaphone,
+  IconSmileyChat, IconTargetArrow, IconChartBarYSimple,
+  IconMagnifyingGlass, IconPalette, IconDollarSignCurrency,
+  IconMobile, IconFlask, IconMicrophone, IconBoard,
+  IconFlag, IconLightbulb, IconGlobe, IconThumbsUp,
+  IconChatLinesTwo, IconUser, IconCalendarBlank, IconBriefcase,
+  IconStar, IconTrophy, IconWand, IconTag, IconInsights,
+} from "@mirohq/design-system-icons";
+
+type IconComponent = React.ComponentType<{ css?: { width: number; height: number } }>;
+
+const EMOJI_TO_ICON: Record<string, IconComponent> = {
+  "💳": IconCreditCard,
+  "🏦": IconOffice,
+  "🏗️": IconCog,
+  "🔌": IconPlug,
+  "🚀": IconRocket,
+  "😍": IconSmiley,
+  "🔐": IconShieldLock,
+  "🤖": IconSparksFilled,
+  "🗺️": IconMap,
+  "👥": IconUsers,
+  "📈": IconChartLine,
+  "📉": IconChartLine,
+  "📐": IconOrgChart,
+  "🎪": IconMegaphone,
+  "🤝": IconSmileyChat,
+  "🎯": IconTargetArrow,
+  "📊": IconChartBarYSimple,
+  "🔍": IconMagnifyingGlass,
+  "🎨": IconPalette,
+  "💰": IconDollarSignCurrency,
+  "💵": IconDollarSignCurrency,
+  "📱": IconMobile,
+  "🧪": IconFlask,
+  "🎙️": IconMicrophone,
+  "🎤": IconMicrophone,
+  "💡": IconLightbulb,
+  "🌟": IconStar,
+  "✨": IconWand,
+  "🏅": IconTrophy,
+  "🏆": IconTrophy,
+  "🌐": IconGlobe,
+  "👍": IconThumbsUp,
+  "💬": IconChatLinesTwo,
+  "🗂️": IconTag,
+  "📋": IconBoard,
+  "📝": IconBoard,
+  "👤": IconUser,
+  "📅": IconCalendarBlank,
+  "💼": IconBriefcase,
+  "🔎": IconMagnifyingGlass,
+  "📌": IconFlag,
+  "🏢": IconOffice,
+  "🌍": IconGlobe,
+  "📣": IconMegaphone,
+  "🗺": IconMap,
+};
 
 export function isGeneratedEmoji(emoji: string | undefined): boolean {
   return !!emoji && emoji.startsWith("data:");
@@ -61,12 +116,15 @@ export function BoardEmoji({
     );
   }
 
+  const IconComponent = EMOJI_TO_ICON[value] ?? IconInsights;
+  const iconSize = Math.round(size * 0.8);
+
   return (
     <span
-      className={`inline-flex items-center justify-center flex-shrink-0 leading-none text-center ${className}`}
-      style={{ width: size, height: size, fontSize: size }}
+      className={`inline-flex items-center justify-center flex-shrink-0 text-gray-500 ${className}`}
+      style={{ width: size, height: size }}
     >
-      {value}
+      <IconComponent css={{ width: iconSize, height: iconSize }} />
     </span>
   );
 }
