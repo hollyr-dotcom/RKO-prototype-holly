@@ -468,7 +468,7 @@ export default function ThemeDetailPage() {
 
   return (
     <div className="relative h-full w-full flex flex-col" style={{ backgroundColor: '#FBFAF7' }}>
-      <InsightsTopBar onPromptClick={() => setAiOpen(true)} />
+      <InsightsTopBar />
 
       <div
         className="flex-1 overflow-y-auto"
