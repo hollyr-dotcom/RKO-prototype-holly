@@ -5,7 +5,6 @@ import { motion } from 'framer-motion'
 import { Bell, Users } from 'lucide-react'
 import { IconSparksFilled } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
-import { InsightsSidebar } from '@/components/InsightsSidebar'
 import { MetricCard } from '@/components/insights/MetricCard'
 import { SentimentChart } from '@/components/insights/SentimentChart'
 import { ThemeMatrix } from '@/components/insights/ThemeMatrix'
@@ -169,9 +168,7 @@ export default function InsightsOverviewPage() {
   const [aiOpen, setAiOpen] = useState(true)
 
   return (
-    <div className="relative h-full w-full flex flex-row">
-      <InsightsSidebar />
-      <div className="flex-1 flex flex-col min-w-0" style={{ backgroundColor: '#FBFAF7' }}>
+    <div className="relative h-full w-full flex flex-col" style={{ backgroundColor: '#FBFAF7' }}>
       <InsightsTopBar onPromptClick={() => setAiOpen(true)} />
 
       <div
@@ -290,7 +287,6 @@ export default function InsightsOverviewPage() {
       {/* AI panel */}
       <AIPanel open={aiOpen} onClose={() => setAiOpen(false)} />
 
-      </div>
     </div>
   )
 }

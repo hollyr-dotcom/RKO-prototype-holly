@@ -46,8 +46,8 @@ export function SidebarProvider({ children, navColor = DEFAULT_NAV_COLOR }: Side
     }
   }, [pathname, isOnCanvas]);
 
-  // Secondary panel is visible when inside a space route
-  const showSecondary = !isCollapsed && pathname.startsWith("/space/");
+  // Secondary panel is visible when inside a space or insights route
+  const showSecondary = !isCollapsed && (pathname.startsWith("/space/") || pathname.startsWith("/insights/"));
 
   const toggleSidebar = useCallback(() => {
     setIsCollapsed((prev) => !prev);

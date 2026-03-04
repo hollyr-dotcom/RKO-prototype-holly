@@ -1,10 +1,12 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { useSidebar } from "@/hooks/useSidebar";
 import { PrimaryRail } from "@/components/PrimaryRail";
 import { SecondaryPanel } from "@/components/SecondaryPanel";
+import { InsightsSidebar } from "@/components/InsightsSidebar";
 import { ExpandedPrimaryPanel } from "@/components/ExpandedPrimaryPanel";
 
 // Fade variant for the adjacent panel (secondary or expanded overlay)
@@ -28,6 +30,7 @@ const collapseTransition = {
 
 export function AppSidebar() {
   const { isCollapsed, showSecondary, navWidth } = useSidebar();
+  const pathname = usePathname();
 
   // Track whether this is the initial mount — skip entrance animation to prevent
   // the PrimaryRail flashing before the ExpandedPrimaryPanel overlay fades in.
@@ -71,7 +74,7 @@ export function AppSidebar() {
             exit="exit"
             className="h-full"
           >
-            <SecondaryPanel />
+            {pathname.startsWith("/insights/") ? <InsightsSidebar /> : <SecondaryPanel />}
           </motion.div>
         ) : (
           <motion.div
