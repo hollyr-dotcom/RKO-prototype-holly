@@ -494,7 +494,10 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
           {card.title}
         </p>
 
-        {/* Expandable content — description, meta, actions */}
+        {/* Subheader — always visible */}
+        <p className="text-sm text-[#656b81] leading-[1.4] line-clamp-2">{card.description}</p>
+
+        {/* Expandable content — meta, actions */}
         <AnimatePresence initial={false}>
           {hovered && (
             <motion.div
@@ -505,9 +508,6 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
               transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
               className="overflow-hidden flex flex-col gap-2.5"
             >
-              {/* Description */}
-              <p className="text-sm text-[#656b81] leading-[1.4]">{card.description}</p>
-
               {/* Meta row */}
               <div className="flex items-center gap-2 flex-wrap my-2">
                 <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
