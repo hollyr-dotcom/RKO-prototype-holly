@@ -5,9 +5,10 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, Play, Search, SlidersHorizontal, ChevronDown, RotateCcw } from 'lucide-react'
-import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconThumbsUp, IconChatLinesTwo } from '@mirohq/design-system-icons'
+import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconThumbsUp, IconChatLinesTwo, IconChatTwo } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
 import { THEME_CARDS, THEME_ANALYSIS, type ThemeCard } from '@/data/themes-data'
+import { ChatInput } from '@/components/toolbar/ChatInput'
 
 // ─── Tag colour map ────────────────────────────────────────────────────────────
 
@@ -252,7 +253,6 @@ const DETAIL_SIGNALS = [
 // ─── AI Panel ─────────────────────────────────────────────────────────────────
 
 function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis }: { open: boolean; onClose: () => void; theme: ThemeCard; showAnalysis?: boolean; onDismissAnalysis?: () => void }) {
-  const [input, setInput] = useState('')
   const analysisData = THEME_ANALYSIS['analysis-' + theme.id]
   if (!open) return null
   return (
@@ -328,14 +328,16 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis }: { op
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: 0.8, ease: [0.2, 0, 0, 1] }}
                     >
-                      {analysisData.prompts.map((chip) => (
-                        <button key={chip} className="flex items-center gap-1.5 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[13px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit">
-                          <span className="shrink-0 leading-[0] flex items-center justify-center opacity-70">
-                            <IconSparksFilled css={{ width: 14, height: 14 }} />
-                          </span>
-                          <span className="pr-1">{chip}</span>
-                        </button>
-                      ))}
+                      <div className="-mx-4 rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
+                        {analysisData.prompts.map((chip) => (
+                          <button key={chip} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors">
+                            <span className="text-gray-400 flex-shrink-0">
+                              <IconSparksFilled css={{ width: 16, height: 16 }} />
+                            </span>
+                            <span className="text-gray-900">{chip}</span>
+                          </button>
+                        ))}
+                      </div>
                     </motion.div>
                   )}
                   <motion.button
@@ -378,38 +380,24 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis }: { op
               </div>
             </div>
             <div className="flex flex-col gap-3">
-              {['Summarise signals for this theme', 'Draft a roadmap recommendation', 'Show related customer quotes'].map((chip) => (
-                <button key={chip} className="flex items-center gap-1 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[14px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit">
-                  <span className="shrink-0 opacity-70 leading-[0] flex items-center justify-center">
-                    <IconSparksFilled css={{ width: 16, height: 16 }} />
-                  </span>
-                  <span className="pr-1">{chip}</span>
-                </button>
-              ))}
+              <div className="-mx-4 rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
+                {['Summarise signals for this theme', 'Draft a roadmap recommendation', 'Show related customer quotes'].map((chip) => (
+                  <button key={chip} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors">
+                    <span className="text-gray-400 flex-shrink-0">
+                      <IconSparksFilled css={{ width: 16, height: 16 }} />
+                    </span>
+                    <span className="text-gray-900">{chip}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      <div className="px-6 pb-6 pt-6 shrink-0">
-        <div className="border border-[#e0e2e8] rounded-[8px] overflow-hidden">
-          <div className="px-4 pt-4 pb-6">
-            <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="What can I do next?" className="w-full text-[14px] text-[#222428] placeholder-[#7d8297] bg-transparent outline-none" />
-          </div>
-          <div className="flex items-center justify-between px-2 py-2">
-            <div className="flex items-center">
-              <button className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="3.5" stroke="currentColor" strokeWidth="1.5" /><path d="M9.5 9.5L13 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-              </button>
-            </div>
-            <button className="w-8 h-8 flex items-center justify-center rounded bg-[#e9eaef] text-[#656b81]">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 12V4M4 8l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </button>
-          </div>
-        </div>
+      {/* Input */}
+      <div className="px-6 pb-6 pt-4 shrink-0">
+        <ChatInput onSubmit={() => {}} />
       </div>
     </motion.aside>
   )

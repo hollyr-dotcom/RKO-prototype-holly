@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Users } from "lucide-react";
-import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconDollarSignCurrency, IconRocket, IconThumbsUp, IconChatLinesTwo, IconBoard } from "@mirohq/design-system-icons";
+import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconDollarSignCurrency, IconRocket, IconThumbsUp, IconChatLinesTwo, IconBoard, IconChatTwo } from "@mirohq/design-system-icons";
 import InsightsTopBar from "@/components/InsightsTopBar";
 import { THEME_CARDS, type ThemeCard, type ThemeTag } from "@/data/themes-data";
 import { ChatInput } from "@/components/toolbar/ChatInput";
@@ -115,7 +115,6 @@ The best PRDs have a post-launch section. Teams that track whether shipped featu
 }
 
 function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; onClose: () => void; chatPrompt?: string; onClearChat?: () => void }) {
-  const [input, setInput] = useState('')
   const [activeChip, setActiveChip] = useState<string | null>(null)
 
   const activePrompt = activeChip ?? chatPrompt
@@ -209,18 +208,20 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; on
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: 0.35 + (DOC_CHAT[activePrompt]?.response ?? '').split('\n\n').length * 0.08 + 0.05, ease: [0.2, 0, 0, 1] }}
                     >
-                      {DOC_CHAT[activePrompt]!.prompts!.map((chip) => (
-                        <button
-                          key={chip}
-                          onClick={() => setActiveChip(chip)}
-                          className="flex items-center gap-1.5 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[13px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit"
-                        >
-                          <span className="shrink-0 leading-[0] flex items-center justify-center opacity-70">
-                            <IconSparksFilled css={{ width: 14, height: 14 }} />
-                          </span>
-                          <span className="pr-1">{chip}</span>
-                        </button>
-                      ))}
+                      <div className="-mx-4 rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
+                        {DOC_CHAT[activePrompt]!.prompts!.map((chip) => (
+                          <button
+                            key={chip}
+                            onClick={() => setActiveChip(chip)}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors"
+                          >
+                            <span className="text-gray-400 flex-shrink-0 leading-[0]">
+                              <IconSparksFilled css={{ width: 16, height: 16 }} />
+                            </span>
+                            <span className="text-gray-900">{chip}</span>
+                          </button>
+                        ))}
+                      </div>
                     </motion.div>
                   )}
                   <motion.button
@@ -276,16 +277,16 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; on
             </div>
 
             {/* Prompt chips */}
-            <div className="flex flex-col gap-3">
+            <div className="-mx-4 rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
               {PROMPT_CHIPS.map((chip) => (
                 <button
                   key={chip}
-                  className="flex items-start gap-1 min-h-8 py-1.5 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[14px] text-[#222428] hover:bg-[#C6DCFF] transition-colors text-left w-fit"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors"
                 >
-                  <span className="shrink-0 opacity-70 leading-[0] flex items-center justify-center mt-0.5">
+                  <span className="text-gray-400 flex-shrink-0 leading-[0]">
                     <IconSparksFilled css={{ width: 16, height: 16 }} />
                   </span>
-                  <span className="pr-1">{chip}</span>
+                  <span className="text-gray-900">{chip}</span>
                 </button>
               ))}
             </div>
@@ -295,46 +296,8 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; on
       </div>
 
       {/* Input */}
-      <div className="px-6 pb-6 pt-6 shrink-0">
-        <div className="border border-[#e0e2e8] rounded-[8px] overflow-hidden">
-          <div className="px-4 pt-4 pb-6">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="What can I do next?"
-              className="w-full text-[14px] text-[#222428] placeholder-[#7d8297] bg-transparent outline-none"
-            />
-          </div>
-          <div className="flex items-center justify-between px-2 py-2">
-            <div className="flex items-center">
-              <button className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#C6DCFF] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#C6DCFF] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="6.5" cy="6.5" r="3.5" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M9.5 9.5L13 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#C6DCFF] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2.5 4h11M2.5 8h11M2.5 12h11" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-                  <circle cx="5.5" cy="4" r="1.5" fill="white" stroke="currentColor" strokeWidth="1.3" />
-                  <circle cx="10.5" cy="8" r="1.5" fill="white" stroke="currentColor" strokeWidth="1.3" />
-                  <circle cx="5.5" cy="12" r="1.5" fill="white" stroke="currentColor" strokeWidth="1.3" />
-                </svg>
-              </button>
-            </div>
-            <button className="w-8 h-8 flex items-center justify-center rounded bg-[#e9eaef] text-[#656b81]">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M8 12V4M4 8l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
-        </div>
+      <div className="px-6 pb-6 pt-4 shrink-0">
+        <ChatInput onSubmit={() => {}} />
       </div>
     </motion.aside>
   )
@@ -657,27 +620,6 @@ export default function ThemesPage() {
           style={{ backgroundColor: '#2A2A2D' }}
           aria-labelledby="themes-heading"
         >
-          {/* Top-right badges */}
-          <div className="absolute top-4 right-4 flex items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1.5 border border-white/20">
-              <Users className="w-3.5 h-3.5 text-white/70" />
-              <span className="text-xs font-medium text-white">21</span>
-            </div>
-            <button
-              className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
-              aria-label="Notifications"
-            >
-              <Bell className="w-3.5 h-3.5 text-white/70" />
-            </button>
-            <div className="flex -space-x-2">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 border-2 border-white flex items-center justify-center">
-                <span className="text-white text-[10px] font-semibold">A</span>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 border-2 border-white flex items-center justify-center">
-                <span className="text-white text-[10px] font-semibold">B</span>
-              </div>
-            </div>
-          </div>
 
           <div className="absolute bottom-8 left-8">
             <h1 id="themes-heading" className="text-[60px] font-serif text-white mb-3">

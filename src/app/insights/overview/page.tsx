@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Bell, Users } from 'lucide-react'
-import { IconSparksFilled } from '@mirohq/design-system-icons'
+import { IconSparksFilled, IconChatTwo } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
 import { MetricCard } from '@/components/insights/MetricCard'
 import { SentimentChart } from '@/components/insights/SentimentChart'
@@ -19,8 +19,6 @@ const PROMPT_CHIPS = [
 ]
 
 function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [input, setInput] = useState('')
-
   if (!open) return null
 
   return (
@@ -97,17 +95,16 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
           </div>
 
           {/* Prompt chips */}
-          <div className="flex flex-col gap-3">
+          <div className="-mx-4 rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
             {PROMPT_CHIPS.map((chip) => (
               <button
                 key={chip}
-                className="flex items-center gap-1 h-8 pl-3 pr-2 border border-[#e0e2e8] rounded-[8px] bg-white text-[14px] text-[#222428] hover:bg-[#f1f2f5] transition-colors text-left w-fit"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors"
               >
-                {/* Article / document icon */}
-                <span className="shrink-0 opacity-70 leading-[0] flex items-center justify-center">
+                <span className="text-gray-400 flex-shrink-0 leading-[0]">
                   <IconSparksFilled css={{ width: 16, height: 16 }} />
                 </span>
-                <span className="pr-1">{chip}</span>
+                <span className="text-gray-900">{chip}</span>
               </button>
             ))}
           </div>
@@ -116,48 +113,8 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
       </div>
 
       {/* Input */}
-      <div className="px-6 pb-6 pt-6 shrink-0">
-        <div className="border border-[#e0e2e8] rounded-[8px] overflow-hidden">
-          <div className="px-4 pt-4 pb-6">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="What can I do next?"
-              className="w-full text-[14px] text-[#222428] placeholder-[#7d8297] bg-transparent outline-none"
-            />
-          </div>
-          <div className="flex items-center justify-between px-2 py-2">
-            {/* Leading icons: +, search, sliders */}
-            <div className="flex items-center">
-              <button className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="6.5" cy="6.5" r="3.5" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M9.5 9.5L13 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2.5 4h11M2.5 8h11M2.5 12h11" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-                  <circle cx="5.5" cy="4" r="1.5" fill="white" stroke="currentColor" strokeWidth="1.3" />
-                  <circle cx="10.5" cy="8" r="1.5" fill="white" stroke="currentColor" strokeWidth="1.3" />
-                  <circle cx="5.5" cy="12" r="1.5" fill="white" stroke="currentColor" strokeWidth="1.3" />
-                </svg>
-              </button>
-            </div>
-            {/* Trailing: up arrow (disabled) */}
-            <button className="w-8 h-8 flex items-center justify-center rounded bg-[#e9eaef] text-[#656b81]">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M8 12V4M4 8l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
-        </div>
+      <div className="px-6 pb-6 pt-4 shrink-0">
+        <ChatInput onSubmit={() => {}} />
       </div>
     </motion.aside>
   )
@@ -187,27 +144,6 @@ export default function InsightsOverviewPage() {
             style={{ backgroundColor: '#2A2A2D' }}
             aria-labelledby="overview-heading"
           >
-            {/* Top-right badges */}
-            <div className="absolute top-4 right-4 flex items-center gap-2">
-              <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1.5 border border-white/20">
-                <Users className="w-3.5 h-3.5 text-white/70" />
-                <span className="text-xs font-medium text-white">21</span>
-              </div>
-              <button
-                className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
-                aria-label="Notifications"
-              >
-                <Bell className="w-3.5 h-3.5 text-white/70" />
-              </button>
-              <div className="flex -space-x-2">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 border-2 border-white flex items-center justify-center">
-                  <span className="text-white text-[10px] font-semibold">A</span>
-                </div>
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 border-2 border-white flex items-center justify-center">
-                  <span className="text-white text-[10px] font-semibold">B</span>
-                </div>
-              </div>
-            </div>
 
             <div className="absolute bottom-8 left-8">
               <h1 id="overview-heading" className="text-[60px] font-serif text-white mb-3">

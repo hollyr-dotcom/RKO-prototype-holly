@@ -40,11 +40,11 @@ export function InsightsSidebar() {
                   style={{
                     height: 40,
                     ...(isActive
-                      ? { backgroundColor: '#C6DCFF', color: '#3859FF', fontWeight: 500 }
+                      ? { backgroundColor: '#E7E7E5', color: '#222428', fontWeight: 500 }
                       : undefined),
                   }}
                   onMouseEnter={(e) => {
-                    if (!isActive) e.currentTarget.style.backgroundColor = '#C6DCFF';
+                    if (!isActive) e.currentTarget.style.backgroundColor = '#E7E7E5';
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive) e.currentTarget.style.backgroundColor = '';

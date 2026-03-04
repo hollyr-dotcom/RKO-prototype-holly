@@ -83,8 +83,6 @@ export function ExpandedPrimaryPanel() {
   const { toggleSidebar, navPalette } = useSidebar();
   const [hoveredNavId, setHoveredNavId] = useState<string | null>(null);
   const [hoveredInsightId, setHoveredInsightId] = useState<string | null>(null);
-  const [hoveredRoadmapId, setHoveredRoadmapId] = useState<string | null>(null);
-  const [roadmapsExpanded, setRoadmapsExpanded] = useState(true);
   const [insightsExpanded, setInsightsExpanded] = useState(true);
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState(teams[0].id);
@@ -500,100 +498,22 @@ export function ExpandedPrimaryPanel() {
           menuActions={spaceMenuActions}
         />
 
-        {/* Roadmaps section */}
-        <div className="mt-4">
-          <div className="flex items-center h-8 pl-3 pr-1 mb-1">
-            <span
-              className="flex-1 text-sm font-semibold"
-              style={{ color: navPalette.textPrimary }}
+        {/* Insights section — matches Programs/Leadership Team/Events pattern */}
+        <div className="mt-2 flex flex-col">
+          <div
+            className="group flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full cursor-pointer font-semibold text-gray-500"
+            onClick={() => setInsightsExpanded((prev) => !prev)}
+          >
+            <span className="flex-1 text-left">Insights</span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              className={`flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200 ${insightsExpanded ? "" : "-rotate-90"}`}
             >
-              Roadmaps
-            </span>
-            <button
-              onClick={() => setRoadmapsExpanded((prev) => !prev)}
-              className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200/60 transition-colors duration-200 -mr-1"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                {roadmapsExpanded ? (
-                  <path d="M4 8H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                ) : (
-                  <path d="M8 4V12M4 8H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                )}
-              </svg>
-            </button>
-          </div>
-          <AnimatePresence initial={false}>
-            {roadmapsExpanded && (
-              <motion.div
-                key="roadmaps-content"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className="overflow-hidden"
-              >
-                <div className="flex flex-col gap-1">
-                  {[
-                    { id: "flex-ai", label: "Flex AI", href: "#" },
-                  ].map((item) => {
-                    const isActive = pathname === item.href;
-                    const isHovered = hoveredRoadmapId === item.id;
-                    const isHighlighted = isHovered || isActive;
-                    return (
-                      <Link
-                        key={item.id}
-                        href={item.href}
-                        className="relative flex items-center h-10 pl-3 pr-2.5 rounded-lg"
-                        onMouseEnter={() => setHoveredRoadmapId(item.id)}
-                        onMouseLeave={() => setHoveredRoadmapId(null)}
-                      >
-                        {isHighlighted && (
-                          <motion.div
-                            layoutId="roadmaps-indicator"
-                            className="absolute inset-0 rounded-lg"
-                            style={{ backgroundColor: navPalette.indicator }}
-                            transition={indicatorTransition}
-                          />
-                        )}
-                        <span
-                          className="relative z-10 text-sm"
-                          style={{
-                            color: isHighlighted ? navPalette.textPrimary : navPalette.textSecondary,
-                            fontWeight: isHighlighted ? 500 : 400,
-                          }}
-                        >
-                          {item.label}
-                        </span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Insights section */}
-        <div className="mt-4">
-          <div className="flex items-center h-8 pl-3 pr-1 mb-1">
-            <span
-              className="flex-1 text-sm font-semibold"
-              style={{ color: navPalette.textPrimary }}
-            >
-              Insights
-            </span>
-            <button
-              onClick={() => setInsightsExpanded((prev) => !prev)}
-              className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200/60 transition-colors duration-200 -mr-1"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                {insightsExpanded ? (
-                  <path d="M4 8H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                ) : (
-                  <path d="M8 4V12M4 8H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                )}
-              </svg>
-            </button>
+              <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
           <AnimatePresence initial={false}>
             {insightsExpanded && (
@@ -605,7 +525,7 @@ export function ExpandedPrimaryPanel() {
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 className="overflow-hidden"
               >
-                <div className="flex flex-col gap-1">
+                <div className="pt-[6px] flex flex-col">
                   {[
                     { id: "overview", label: "Overview", href: "/insights/overview" },
                     { id: "themes", label: "Themes", href: "/insights/themes" },
@@ -613,32 +533,20 @@ export function ExpandedPrimaryPanel() {
                   ].map((item) => {
                     const isActive = pathname.startsWith(item.href);
                     const isHovered = hoveredInsightId === item.id;
-                    const isHighlighted = isHovered || isActive;
                     return (
                       <Link
                         key={item.id}
                         href={item.href}
-                        className="relative flex items-center h-10 pl-3 pr-2.5 rounded-lg"
+                        className="flex items-center h-9 px-3 rounded-lg text-sm transition-colors duration-200"
+                        style={{
+                          color: isActive || isHovered ? navPalette.textPrimary : navPalette.textSecondary,
+                          fontWeight: isActive || isHovered ? 500 : 400,
+                          backgroundColor: isActive || isHovered ? navPalette.hoverBg : "transparent",
+                        }}
                         onMouseEnter={() => setHoveredInsightId(item.id)}
                         onMouseLeave={() => setHoveredInsightId(null)}
                       >
-                        {isHighlighted && (
-                          <motion.div
-                            layoutId="insights-indicator"
-                            className="absolute inset-0 rounded-lg"
-                            style={{ backgroundColor: navPalette.indicator }}
-                            transition={indicatorTransition}
-                          />
-                        )}
-                        <span
-                          className="relative z-10 text-sm"
-                          style={{
-                            color: isHighlighted ? navPalette.textPrimary : navPalette.textSecondary,
-                            fontWeight: isHighlighted ? 500 : 400,
-                          }}
-                        >
-                          {item.label}
-                        </span>
+                        {item.label}
                       </Link>
                     );
                   })}
