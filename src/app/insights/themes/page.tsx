@@ -469,12 +469,15 @@ function CategoryCard({
 function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number; aiOpen?: boolean }) {
   const router = useRouter();
   const navigateToDetail = () => router.push(`/insights/themes/${card.id}`);
+  const [hovered, setHovered] = useState(false);
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.1 + index * 0.07, ease: [0.2, 0, 0, 1] }}
       onClick={navigateToDetail}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className="rounded-xl p-6 bg-white flex gap-4 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
     >
       {/* Thumbnail */}
@@ -508,33 +511,48 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
           {card.title}
         </p>
 
-        {/* Description */}
-        <p className="text-sm text-[#656b81] leading-[1.4]">{card.description}</p>
+        {/* Expandable content — description, meta, actions */}
+        <AnimatePresence initial={false}>
+          {hovered && (
+            <motion.div
+              key="expanded"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+              className="overflow-hidden flex flex-col gap-2.5"
+            >
+              {/* Description */}
+              <p className="text-sm text-[#656b81] leading-[1.4]">{card.description}</p>
 
-        {/* Meta row */}
-        <div className="flex items-center gap-2 flex-wrap my-2">
-          <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
-            <IconDollarSignCurrency css={{ width: 16, height: 16 }} />
-            <span>{card.meta.arr}</span>
-          </div>
-          <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
-            <IconRocket css={{ width: 16, height: 16 }} />
-            <span>{card.meta.confidence}</span>
-            <span className="text-[12px] text-[#656b81]">{card.meta.confidenceDelta}</span>
-          </div>
-          <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
-            <IconThumbsUp css={{ width: 16, height: 16 }} />
-            <span>{card.meta.likes}</span>
-          </div>
-          {card.meta.comments !== undefined && (
-            <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
-              <IconChatLinesTwo css={{ width: 16, height: 16 }} />
-              <span>{card.meta.comments}</span>
-            </div>
+              {/* Meta row */}
+              <div className="flex items-center gap-2 flex-wrap my-2">
+                <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                  <IconDollarSignCurrency css={{ width: 16, height: 16 }} />
+                  <span>{card.meta.arr}</span>
+                </div>
+                <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                  <IconRocket css={{ width: 16, height: 16 }} />
+                  <span>{card.meta.confidence}</span>
+                  <span className="text-[12px] text-[#656b81]">{card.meta.confidenceDelta}</span>
+                </div>
+                <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                  <IconThumbsUp css={{ width: 16, height: 16 }} />
+                  <span>{card.meta.likes}</span>
+                </div>
+                {card.meta.comments !== undefined && (
+                  <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                    <IconChatLinesTwo css={{ width: 16, height: 16 }} />
+                    <span>{card.meta.comments}</span>
+                  </div>
+                )}
+              </div>
+
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
 
-        {/* Actions */}
+        {/* Actions — always visible */}
         <div className="flex items-center gap-2 mt-0.5">
           <button
             onClick={(e) => e.stopPropagation()}

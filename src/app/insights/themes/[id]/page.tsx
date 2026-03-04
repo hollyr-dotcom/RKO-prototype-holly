@@ -677,14 +677,14 @@ export default function ThemeDetailPage() {
                       <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-[#222428] shrink-0" style={{ backgroundColor: row.person.bg }}>
                         {row.person.initials}
                       </div>
-                      <span className="text-sm text-[#222428] truncate">{row.person.name}</span>
+                      <span className="text-sm text-[#656b81] truncate">{row.person.name}</span>
                     </div>
-                    <p className="text-sm text-[#222428] font-medium">{row.revenue}</p>
+                    <p className="text-sm text-[#656b81]">{row.revenue}</p>
                     <div className="flex items-center gap-1.5">
                       <div className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ backgroundColor: row.company.bg }}>
                         {row.company.letter}
                       </div>
-                      <span className="text-sm text-[#222428] truncate">{row.company.name}</span>
+                      <span className="text-sm text-[#656b81] truncate">{row.company.name}</span>
                     </div>
                   </motion.div>
                 ))}

@@ -347,13 +347,13 @@ function AppleLogoMark() {
 
 function SourceIconComp({ type }: { type: string }) {
   if (type === 'audio') return (
-    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#656b81]"><AudioIcon /></div>
+    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#222428]"><AudioIcon /></div>
   )
   if (type === 'mobile') return (
-    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#656b81]"><MobileIcon /></div>
+    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#222428]"><MobileIcon /></div>
   )
   return (
-    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#656b81]">
+    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#222428]">
       <IconGlobe css={{ width: 16, height: 16 }} />
     </div>
   )
@@ -1152,46 +1152,22 @@ export default function SignalsPage() {
           {/* ── Signals table ── */}
           <section>
             <div className="sticky top-0 z-10 bg-[#FBFAF7] pb-5">
-              <div className="flex items-center gap-2 mb-5">
+              <div className="flex items-center gap-2">
                 <h2 className="text-[24px] font-serif text-[#222428]">Signals</h2>
                 <span className="text-[14px] text-[#656b81]">14 results</span>
                 <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium" style={{ backgroundColor: '#DBFAAD', color: '#222428' }}>6 new</span>
-              </div>
-              <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                {([
-                  { id: 'signals' as const, label: 'Signals', count: 0 },
-                  { id: 'comments' as const, label: 'Comments', count: 5 },
-                  { id: 'updates' as const, label: 'Updates', count: 4 },
-                ]).map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setTableTab(tab.id)}
-                    className={`flex items-center gap-1.5 h-8 px-3 rounded-lg text-[14px] transition-colors ${
-                      tableTab === tab.id ? 'bg-[#222428] text-white' : 'text-[#656b81] hover:bg-white'
-                    }`}
-                  >
-                    {tab.label}
-                    {tab.count > 0 && (
-                      <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${tableTab === tab.id ? 'bg-white/20 text-white' : 'bg-[#e9eaef] text-[#656b81]'}`}>
-                        {tab.count}
-                      </span>
-                    )}
+                <div className="flex items-center gap-2 ml-auto">
+                  <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f1f2f5] transition-colors text-[#656b81]">
+                    <Search className="w-4 h-4" />
                   </button>
-                ))}
+                  <button className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[#e0e2e8] text-sm text-[#222428] hover:bg-[#f1f2f5] transition-colors">
+                    Latest <ChevronDown className="w-3.5 h-3.5" />
+                  </button>
+                  <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f1f2f5] transition-colors text-[#656b81]">
+                    <SlidersHorizontal className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f1f2f5] transition-colors text-[#656b81]">
-                  <Search className="w-4 h-4" />
-                </button>
-                <button className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[#e0e2e8] text-sm text-[#222428] hover:bg-[#f1f2f5] transition-colors">
-                  Latest <ChevronDown className="w-3.5 h-3.5" />
-                </button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f1f2f5] transition-colors text-[#656b81]">
-                  <SlidersHorizontal className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
             </div>
 
             {tableTab === 'signals' && (
@@ -1222,7 +1198,7 @@ export default function SignalsPage() {
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {row.tags.map((tag) => <TagPill key={tag.label} label={tag.label} />)}
                     </div>
-                    <p className="text-sm text-[#222428] font-medium">{row.revenue}</p>
+                    <p className="text-sm text-[#656b81]">{row.revenue}</p>
                     <div className="flex items-center gap-1">
                       {row.companies.map((c) => c === 'apple' ? <AppleLogo key={c} /> : <SpotifyLogo key={c} />)}
                       <span className="text-xs text-[#656b81] ml-0.5">+2</span>
