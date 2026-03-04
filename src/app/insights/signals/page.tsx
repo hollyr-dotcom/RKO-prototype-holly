@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, Users, Search, SlidersHorizontal, ChevronDown, ChevronRight, Play } from 'lucide-react'
-import { IconSparksFilled, IconSmileyChat, IconGlobe, IconChatTwo } from '@mirohq/design-system-icons'
+import { IconSparksFilled, IconSmileyChat, IconGlobe } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
 import { ChatInput } from '@/components/toolbar/ChatInput'
 
@@ -347,13 +347,13 @@ function AppleLogoMark() {
 
 function SourceIconComp({ type }: { type: string }) {
   if (type === 'audio') return (
-    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#222428]"><AudioIcon /></div>
+    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#656b81]"><AudioIcon /></div>
   )
   if (type === 'mobile') return (
-    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#222428]"><MobileIcon /></div>
+    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#656b81]"><MobileIcon /></div>
   )
   return (
-    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#222428]">
+    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#656b81]">
       <IconGlobe css={{ width: 16, height: 16 }} />
     </div>
   )
@@ -382,11 +382,16 @@ const CARD_ACCENT: Record<string, string> = {
 
 function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
   const accent = CARD_ACCENT[card.type]
+  const [hovered, setHovered] = useState(false)
 
   return (
-    <div
-      className="w-full h-full rounded-[16px] overflow-hidden"
+    <motion.div
+      className="w-full h-full rounded-[16px] overflow-hidden cursor-pointer"
       style={{ backgroundColor: accent, padding: '2px 2px 6px 2px' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      animate={{ scale: hovered ? 1.02 : 1 }}
+      transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
     >
       <div className="bg-white rounded-[16px] flex flex-col gap-3 p-3 h-full">
 
@@ -447,7 +452,7 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
               </div>
               <div>
                 <p className="text-[14px] font-semibold text-[#222428] leading-[1.4]">{card.title}</p>
-                <p className="text-[12px] text-[#656b81]">{'person' in card ? card.person : ''}</p>
+                <p className="text-[12px] text-[#9ca0ad]">{'person' in card ? card.person : ''}</p>
               </div>
             </div>
           )}
@@ -474,7 +479,7 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
         </div>
 
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -1040,8 +1045,6 @@ export default function SignalsPage() {
   const [selectedSignal, setSelectedSignal] = useState<typeof SIGNAL_ROWS[0] | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [direction, setDirection] = useState(1)
-  const [tableTab, setTableTab] = useState<'signals' | 'comments' | 'updates'>('signals')
-
   const openAiPanel = () => { setAiOpen(true); setSelectedSignal(null) }
   const selectSignal = (row: typeof SIGNAL_ROWS[0]) => { setSelectedSignal(row); setAiOpen(false) }
 
@@ -1170,7 +1173,6 @@ export default function SignalsPage() {
               </div>
             </div>
 
-            {tableTab === 'signals' && (
               <div className="overflow-hidden">
                 <div className="grid gap-4 px-5 py-3 border-b border-[#e0e2e8] text-xs font-semibold text-[#656b81] uppercase tracking-wide" style={{ gridTemplateColumns: '24px 48px 1fr 1fr 180px 100px 100px' }}>
                   <span />
@@ -1198,64 +1200,14 @@ export default function SignalsPage() {
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {row.tags.map((tag) => <TagPill key={tag.label} label={tag.label} />)}
                     </div>
-                    <p className="text-sm text-[#656b81]">{row.revenue}</p>
+                    <p className="text-sm text-[#9ca0ad]">{row.revenue}</p>
                     <div className="flex items-center gap-1">
                       {row.companies.map((c) => c === 'apple' ? <AppleLogo key={c} /> : <SpotifyLogo key={c} />)}
-                      <span className="text-xs text-[#656b81] ml-0.5">+2</span>
+                      <span className="text-xs text-[#9ca0ad] ml-0.5">+2</span>
                     </div>
                   </motion.div>
                 ))}
               </div>
-            )}
-
-            {tableTab === 'comments' && (
-              <div>
-                {[
-                  { name: 'Kajsa Bell', initials: 'KB', bg: '#FFED7B', date: 'May 21, 2026', comment: "Three of our top enterprise accounts flagged canvas performance and SSO as linked blockers. We should treat them as a single reliability narrative in the roadmap." },
-                  { name: 'Marco Rossi', initials: 'MR', bg: '#FFABEC', date: 'May 20, 2026', comment: 'Agreed — the SCIM provisioning signal is compounding the SSO issue. IT teams are re-syncing manually after every Okta update.' },
-                  { name: 'Priya Nair', initials: 'PN', bg: '#DBFAAD', date: 'May 18, 2026', comment: 'The AI UX Controls signal is worth watching. Mid-session interruptions keep appearing in workshop feedback across different accounts.' },
-                  { name: 'James Watson', initials: 'JW', bg: '#A0C4FB', date: 'May 15, 2026', comment: 'Moved Canvas Performance to "Next" in the roadmap sync. The +18% WoW spike is hard to ignore heading into renewal season.' },
-                  { name: 'Anna Bergström', initials: 'AB', bg: '#FFBD83', date: 'May 14, 2026', comment: "Export fidelity is blocking enterprise handoffs at Siemens. They've mentioned it three calls in a row — escalating to PM." },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-3 py-4 border-b border-[#f1f2f5] last:border-0">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold text-[#222428] shrink-0" style={{ backgroundColor: item.bg }}>
-                      {item.initials}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2 mb-1">
-                        <span className="text-sm font-semibold text-[#222428]">{item.name}</span>
-                        <span className="text-xs text-[#aeb2c0]">{item.date}</span>
-                      </div>
-                      <p className="text-sm text-[#222428] leading-[1.6]">{item.comment}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {tableTab === 'updates' && (
-              <div>
-                {[
-                  { action: 'added 6 new signals from Gong calls this week', date: 'May 21, 2026' },
-                  { action: 'flagged Canvas Performance as high priority based on WoW frequency spike', date: 'May 20, 2026' },
-                  { action: 'linked 3 signals to the Enterprise Security theme', date: 'May 18, 2026' },
-                  { action: 'updated revenue estimates across 4 signals based on latest ARR data', date: 'May 15, 2026' },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 py-4 border-b border-[#f1f2f5] last:border-0">
-                    <div className="w-8 h-8 rounded-full bg-[#3859FF] flex items-center justify-center shrink-0">
-                      <span className="text-white leading-[0] flex items-center justify-center">
-                        <IconSparksFilled css={{ width: 14, height: 14 }} />
-                      </span>
-                    </div>
-                    <p className="flex-1 text-sm text-[#222428]">
-                      <span className="font-semibold">Miro Insights</span>{' '}
-                      {item.action}
-                      <span className="text-[#656b81]"> • {item.date}</span>
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
           </section>
 
         </main>
