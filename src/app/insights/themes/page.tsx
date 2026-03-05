@@ -526,20 +526,20 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
             >
               {/* Meta row */}
               <div className="flex items-center gap-2 flex-wrap my-2">
-                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428] bg-white border border-[#e0e2e8]">
                   <span>{card.meta.arr}</span>
                 </div>
-                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428] bg-white border border-[#e0e2e8]">
                   <IconRocket css={{ width: 16, height: 16 }} />
                   <span>{card.meta.confidence}</span>
                   <span className="text-[12px] text-[#656b81]">{card.meta.confidenceDelta}</span>
                 </div>
-                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428] border border-[#e0e2e8]">
+                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428] bg-white border border-[#e0e2e8]">
                   <ThumbsUpIcon />
                   <span>{card.meta.likes}</span>
                 </div>
                 {card.meta.comments !== undefined && (
-                  <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                  <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428] bg-white border border-[#e0e2e8]">
                     <IconChatLinesTwo css={{ width: 16, height: 16 }} />
                     <span>{card.meta.comments}</span>
                   </div>
@@ -554,7 +554,7 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
         <div className="flex items-center gap-2 mt-0.5">
           <button
             onClick={(e) => e.stopPropagation()}
-            className={`${aiOpen ? 'min-h-8 h-auto py-1.5' : 'h-8'} px-3 rounded-[24px] text-sm font-medium transition-colors ${
+            className={`h-9 px-5 rounded-[18px] text-sm font-medium transition-colors ${
               card.primaryAction.variant === "outline"
                 ? "border border-[#e0e2e8] text-[#222428] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428]"
                 : ""
@@ -570,7 +570,7 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
           {card.secondaryAction && (
             <button
               onClick={(e) => { e.stopPropagation(); navigateToDetail(); }}
-              className={`${aiOpen ? 'min-h-8 h-auto py-1.5' : 'h-8'} px-3 rounded-[24px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors`}
+              className="h-9 px-5 rounded-[18px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors"
             >
               {card.secondaryAction.label}
             </button>
