@@ -531,7 +531,7 @@ export function ExpandedPrimaryPanel() {
                 <div className="pt-[6px] flex flex-col">
                   {[
                     { id: "overview", label: "Overview", href: "/insights/overview", icon: IconFlag },
-                    { id: "themes", label: "Themes", href: "/insights/themes", icon: IconInsights },
+                    { id: "themes", label: "Opportunities", href: "/insights/themes", icon: IconInsights },
                     { id: "signals", label: "Signals", href: "/insights/signals", icon: IconRectanglesThreeOverlap },
                   ].map((item) => {
                     const isActive = pathname.startsWith(item.href);
