@@ -615,23 +615,30 @@ export default function ThemesPage() {
       <main className="px-0 py-[60px] mx-[60px]">
 
         {/* ── Heading ── */}
-        <div className="flex items-center justify-between mb-[60px]">
-          <div>
-            <h1 id="themes-heading" className="text-[60px] font-serif text-[#222428]">Opportunities</h1>
-          </div>
-          <p className="text-[20px] text-[#222428]/70 max-w-sm leading-relaxed text-right">
+        <div className="flex flex-col items-center text-center mb-10">
+          <h1 id="themes-heading" className="text-[60px] font-serif text-[#222428]">Opportunities</h1>
+          <p className="text-[20px] text-[#222428]/70 max-w-sm leading-relaxed mt-3">
             Discover emerging trends and potential disruptions, plus important updates
           </p>
+        </div>
+
+        {/* ── Filter tabs ── */}
+        <div className="flex items-center justify-center gap-2 flex-wrap mb-10">
+          {filters.map((f) => (
+            <CategoryCard
+              key={f.label}
+              label={f.label}
+              count={f.count}
+              active={f.active}
+              onClick={() => toggle(f.label)}
+            />
+          ))}
         </div>
 
         {/* ── Section header ── */}
         <div className="flex items-center justify-between sticky top-0 z-20 pt-4 pb-5" style={{ backgroundColor: '#FBFAF7' }}>
           <div className="flex items-center gap-2">
-            <h2
-              className="text-[24px] font-serif text-[#222428]"
-            >
-              Results
-            </h2>
+            <h2 className="text-[24px] font-serif text-[#222428]">Results</h2>
             <InfoIcon />
           </div>
           <div className="flex items-center gap-3">
@@ -648,62 +655,13 @@ export default function ThemesPage() {
           </div>
         </div>
 
-        {/* ── Main layout ── */}
-        <div className="flex gap-[60px]">
-
-          {/* Left sidebar */}
-          <div className="w-[300px] shrink-0 flex flex-col gap-8 sticky top-[68px] self-start">
-
-            {/* Category filter grid */}
-            <div className="grid grid-cols-2 gap-2">
-              {filters.map((f) => (
-                <CategoryCard
-                  key={f.label}
-                  label={f.label}
-                  count={f.count}
-                  active={f.active}
-                  onClick={() => toggle(f.label)}
-                />
-              ))}
-            </div>
-
-            {/* AI generated panel */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: 0.2, ease: [0.2, 0, 0, 1] }}
-              className="rounded-[24px] p-4 bg-white shadow-sm"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-semibold text-[#222428]">AI generated</p>
-                <p className="text-xs text-[#656b81]">Ready to share</p>
-              </div>
-              <div className="flex flex-col gap-1">
-                {AI_DOCS.map((doc) => (
-                  <button
-                    key={doc.label}
-                    onClick={() => { setAiOpen(true); setAiChatPrompt(doc.label); }}
-                    className="flex items-center gap-2 h-10 px-1 rounded-[24px] hover:bg-[#E7E7E5] transition-colors text-left w-full"
-                  >
-                    <span className="text-[#656b81] shrink-0">
-                      {doc.icon === "doc" ? <DocIcon size={16} /> : <IconBoard css={{ width: 16, height: 16 }} />}
-                    </span>
-                    <span className="text-sm text-[#222428] flex-1 truncate">{doc.label}</span>
-                    <span className="text-xs text-[#aeb2c0] shrink-0">{doc.time}</span>
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Theme cards */}
-          <div className="flex-1 min-w-0 flex flex-col gap-8">
-            {visibleCards.map((card, i) => (
-              <ThemeCardItem key={card.id} card={card} index={i} aiOpen={aiOpen} />
-            ))}
-          </div>
-
+        {/* ── Cards ── */}
+        <div className="flex flex-col gap-8">
+          {visibleCards.map((card, i) => (
+            <ThemeCardItem key={card.id} card={card} index={i} aiOpen={aiOpen} />
+          ))}
         </div>
+
       </main>
       </div>
 
