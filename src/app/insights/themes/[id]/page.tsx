@@ -183,7 +183,7 @@ function FeaturedCard({ card, accent: accentOverride }: { card: typeof FEATURED_
             </div>
           )}
           {card.type === 'quote' && (
-            <div className="h-full bg-gradient-to-b from-[#fff7ca] to-white flex flex-col items-center justify-center gap-2 px-5 py-6">
+            <div className="h-full flex flex-col items-center justify-center gap-2 px-5 py-6" style={{ background: `linear-gradient(to bottom, ${accent}, white)` }}>
               <p className="text-[14px] font-semibold text-[#222428] text-center leading-[1.4]">{card.quote}</p>
               {'duration' in card && <p className="text-[12px] text-[#656b81] text-center">{card.duration}</p>}
             </div>
