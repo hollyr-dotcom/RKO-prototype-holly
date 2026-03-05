@@ -161,8 +161,8 @@ function AppleLogoMark() {
   )
 }
 
-function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
-  const accent = ('accent' in card && card.accent) ? card.accent as string : CARD_ACCENT[card.type]
+function FeaturedCard({ card, accent: accentOverride }: { card: typeof FEATURED_CARDS[0], accent?: string }) {
+  const accent = accentOverride ?? (('accent' in card && card.accent) ? card.accent as string : CARD_ACCENT[card.type])
   const [hovered, setHovered] = useState(false)
   return (
     <motion.div
@@ -693,6 +693,7 @@ export default function ThemeDetailPage() {
 
   const stats = deriveStats(theme)
   const signalCount = 12
+  const heroColor = TAG_COLORS[theme.tags[0]?.label] ?? CARD_ACCENT.audio
 
   return (
     <div className="relative h-full w-full flex flex-col" style={{ backgroundColor: '#FBFAF7' }}>
@@ -820,7 +821,7 @@ export default function ThemeDetailPage() {
                     className={`grid ${aiOpen ? 'grid-cols-2' : 'grid-cols-3'} gap-[22px] pb-1`}
                   >
                     {pages[safePage].map((card) => (
-                      <FeaturedCard key={card.id} card={card} />
+                      <FeaturedCard key={card.id} card={card} accent={heroColor} />
                     ))}
                   </motion.div>
                 </AnimatePresence>
