@@ -472,13 +472,13 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto px-8 py-8 flex flex-col gap-5">
+      <div className="flex-1 overflow-y-auto px-8 pt-12 pb-8 flex flex-col gap-5">
 
         {/* Title */}
         <h2 className="text-[24px] font-serif text-[#222428] leading-[1.35]">{signal.title}</h2>
 
         {/* Tabs */}
-        <div className="flex items-center gap-0.5 flex-wrap mb-8">
+        <div className="flex items-center gap-0.5 flex-wrap mb-4 mt-3">
           {TABS.map((tab) => (
             <button
               key={tab}
