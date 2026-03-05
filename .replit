@@ -37,6 +37,7 @@ externalPort = 80
 
 [userenv.shared]
 NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY = "pk_dev_placeholder"
+AUTH_SECRET = "5ab8a2f13f6d6a50a37513a98518f989170726aa43ea5d966f5f3b73d00743b3"
 
 [deployment]
 deploymentTarget = "autoscale"
