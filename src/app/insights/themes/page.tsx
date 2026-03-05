@@ -461,8 +461,10 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
       onClick={navigateToDetail}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="rounded-[24px] p-6 bg-white flex gap-4 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+      className="rounded-[24px] shadow-sm cursor-pointer"
+      style={{ backgroundColor: '#E7E7E5', padding: '2px 2px 6px 2px' }}
     >
+      <div className="rounded-[24px] p-6 bg-white flex gap-4 h-full">
       {/* Thumbnail */}
       {card.image && (
         <div className="w-[120px] h-[120px] rounded-lg overflow-hidden shrink-0 bg-[#C6DCFF]">
@@ -567,6 +569,7 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
           </button>
         </div>
       </div>
+      </div>
     </motion.div>
   );
 }
@@ -627,9 +630,8 @@ export default function ThemesPage() {
             <h2
               className="text-[24px] font-serif text-[#222428]"
             >
-              Themes
+              Results
             </h2>
-            <span className="text-sm text-[#656b81]">{visibleCards.length} results</span>
             <InfoIcon />
           </div>
           <div className="flex items-center gap-3">
