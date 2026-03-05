@@ -279,6 +279,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
   onClearSignal: () => void
 }) {
   const [signalTab, setSignalTab] = useState<'summary' | 'feedback' | 'details' | 'updates'>('summary')
+  const [hoveredFeedback, setHoveredFeedback] = useState<number | null>(null)
   const analysisData = THEME_ANALYSIS['analysis-' + theme.id]
 
   // Reset tab when signal changes
@@ -431,12 +432,23 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
             {signalTab === 'feedback' && (
               <div className="flex flex-col gap-3">
                 {[
-                  { type: 'Request' as const, tagColor: '#c2eb7f', text: `Users are reporting that ${selectedSignal.title.toLowerCase()} is creating friction in their workflow.`, author: selectedSignal.person.name, date: 'Added 1 month ago', stars: null },
-                  { type: 'Problem' as const, tagColor: '#ffabec', text: `"The overall experience feels slow and unresponsive when this issue occurs. Each attempt is followed by a noticeable delay."`, author: 'Marco Rossi, PM', date: 'Added 1 month ago', stars: 2 },
-                  { type: 'Praise' as const, tagColor: '#b5a9ff', text: `When it works well, the experience is seamless. Users appreciate the reliability when things are functioning as expected.`, author: 'Priya Nair, Designer', date: 'Added 2 months ago', stars: null },
+                  { type: 'Request' as const, tagColor: '#BADEB1', text: `Users are reporting that ${selectedSignal.title.toLowerCase()} is creating friction in their workflow.`, author: selectedSignal.person.name, date: 'Added 1 month ago', stars: null },
+                  { type: 'Problem' as const, tagColor: '#FFD8F4', text: `"The overall experience feels slow and unresponsive when this issue occurs. Each attempt is followed by a noticeable delay."`, author: 'Marco Rossi, PM', date: 'Added 1 month ago', stars: 2 },
+                  { type: 'Praise' as const, tagColor: '#DEDAFF', text: `When it works well, the experience is seamless. Users appreciate the reliability when things are functioning as expected.`, author: 'Priya Nair, Designer', date: 'Added 2 months ago', stars: null },
                 ].map((item, i) => (
-                  <div key={i} className="rounded-[12px] border border-[#e0e2e8] bg-white p-4 flex flex-col gap-3">
-                    <span className="flex items-center h-6 px-2 rounded-full text-xs text-[#222428] self-start" style={{ backgroundColor: item.tagColor }}>{item.type}</span>
+                  <div key={i} className="rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
+                    onMouseEnter={() => setHoveredFeedback(i)}
+                    onMouseLeave={() => setHoveredFeedback(null)}
+                  >
+                  <div className="rounded-[16px] bg-white p-4 flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center h-6 px-2 rounded-full text-xs text-[#222428]" style={{ backgroundColor: item.tagColor }}>{item.type}</span>
+                      <button className="text-[#aeb2c0] hover:text-[#656b81] transition-colors">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                          <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
+                        </svg>
+                      </button>
+                    </div>
                     {item.stars !== null && (
                       <div className="flex items-center gap-0.5">
                         {Array.from({ length: 5 }, (_, si) => (
@@ -447,10 +459,41 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                       </div>
                     )}
                     <p className="text-[13px] leading-[1.6] text-[#222428]">{item.text}</p>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[12px] font-medium text-[#222428]">{item.author}</span>
-                      <span className="text-[11px] text-[#aeb2c0]">{item.date}</span>
-                    </div>
+                    <AnimatePresence mode="wait">
+                      {hoveredFeedback === i ? (
+                        <motion.div
+                          key="chips"
+                          className="flex items-center gap-1.5 overflow-x-auto shrink-0 no-scrollbar"
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 4 }}
+                          transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
+                        >
+                          <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                            <GongIcon />Gong
+                          </span>
+                          <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                            {item.author.split(',')[0]}
+                          </span>
+                          <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                            <CalendarIcon />{item.date.replace('Added ', '')}
+                          </span>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="text"
+                          className="flex flex-col gap-0.5"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.1 }}
+                        >
+                          <span className="text-[12px] font-medium text-[#222428]">{item.author}</span>
+                          <span className="text-[11px] text-[#aeb2c0]">{item.date}</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                   </div>
                 ))}
               </div>
