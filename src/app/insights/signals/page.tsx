@@ -410,7 +410,7 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
 // ─── Signal detail panel ──────────────────────────────────────────────────────
 
 const SIGNAL_CHIPS = [
-  'Map this signal to a theme',
+  'Map this signal to an opportunity',
   'Show related signals',
   'Draft a roadmap recommendation',
 ]
@@ -673,7 +673,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
         {activeTab === 'details' && (
           <div>
             {[
-              { label: 'Theme', value: signal.theme, type: 'text' },
+              { label: 'Opportunity', value: signal.theme, type: 'text' },
               { label: 'Source', value: signal.sourceIcon === 'audio' ? 'Audio / Gong' : signal.sourceIcon === 'globe' ? 'Web / Market' : 'Mobile / App Store', type: 'text' },
               { label: 'Tags', value: signal.tags.map(t => t.label).join(', '), type: 'text' },
               { label: 'Est. ARR impact', value: signal.revenue + ' ARR', type: 'revenue' },
@@ -767,21 +767,21 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 const PROMPT_CHIPS = [
   'Walk me through the 2 unreviewed signals',
   'Why is Canvas Performance strengthening?',
-  'Which themes have new signals this week?',
+  'Which opportunities have new signals this week?',
 ]
 
 const PROMPT_RESPONSES: Record<string, { response: string; followUps: string[] }> = {
   'Walk me through the 2 unreviewed signals': {
     response: `Two signals are waiting for review.\n\n**"Permission model blocks cross-org board sharing"** has 6 upvotes and maps cleanly to the **Permission Controls** theme — four enterprise accounts raised it in sales calls this week. It's high confidence and ready to add.\n\nThe second, **"Localisation gaps prevent rollout in APAC markets"**, is harder to place. It could sit under **Localisation & i18n**, but the signal is thin — only one source so far. I'd hold it for the next review cycle unless more signals come in.\n\n**Recommended action**: Map the permission signal now. Flag the APAC signal as 'watching'.`,
-    followUps: ['Map the permission signal to a theme', 'Show Permission Controls coverage', 'Is APAC localisation a new theme?'],
+    followUps: ['Map the permission signal to an opportunity', 'Show Permission Controls coverage', 'Is APAC localisation a new opportunity?'],
   },
   'Why is Canvas Performance strengthening?': {
     response: `**Canvas Performance** now has 8 signals — up from 5 last month. Three things are driving this:\n\n**Enterprise scale** — accounts with 40+ concurrent users are hitting consistent lag during live sessions. It's not edge-case behaviour anymore.\n\n**Comparison pressure** — four sales calls this week included direct comparisons to Figma's performance. Prospects are using it as a decision criterion.\n\n**Churn risk** — two accounts flagged it as a blocker to wider rollout, not just a complaint. That's a different level of urgency.\n\nThe theme confidence is at **84%** — the highest of any active theme right now. It's moved from 'monitoring' to 'act now' territory.`,
     followUps: ['Which accounts mentioned Canvas Performance?', 'Draft a roadmap recommendation', 'Show all Canvas Performance signals'],
   },
-  'Which themes have new signals this week?': {
+  'Which opportunities have new signals this week?': {
     response: `**4 themes** picked up new signals since your last review:\n\n**Canvas Performance** — 2 new signals. Enterprise lag and a direct Figma comparison from a sales call.\n\n**Enterprise Security** — 2 new signals. SSO enforcement gaps and missing audit log granularity, both from regulated-industry accounts.\n\n**AI UX Controls** — 1 new signal. Users want to reject AI suggestions inline without turning the feature off entirely.\n\n**Mobile Parity** — 1 new signal. iOS touch target sizing during workshops. Notable because it's the first from a non-enterprise account this month — the problem may be broader than enterprise.`,
-    followUps: ['Tell me more about Mobile Parity', 'Show me the Enterprise Security signals', 'Which theme needs the most attention?'],
+    followUps: ['Tell me more about Mobile Parity', 'Show me the Enterprise Security signals', 'Which opportunity needs the most attention?'],
   },
   'Show Enterprise Security signals across both accounts': {
     response: `Both signals come from enterprise accounts in regulated industries.\n\n**Signal 1 — "SSO enforcement not available for guest accounts"** (Spotify, sales call). Their IT team requires SSO for all users accessing boards — including external collaborators. Guest-level access currently bypasses this entirely.\n\n**Signal 2 — "Audit logs don't capture shape-level edit history"** (Zendesk, support ticket). Their compliance team needs a full edit trail for shared boards. Current logs only capture board-level actions, not individual edits.\n\nBoth map to **Enterprise Security**. Neither has been reviewed. These are the kind of signals that quietly block enterprise expansion — they rarely generate volume, but they carry high weight in renewal conversations.`,
@@ -791,17 +791,17 @@ const PROMPT_RESPONSES: Record<string, { response: string; followUps: string[] }
     response: `They're related but distinct, and it's worth keeping them separate.\n\n**AI UX Controls** is about how users interact with AI — surfacing suggestions, rejecting them, understanding what triggered them. The core problem is control and transparency.\n\n**AI Accuracy** is about whether the AI output is correct — clustering quality, summarisation fidelity, relevance of suggestions. The core problem is trust.\n\nIn practice they do overlap: when accuracy is low, users lose trust in the controls entirely and turn AI features off. Two signals sit on the boundary — one where a user rejected a correct suggestion because it looked wrong, and one where accepting a suggestion caused unintended changes.\n\n**Recommendation**: Keep them separate for now but link them. If accuracy improves, you may see UX Controls signals drop naturally.`,
     followUps: ['Show me the boundary signals', 'Show AI Accuracy signals', 'How do users currently turn off AI features?'],
   },
-  'Map the permission signal to a theme': {
+  'Map the permission signal to an opportunity': {
     response: `Done. **"Permission model blocks cross-org board sharing"** has been mapped to **Permission Controls**.\n\nThe theme now has 4 signals total. Confidence score moves from 71% to **76%** with this addition — the new signal is from a named enterprise account with strong source credibility.\n\nI've also flagged **"Localisation gaps prevent rollout in APAC markets"** as 'watching' pending more signals. You'll get a notification if a second source surfaces within 14 days.`,
-    followUps: ['Show Permission Controls coverage', 'Is APAC localisation a new theme?', 'Walk me through the 2 unreviewed signals'],
+    followUps: ['Show Permission Controls coverage', 'Is APAC localisation a new opportunity?', 'Walk me through the 2 unreviewed signals'],
   },
   'Show Permission Controls coverage': {
     response: `**Permission Controls** has 4 signals across 3 source types:\n\n2 from **sales calls** — enterprise accounts asking about granular role assignment and guest access scoping.\n1 from **support tickets** — a team lead unable to restrict editing to specific frames.\n1 just added — **cross-org board sharing blocked by permission model**.\n\nCoverage is solid for the enterprise segment. The gap is **SMB and agency use cases** — no signals from those segments yet, even though the permission model likely affects them too.\n\nConfidence: **76%**. Theme status: Active.`,
-    followUps: ['Which theme needs the most attention?', 'Are there more signals from regulated industries?', 'Is APAC localisation a new theme?'],
+    followUps: ['Which opportunity needs the most attention?', 'Are there more signals from regulated industries?', 'Is APAC localisation a new opportunity?'],
   },
-  'Is APAC localisation a new theme?': {
+  'Is APAC localisation a new opportunity?': {
     response: `Not yet — but it could become one.\n\n**Localisation & i18n** already exists as a theme with 3 signals, mostly focused on RTL language support and date formatting. The APAC signal fits within that theme for now, but it's a different dimension: **market entry blockers** rather than language rendering bugs.\n\nIf two more signals come in specifically about APAC rollout friction, it would justify splitting into a dedicated **APAC Market Readiness** theme. I'd leave it under Localisation & i18n for this cycle and revisit in 3–4 weeks.`,
-    followUps: ['Which themes have new signals this week?', 'Which theme needs the most attention?', 'Walk me through the 2 unreviewed signals'],
+    followUps: ['Which opportunities have new signals this week?', 'Which opportunity needs the most attention?', 'Walk me through the 2 unreviewed signals'],
   },
   'Which accounts mentioned Canvas Performance?': {
     response: `**3 enterprise accounts** flagged Canvas Performance this week:\n\n**Spotify** (sales call, Mon) — "We run design sprints with 40+ people on a single board. The lag when everyone is active at once is a dealbreaker."\n\n**Zalando** (support ticket, Wed) — Reported consistent cursor lag above 50 objects with live presence enabled. Opened as a bug, but the root cause is the same rendering bottleneck.\n\n**Shopify** (community post, Thu) — A power user compared Miro's performance unfavourably to Figma in a public thread. 34 upvotes.`,
@@ -809,21 +809,21 @@ const PROMPT_RESPONSES: Record<string, { response: string; followUps: string[] }
   },
   'Draft a roadmap recommendation': {
     response: `Here's a draft recommendation for **Canvas Performance**:\n\n**Recommendation**: Prioritise rendering performance for boards with 40+ concurrent users in Q2. Address cursor lag before the enterprise sales cycle peaks in Q3.\n\n**Evidence**: 8 signals across 3 enterprise accounts. Two flagged as churn risk. Direct competitor comparisons appearing in sales calls.\n\n**Suggested scope**: Investigate and resolve the rendering bottleneck that causes lag above 40 concurrent users. Target: under 100ms cursor latency at 50 users on a standard board.\n\n**Impact**: Removes a stated blocker for 2 at-risk accounts. Reduces negative sentiment in enterprise sales conversations.`,
-    followUps: ['Which accounts mentioned Canvas Performance?', 'Which theme needs the most attention?', 'Show all Canvas Performance signals'],
+    followUps: ['Which accounts mentioned Canvas Performance?', 'Which opportunity needs the most attention?', 'Show all Canvas Performance signals'],
   },
   'Show all Canvas Performance signals': {
     response: `**Canvas Performance** has 8 signals total:\n\n3 from **sales calls** — enterprise accounts citing lag as a blocker or comparison point against Figma.\n3 from **support tickets** — reported as bugs (cursor lag, slow frame loads, presence indicator delays).\n1 from a **community post** — public comparison to Figma with 34 upvotes.\n1 from an **NPS response** — "Performance on large boards is the one thing stopping us going all-in."\n\nAll 8 point to the same root cause: rendering bottleneck under concurrent load. The theme has strong signal breadth across source types.`,
-    followUps: ['Which accounts mentioned Canvas Performance?', 'Draft a roadmap recommendation', 'Which theme needs the most attention?'],
+    followUps: ['Which accounts mentioned Canvas Performance?', 'Draft a roadmap recommendation', 'Which opportunity needs the most attention?'],
   },
   'Tell me more about Mobile Parity': {
     response: `**Mobile Parity** has 7 signals total, but this new one is different from the others.\n\nMost existing signals come from enterprise accounts where mobile use is incidental — someone checking a board on their phone, not actively editing. The new signal is from an **SMB facilitator** running a workshop where half the participants were on iOS tablets.\n\nThe specific complaint: touch targets on the toolbar are too small for reliable tapping during a fast-moving session. It caused delays and frustration in front of a client.\n\nThis is the first signal where mobile is the **primary device**, not a secondary one. It may indicate a different user segment starting to adopt Miro for facilitation on mobile.`,
-    followUps: ['Which themes have new signals this week?', 'Which theme needs the most attention?', 'Are there more signals from regulated industries?'],
+    followUps: ['Which opportunities have new signals this week?', 'Which opportunity needs the most attention?', 'Are there more signals from regulated industries?'],
   },
   'Show me the Enterprise Security signals': {
     response: `**Enterprise Security** has 5 signals total. The 2 new ones this week:\n\n**SSO enforcement for guests** (Spotify) — IT policy requires SSO for all board access. Guest accounts bypass it entirely.\n\n**Audit log granularity** (Zendesk) — Compliance needs shape-level edit history. Current logs are board-level only.\n\nThe 3 existing signals:\n- Admin controls for external sharing (flagged by 2 accounts)\n- IP allowlist not applying to embedded boards\n- No way to revoke access on a per-board basis for departing employees\n\nAll 5 point to gaps in the enterprise security model for regulated-industry customers.`,
     followUps: ['Show Enterprise Security signals across both accounts', 'Are there more signals from regulated industries?', 'How does this compare to competitor audit features?'],
   },
-  'Which theme needs the most attention?': {
+  'Which opportunity needs the most attention?': {
     response: `**Canvas Performance** needs the most attention right now.\n\nIt has the highest confidence score (**84%**), the most signals added this week (**2**), and is the only theme with active **churn risk** attached — two accounts explicitly described it as a blocker to wider rollout, not just a point of feedback.\n\n**Enterprise Security** is a close second. The signals there are lower volume but higher stakes — they're appearing in regulated-industry accounts where security gaps can block deals entirely.\n\nI'd recommend reviewing Canvas Performance this sprint and flagging Enterprise Security for the next product review.`,
     followUps: ['Draft a roadmap recommendation', 'Show me the Enterprise Security signals', 'Why is Canvas Performance strengthening?'],
   },
@@ -1141,7 +1141,7 @@ export default function SignalsPage() {
                   <span />
                   <span>Source</span>
                   <span>Title</span>
-                  <span>Theme</span>
+                  <span>Opportunity</span>
                   <span>Tags</span>
                   <span>Impact</span>
                   <span>Est. revenue</span>

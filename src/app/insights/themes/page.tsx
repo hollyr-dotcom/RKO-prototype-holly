@@ -40,8 +40,8 @@ const CATEGORY_FILTERS = [
 
 const PROMPT_CHIPS = [
   'What are the strongest signals this week?',
-  'Which themes should we prioritise next sprint?',
-  'Show me themes with the highest ARR impact',
+  'Which opportunities should we prioritise next sprint?',
+  'Show me opportunities with the highest ARR impact',
 ]
 
 const DOC_CHAT: Record<string, { response: string; prompts?: string[] }> = {
@@ -63,29 +63,29 @@ Use dot voting to surface the most resonant ideas quickly. Customers running wor
 **5. Capture action items before you leave the board**
 The most common regret: not turning sticky clusters into clear next steps. Assign an owner and due date to each top idea before closing the session.`,
     prompts: [
-      'Which themes should we ideate on this quarter?',
+      'Which opportunities should we ideate on this quarter?',
       'Which signals are most urgent for Q4?',
-      'How do I run a signal-to-theme mapping session?',
+      'How do I run a signal-to-opportunity mapping session?',
     ],
   },
-  'Which themes should we ideate on this quarter?': {
-    response: `Based on the current signal landscape, three themes are strong candidates for Q4 ideation:\n\n**Canvas Performance** — 8 signals, confidence at 84%. Three enterprise accounts have flagged it as a churn risk. It has the clearest problem statement and the most evidence behind it — good raw material for a solution-focused session.\n\n**AI UX Controls** — New signal this week. Users want inline rejection of AI suggestions without disabling the feature entirely. There's a real product design challenge here that benefits from divergent thinking.\n\n**Guest Access & Permissions** — 2 unreviewed signals, both from enterprise accounts. The constraint space is well-defined, which makes it well-suited for a constraints-led ideation format.\n\nI'd suggest running Canvas Performance and AI UX Controls in parallel breakouts, then converging on prioritisation at the end of the session.`,
+  'Which opportunities should we ideate on this quarter?': {
+    response: `Based on the current signal landscape, three opportunities are strong candidates for Q4 ideation:\n\n**Canvas Performance** — 8 signals, confidence at 84%. Three enterprise accounts have flagged it as a churn risk. It has the clearest problem statement and the most evidence behind it — good raw material for a solution-focused session.\n\n**AI UX Controls** — New signal this week. Users want inline rejection of AI suggestions without disabling the feature entirely. There's a real product design challenge here that benefits from divergent thinking.\n\n**Guest Access & Permissions** — 2 unreviewed signals, both from enterprise accounts. The constraint space is well-defined, which makes it well-suited for a constraints-led ideation format.\n\nI'd suggest running Canvas Performance and AI UX Controls in parallel breakouts, then converging on prioritisation at the end of the session.`,
     prompts: [
       'Which signals are most urgent for Q4?',
-      'How do I run a signal-to-theme mapping session?',
+      'How do I run a signal-to-opportunity mapping session?',
     ],
   },
   'Which signals are most urgent for Q4?': {
     response: `**3 signals stand out for Q4** based on recency, source credibility, and business impact:\n\n**"Canvas lag when 40+ users are active on a single board"** — flagged by Spotify as a near-dealbreaker. Enterprise sales cycle peaks in Q3/Q4, which makes this time-sensitive.\n\n**"SSO enforcement not available for guest accounts"** — compliance requirement for regulated-industry accounts. Two enterprise renewals in Q4 are at risk if this isn't addressed.\n\n**"AI sticky note clustering saves facilitators 40+ minutes per session"** — this one is a positive signal. It's a feature working well that could be expanded. Ideating on where else this capability applies could be high-leverage.\n\nFor your workshop, I'd frame the first two as problem spaces and the third as an opportunity space — mixing problem-solving with opportunity-expansion tends to produce more energised sessions.`,
     prompts: [
-      'Which themes should we ideate on this quarter?',
-      'How do I run a signal-to-theme mapping session?',
+      'Which opportunities should we ideate on this quarter?',
+      'How do I run a signal-to-opportunity mapping session?',
     ],
   },
-  'How do I run a signal-to-theme mapping session?': {
-    response: `A signal-to-theme mapping session helps your team align on which themes are real before you ideate on solutions. Here's a format that works well:\n\n**Step 1 — Print the signals (10 mins)**\nBring the top 10–15 signals into the board as sticky notes. Include the source type and account name so participants can assess credibility.\n\n**Step 2 — Silent grouping (15 mins)**\nEach participant groups signals into clusters independently. No talking. This surfaces genuine pattern recognition vs. groupthink.\n\n**Step 3 — Name the themes (10 mins)**\nAs a group, name each cluster. If two people named the same cluster differently, that's a signal the theme boundary isn't clear yet.\n\n**Step 4 — Prioritise by impact (10 mins)**\nDot vote on which themes deserve immediate action. Weight by signals that have churn risk or revenue attached.\n\nThis format typically takes 45 minutes and produces a prioritised theme list you can hand directly to the roadmap review.`,
+  'How do I run a signal-to-opportunity mapping session?': {
+    response: `A signal-to-opportunity mapping session helps your team align on which opportunities are real before you ideate on solutions. Here's a format that works well:\n\n**Step 1 — Print the signals (10 mins)**\nBring the top 10–15 signals into the board as sticky notes. Include the source type and account name so participants can assess credibility.\n\n**Step 2 — Silent grouping (15 mins)**\nEach participant groups signals into clusters independently. No talking. This surfaces genuine pattern recognition vs. groupthink.\n\n**Step 3 — Name the opportunities (10 mins)**\nAs a group, name each cluster. If two people named the same cluster differently, that's a signal the theme boundary isn't clear yet.\n\n**Step 4 — Prioritise by impact (10 mins)**\nDot vote on which opportunities deserve immediate action. Weight by signals that have churn risk or revenue attached.\n\nThis format typically takes 45 minutes and produces a prioritised opportunity list you can hand directly to the roadmap review.`,
     prompts: [
-      'Which themes should we ideate on this quarter?',
+      'Which opportunities should we ideate on this quarter?',
       'Which signals are most urgent for Q4?',
     ],
   },
@@ -109,7 +109,7 @@ The best PRDs have a post-launch section. Teams that track whether shipped featu
     prompts: [
       'What makes a strong acceptance criteria?',
       'How do I link customer signals to requirements?',
-      'Show me a PRD template for this theme',
+      'Show me a PRD template for this opportunity',
     ],
   },
 }
@@ -617,7 +617,7 @@ export default function ThemesPage() {
         {/* ── Heading ── */}
         <div className="flex items-center justify-between mb-[60px]">
           <div>
-            <h1 id="themes-heading" className="text-[60px] font-serif text-[#222428]">Themes</h1>
+            <h1 id="themes-heading" className="text-[60px] font-serif text-[#222428]">Opportunities</h1>
           </div>
           <p className="text-[20px] text-[#222428]/70 max-w-sm leading-relaxed text-right">
             Discover emerging trends and potential disruptions, plus important updates

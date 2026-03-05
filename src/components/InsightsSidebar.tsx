@@ -17,7 +17,7 @@ type IconComponent = React.ComponentType<{ css?: { width: number; height: number
 
 const NAV_ITEMS = [
   { label: 'Overview', href: '/insights/overview' },
-  { label: 'Themes', href: '/insights/themes' },
+  { label: 'Opportunities', href: '/insights/themes' },
   { label: 'Signals', href: '/insights/signals' },
 ];
 
@@ -32,7 +32,7 @@ const BOARD_SECTIONS: { label: string; items: { icon: IconComponent; label: stri
   {
     label: 'Analysis',
     items: [
-      { icon: IconSparksFilled, label: 'Theme Clustering' },
+      { icon: IconSparksFilled, label: 'Opportunity Clustering' },
       { icon: IconThumbsUp, label: 'Sentiment Trends' },
       { icon: IconGlobe, label: 'Competitor Signals' },
     ],

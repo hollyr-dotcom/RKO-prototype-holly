@@ -264,7 +264,7 @@ const DETAIL_SIGNALS = [
 // ─── Signal chips (used in AI panel) ─────────────────────────────────────────
 
 const SIGNAL_CHIPS = [
-  'Map this signal to a theme',
+  'Map this signal to an opportunity',
   'Show related signals',
   'Draft a roadmap recommendation',
 ]
@@ -533,7 +533,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                       <span className="text-[13px] font-semibold text-[#222428]">Signal added</span>
                       <span className="text-[12px] text-[#aeb2c0]">Jul 14</span>
                     </div>
-                    <p className="text-[13px] text-[#656b81] leading-[1.5]">This signal was captured and added to the theme.</p>
+                    <p className="text-[13px] text-[#656b81] leading-[1.5]">This signal was captured and added to the opportunity.</p>
                   </div>
                 </div>
               </div>
@@ -594,7 +594,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
           >
             <div className="flex flex-col gap-6 px-4">
               <div className="flex flex-col gap-2">
-                <p className="text-[#222428] text-[28px] font-serif leading-[1.4]">Theme deep-dive</p>
+                <p className="text-[#222428] text-[28px] font-serif leading-[1.4]">Opportunity deep-dive</p>
                 <div className="text-[#656b81] text-[16px] leading-[1.5]">
                   <p>
                     This theme has a confidence score of {theme.meta.confidence} and {theme.meta.confidenceDelta} movement this week.
@@ -607,7 +607,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
               </div>
               <div className="flex flex-col gap-3">
                 <div className="-mx-4 rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
-                  {['Summarise signals for this theme', 'Draft a roadmap recommendation', 'Show related customer quotes'].map((chip) => (
+                  {['Summarise signals for this opportunity', 'Draft a roadmap recommendation', 'Show related customer quotes'].map((chip) => (
                     <button key={chip} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors">
                       <span className="text-gray-400 flex-shrink-0"><IconSparksFilled css={{ width: 16, height: 16 }} /></span>
                       <span className="text-gray-900">{chip}</span>
@@ -688,7 +688,7 @@ export default function ThemeDetailPage() {
   if (!theme) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-[#656b81]">Theme not found.</p>
+        <p className="text-[#656b81]">Opportunity not found.</p>
       </div>
     )
   }
