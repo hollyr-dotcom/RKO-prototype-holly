@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Users, ThumbsUp } from "lucide-react";
+import { Bell, Users, ThumbsUp, Copy } from "lucide-react";
 import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconRocket, IconChatLinesTwo, IconBoard, IconChatTwo, IconInsights } from "@mirohq/design-system-icons";
 import InsightsTopBar from "@/components/InsightsTopBar";
 import { THEME_CARDS, type ThemeCard, type ThemeTag } from "@/data/themes-data";
@@ -461,10 +461,24 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
       onClick={navigateToDetail}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="rounded-[24px] shadow-sm cursor-pointer"
-      style={{ backgroundColor: '#E7E7E5', padding: '2px 2px 6px 2px' }}
+      className="relative rounded-[24px] border border-neutral-200 bg-white cursor-pointer"
     >
-      <div className="rounded-[24px] p-6 bg-white flex gap-4 h-full">
+      <AnimatePresence>
+        {hovered && (
+          <motion.button
+            key="copy"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            onClick={(e) => e.stopPropagation()}
+            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full border border-[#e0e2e8] bg-white text-[#656b81] hover:text-[#222428] z-10"
+          >
+            <Copy size={14} strokeWidth={1.5} />
+          </motion.button>
+        )}
+      </AnimatePresence>
+      <div className="rounded-[24px] p-6 flex gap-4 h-full">
       {/* Thumbnail */}
       {card.image && (
         <div className="w-[120px] h-[120px] rounded-[24px] overflow-hidden shrink-0 bg-[#C6DCFF]">
