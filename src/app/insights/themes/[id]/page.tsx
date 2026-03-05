@@ -679,18 +679,18 @@ export default function ThemeDetailPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: [0.2, 0, 0, 1] }}
             className="rounded-xl p-8 pt-[132px] mb-8 relative min-h-[440px] shadow-sm"
-            style={{ backgroundColor: '#2B2D33' }}
+            style={{ backgroundColor: 'white' }}
           >
             {/* Top-right badges */}
             <div className="absolute top-4 right-4 flex items-center gap-2">
-              <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1.5 border border-white/20 text-white">
+              <div className="flex items-center gap-1.5 bg-[#f1f2f5] rounded-full px-3 py-1.5 border border-[#e0e2e8] text-[#222428]">
                 <ThumbsUpIcon />
                 <span className="text-xs font-medium">{theme.meta.likes}</span>
               </div>
-              <button className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors text-white/70">
+              <button className="w-8 h-8 rounded-full bg-[#f1f2f5] border border-[#e0e2e8] flex items-center justify-center hover:bg-[#e7e7e5] transition-colors text-[#656b81]">
                 <BookmarkIcon />
               </button>
-              <button className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors text-white/70">
+              <button className="w-8 h-8 rounded-full bg-[#f1f2f5] border border-[#e0e2e8] flex items-center justify-center hover:bg-[#e7e7e5] transition-colors text-[#656b81]">
                 <MoreIcon />
               </button>
             </div>
@@ -703,18 +703,18 @@ export default function ThemeDetailPage() {
               </div>
 
               {/* Title */}
-              <h1 className="text-[48px] font-serif text-white leading-[1.2] mb-3">
+              <h1 className="text-[48px] font-serif text-[#222428] leading-[1.2] mb-3">
                 {theme.title}
               </h1>
 
               {/* Description */}
-              <p className="text-[16px] text-white/70 leading-[1.6] mb-6 max-w-2xl">
+              <p className="text-[16px] text-[#222428]/70 leading-[1.6] mb-6 max-w-2xl">
                 {theme.description}
               </p>
 
               {/* Actions */}
               <div className="flex items-center gap-2">
-                <button className="h-9 px-4 rounded-lg text-sm font-medium bg-white text-[#222428] hover:bg-white/90 transition-colors">
+                <button className="h-9 px-4 rounded-lg text-sm font-medium bg-[#222428] text-white hover:bg-[#222428]/90 transition-colors">
                   {theme.primaryAction.label}
                 </button>
               </div>
