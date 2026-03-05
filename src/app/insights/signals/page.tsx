@@ -340,7 +340,7 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
             </div>
           )}
           <button className="absolute top-2 right-2 w-6 h-6 rounded-[6px] bg-white/80 flex items-center justify-center text-[#656b81] hover:bg-white transition-colors">
-            <CopyIcon />
+            <IconSparksFilled css={{ width: 14, height: 14 }} />
           </button>
         </div>
 
