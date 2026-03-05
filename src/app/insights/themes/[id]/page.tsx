@@ -198,7 +198,7 @@ function FeaturedCard({ card, accent: accentOverride }: { card: typeof FEATURED_
         <div className={`flex flex-col gap-1 flex-1 min-h-0 ${card.type !== 'quote' ? 'justify-end' : ''}`}>
           {card.type !== 'quote' && (
             <>
-              {(card.type === 'audio' || card.type === 'clips') && (
+              {card.type === 'audio' && (
                 <span className="h-5 px-2 bg-[#222428] text-white text-[10px] font-medium rounded-[24px] flex items-center w-fit mb-0.5">
                   {card.badge}
                 </span>

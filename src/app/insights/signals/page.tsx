@@ -329,13 +329,6 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
               </div>
             </div>
           )}
-          {card.type === 'clips' && (
-            <div className="h-full bg-gradient-to-b from-[rgba(181,169,255,0.3)] to-white flex items-center justify-center">
-              <div className="w-10 h-10 rounded-full bg-[rgba(181,169,255,0.3)] flex items-center justify-center">
-                <Play className="w-4 h-4 text-[#222428] fill-[#222428] ml-0.5" />
-              </div>
-            </div>
-          )}
           {card.type === 'quote' && (
             <div className="h-full bg-gradient-to-b from-[#fff7ca] to-white flex flex-col items-center justify-center gap-2 px-5 py-6">
               <p className="text-[14px] font-semibold text-[#222428] text-center leading-[1.4]">
@@ -355,7 +348,7 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
         <div className={`flex flex-col gap-1.5 flex-1 min-h-0 ${card.type !== 'quote' ? 'justify-end' : ''}`}>
           {card.type !== 'quote' && (
             <>
-              {(card.type === 'audio' || card.type === 'clips') && (
+              {card.type === 'audio' && (
                 <span className="h-5 px-2 bg-[#222428] text-white text-[10px] font-medium rounded-[24px] flex items-center w-fit">
                   {card.badge}
                 </span>
