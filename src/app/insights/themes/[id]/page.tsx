@@ -735,14 +735,14 @@ export default function ThemeDetailPage() {
           >
             {/* Top-right badges */}
             <div className="absolute top-4 right-4 flex items-center gap-2">
-              <div className="flex items-center gap-1.5 bg-[#f1f2f5] rounded-full px-3 py-1.5 border border-[#e0e2e8] text-[#222428]">
+              <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[#222428]">
                 <ThumbsUpIcon />
                 <span className="text-xs font-medium">{theme.meta.likes}</span>
               </div>
-              <button className="w-8 h-8 rounded-full bg-[#f1f2f5] border border-[#e0e2e8] flex items-center justify-center hover:bg-[#e7e7e5] transition-colors text-[#656b81]">
+              <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors text-[#656b81]">
                 <BookmarkIcon />
               </button>
-              <button className="w-8 h-8 rounded-full bg-[#f1f2f5] border border-[#e0e2e8] flex items-center justify-center hover:bg-[#e7e7e5] transition-colors text-[#656b81]">
+              <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors text-[#656b81]">
                 <MoreIcon />
               </button>
             </div>
