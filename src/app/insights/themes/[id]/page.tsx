@@ -188,9 +188,11 @@ function FeaturedCard({ card, accent: accentOverride }: { card: typeof FEATURED_
               {'duration' in card && <p className="text-[12px] text-[#656b81] text-center">{card.duration}</p>}
             </div>
           )}
-          <button className="absolute top-2 right-2 w-6 h-6 rounded-[24px] bg-white/80 flex items-center justify-center text-[#656b81] hover:bg-white transition-colors">
-            <CopyIcon />
-          </button>
+          {hovered && (
+            <button className="absolute top-2 right-2 w-6 h-6 rounded-[24px] flex items-center justify-center text-[#656b81] hover:text-[#222428] transition-colors">
+              <CopyIcon />
+            </button>
+          )}
         </div>
 
         <div className={`flex flex-col gap-1 flex-1 min-h-0 ${card.type !== 'quote' ? 'justify-end' : ''}`}>
