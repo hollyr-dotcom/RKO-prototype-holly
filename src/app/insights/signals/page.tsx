@@ -1135,8 +1135,9 @@ export default function SignalsPage() {
             </div>
 
             {/* Column header + rows */}
-            <div className="overflow-hidden">
-                <div className="grid gap-4 px-5 py-3 border-b border-[#e0e2e8] text-xs font-semibold text-[#656b81] uppercase tracking-wide bg-[#FBFAF7]" style={{ gridTemplateColumns: '24px 48px 1fr 1fr 1fr 90px 110px 120px' }}>
+            <div className="overflow-x-auto">
+              <div style={{ minWidth: 900 }}>
+                <div className="grid gap-4 px-5 py-3 border-b border-[#e0e2e8] text-xs font-semibold text-[#656b81] uppercase tracking-wide bg-[#FBFAF7]" style={{ gridTemplateColumns: '24px 56px 260px 200px 160px 90px 120px 130px' }}>
                   <span />
                   <span>Source</span>
                   <span>Title</span>
@@ -1146,7 +1147,7 @@ export default function SignalsPage() {
                   <span>Est. revenue</span>
                   <span>Companies</span>
                 </div>
-                <div className="overflow-hidden">
+                <div>
                   {SIGNAL_ROWS.map((row, i) => (
                     <motion.div
                       key={row.id}
@@ -1155,7 +1156,7 @@ export default function SignalsPage() {
                       transition={{ duration: 0.25, delay: i * 0.05 }}
                       onClick={() => selectSignal(row)}
                       className={`grid gap-4 px-5 py-3.5 items-center border-b border-[#e0e2e8] last:border-0 hover:bg-[#E7E7E5] transition-colors cursor-pointer ${selectedSignal?.id === row.id ? 'bg-[#E7E7E5]' : ''}`}
-                      style={{ gridTemplateColumns: '24px 48px 1fr 1fr 1fr 90px 110px 120px' }}
+                      style={{ gridTemplateColumns: '24px 56px 260px 200px 160px 90px 120px 130px' }}
                     >
                       <span className="text-xs text-[#aeb2c0]">{row.id}</span>
                       <SourceIconComp type={row.sourceIcon} />
@@ -1173,6 +1174,7 @@ export default function SignalsPage() {
                     </motion.div>
                   ))}
                 </div>
+              </div>
             </div>
           </section>
 
