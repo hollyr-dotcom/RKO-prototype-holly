@@ -418,7 +418,7 @@ const SIGNAL_CHIPS = [
 function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0]; onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<'summary' | 'feedback' | 'details' | 'updates'>('summary')
   const [expanded, setExpanded] = useState(false)
-  const [hoveredCardIndex, setHoveredCardIndex] = useState<number | null>(null)
+  const [hoveredFeedback, setHoveredFeedback] = useState<number | null>(null)
   const { navWidth } = useSidebar()
   const router = useRouter()
   const themeCard = THEME_CARDS.find(c => c.title.toLowerCase().includes(signal.theme.toLowerCase()) || signal.theme.toLowerCase().includes(c.title.toLowerCase().split(' ').slice(0, 3).join(' ')))
@@ -593,8 +593,11 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                 stars: null,
               },
             ].map((item, i) => (
-              <div key={i} className="rounded-[12px] shadow-sm" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}>
-              <div className="rounded-[12px] bg-white p-4 flex flex-col gap-3">
+              <div key={i} className="rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
+                onMouseEnter={() => setHoveredFeedback(i)}
+                onMouseLeave={() => setHoveredFeedback(null)}
+              >
+              <div className="rounded-[16px] bg-white p-4 flex flex-col gap-3">
                 {/* Top row */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -626,48 +629,40 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                 </p>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[12px] font-medium text-[#222428]">{item.author}</span>
-                    <span className="text-[11px] text-[#aeb2c0]">{item.date}</span>
-                  </div>
-                  <div className="relative">
-                    <div
-                      className="w-8 h-8 rounded-full border border-[#e0e2e8] flex items-center justify-center shrink-0 text-[#aeb2c0] cursor-pointer hover:border-[#aeb2c0] transition-colors"
-                      onMouseEnter={() => setHoveredCardIndex(i)}
-                      onMouseLeave={() => setHoveredCardIndex(null)}
+                <AnimatePresence mode="wait">
+                  {hoveredFeedback === i ? (
+                    <motion.div
+                      key="chips"
+                      className="flex items-center gap-1.5 overflow-x-auto shrink-0 no-scrollbar"
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 4 }}
+                      transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      </svg>
-                    </div>
-                    {hoveredCardIndex === i && themeCard && (
-                      <div
-                        className="absolute bottom-10 right-0 z-50 w-[300px]"
-                        onMouseEnter={() => setHoveredCardIndex(i)}
-                        onMouseLeave={() => setHoveredCardIndex(null)}
-                      >
-                        <div className="rounded-[8px] px-5 py-6 flex flex-col gap-5" style={{ backgroundColor: '#1a1b1e', boxShadow: '0px 8px 32px rgba(5,0,56,0.12)' }}>
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            {themeCard.tags.map(t => (
-                              <span key={t.label} className="h-6 px-2.5 rounded-full text-xs font-medium text-[#222428]" style={{ backgroundColor: ({ New: '#BADEB1', Urgent: '#FFD8F4', Customer: '#FFF6B6', Market: '#C6DCFF', Strengthening: '#F8D3AF', Weakening: '#DEDAFF' } as Record<string,string>)[t.label] ?? '#e9eaef' }}>{t.label}</span>
-                            ))}
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <p className="text-[15px] font-heading font-medium text-white leading-snug line-clamp-2">{themeCard.title}</p>
-                            <p className="text-[13px] text-white opacity-70 leading-[1.4] line-clamp-2">{themeCard.description}</p>
-                          </div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>{themeCard.meta.arr}</div>
-                            <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>{themeCard.meta.confidence} <span className="text-[11px] text-[#aeb2c0]">{themeCard.meta.confidenceDelta}</span></div>
-                            <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>{themeCard.meta.likes} likes</div>
-                          </div>
-                          <button onClick={() => router.push(`/insights/themes/${themeCard.id}`)} className="self-start px-4 py-1.5 rounded-[6px] text-white text-sm font-medium hover:opacity-80 transition-opacity" style={{ backgroundColor: '#3859FF' }}>View details</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                      <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                        <GongIcon />Gong
+                      </span>
+                      <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                        {item.author.split(',')[0]}
+                      </span>
+                      <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                        <CalendarIcon />{item.date.replace('Added ', '')}
+                      </span>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="text"
+                      className="flex flex-col gap-0.5"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.1 }}
+                    >
+                      <span className="text-[12px] font-medium text-[#222428]">{item.author}</span>
+                      <span className="text-[11px] text-[#aeb2c0]">{item.date}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
               </div>
             ))}
