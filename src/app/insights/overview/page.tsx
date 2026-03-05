@@ -210,7 +210,7 @@ export default function InsightsOverviewPage() {
               label="Active Users"
               value="+12.1%"
               sub="13,444"
-              background="#3859FF"
+              background="#C6DCFF"
               description={
                 <>
                   New theme added{' '}
