@@ -620,7 +620,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
 
       {/* Prompt chips — always visible above input */}
       {selectedSignal && !showAnalysis && (
-        <div className="px-6 pb-2 shrink-0">
+        <div className="px-6 pb-2 pt-4 shrink-0">
           <div className="rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
             {SIGNAL_CHIPS.map((chip) => (
               <button key={chip} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors">
