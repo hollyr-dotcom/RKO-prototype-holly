@@ -656,10 +656,12 @@ export default function ThemesPage() {
         </div>
 
         {/* ── Cards ── */}
-        <div className="flex flex-col gap-8">
-          {visibleCards.map((card, i) => (
-            <ThemeCardItem key={card.id} card={card} index={i} aiOpen={aiOpen} />
-          ))}
+        <div className="flex justify-center">
+          <div className="flex flex-col gap-8" style={{ width: 712 }}>
+            {visibleCards.map((card, i) => (
+              <ThemeCardItem key={card.id} card={card} index={i} aiOpen={aiOpen} />
+            ))}
+          </div>
         </div>
 
       </main>
