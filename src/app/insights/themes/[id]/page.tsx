@@ -13,12 +13,12 @@ import { ChatInput } from '@/components/toolbar/ChatInput'
 // ─── Tag colour map ────────────────────────────────────────────────────────────
 
 const TAG_COLORS: Record<string, string> = {
-  New: '#DBFAAD',
-  Urgent: '#FFABEC',
-  Customer: '#FFED7B',
-  Market: '#A0C4FB',
-  Strengthening: '#FFBD83',
-  Weakening: '#B5A9FF',
+  New: '#BADEB1',
+  Urgent: '#FFD8F4',
+  Customer: '#FFF6B6',
+  Market: '#C6DCFF',
+  Strengthening: '#F8D3AF',
+  Weakening: '#DEDAFF',
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ function GiftIcon() {
 
 function SourceIconComp({ type }: { type: string }) {
   return (
-    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[#2B2D33]">
+    <div className="w-8 h-8 rounded-[24px] flex items-center justify-center text-[#2B2D33]">
       {type === 'audio' ? <AudioIcon /> : type === 'mobile' ? <MobileIcon /> : <IconChatLinesTwo css={{ width: 20, height: 20 }} />}
     </div>
   )
@@ -119,24 +119,25 @@ function TagPill({ label }: { label: string }) {
 // ─── Featured cards ────────────────────────────────────────────────────────────
 
 const CARD_ACCENT: Record<string, string> = {
-  audio: '#f17de5',
+  audio: '#DEDAFF',
   clips: '#b9b5ff',
   quote: '#ffdc4a',
+
 }
 
 const FEATURED_CARDS = [
-  { id: '1', type: 'audio' as const, badge: 'Audio', title: 'User Interview: Sam Ledezma', description: 'Discussion on "Heavy Board" load times and visual comfort.', date: 'Jul 14', source: 'Gong' },
-  { id: '2', type: 'clips' as const, badge: '2 Clips', title: 'Call with Siemens Admin', participants: 'Henry Park, Sarah Parker, +3 more', description: 'Ayoub El Assri discusses SCIM provisioning hurdles.', date: 'Jul 14', source: 'Gong' },
-  { id: '3', type: 'quote' as const, quote: '"The new feature clearly drives revenue when adopted, but most users aren\'t getting there. We\'re investing in big bets while the core experience that drives engagement feels stuck."', duration: '32m 34s', title: 'Call with Spotify', person: 'John Cusick', date: 'Jul 14', source: 'Gong', logo: 'spotify' },
-  { id: '4', type: 'quote' as const, quote: '"The Miro Assist summarization has cut our research review time by 60%… We can now cluster insights across thousands of sticky notes in seconds."', duration: '12m 04s', title: 'Call with Apple', person: 'James Watson', date: 'Jul 14', source: 'Gong', logo: 'apple' },
-  { id: '5', type: 'audio' as const, badge: 'Audio', title: 'User Interview: Priya Nair', description: 'Frustration with AI suggestions appearing mid-session — breaks focus during live workshops.', date: 'Jul 18', source: 'Gong' },
-  { id: '6', type: 'clips' as const, badge: '4 Clips', title: 'Call with Adobe', participants: 'Marco Rossi, Leah Kim, +2 more', description: 'Team requests persistent cursor visibility across large boards during collaborative reviews.', date: 'Jul 21', source: 'Gong' },
-  { id: '7', type: 'quote' as const, quote: '"We run design sprints with 40+ people on a single board. The lag when everyone is active at once is a dealbreaker — we\'ve nearly lost the account over it."', duration: '28m 12s', title: 'Call with Spotify', person: 'Anna Bergström', date: 'Jul 22', source: 'Gong', logo: 'spotify' },
-  { id: '8', type: 'quote' as const, quote: '"We need SSO that actually works with our IdP out of the box. Every workaround costs us an IT sprint and delays our org-wide rollout."', duration: '41m 07s', title: 'Call with Apple', person: 'Derek Chu', date: 'Jul 25', source: 'Gong', logo: 'apple' },
-  { id: '9', type: 'audio' as const, badge: 'Audio', title: 'User Interview: Tomás Herrera', description: 'Wants template locking so junior designers can\'t accidentally overwrite research structures.', date: 'Aug 1', source: 'Gong' },
-  { id: '10', type: 'clips' as const, badge: '3 Clips', title: 'Call with Siemens PM', participants: 'Rachel Moore, Ben Okafor, +1 more', description: 'Requesting granular export controls — PDF fidelity and selective frame exports are blocking enterprise handoff.', date: 'Aug 3', source: 'Gong' },
-  { id: '11', type: 'quote' as const, quote: '"Diagramming in Miro is close but the auto-layout still falls short for complex system maps. One misaligned node and the whole thing breaks."', duration: '19m 48s', title: 'Call with Spotify', person: 'Clara Johansson', date: 'Aug 6', source: 'Gong', logo: 'spotify' },
-  { id: '12', type: 'audio' as const, badge: 'Audio', title: 'User Interview: Kenji Watanabe', description: 'Wants real-time translation in sticky notes for cross-regional workshops — a blocker for APAC teams.', date: 'Aug 8', source: 'Gong' },
+  { id: '1', type: 'audio' as const, badge: '1 Clip', title: 'User Interview: Sam Ledezma', description: 'Discussion on "Heavy Board" load times and visual comfort.', date: 'Jul 14', source: 'Gong', person: 'Sam Ledezma', company: 'Figma', accent: '#BADEB1' },
+  { id: '2', type: 'audio' as const, badge: '1 Clip', title: 'Call with Siemens Admin', description: 'Ayoub El Assri discusses SCIM provisioning hurdles.', date: 'Jul 14', source: 'Gong', person: 'Ayoub El Assri', company: 'Siemens' },
+  { id: '3', type: 'quote' as const, quote: '"The new feature clearly drives revenue when adopted, but most users aren\'t getting there. We\'re investing in big bets while the core experience that drives engagement feels stuck."', duration: '32m 34s', title: 'Call with Spotify', person: 'John Cusick', company: 'Spotify', date: 'Jul 14', source: 'Gong', logo: 'spotify' },
+  { id: '4', type: 'quote' as const, quote: '"The Miro Assist summarization has cut our research review time by 60%… We can now cluster insights across thousands of sticky notes in seconds."', duration: '12m 04s', title: 'Call with Apple', person: 'James Watson', company: 'Apple', date: 'Jul 14', source: 'Gong', logo: 'apple' },
+  { id: '5', type: 'audio' as const, badge: '1 Clip', title: 'User Interview: Priya Nair', description: 'Frustration with AI suggestions appearing mid-session — breaks focus during live workshops.', date: 'Jul 18', source: 'Gong', person: 'Priya Nair', company: 'Miro', accent: '#BADEB1' },
+  { id: '6', type: 'audio' as const, badge: '1 Clip', title: 'Call with Adobe', description: 'Team requests persistent cursor visibility across large boards during collaborative reviews.', date: 'Jul 21', source: 'Gong', person: 'Sofia Reyes', company: 'Adobe', accent: '#BADEB1' },
+  { id: '7', type: 'quote' as const, quote: '"We run design sprints with 40+ people on a single board. The lag when everyone is active at once is a dealbreaker — we\'ve nearly lost the account over it."', duration: '28m 12s', title: 'Call with Spotify', person: 'Anna Bergström', company: 'Spotify', date: 'Jul 22', source: 'Gong', logo: 'spotify' },
+  { id: '8', type: 'quote' as const, quote: '"We need SSO that actually works with our IdP out of the box. Every workaround costs us an IT sprint and delays our org-wide rollout."', duration: '41m 07s', title: 'Call with Apple', person: 'Derek Chu', company: 'Apple', date: 'Jul 25', source: 'Gong', logo: 'apple' },
+  { id: '9', type: 'audio' as const, badge: '1 Clip', title: 'User Interview: Tomás Herrera', description: 'Wants template locking so junior designers can\'t accidentally overwrite research structures.', date: 'Aug 1', source: 'Gong', person: 'Tomás Herrera', company: 'Atlassian' },
+  { id: '10', type: 'audio' as const, badge: '1 Clip', title: 'Call with Siemens PM', description: 'Requesting granular export controls — PDF fidelity and selective frame exports are blocking enterprise handoff.', date: 'Aug 3', source: 'Gong', person: 'Klaus Weber', company: 'Siemens' },
+  { id: '11', type: 'quote' as const, quote: '"Diagramming in Miro is close but the auto-layout still falls short for complex system maps. One misaligned node and the whole thing breaks."', duration: '19m 48s', title: 'Call with Spotify', person: 'Clara Johansson', company: 'Spotify', date: 'Aug 6', source: 'Gong', logo: 'spotify' },
+  { id: '12', type: 'audio' as const, badge: '1 Clip', title: 'User Interview: Kenji Watanabe', description: 'Wants real-time translation in sticky notes for cross-regional workshops — a blocker for APAC teams.', date: 'Aug 8', source: 'Gong', person: 'Kenji Watanabe', company: 'Sony', accent: '#BADEB1' },
 ]
 
 
@@ -161,7 +162,7 @@ function AppleLogoMark() {
 }
 
 function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
-  const accent = CARD_ACCENT[card.type]
+  const accent = ('accent' in card && card.accent) ? card.accent as string : CARD_ACCENT[card.type]
   const [hovered, setHovered] = useState(false)
   return (
     <motion.div
@@ -172,18 +173,11 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
       animate={{ scale: hovered ? 1.02 : 1 }}
       transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
     >
-      <div className="bg-white rounded-[16px] flex flex-col gap-3 p-3 h-full">
+      <div className="bg-white rounded-[16px] flex flex-col gap-3 p-6 h-full">
         <div className="relative rounded-[12px] overflow-hidden shrink-0" style={{ height: card.type === 'quote' ? 220 : 162 }}>
           {card.type === 'audio' && (
-            <div className="h-full bg-gradient-to-b from-[rgba(241,125,229,0.2)] to-white flex items-center justify-center">
-              <div className="w-9 h-9 rounded-full bg-[rgba(241,125,229,0.25)] flex items-center justify-center">
-                <Play className="w-4 h-4 text-[#222428] fill-[#222428] ml-0.5" />
-              </div>
-            </div>
-          )}
-          {card.type === 'clips' && (
-            <div className="h-full bg-gradient-to-b from-[rgba(181,169,255,0.3)] to-white flex items-center justify-center">
-              <div className="w-10 h-10 rounded-full bg-[rgba(181,169,255,0.3)] flex items-center justify-center">
+            <div className="h-full to-white flex items-center justify-center" style={{ background: `linear-gradient(to bottom, ${accent}, white)` }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: accent }}>
                 <Play className="w-4 h-4 text-[#222428] fill-[#222428] ml-0.5" />
               </div>
             </div>
@@ -194,52 +188,59 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
               {'duration' in card && <p className="text-[12px] text-[#656b81] text-center">{card.duration}</p>}
             </div>
           )}
-          <button className="absolute top-2 right-2 w-6 h-6 rounded-[6px] bg-white/80 flex items-center justify-center text-[#656b81] hover:bg-white transition-colors">
+          <button className="absolute top-2 right-2 w-6 h-6 rounded-[24px] bg-white/80 flex items-center justify-center text-[#656b81] hover:bg-white transition-colors">
             <CopyIcon />
           </button>
         </div>
 
-        {(card.type === 'audio' || card.type === 'clips') && (
-          <span className="h-5 px-2 bg-[#3859FF] text-white text-[10px] font-medium rounded-[4px] flex items-center w-fit">
-            {card.badge}
-          </span>
-        )}
-
-        <div className={`flex flex-col gap-1.5 flex-1 min-h-0 ${card.type !== 'quote' ? 'justify-end' : ''}`}>
+        <div className={`flex flex-col gap-1 flex-1 min-h-0 ${card.type !== 'quote' ? 'justify-end' : ''}`}>
           {card.type !== 'quote' && (
             <>
-              {'participants' in card && card.participants && <p className="text-[12px] text-[#656b81]">{card.participants}</p>}
-              <p className="text-[14px] font-semibold text-[#222428] leading-[1.4]">{card.title}</p>
+              {(card.type === 'audio' || card.type === 'clips') && (
+                <span className="h-5 px-2 bg-[#222428] text-white text-[10px] font-medium rounded-[24px] flex items-center w-fit mb-0.5">
+                  {card.badge}
+                </span>
+              )}
+              <p className="text-lg font-heading font-medium text-gray-900 leading-snug">{card.title}</p>
               {'description' in card && card.description && <p className="text-[12px] text-[#656b81] leading-[1.4]">{card.description}</p>}
             </>
           )}
           {card.type === 'quote' && (
-            <div className="flex items-center gap-2">
-              <div className="w-[39px] h-[39px] rounded-[12px] bg-white border border-[#e9eaef] shadow-[0px_4px_8px_0px_rgba(0,0,0,0.05)] flex items-center justify-center shrink-0">
-                {card.logo === 'spotify' ? <SpotifyLogoMark /> : <AppleLogoMark />}
-              </div>
-              <div>
-                <p className="text-[14px] font-semibold text-[#222428] leading-[1.4]">{card.title}</p>
-                <p className="text-[12px] text-[#656b81]">{'person' in card ? card.person : ''}</p>
-              </div>
+            <div className="flex flex-col gap-0.5">
+              <p className="text-lg font-heading font-medium text-gray-900 leading-snug">{card.title}</p>
+              <p className="text-[12px] text-[#656b81]">{'person' in card ? card.person : ''}</p>
             </div>
           )}
         </div>
 
-        <div className="h-px bg-[#e0e2e8] shrink-0 -mx-1" />
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="flex items-center justify-center w-[28px] h-[28px] border border-[#c7c7d1] rounded-[4px] text-[#656b81] shrink-0">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M1 2h10M1 5h10M1 8h7" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
-            </svg>
-          </span>
-          <span className="flex items-center gap-1 h-[28px] px-2 bg-[#f2f2f2] rounded-[4px] text-[12px] text-[#050038] shrink-0">
-            <CalendarIcon />{card.date}
-          </span>
-          <span className="flex items-center gap-1 h-[28px] px-2 border border-[#e0e2e8] rounded-[4px] text-[12px] text-[#222428] shrink-0">
-            <GongIcon />{card.source}
-          </span>
-        </div>
+        <AnimatePresence>
+          {hovered && (
+            <motion.div
+              className="flex items-center gap-1.5 overflow-x-auto shrink-0 no-scrollbar"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 4 }}
+              transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
+            >
+              <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                <GongIcon />Gong
+              </span>
+              {'company' in card && card.company && (
+                <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                  {card.company as string}
+                </span>
+              )}
+              {'person' in card && card.person && (
+                <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                  {card.person}
+                </span>
+              )}
+              <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                <CalendarIcon />{card.date}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   )
@@ -248,14 +249,14 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
 // ─── Detail signals table ──────────────────────────────────────────────────────
 
 const DETAIL_SIGNALS = [
-  { id: '1', sourceIcon: 'audio', title: 'Canvas lag with 40+ concurrent users', description: 'Three enterprise accounts flagged as Q3 retention blocker.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFED7B' }, revenue: '$2.1M', company: { name: 'Google', letter: 'G', bg: '#4285F4' }, feedback: { survey: 110, call: 62, message: 18, appStore: 30 } },
-  { id: '2', sourceIcon: 'globe', title: 'AI suggestions interrupt live workshops', description: 'Mid-session interruptions break workshop flow and focus.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFABEC' }, revenue: '$850K', company: { name: 'Blizzard', letter: 'B', bg: '#00AEFF' }, feedback: { survey: 42, call: 28, message: 14, appStore: 9 } },
-  { id: '3', sourceIcon: 'mobile', title: 'Cursors invisible to collaborators on 4K boards', description: 'Collaboration breaks down when cursor presence disappears.', person: { name: 'Mika B', initials: 'MB', bg: '#DBFAAD' }, revenue: '$620K', company: { name: 'Apple', letter: 'A', bg: '#555' }, feedback: { survey: 30, call: 15, message: 22, appStore: 18 } },
-  { id: '4', sourceIcon: 'globe', title: 'SAML / SSO breaks with Okta and Azure AD', description: 'Six-figure deals stalled at procurement over SSO failures.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFED7B' }, revenue: '$1.4M', company: { name: 'Adobe', letter: 'A', bg: '#E0001B' }, feedback: { survey: 74, call: 55, message: 8, appStore: 12 } },
-  { id: '5', sourceIcon: 'audio', title: 'PDF exports lose fonts on large frames', description: 'Enterprise handoff workflows blocked by export fidelity.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFABEC' }, revenue: '$540K', company: { name: 'Google', letter: 'G', bg: '#4285F4' }, feedback: { survey: 28, call: 19, message: 11, appStore: 6 } },
-  { id: '6', sourceIcon: 'mobile', title: 'SCIM provisioning fails silently on first sync', description: 'IT teams report silent failures blocking org-wide rollouts.', person: { name: 'Mika B', initials: 'MB', bg: '#DBFAAD' }, revenue: '$1.1M', company: { name: 'Apple', letter: 'A', bg: '#555' }, feedback: { survey: 58, call: 40, message: 20, appStore: 15 } },
-  { id: '7', sourceIcon: 'globe', title: 'Boards with 500+ objects take 8+ seconds to load', description: 'Heavy boards cause session abandonment in enterprise accounts.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFED7B' }, revenue: '$760K', company: { name: 'Blizzard', letter: 'B', bg: '#00AEFF' }, feedback: { survey: 38, call: 24, message: 16, appStore: 10 } },
-  { id: '8', sourceIcon: 'audio', title: 'Auto-layout breaks on complex system maps', description: 'Architecture diagrams with 50+ nodes fail to auto-arrange.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFABEC' }, revenue: '$720K', company: { name: 'Adobe', letter: 'A', bg: '#E0001B' }, feedback: { survey: 36, call: 22, message: 19, appStore: 13 } },
+  { id: '1', sourceIcon: 'audio', title: 'Canvas lag with 40+ concurrent users', description: 'Three enterprise accounts flagged as Q3 retention blocker.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFF6B6' }, revenue: '$2.1M', company: { name: 'Google', letter: 'G', bg: '#4285F4' }, feedback: { survey: 110, call: 62, message: 18, appStore: 30 } },
+  { id: '2', sourceIcon: 'globe', title: 'AI suggestions interrupt live workshops', description: 'Mid-session interruptions break workshop flow and focus.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFD8F4' }, revenue: '$850K', company: { name: 'Blizzard', letter: 'B', bg: '#00AEFF' }, feedback: { survey: 42, call: 28, message: 14, appStore: 9 } },
+  { id: '3', sourceIcon: 'mobile', title: 'Cursors invisible to collaborators on 4K boards', description: 'Collaboration breaks down when cursor presence disappears.', person: { name: 'Mika B', initials: 'MB', bg: '#BADEB1' }, revenue: '$620K', company: { name: 'Apple', letter: 'A', bg: '#555' }, feedback: { survey: 30, call: 15, message: 22, appStore: 18 } },
+  { id: '4', sourceIcon: 'globe', title: 'SAML / SSO breaks with Okta and Azure AD', description: 'Six-figure deals stalled at procurement over SSO failures.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFF6B6' }, revenue: '$1.4M', company: { name: 'Adobe', letter: 'A', bg: '#E0001B' }, feedback: { survey: 74, call: 55, message: 8, appStore: 12 } },
+  { id: '5', sourceIcon: 'audio', title: 'PDF exports lose fonts on large frames', description: 'Enterprise handoff workflows blocked by export fidelity.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFD8F4' }, revenue: '$540K', company: { name: 'Google', letter: 'G', bg: '#4285F4' }, feedback: { survey: 28, call: 19, message: 11, appStore: 6 } },
+  { id: '6', sourceIcon: 'mobile', title: 'SCIM provisioning fails silently on first sync', description: 'IT teams report silent failures blocking org-wide rollouts.', person: { name: 'Mika B', initials: 'MB', bg: '#BADEB1' }, revenue: '$1.1M', company: { name: 'Apple', letter: 'A', bg: '#555' }, feedback: { survey: 58, call: 40, message: 20, appStore: 15 } },
+  { id: '7', sourceIcon: 'globe', title: 'Boards with 500+ objects take 8+ seconds to load', description: 'Heavy boards cause session abandonment in enterprise accounts.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFF6B6' }, revenue: '$760K', company: { name: 'Blizzard', letter: 'B', bg: '#00AEFF' }, feedback: { survey: 38, call: 24, message: 16, appStore: 10 } },
+  { id: '8', sourceIcon: 'audio', title: 'Auto-layout breaks on complex system maps', description: 'Architecture diagrams with 50+ nodes fail to auto-arrange.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFD8F4' }, revenue: '$720K', company: { name: 'Adobe', letter: 'A', bg: '#E0001B' }, feedback: { survey: 36, call: 22, message: 19, appStore: 13 } },
 ]
 
 // ─── Signal chips (used in AI panel) ─────────────────────────────────────────
@@ -369,7 +370,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                 <button
                   key={tab}
                   onClick={() => setSignalTab(tab.toLowerCase() as typeof signalTab)}
-                  className={`h-8 px-3 rounded-lg text-[14px] font-semibold transition-colors ${
+                  className={`h-8 px-3 rounded-[24px] text-[14px] font-semibold transition-colors ${
                     signalTab === tab.toLowerCase() ? 'bg-[#E7E7E5] text-[#222428]' : 'text-[#656b81] hover:bg-[#FBFAF7]'
                   }`}
                 >
@@ -618,7 +619,7 @@ export default function ThemeDetailPage() {
 
   const theme = THEME_CARDS.find((c) => c.id === String(params.id))
 
-  const cardsPerPage = aiOpen ? 2 : 4
+  const cardsPerPage = aiOpen ? 2 : 3
   const totalPages = Math.ceil(FEATURED_CARDS.length / cardsPerPage)
   const pages = Array.from({ length: totalPages }, (_, i) =>
     FEATURED_CARDS.slice(i * cardsPerPage, (i + 1) * cardsPerPage)
@@ -678,8 +679,7 @@ export default function ThemeDetailPage() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: [0.2, 0, 0, 1] }}
-            className="rounded-xl p-8 pt-[132px] mb-8 relative min-h-[440px] shadow-sm"
-            style={{ backgroundColor: 'white' }}
+            className="rounded-[24px] p-8 pt-[132px] mb-[60px] relative min-h-[440px] shadow-sm bg-white"
           >
             {/* Top-right badges */}
             <div className="absolute top-4 right-4 flex items-center gap-2">
@@ -714,7 +714,7 @@ export default function ThemeDetailPage() {
 
               {/* Actions */}
               <div className="flex items-center gap-2">
-                <button className="h-9 px-4 rounded-lg text-sm font-medium bg-[#222428] text-white hover:bg-[#222428]/90 transition-colors">
+                <button className="h-9 px-4 rounded-[24px] text-sm font-medium bg-[#222428] text-white hover:bg-[#222428]/90 transition-colors">
                   {theme.primaryAction.label}
                 </button>
               </div>
@@ -722,7 +722,7 @@ export default function ThemeDetailPage() {
           </motion.section>
 
           {/* ── Confidence drivers ── */}
-          <section className="mb-8">
+          <section className="mb-[60px]">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[24px] font-serif text-[#222428]">Confidence drivers</h2>
             </div>
@@ -742,7 +742,7 @@ export default function ThemeDetailPage() {
           </section>
 
           {/* ── Featured ── */}
-          <section className="mb-8">
+          <section className="mb-[60px]">
             <div className="flex items-center gap-2 mb-5">
               <h2 className="text-[24px] font-serif text-[#222428]">Featured</h2>
               <span className="text-[14px] text-[#656b81]">{signalCount} signals</span>
@@ -768,7 +768,7 @@ export default function ThemeDetailPage() {
                     animate="center"
                     exit="exit"
                     transition={{ duration: 0.35, ease: [0.2, 0, 0, 1] }}
-                    className={`grid ${aiOpen ? 'grid-cols-2' : 'grid-cols-4'} gap-[22px] pb-1`}
+                    className={`grid ${aiOpen ? 'grid-cols-2' : 'grid-cols-3'} gap-[22px] pb-1`}
                   >
                     {pages[safePage].map((card) => (
                       <FeaturedCard key={card.id} card={card} />
@@ -804,7 +804,7 @@ export default function ThemeDetailPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-1.5 h-8 px-3 rounded-lg text-[14px] transition-colors ${
+                    className={`flex items-center gap-1.5 h-8 px-3 rounded-[24px] text-[14px] transition-colors ${
                       activeTab === tab.id ? 'bg-[#222428] text-white' : 'text-[#656b81] hover:bg-white'
                     }`}
                   >
@@ -818,13 +818,13 @@ export default function ThemeDetailPage() {
                 ))}
               </div>
               <div className="flex items-center gap-2">
-                <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f1f2f5] transition-colors text-[#656b81]">
+                <button className="w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#f1f2f5] transition-colors text-[#656b81]">
                   <Search className="w-4 h-4" />
                 </button>
-                <button className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[#e0e2e8] text-sm text-[#222428] hover:bg-[#f1f2f5] transition-colors">
+                <button className="flex items-center gap-1.5 h-8 px-3 rounded-[24px] border border-[#e0e2e8] text-sm text-[#222428] hover:bg-[#f1f2f5] transition-colors">
                   Latest <ChevronDown className="w-3.5 h-3.5" />
                 </button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f1f2f5] transition-colors text-[#656b81]">
+                <button className="w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#f1f2f5] transition-colors text-[#656b81]">
                   <SlidersHorizontal className="w-4 h-4" />
                 </button>
               </div>
@@ -903,19 +903,19 @@ export default function ThemeDetailPage() {
                     )}
                     {row.type === 'person' && (
                       <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 rounded-full bg-[#FFED7B] flex items-center justify-center text-[10px] font-semibold text-[#222428] shrink-0">K</div>
+                        <div className="w-5 h-5 rounded-full bg-[#FFF6B6] flex items-center justify-center text-[10px] font-semibold text-[#222428] shrink-0">K</div>
                         <span className="text-sm text-[#222428]">{row.value}</span>
                       </div>
                     )}
                     {row.type === 'score' && (
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-[#222428] font-medium">{row.value}</span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-[#DBFAAD] text-[#222428] font-medium">{row.badge}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-[#BADEB1] text-[#222428] font-medium">{row.badge}</span>
                       </div>
                     )}
                     {row.type === 'revenue' && (
                       <div className="flex items-center gap-1.5">
-                        <span className="w-4 h-4 rounded-full bg-[#DBFAAD] flex items-center justify-center text-[10px] font-bold text-[#222428]">$</span>
+                        <span className="w-4 h-4 rounded-full bg-[#BADEB1] flex items-center justify-center text-[10px] font-bold text-[#222428]">$</span>
                         <span className="text-sm text-[#222428]">{row.value}</span>
                       </div>
                     )}
@@ -959,7 +959,7 @@ export default function ThemeDetailPage() {
                       {item.action}
                       {item.date && <span className="text-[#656b81]"> • {item.date}</span>}
                     </p>
-                    <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#aeb2c0] hover:text-[#656b81] hover:bg-[#f1f2f5] transition-colors shrink-0">
+                    <button className="w-8 h-8 flex items-center justify-center rounded-[24px] text-[#aeb2c0] hover:text-[#656b81] hover:bg-[#f1f2f5] transition-colors shrink-0">
                       <RotateCcw className="w-3.5 h-3.5" />
                     </button>
                   </div>

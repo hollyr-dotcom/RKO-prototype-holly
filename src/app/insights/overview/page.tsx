@@ -196,7 +196,7 @@ export default function InsightsOverviewPage() {
               label="Feature adoption"
               value="+8.5%"
               sub="20%"
-              background="#C2EB7F"
+              background="#BADEB1"
               description={
                 <>
                   New suggestion added{' '}
@@ -210,7 +210,7 @@ export default function InsightsOverviewPage() {
               label="Active Users"
               value="+12.1%"
               sub="13,444"
-              background="#A0C4FB"
+              background="#C6DCFF"
               description={
                 <>
                   New theme added{' '}
@@ -224,7 +224,7 @@ export default function InsightsOverviewPage() {
               label="New Users"
               value="+8.3%"
               sub="532"
-              background="#FFABEC"
+              background="#FFD8F4"
               description={
                 <>
                   Driven by{' '}
@@ -241,7 +241,7 @@ export default function InsightsOverviewPage() {
               label="Average Session"
               value="-30 secs"
               sub="15m"
-              background="#FFBD83"
+              background="#F8D3AF"
               description="Decline led by resolved mobile crash on board entry."
             />
           </div>

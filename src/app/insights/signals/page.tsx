@@ -7,6 +7,8 @@ import { IconSparksFilled, IconSmileyChat, IconGlobe, IconRectanglesThreeOverlap
 import InsightsTopBar from '@/components/InsightsTopBar'
 import { ChatInput } from '@/components/toolbar/ChatInput'
 import { useSidebar } from '@/hooks/useSidebar'
+import { THEME_CARDS } from '@/data/themes-data'
+import { useRouter } from 'next/navigation'
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -14,21 +16,25 @@ const FEATURED_CARDS = [
   {
     id: '1',
     type: 'audio' as const,
-    badge: 'Audio',
+    badge: '1 Clip',
     title: 'User Interview: Sam Ledezma',
     description: 'Discussion on "Heavy Board" load times and visual comfort.',
     date: 'Jul 14',
     source: 'Gong',
+    person: 'Sam Ledezma',
+    company: 'Figma',
+    accent: '#BADEB1',
   },
   {
     id: '2',
-    type: 'clips' as const,
-    badge: '2 Clips',
+    type: 'audio' as const,
+    badge: '1 Clip',
     title: 'Call with Siemens Admin',
-    participants: 'Henry Park, Sarah Parker, +3 more',
     description: 'Ayoub El Assri discusses SCIM provisioning hurdles.',
     date: 'Jul 14',
     source: 'Gong',
+    person: 'Ayoub El Assri',
+    company: 'Siemens',
   },
   {
     id: '3',
@@ -37,6 +43,7 @@ const FEATURED_CARDS = [
     duration: '32m 34s',
     title: 'Call with Spotify',
     person: 'John Cusick',
+    company: 'Spotify',
     date: 'Jul 14',
     source: 'Gong',
     logo: 'spotify',
@@ -48,6 +55,7 @@ const FEATURED_CARDS = [
     duration: '12m 04s',
     title: 'Call with Apple',
     person: 'James Watson',
+    company: 'Apple',
     date: 'Jul 14',
     source: 'Gong',
     logo: 'apple',
@@ -55,21 +63,26 @@ const FEATURED_CARDS = [
   {
     id: '5',
     type: 'audio' as const,
-    badge: 'Audio',
+    badge: '1 Clip',
     title: 'User Interview: Priya Nair',
     description: 'Frustration with AI suggestions appearing mid-session — breaks focus during live workshops.',
     date: 'Jul 18',
     source: 'Gong',
+    person: 'Priya Nair',
+    company: 'Miro',
+    accent: '#BADEB1',
   },
   {
     id: '6',
-    type: 'clips' as const,
-    badge: '4 Clips',
+    type: 'audio' as const,
+    badge: '1 Clip',
     title: 'Call with Adobe',
-    participants: 'Marco Rossi, Leah Kim, +2 more',
     description: 'Team requests persistent cursor visibility across large boards during collaborative reviews.',
     date: 'Jul 21',
     source: 'Gong',
+    person: 'Sofia Reyes',
+    company: 'Adobe',
+    accent: '#BADEB1',
   },
   {
     id: '7',
@@ -78,6 +91,7 @@ const FEATURED_CARDS = [
     duration: '28m 12s',
     title: 'Call with Spotify',
     person: 'Anna Bergström',
+    company: 'Spotify',
     date: 'Jul 22',
     source: 'Gong',
     logo: 'spotify',
@@ -89,6 +103,7 @@ const FEATURED_CARDS = [
     duration: '41m 07s',
     title: 'Call with Apple',
     person: 'Derek Chu',
+    company: 'Apple',
     date: 'Jul 25',
     source: 'Gong',
     logo: 'apple',
@@ -96,21 +111,24 @@ const FEATURED_CARDS = [
   {
     id: '9',
     type: 'audio' as const,
-    badge: 'Audio',
+    badge: '1 Clip',
     title: 'User Interview: Tomás Herrera',
     description: 'Wants template locking so junior designers can\'t accidentally overwrite research structures.',
     date: 'Aug 1',
     source: 'Gong',
+    person: 'Tomás Herrera',
+    company: 'Atlassian',
   },
   {
     id: '10',
-    type: 'clips' as const,
-    badge: '3 Clips',
+    type: 'audio' as const,
+    badge: '1 Clip',
     title: 'Call with Siemens PM',
-    participants: 'Rachel Moore, Ben Okafor, +1 more',
     description: 'Requesting granular export controls — PDF fidelity and selective frame exports are blocking enterprise handoff.',
     date: 'Aug 3',
     source: 'Gong',
+    person: 'Klaus Weber',
+    company: 'Siemens',
   },
   {
     id: '11',
@@ -119,6 +137,7 @@ const FEATURED_CARDS = [
     duration: '19m 48s',
     title: 'Call with Spotify',
     person: 'Clara Johansson',
+    company: 'Spotify',
     date: 'Aug 6',
     source: 'Gong',
     logo: 'spotify',
@@ -126,11 +145,14 @@ const FEATURED_CARDS = [
   {
     id: '12',
     type: 'audio' as const,
-    badge: 'Audio',
+    badge: '1 Clip',
     title: 'User Interview: Kenji Watanabe',
     description: 'Wants real-time translation in sticky notes for cross-regional workshops — a blocker for APAC teams.',
     date: 'Aug 8',
     source: 'Gong',
+    person: 'Kenji Watanabe',
+    company: 'Sony',
+    accent: '#BADEB1',
   },
 ]
 
@@ -154,12 +176,12 @@ const SIGNAL_ROWS = [
 ]
 
 const TAG_COLORS: Record<string, string> = {
-  New: '#DBFAAD',
-  Customer: '#FFED7B',
-  Market: '#A0C4FB',
-  Urgent: '#FFABEC',
-  Strengthening: '#FFBD83',
-  Weakening: '#B5A9FF',
+  New: '#BADEB1',
+  Customer: '#FFF6B6',
+  Market: '#C6DCFF',
+  Urgent: '#FFD8F4',
+  Strengthening: '#F8D3AF',
+  Weakening: '#DEDAFF',
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -278,13 +300,14 @@ function TagPill({ label }: { label: string }) {
 // ─── Featured section ─────────────────────────────────────────────────────────
 
 const CARD_ACCENT: Record<string, string> = {
-  audio: '#f17de5',
+  audio: '#DEDAFF',
   clips: '#b9b5ff',
   quote: '#ffdc4a',
+
 }
 
 function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
-  const accent = CARD_ACCENT[card.type]
+  const accent = ('accent' in card && card.accent) ? card.accent as string : CARD_ACCENT[card.type]
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -296,13 +319,12 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
       animate={{ scale: hovered ? 1.02 : 1 }}
       transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
     >
-      <div className="bg-white rounded-[16px] flex flex-col gap-3 p-3 h-full">
-
+      <div className="bg-white rounded-[16px] flex flex-col gap-3 p-6 h-full">
         {/* Top media area */}
         <div className="relative rounded-[12px] overflow-hidden shrink-0" style={{ height: card.type === 'quote' ? 220 : 162 }}>
           {card.type === 'audio' && (
-            <div className="h-full bg-gradient-to-b from-[rgba(241,125,229,0.2)] to-white flex items-center justify-center">
-              <div className="w-9 h-9 rounded-full bg-[rgba(241,125,229,0.25)] flex items-center justify-center">
+            <div className="h-full to-white flex items-center justify-center" style={{ background: `linear-gradient(to bottom, ${accent}, white)` }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: accent }}>
                 <Play className="w-4 h-4 text-[#222428] fill-[#222428] ml-0.5" />
               </div>
             </div>
@@ -324,7 +346,6 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
               )}
             </div>
           )}
-          {/* Copy icon */}
           <button className="absolute top-2 right-2 w-6 h-6 rounded-[6px] bg-white/80 flex items-center justify-center text-[#656b81] hover:bg-white transition-colors">
             <CopyIcon />
           </button>
@@ -335,52 +356,52 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
           {card.type !== 'quote' && (
             <>
               {(card.type === 'audio' || card.type === 'clips') && (
-                <span className="h-5 px-2 bg-[#3859FF] text-white text-[10px] font-medium rounded-[4px] flex items-center w-fit">
+                <span className="h-5 px-2 bg-[#222428] text-white text-[10px] font-medium rounded-[24px] flex items-center w-fit">
                   {card.badge}
                 </span>
               )}
-              <p className="text-[14px] font-semibold text-[#222428] leading-[1.4]">{card.title}</p>
-              {'participants' in card && card.participants && (
-                <p className="text-[12px] text-[#656b81]">{card.participants}</p>
-              )}
+              <p className="text-lg font-heading font-medium text-gray-900 leading-snug">{card.title}</p>
               {'description' in card && card.description && (
                 <p className="text-[12px] text-[#656b81] leading-[1.4]">{card.description}</p>
               )}
             </>
           )}
           {card.type === 'quote' && (
-            <div className="flex items-center gap-2">
-              <div className="w-[39px] h-[39px] rounded-[12px] bg-white border border-[#e9eaef] shadow-[0px_4px_8px_0px_rgba(0,0,0,0.05)] flex items-center justify-center shrink-0">
-                {card.logo === 'spotify' ? <SpotifyLogoMark /> : <AppleLogoMark />}
-              </div>
-              <div>
-                <p className="text-[14px] font-semibold text-[#222428] leading-[1.4]">{card.title}</p>
-                <p className="text-[12px] text-[#9ca0ad]">{'person' in card ? card.person : ''}</p>
-              </div>
+            <div className="flex flex-col gap-0.5">
+              <p className="text-lg font-heading font-medium text-gray-900 leading-snug">{card.title}</p>
+              <p className="text-[12px] text-[#9ca0ad]">{'person' in card ? card.person : ''}</p>
             </div>
           )}
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-[#e0e2e8] shrink-0 -mx-1" />
-
-        {/* Tag row */}
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="flex items-center justify-center w-[28px] h-[28px] border border-[#c7c7d1] rounded-[4px] text-[#656b81] shrink-0">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M1 2h10M1 5h10M1 8h7" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
-            </svg>
-          </span>
-          <span className="flex items-center gap-1 h-[28px] px-2 bg-[#f2f2f2] rounded-[4px] text-[12px] text-[#050038] shrink-0">
-            <CalendarIcon />
-            {card.date}
-          </span>
-          <span className="flex items-center gap-1 h-[28px] px-2 border border-[#e0e2e8] rounded-[4px] text-[12px] text-[#222428] shrink-0">
-            <GongIcon />
-            {card.source}
-          </span>
-        </div>
-
+        <AnimatePresence>
+          {hovered && (
+            <motion.div
+              className="flex items-center gap-1.5 overflow-x-auto shrink-0 no-scrollbar"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 4 }}
+              transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
+            >
+              <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                <GongIcon />Gong
+              </span>
+              {'company' in card && card.company && (
+                <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                  {card.company as string}
+                </span>
+              )}
+              {'person' in card && card.person && (
+                <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                  {card.person as string}
+                </span>
+              )}
+              <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                <CalendarIcon />{card.date}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   )
@@ -397,7 +418,10 @@ const SIGNAL_CHIPS = [
 function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0]; onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<'summary' | 'feedback' | 'details' | 'updates'>('summary')
   const [expanded, setExpanded] = useState(false)
+  const [hoveredCardIndex, setHoveredCardIndex] = useState<number | null>(null)
   const { navWidth } = useSidebar()
+  const router = useRouter()
+  const themeCard = THEME_CARDS.find(c => c.title.toLowerCase().includes(signal.theme.toLowerCase()) || signal.theme.toLowerCase().includes(c.title.toLowerCase().split(' ').slice(0, 3).join(' ')))
 
   const expandedLeft = navWidth
 
@@ -539,11 +563,11 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 
         {/* Feedback tab */}
         {activeTab === 'feedback' && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-8">
             {[
               {
                 type: 'Request' as const,
-                tagColor: '#c2eb7f',
+                tagColor: '#BADEB1',
                 platforms: ['mobile', 'apple'],
                 text: `Users are reporting that ${signal.title.toLowerCase()} is creating friction in their workflow. This is making it difficult to complete key tasks efficiently, and engagement may decline as a result.`,
                 author: 'Kajsa Bell, CPO',
@@ -552,7 +576,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
               },
               {
                 type: 'Problem' as const,
-                tagColor: '#ffabec',
+                tagColor: '#FFD8F4',
                 platforms: ['mobile', 'apple'],
                 text: `"The overall experience feels slow and unresponsive when this issue occurs. Each attempt is followed by a noticeable delay, creating the impression that the system is overprocessing before responding."`,
                 author: 'Marco Rossi, PM',
@@ -561,7 +585,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
               },
               {
                 type: 'Praise' as const,
-                tagColor: '#b5a9ff',
+                tagColor: '#DEDAFF',
                 platforms: ['mobile'],
                 text: `When it works well, the experience is seamless. Users appreciate the speed and reliability when ${signal.theme.toLowerCase()} is functioning as expected.`,
                 author: 'Priya Nair, Designer',
@@ -569,7 +593,8 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                 stars: null,
               },
             ].map((item, i) => (
-              <div key={i} className="rounded-[12px] border border-[#e0e2e8] bg-white p-4 flex flex-col gap-3">
+              <div key={i} className="rounded-[12px] shadow-sm" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}>
+              <div className="rounded-[12px] bg-white p-4 flex flex-col gap-3">
                 {/* Top row */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -601,10 +626,49 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                 </p>
 
                 {/* Footer */}
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[12px] font-medium text-[#222428]">{item.author}</span>
-                  <span className="text-[11px] text-[#aeb2c0]">{item.date}</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[12px] font-medium text-[#222428]">{item.author}</span>
+                    <span className="text-[11px] text-[#aeb2c0]">{item.date}</span>
+                  </div>
+                  <div className="relative">
+                    <div
+                      className="w-8 h-8 rounded-full border border-[#e0e2e8] flex items-center justify-center shrink-0 text-[#aeb2c0] cursor-pointer hover:border-[#aeb2c0] transition-colors"
+                      onMouseEnter={() => setHoveredCardIndex(i)}
+                      onMouseLeave={() => setHoveredCardIndex(null)}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    {hoveredCardIndex === i && themeCard && (
+                      <div
+                        className="absolute bottom-10 right-0 z-50 w-[300px]"
+                        onMouseEnter={() => setHoveredCardIndex(i)}
+                        onMouseLeave={() => setHoveredCardIndex(null)}
+                      >
+                        <div className="rounded-[8px] px-5 py-6 flex flex-col gap-5" style={{ backgroundColor: '#1a1b1e', boxShadow: '0px 8px 32px rgba(5,0,56,0.12)' }}>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {themeCard.tags.map(t => (
+                              <span key={t.label} className="h-6 px-2.5 rounded-full text-xs font-medium text-[#222428]" style={{ backgroundColor: ({ New: '#BADEB1', Urgent: '#FFD8F4', Customer: '#FFF6B6', Market: '#C6DCFF', Strengthening: '#F8D3AF', Weakening: '#DEDAFF' } as Record<string,string>)[t.label] ?? '#e9eaef' }}>{t.label}</span>
+                            ))}
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <p className="text-[15px] font-heading font-medium text-white leading-snug line-clamp-2">{themeCard.title}</p>
+                            <p className="text-[13px] text-white opacity-70 leading-[1.4] line-clamp-2">{themeCard.description}</p>
+                          </div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>{themeCard.meta.arr}</div>
+                            <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>{themeCard.meta.confidence} <span className="text-[11px] text-[#aeb2c0]">{themeCard.meta.confidenceDelta}</span></div>
+                            <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>{themeCard.meta.likes} likes</div>
+                          </div>
+                          <button onClick={() => router.push(`/insights/themes/${themeCard.id}`)} className="self-start px-4 py-1.5 rounded-[6px] text-white text-sm font-medium hover:opacity-80 transition-opacity" style={{ backgroundColor: '#3859FF' }}>View details</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
+              </div>
               </div>
             ))}
           </div>
@@ -634,14 +698,14 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                 )}
                 {row.type === 'revenue' && (
                   <div className="flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded-full bg-[#DBFAAD] flex items-center justify-center text-[10px] font-bold text-[#222428]">$</span>
+                    <span className="w-4 h-4 rounded-full bg-[#BADEB1] flex items-center justify-center text-[10px] font-bold text-[#222428]">$</span>
                     <span className="text-sm text-[#222428]">{row.value}</span>
                   </div>
                 )}
                 {row.type === 'score' && (
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-[#222428] font-medium">{row.value}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-[#DBFAAD] text-[#222428] font-medium">{wowPct}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-[#BADEB1] text-[#222428] font-medium">{wowPct}</span>
                   </div>
                 )}
                 {row.type === 'companies' && (
@@ -954,7 +1018,7 @@ export default function SignalsPage() {
   const openAiPanel = () => { setAiOpen(true); setSelectedSignal(null) }
   const selectSignal = (row: typeof SIGNAL_ROWS[0]) => { setSelectedSignal(row); setAiOpen(false) }
 
-  const cardsPerPage = (aiOpen || selectedSignal) ? 2 : 4
+  const cardsPerPage = (aiOpen || selectedSignal) ? 2 : 3
   const totalPages = Math.ceil(FEATURED_CARDS.length / cardsPerPage)
   const pages = Array.from({ length: totalPages }, (_, i) =>
     FEATURED_CARDS.slice(i * cardsPerPage, (i + 1) * cardsPerPage)
@@ -975,10 +1039,8 @@ export default function SignalsPage() {
     <div className="relative h-full w-full flex flex-col" style={{ backgroundColor: '#FBFAF7' }}>
       <InsightsTopBar />
 
-      <div
-        className="flex-1 overflow-y-auto"
-        style={{ paddingRight: selectedSignal ? 488 : aiOpen ? 488 : 0, transition: 'padding-right 0.25s ease' }}
-      >
+      <div className="flex-1 flex min-h-0">
+        <div className="flex-1 overflow-y-auto min-w-0">
         <main className="px-0 py-[60px] mx-[60px]">
 
           {/* ── Heading ── */}
@@ -996,7 +1058,7 @@ export default function SignalsPage() {
             <div className="flex items-center gap-2 mb-5">
               <h2 className="text-[24px] font-serif text-[#222428]">Featured</h2>
               <span className="text-[14px] text-[#656b81]">12 signals</span>
-              <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium text-[#222428]" style={{ backgroundColor: '#DBFAAD' }}>7 new</span>
+              <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium text-[#222428]" style={{ backgroundColor: '#BADEB1' }}>7 new</span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[#aeb2c0]">
                 <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.2" />
                 <path d="M8 5.5v.5M8 7.5v4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
@@ -1018,7 +1080,7 @@ export default function SignalsPage() {
                     animate="center"
                     exit="exit"
                     transition={{ duration: 0.35, ease: [0.2, 0, 0, 1] }}
-                    className={`grid gap-[22px] pb-1 ${(aiOpen || selectedSignal) ? 'grid-cols-2' : 'grid-cols-4'}`}
+                    className={`grid gap-[22px] pb-1 ${(aiOpen || selectedSignal) ? 'grid-cols-2' : 'grid-cols-3'}`}
                   >
                     {pages[safePage].map((card) => (
                       <FeaturedCard key={card.id} card={card} />
@@ -1051,65 +1113,78 @@ export default function SignalsPage() {
 
           {/* ── Signals table ── */}
           <section>
+            {/* Title + controls — sticky, not inside scroll container */}
             <div className="sticky top-0 z-10 bg-[#FBFAF7] pb-0">
               <div className="flex items-center gap-2 pb-5">
                 <h2 className="text-[24px] font-serif text-[#222428]">Signals</h2>
                 <span className="text-[14px] text-[#656b81]">14 results</span>
-                <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium" style={{ backgroundColor: '#DBFAAD', color: '#222428' }}>6 new</span>
+                <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium" style={{ backgroundColor: '#BADEB1', color: '#222428' }}>6 new</span>
                 <div className="flex items-center gap-2 ml-auto">
-                  <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f1f2f5] transition-colors text-[#656b81]">
+                  <button className="w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#f1f2f5] transition-colors text-[#656b81]">
                     <Search className="w-4 h-4" />
                   </button>
-                  <button className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[#e0e2e8] text-sm text-[#222428] hover:bg-[#f1f2f5] transition-colors">
+                  <button className="flex items-center gap-1.5 h-8 px-3 rounded-[24px] border border-[#e0e2e8] text-sm text-[#222428] hover:bg-[#f1f2f5] transition-colors">
                     Latest <ChevronDown className="w-3.5 h-3.5" />
                   </button>
-                  <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f1f2f5] transition-colors text-[#656b81]">
+                  <button className="w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#f1f2f5] transition-colors text-[#656b81]">
                     <SlidersHorizontal className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-              <div className="grid gap-4 px-5 py-3 border-b border-[#e0e2e8] text-xs font-semibold text-[#656b81] uppercase tracking-wide bg-[#FBFAF7]" style={{ gridTemplateColumns: (aiOpen || selectedSignal) ? '24px 48px 1fr 1fr 100px 90px 90px 90px' : '24px 48px 1fr 1fr 180px 90px 90px 90px' }}>
-                <span />
-                <span>Source</span>
-                <span>Title</span>
-                <span>Theme</span>
-                <span>Tags</span>
-                <span>Impact</span>
-                <span>Est. revenue</span>
-                <span>Companies</span>
-              </div>
             </div>
 
-              <div className="overflow-hidden">
-                {SIGNAL_ROWS.map((row, i) => (
-                  <motion.div
-                    key={row.id}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25, delay: i * 0.05 }}
-                    onClick={() => selectSignal(row)}
-                    className={`grid gap-4 px-5 py-3.5 items-center border-b border-[#e0e2e8] last:border-0 hover:bg-[#E7E7E5] transition-colors cursor-pointer ${selectedSignal?.id === row.id ? 'bg-[#E7E7E5]' : ''}`}
-                    style={{ gridTemplateColumns: (aiOpen || selectedSignal) ? '24px 48px 1fr 1fr 100px 90px 90px 90px' : '24px 48px 1fr 1fr 180px 90px 90px 90px' }}
-                  >
-                    <span className="text-xs text-[#aeb2c0]">{row.id}</span>
-                    <SourceIconComp type={row.sourceIcon} />
-                    <p className="text-sm font-semibold text-[#222428] truncate">{row.title}</p>
-                    <p className="text-sm text-[#656b81] truncate">{row.theme}</p>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {row.tags.map((tag) => <TagPill key={tag.label} label={tag.label} />)}
-                    </div>
-                    <p className="text-sm text-[#9ca0ad]">{row.impact}</p>
-                    <p className="text-sm text-[#9ca0ad]">{row.revenue}</p>
-                    <div className="flex items-center gap-1">
-                      {row.companies.map((c) => c === 'apple' ? <AppleLogo key={c} /> : <SpotifyLogo key={c} />)}
-                      <span className="text-xs text-[#9ca0ad] ml-0.5">+2</span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+            {/* Column header + rows */}
+            <div className="overflow-hidden">
+                <div className="grid gap-4 px-5 py-3 border-b border-[#e0e2e8] text-xs font-semibold text-[#656b81] uppercase tracking-wide bg-[#FBFAF7]" style={{ gridTemplateColumns: '24px 48px 1fr 1fr 1fr 90px 110px 120px' }}>
+                  <span />
+                  <span>Source</span>
+                  <span>Title</span>
+                  <span>Theme</span>
+                  <span>Tags</span>
+                  <span>Impact</span>
+                  <span>Est. revenue</span>
+                  <span>Companies</span>
+                </div>
+                <div className="overflow-hidden">
+                  {SIGNAL_ROWS.map((row, i) => (
+                    <motion.div
+                      key={row.id}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25, delay: i * 0.05 }}
+                      onClick={() => selectSignal(row)}
+                      className={`grid gap-4 px-5 py-3.5 items-center border-b border-[#e0e2e8] last:border-0 hover:bg-[#E7E7E5] transition-colors cursor-pointer ${selectedSignal?.id === row.id ? 'bg-[#E7E7E5]' : ''}`}
+                      style={{ gridTemplateColumns: '24px 48px 1fr 1fr 1fr 90px 110px 120px' }}
+                    >
+                      <span className="text-xs text-[#aeb2c0]">{row.id}</span>
+                      <SourceIconComp type={row.sourceIcon} />
+                      <p className="text-sm font-semibold text-[#222428]">{row.title}</p>
+                      <p className="text-sm text-[#656b81]">{row.theme}</p>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {row.tags.map((tag) => <TagPill key={tag.label} label={tag.label} />)}
+                      </div>
+                      <p className="text-sm text-[#9ca0ad]">{row.impact}</p>
+                      <p className="text-sm text-[#9ca0ad]">{row.revenue}</p>
+                      <div className="flex items-center gap-1">
+                        {row.companies.map((c) => c === 'apple' ? <AppleLogo key={c} /> : <SpotifyLogo key={c} />)}
+                        <span className="text-xs text-[#9ca0ad] ml-0.5">+2</span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+            </div>
           </section>
 
         </main>
+        </div>
+        {/* Spacer that reserves room for the fixed panel + 60px gap */}
+        <div
+          style={{
+            width: selectedSignal || aiOpen ? 548 : 0,
+            flexShrink: 0,
+            transition: 'width 0.25s ease',
+          }}
+        />
       </div>
 
       {/* Floating input bar */}

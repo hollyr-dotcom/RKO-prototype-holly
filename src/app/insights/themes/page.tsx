@@ -226,7 +226,7 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; on
                   )}
                   <motion.button
                     onClick={() => { setActiveChip(null); onClearChat?.(); }}
-                    className="self-start mt-2 h-8 px-3 rounded-lg text-sm font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors"
+                    className="self-start mt-2 h-8 px-3 rounded-[24px] text-sm font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors"
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.35 + (DOC_CHAT[activePrompt]?.response ?? '').split('\n\n').length * 0.08 + 0.2, ease: [0.2, 0, 0, 1] }}
@@ -414,12 +414,12 @@ function SourceIcon() {
 
 const TAG_ACTIVE_COLORS: Record<string, string> = {
   All: "#222428",
-  New: "#DBFAAD",
-  Urgent: "#FFABEC",
-  Customer: "#FFED7B",
-  Market: "#A0C4FB",
-  Strengthening: "#FFBD83",
-  Weakening: "#B5A9FF",
+  New: "#BADEB1",
+  Urgent: "#FFD8F4",
+  Customer: "#FFF6B6",
+  Market: "#C6DCFF",
+  Strengthening: "#F8D3AF",
+  Weakening: "#DEDAFF",
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -467,7 +467,7 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
       <div className="rounded-[24px] p-6 bg-white flex gap-4 h-full">
       {/* Thumbnail */}
       {card.image && (
-        <div className="w-[120px] h-[120px] rounded-lg overflow-hidden shrink-0 bg-[#C6DCFF]">
+        <div className="w-[120px] h-[120px] rounded-[24px] overflow-hidden shrink-0 bg-[#C6DCFF]">
           <img src={card.image} alt="" className="w-full h-full object-cover" />
         </div>
       )}
@@ -481,8 +481,8 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
               key={tag.label}
               className="flex items-center gap-1 py-2 px-3 rounded-full border text-xs text-[#222428]"
               style={{
-                backgroundColor: tag.label === "New" ? "#DBFAAD" : tag.label === "Customer" ? "#FFED7B" : tag.label === "Market" ? "#A0C4FB" : tag.label === "Urgent" ? "#FFABEC" : tag.label === "Strengthening" ? "#FFBD83" : tag.label === "Weakening" ? "#B5A9FF" : "white",
-                borderColor: tag.label === "New" ? "#DBFAAD" : tag.label === "Customer" ? "#FFED7B" : tag.label === "Market" ? "#A0C4FB" : tag.label === "Urgent" ? "#FFABEC" : tag.label === "Strengthening" ? "#FFBD83" : tag.label === "Weakening" ? "#B5A9FF" : "#e0e2e8",
+                backgroundColor: tag.label === "New" ? "#BADEB1" : tag.label === "Customer" ? "#FFF6B6" : tag.label === "Market" ? "#C6DCFF" : tag.label === "Urgent" ? "#FFD8F4" : tag.label === "Strengthening" ? "#F8D3AF" : tag.label === "Weakening" ? "#DEDAFF" : "white",
+                borderColor: tag.label === "New" ? "#BADEB1" : tag.label === "Customer" ? "#FFF6B6" : tag.label === "Market" ? "#C6DCFF" : tag.label === "Urgent" ? "#FFD8F4" : tag.label === "Strengthening" ? "#F8D3AF" : tag.label === "Weakening" ? "#DEDAFF" : "#e0e2e8",
               }}
             >
               {tag.label === "New" ? <GiftIcon size={16} /> : tag.label === "Customer" ? <IconSmileyChat css={{ width: 16, height: 16 }} /> : tag.label === "Market" ? <IconGlobe css={{ width: 16, height: 16 }} /> : tag.label === "Urgent" ? <IconExclamationPointCircle css={{ width: 16, height: 16 }} /> : tag.label === "Strengthening" ? <IconChartLine css={{ width: 16, height: 16 }} /> : tag.label === "Weakening" ? <IconArrowDown css={{ width: 16, height: 16 }} /> : <BoardIcon size={12} />}
@@ -512,20 +512,20 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
             >
               {/* Meta row */}
               <div className="flex items-center gap-2 flex-wrap my-2">
-                <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
                   <span>{card.meta.arr}</span>
                 </div>
-                <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
                   <IconRocket css={{ width: 16, height: 16 }} />
                   <span>{card.meta.confidence}</span>
                   <span className="text-[12px] text-[#656b81]">{card.meta.confidenceDelta}</span>
                 </div>
-                <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
                   <IconThumbsUp css={{ width: 16, height: 16 }} />
                   <span>{card.meta.likes}</span>
                 </div>
                 {card.meta.comments !== undefined && (
-                  <div className="flex items-center gap-1 h-7 px-2 rounded-[6px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                  <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
                     <IconChatLinesTwo css={{ width: 16, height: 16 }} />
                     <span>{card.meta.comments}</span>
                   </div>
@@ -540,7 +540,7 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
         <div className="flex items-center gap-2 mt-0.5">
           <button
             onClick={(e) => e.stopPropagation()}
-            className={`${aiOpen ? 'min-h-8 h-auto py-1.5' : 'h-8'} px-3 rounded-lg text-sm font-medium transition-colors ${
+            className={`${aiOpen ? 'min-h-8 h-auto py-1.5' : 'h-8'} px-3 rounded-[24px] text-sm font-medium transition-colors ${
               card.primaryAction.variant === "outline"
                 ? "border border-[#e0e2e8] text-[#222428] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428]"
                 : ""
@@ -556,15 +556,15 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
           {card.secondaryAction && (
             <button
               onClick={(e) => { e.stopPropagation(); navigateToDetail(); }}
-              className={`${aiOpen ? 'min-h-8 h-auto py-1.5' : 'h-8'} px-3 rounded-lg text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors`}
+              className={`${aiOpen ? 'min-h-8 h-auto py-1.5' : 'h-8'} px-3 rounded-[24px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors`}
             >
               {card.secondaryAction.label}
             </button>
           )}
-          <button className="ml-1 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#C6DCFF] transition-colors">
+          <button className="ml-1 w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#C6DCFF] transition-colors">
             <BookmarkIcon />
           </button>
-          <button className="ml-auto w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#C6DCFF] transition-colors">
+          <button className="ml-auto w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#C6DCFF] transition-colors">
             <MoreIcon />
           </button>
         </div>
@@ -635,14 +635,14 @@ export default function ThemesPage() {
             <InfoIcon />
           </div>
           <div className="flex items-center gap-3">
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#C6DCFF] transition-colors">
+            <button className="w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#C6DCFF] transition-colors">
               <SearchIcon />
             </button>
-            <button className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[#e0e2e8] text-sm text-[#222428] hover:bg-[#C6DCFF] transition-colors">
+            <button className="flex items-center gap-1.5 h-8 px-3 rounded-[24px] border border-[#e0e2e8] text-sm text-[#222428] hover:bg-[#C6DCFF] transition-colors">
               Relevance
               <ChevronDownIcon />
             </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#C6DCFF] transition-colors">
+            <button className="w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#C6DCFF] transition-colors">
               <FilterIcon />
             </button>
           </div>
@@ -683,7 +683,7 @@ export default function ThemesPage() {
                   <button
                     key={doc.label}
                     onClick={() => { setAiOpen(true); setAiChatPrompt(doc.label); }}
-                    className="flex items-center gap-2 h-10 px-1 rounded-lg hover:bg-[#E7E7E5] transition-colors text-left w-full"
+                    className="flex items-center gap-2 h-10 px-1 rounded-[24px] hover:bg-[#E7E7E5] transition-colors text-left w-full"
                   >
                     <span className="text-[#656b81] shrink-0">
                       {doc.icon === "doc" ? <DocIcon size={16} /> : <IconBoard css={{ width: 16, height: 16 }} />}

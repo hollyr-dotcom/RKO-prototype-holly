@@ -15,12 +15,12 @@ import { THEME_CARDS, type ThemeCard } from '@/data/themes-data'
 // ─── Tag pills ───────────────────────────────────────────────────────────────
 
 const TAG_PILL_COLORS: Record<string, string> = {
-  New: '#C2EB7F',
-  Urgent: '#FFABEC',
-  Customer: '#FFED7B',
-  Market: '#A0C4FB',
-  Strengthening: '#FFBD83',
-  Weakening: '#B5A9FF',
+  New: '#BADEB1',
+  Urgent: '#FFD8F4',
+  Customer: '#FFF6B6',
+  Market: '#C6DCFF',
+  Strengthening: '#F8D3AF',
+  Weakening: '#DEDAFF',
 }
 
 function GiftIcon() {
@@ -89,12 +89,12 @@ const EFFORT: Record<string, number> = {
 }
 
 const TAG_DOT_COLORS: Record<string, string> = {
-  Urgent: '#FFABEC',
-  Weakening: '#B5A9FF',
-  Strengthening: '#FFBD83',
-  New: '#C2EB7F',
-  Customer: '#FFED7B',
-  Market: '#A0C4FB',
+  Urgent: '#FFD8F4',
+  Weakening: '#DEDAFF',
+  Strengthening: '#F8D3AF',
+  New: '#BADEB1',
+  Customer: '#FFF6B6',
+  Market: '#C6DCFF',
 }
 
 function getDotColor(card: ThemeCard) {
@@ -103,7 +103,7 @@ function getDotColor(card: ThemeCard) {
   if (labels.includes('Urgent')) return TAG_DOT_COLORS['Urgent']
   if (labels.includes('Weakening')) return TAG_DOT_COLORS['Weakening']
   if (labels.includes('Strengthening')) return TAG_DOT_COLORS['Strengthening']
-  return TAG_DOT_COLORS[labels[0]] ?? '#FFED7B'
+  return TAG_DOT_COLORS[labels[0]] ?? '#FFF6B6'
 }
 
 const scatterData = THEME_CARDS.map((card) => ({
@@ -259,10 +259,10 @@ export function ThemeMatrix() {
       {/* Legend */}
       <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4">
         {[
-          { label: 'Urgent', color: '#FFABEC' },
-          { label: 'Strengthening', color: '#FFBD83' },
-          { label: 'Weakening', color: '#B5A9FF' },
-          { label: 'New', color: '#C2EB7F' },
+          { label: 'Urgent', color: '#FFD8F4' },
+          { label: 'Strengthening', color: '#F8D3AF' },
+          { label: 'Weakening', color: '#DEDAFF' },
+          { label: 'New', color: '#BADEB1' },
         ].map(({ label, color }) => (
           <div key={label} className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
