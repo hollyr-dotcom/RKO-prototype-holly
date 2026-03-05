@@ -997,10 +997,6 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
         )}
       </div>
 
-      {/* Input */}
-      <div className="px-6 pb-6 pt-4 shrink-0">
-        <ChatInput onSubmit={() => {}} />
-      </div>
     </motion.aside>
   )
 }
@@ -1035,7 +1031,13 @@ export default function SignalsPage() {
       <InsightsTopBar />
 
       <div className="flex-1 flex min-h-0">
-        <div className="flex-1 overflow-y-auto min-w-0">
+        <div
+          className="flex-1 overflow-y-auto min-w-0"
+          style={{
+            maxWidth: selectedSignal || aiOpen ? 'calc(100% - 548px)' : '100%',
+            transition: 'max-width 0.25s ease',
+          }}
+        >
         <main className="px-0 py-[60px] mx-[60px]">
 
           {/* ── Heading ── */}
@@ -1172,14 +1174,6 @@ export default function SignalsPage() {
 
         </main>
         </div>
-        {/* Spacer: panel width (472) + right offset (16) + 60px gap = 548 */}
-        <div
-          style={{
-            width: selectedSignal || aiOpen ? 548 : 0,
-            flexShrink: 0,
-            transition: 'width 0.25s ease',
-          }}
-        />
       </div>
 
       {/* Floating input bar */}
