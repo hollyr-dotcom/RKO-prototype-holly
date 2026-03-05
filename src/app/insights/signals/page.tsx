@@ -6,6 +6,7 @@ import { Bell, Users, Search, SlidersHorizontal, ChevronDown, ChevronRight, Play
 import { IconSparksFilled, IconSmileyChat, IconGlobe, IconRectanglesThreeOverlap } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
 import { ChatInput } from '@/components/toolbar/ChatInput'
+import { useSidebar } from '@/hooks/useSidebar'
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -395,6 +396,10 @@ const SIGNAL_CHIPS = [
 
 function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0]; onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<'summary' | 'feedback' | 'details' | 'updates'>('summary')
+  const [expanded, setExpanded] = useState(false)
+  const { navWidth } = useSidebar()
+
+  const expandedLeft = navWidth
 
   const revenueNum = parseFloat(signal.revenue.replace(/[^0-9.]/g, ''))
   const isMillions = signal.revenue.includes('M')
@@ -411,12 +416,24 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 40, opacity: 0 }}
       transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
-      className="fixed top-4 right-4 bottom-4 w-[472px] bg-white rounded-[20px] shadow-[0_2px_10px_rgba(5,0,56,0.08)] flex flex-col overflow-hidden z-30"
+      className="fixed top-2 right-4 bottom-2 bg-white rounded-[20px] shadow-[0_2px_10px_rgba(5,0,56,0.08)] flex flex-col overflow-hidden z-30"
+      style={{ left: expanded ? expandedLeft : 'calc(100vw - 472px - 16px)', transition: 'left 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 shrink-0">
-        <span className="text-[16px] font-semibold text-[#222428]" style={{ fontFamily: 'Roobert, sans-serif' }}>Signal</span>
+        <span className="text-[18px] font-heading font-medium text-[#222428]">Signal</span>
         <div className="flex items-center gap-1">
+          <button onClick={() => setExpanded(e => !e)} className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
+            {expanded ? (
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M5 1v4H1M9 1v4h4M5 13v-4H1M9 13v-4h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </button>
           <button className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M6 2H2a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1V8M8 1h5v5M13 1L6 8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -799,7 +816,7 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
               <IconSparksFilled css={{ width: 16, height: 16 }} />
             </span>
           </div>
-          <p className="text-[#222428] text-base font-semibold" style={{ fontFamily: 'Roobert, sans-serif' }}>
+          <p className="text-[#222428] text-[18px] font-heading font-medium" style={{ fontFamily: 'Roobert, sans-serif' }}>
             Insights Assistant
           </p>
         </div>
@@ -1051,8 +1068,8 @@ export default function SignalsPage() {
 
           {/* ── Signals table ── */}
           <section>
-            <div className="sticky top-0 z-10 bg-[#FBFAF7] pb-5">
-              <div className="flex items-center gap-2">
+            <div className="sticky top-0 z-10 bg-[#FBFAF7] pb-0">
+              <div className="flex items-center gap-2 pb-5">
                 <h2 className="text-[24px] font-serif text-[#222428]">Signals</h2>
                 <span className="text-[14px] text-[#656b81]">14 results</span>
                 <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium" style={{ backgroundColor: '#DBFAAD', color: '#222428' }}>6 new</span>
@@ -1068,19 +1085,19 @@ export default function SignalsPage() {
                   </button>
                 </div>
               </div>
+              <div className="grid gap-4 px-5 py-3 border-b border-[#e0e2e8] text-xs font-semibold text-[#656b81] uppercase tracking-wide bg-[#FBFAF7]" style={{ gridTemplateColumns: (aiOpen || selectedSignal) ? '24px 48px 1fr 1fr 100px 90px 90px 90px' : '24px 48px 1fr 1fr 180px 90px 90px 90px' }}>
+                <span />
+                <span>Source</span>
+                <span>Title</span>
+                <span>Theme</span>
+                <span>Tags</span>
+                <span>Impact</span>
+                <span>Est. revenue</span>
+                <span>Companies</span>
+              </div>
             </div>
 
               <div className="overflow-hidden">
-                <div className="grid gap-4 px-5 py-3 border-b border-[#e0e2e8] text-xs font-semibold text-[#656b81] uppercase tracking-wide" style={{ gridTemplateColumns: (aiOpen || selectedSignal) ? '24px 48px 1fr 1fr 100px 90px 90px 90px' : '24px 48px 1fr 1fr 180px 90px 90px 90px' }}>
-                  <span />
-                  <span>Source</span>
-                  <span>Title</span>
-                  <span>Theme</span>
-                  <span>Tags</span>
-                  <span>Impact</span>
-                  <span>Est. revenue</span>
-                  <span>Companies</span>
-                </div>
                 {SIGNAL_ROWS.map((row, i) => (
                   <motion.div
                     key={row.id}

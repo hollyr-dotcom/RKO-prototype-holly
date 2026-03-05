@@ -140,7 +140,7 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; on
               <IconSparksFilled css={{ width: 16, height: 16 }} />
             </span>
           </div>
-          <p className="text-[#222428] text-base font-semibold" style={{ fontFamily: 'Roobert, sans-serif' }}>
+          <p className="text-[#222428] text-[18px] font-heading font-medium" style={{ fontFamily: 'Roobert, sans-serif' }}>
             Insights Assistant
           </p>
         </div>

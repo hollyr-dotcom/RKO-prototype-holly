@@ -340,7 +340,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
               <span className="text-sm font-medium">Back</span>
             </button>
           ) : (
-            <p className="text-[#222428] text-base font-semibold" style={{ fontFamily: 'Roobert, sans-serif' }}>Insights Assistant</p>
+            <p className="text-[#222428] text-[18px] font-heading font-medium" style={{ fontFamily: 'Roobert, sans-serif' }}>Insights Assistant</p>
           )}
         </div>
         <button onClick={onClose} className="w-6 h-6 flex items-center justify-center text-[#656b81] hover:text-[#222428] transition-colors">
