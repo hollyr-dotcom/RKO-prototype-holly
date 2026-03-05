@@ -114,7 +114,29 @@ The best PRDs have a post-launch section. Teams that track whether shipped featu
   },
 }
 
-function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; onClose: () => void; chatPrompt?: string; onClearChat?: () => void }) {
+const THEME_CARD_COPY_CHIPS = [
+  'Summarise this opportunity',
+  'Find related signals',
+  'Generate a PRD',
+]
+
+const TAG_BG: Record<string, string> = {
+  New: '#BADEB1',
+  Urgent: '#FFD8F4',
+  Customer: '#FFF6B6',
+  Market: '#C6DCFF',
+  Strengthening: '#F8D3AF',
+  Weakening: '#DEDAFF',
+}
+
+function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onClearCopied }: {
+  open: boolean
+  onClose: () => void
+  chatPrompt?: string
+  onClearChat?: () => void
+  copiedThemeCard?: ThemeCard | null
+  onClearCopied?: () => void
+}) {
   const [activeChip, setActiveChip] = useState<string | null>(null)
 
   const activePrompt = activeChip ?? chatPrompt
@@ -155,8 +177,101 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; on
       </div>
 
       {/* Body */}
-      <div className={`flex-1 overflow-y-auto flex flex-col px-6 pb-0 pt-24 ${activePrompt ? '' : 'justify-end'}`}>
-        {activePrompt ? (
+      <div className={`flex-1 overflow-y-auto flex flex-col px-6 pb-0 pt-24 ${activePrompt || copiedThemeCard ? '' : 'justify-end'}`}>
+        {copiedThemeCard ? (
+          /* ── Copied theme card mode ── */
+          <div className="flex flex-col gap-6 px-4 pb-4">
+            {/* User bubble */}
+            <motion.div
+              className="flex justify-end"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
+            >
+              <div className="max-w-[80%] bg-[#f1f2f5] rounded-[12px] px-4 py-3">
+                <p className="text-[14px] text-[#222428]">Copied from Opportunities</p>
+              </div>
+            </motion.div>
+
+            {/* AI response */}
+            <motion.div
+              className="flex items-start gap-3"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.2, ease: [0.2, 0, 0, 1] }}
+            >
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#E7E7E5' }}>
+                <span className="text-[#222428] leading-[0] flex items-center justify-center">
+                  <IconSparksFilled css={{ width: 14, height: 14 }} />
+                </span>
+              </div>
+              <div className="flex-1 flex flex-col gap-3">
+                {/* Mini card */}
+                <motion.div
+                  className="rounded-[16px] border border-[#e0e2e8] bg-white overflow-hidden"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.3, ease: [0.2, 0, 0, 1] }}
+                >
+                  {copiedThemeCard.image && (
+                    <div className="w-full h-[120px] overflow-hidden bg-[#C6DCFF]">
+                      <img src={copiedThemeCard.image} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="p-4 flex flex-col gap-2.5">
+                    {/* Tags */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {copiedThemeCard.tags.map((tag) => (
+                        <span
+                          key={tag.label}
+                          className="px-2.5 py-1 rounded-full text-xs text-[#222428]"
+                          style={{ backgroundColor: TAG_BG[tag.label] ?? '#f1f2f5' }}
+                        >
+                          {tag.label}
+                        </span>
+                      ))}
+                    </div>
+                    {/* Title */}
+                    <p className="text-[15px] font-heading font-medium text-[#222428] leading-snug">{copiedThemeCard.title}</p>
+                    {/* Description */}
+                    <p className="text-[13px] text-[#656b81] leading-[1.5] line-clamp-2">{copiedThemeCard.description}</p>
+                    {/* Meta pills */}
+                    <div className="flex items-center gap-1.5 flex-wrap mt-4">
+                      <span className="h-6 px-2 rounded-[24px] text-[12px] text-[#222428] bg-white border border-[#e0e2e8] flex items-center">{copiedThemeCard.meta.arr}</span>
+                      <span className="h-6 px-2 rounded-[24px] text-[12px] text-[#222428] bg-white border border-[#e0e2e8] flex items-center gap-1">
+                        <IconRocket css={{ width: 12, height: 12 }} />
+                        {copiedThemeCard.meta.confidence}
+                        <span className="text-[#656b81]">{copiedThemeCard.meta.confidenceDelta}</span>
+                      </span>
+                      <span className="h-6 px-2 rounded-[24px] text-[12px] text-[#222428] bg-white border border-[#e0e2e8] flex items-center gap-1">
+                        <ThumbsUp size={11} strokeWidth={1.5} />
+                        {copiedThemeCard.meta.likes}
+                      </span>
+                      {copiedThemeCard.meta.comments !== undefined && (
+                        <span className="h-6 px-2 rounded-[24px] text-[12px] text-[#222428] bg-white border border-[#e0e2e8] flex items-center gap-1">
+                          <IconChatLinesTwo css={{ width: 12, height: 12 }} />
+                          {copiedThemeCard.meta.comments}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+                {/* Open in Board button */}
+                <motion.a
+                  href="https://replit.com/t/miro/repls/TEMPLATE-Miro-AI-First-canvas"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="self-start h-8 px-4 rounded-[18px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors inline-flex items-center"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.45, ease: [0.2, 0, 0, 1] }}
+                >
+                  Open in Board
+                </motion.a>
+              </div>
+            </motion.div>
+          </div>
+        ) : activePrompt ? (
           /* ── Chat mode ── */
           <AnimatePresence mode="wait">
             <motion.div
@@ -278,8 +393,27 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat }: { open: boolean; on
         )}
       </div>
 
+      {/* Chips above input — shown when a card is copied */}
+      {copiedThemeCard && (
+        <div className="px-6 pb-2 pt-4 shrink-0">
+          <div className="rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
+            {THEME_CARD_COPY_CHIPS.map((chip) => (
+              <button
+                key={chip}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors"
+              >
+                <span className="text-gray-400 flex-shrink-0 leading-[0]">
+                  <IconSparksFilled css={{ width: 16, height: 16 }} />
+                </span>
+                <span className="text-gray-900">{chip}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Input */}
-      <div className="px-6 pb-6 pt-4 shrink-0">
+      <div className="px-6 pb-6 shrink-0">
         <ChatInput onSubmit={() => {}} />
       </div>
     </motion.aside>
@@ -449,7 +583,7 @@ function CategoryCard({
   );
 }
 
-function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number; aiOpen?: boolean }) {
+function ThemeCardItem({ card, index, aiOpen, onCopy }: { card: ThemeCard; index: number; aiOpen?: boolean; onCopy?: (card: ThemeCard) => void }) {
   const router = useRouter();
   const navigateToDetail = () => router.push(`/insights/themes/${card.id}`);
   const [hovered, setHovered] = useState(false);
@@ -471,7 +605,7 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); onCopy?.(card); }}
             className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full border border-[#e0e2e8] bg-white text-[#656b81] hover:text-[#222428] z-10"
           >
             <Copy size={14} strokeWidth={1.5} />
@@ -526,20 +660,20 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
             >
               {/* Meta row */}
               <div className="flex items-center gap-2 flex-wrap my-2">
-                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428] bg-white border border-[#e0e2e8]">
                   <span>{card.meta.arr}</span>
                 </div>
-                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428] bg-white border border-[#e0e2e8]">
                   <IconRocket css={{ width: 16, height: 16 }} />
                   <span>{card.meta.confidence}</span>
                   <span className="text-[12px] text-[#656b81]">{card.meta.confidenceDelta}</span>
                 </div>
-                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428] border border-[#e0e2e8]">
+                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428] bg-white border border-[#e0e2e8]">
                   <ThumbsUpIcon />
                   <span>{card.meta.likes}</span>
                 </div>
                 {card.meta.comments !== undefined && (
-                  <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
+                  <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428] bg-white border border-[#e0e2e8]">
                     <IconChatLinesTwo css={{ width: 16, height: 16 }} />
                     <span>{card.meta.comments}</span>
                   </div>
@@ -554,23 +688,15 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
         <div className="flex items-center gap-2 mt-0.5">
           <button
             onClick={(e) => e.stopPropagation()}
-            className={`${aiOpen ? 'min-h-8 h-auto py-1.5' : 'h-8'} px-3 rounded-[24px] text-sm font-medium transition-colors ${
-              card.primaryAction.variant === "outline"
-                ? "border border-[#e0e2e8] text-[#222428] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428]"
-                : ""
-            }`}
-            style={
-              card.primaryAction.variant === "filled"
-                ? { backgroundColor: "#222428", color: "white" }
-                : undefined
-            }
+            className="h-9 px-5 rounded-[18px] text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-[0.97] text-white hover:brightness-110"
+            style={{ backgroundColor: '#1a1b1e', boxShadow: 'rgba(34,36,40,0.2) 0px 12px 32px 0px, rgba(34,36,40,0.06) 0px 0px 8px 0px' }}
           >
             {card.primaryAction.label}
           </button>
           {card.secondaryAction && (
             <button
               onClick={(e) => { e.stopPropagation(); navigateToDetail(); }}
-              className={`${aiOpen ? 'min-h-8 h-auto py-1.5' : 'h-8'} px-3 rounded-[24px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors`}
+              className="h-9 px-5 rounded-[18px] text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-[0.97] text-[#222428] border border-[#e0e2e8] bg-transparent hover:bg-[#f1f2f5]"
             >
               {card.secondaryAction.label}
             </button>
@@ -594,6 +720,13 @@ export default function ThemesPage() {
   const [filters, setFilters] = useState(CATEGORY_FILTERS);
   const [aiOpen, setAiOpen] = useState(false);
   const [aiChatPrompt, setAiChatPrompt] = useState<string | undefined>(undefined);
+  const [copiedThemeCard, setCopiedThemeCard] = useState<ThemeCard | null>(null);
+
+  const handleCopyThemeCard = (card: ThemeCard) => {
+    setCopiedThemeCard(card);
+    setAiChatPrompt(undefined);
+    setAiOpen(true);
+  };
 
   const toggle = (label: string) => {
     if (label === "All") {
@@ -630,7 +763,7 @@ export default function ThemesPage() {
 
         {/* ── Heading ── */}
         <div className="flex flex-col items-center text-center mb-10">
-          <h1 id="themes-heading" className="text-[80px] font-serif text-[#222428] leading-none">Opportunities</h1>
+          <h1 id="themes-heading" className="text-[72px] font-serif text-[#222428] leading-none">Opportunities</h1>
           <p className="text-[20px] text-[#222428]/70 max-w-sm leading-relaxed mt-3">
             Discover emerging trends and potential disruptions, plus important updates
           </p>
@@ -661,7 +794,7 @@ export default function ThemesPage() {
             </div>
             <div className="flex flex-col gap-8">
               {visibleCards.map((card, i) => (
-                <ThemeCardItem key={card.id} card={card} index={i} aiOpen={aiOpen} />
+                <ThemeCardItem key={card.id} card={card} index={i} aiOpen={aiOpen} onCopy={handleCopyThemeCard} />
               ))}
             </div>
           </div>
@@ -683,7 +816,7 @@ export default function ThemesPage() {
       )}
 
       {/* AI panel */}
-      <AIPanel open={aiOpen} onClose={() => { setAiOpen(false); setAiChatPrompt(undefined); }} chatPrompt={aiChatPrompt} onClearChat={() => setAiChatPrompt(undefined)} />
+      <AIPanel open={aiOpen} onClose={() => { setAiOpen(false); setAiChatPrompt(undefined); setCopiedThemeCard(null); }} chatPrompt={aiChatPrompt} onClearChat={() => setAiChatPrompt(undefined)} copiedThemeCard={copiedThemeCard} onClearCopied={() => setCopiedThemeCard(null)} />
 
     </div>
   );

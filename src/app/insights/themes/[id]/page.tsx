@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -161,7 +161,7 @@ function AppleLogoMark() {
   )
 }
 
-function FeaturedCard({ card, accent: accentOverride }: { card: typeof FEATURED_CARDS[0], accent?: string }) {
+function FeaturedCard({ card, accent: accentOverride, onCopy }: { card: typeof FEATURED_CARDS[0], accent?: string, onCopy?: (card: typeof FEATURED_CARDS[0]) => void }) {
   const accent = accentOverride ?? (('accent' in card && card.accent) ? card.accent as string : CARD_ACCENT[card.type])
   const [hovered, setHovered] = useState(false)
   return (
@@ -173,10 +173,31 @@ function FeaturedCard({ card, accent: accentOverride }: { card: typeof FEATURED_
       animate={{ scale: hovered ? 1.02 : 1 }}
       transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
     >
-      <div className="bg-white rounded-[16px] flex flex-col gap-3 p-6 h-full">
-        <div className="relative rounded-[12px] overflow-hidden shrink-0" style={{ height: card.type === 'quote' ? 220 : 162 }}>
+      <div className="bg-white rounded-[16px] flex flex-col gap-3 p-6 h-full relative">
+        {/* Copy button — outside overflow-hidden so it's always clickable */}
+        <AnimatePresence>
+          {hovered && (
+            <motion.button
+              key="copy-btn"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="absolute top-3 right-3 w-7 h-7 rounded-full border border-[#e0e2e8] bg-white flex items-center justify-center text-[#656b81] hover:text-[#222428] z-10"
+              onClick={(e) => { e.stopPropagation(); onCopy?.(card) }}
+            >
+              <CopyIcon />
+            </motion.button>
+          )}
+        </AnimatePresence>
+        <div className="rounded-[12px] overflow-hidden shrink-0" style={{ height: card.type === 'quote' ? 220 : 162 }}>
           {card.type === 'audio' && (
-            <div className="h-full to-white flex items-center justify-center" style={{ background: `linear-gradient(to bottom, ${accent}, white)` }}>
+            <div className="h-full to-white flex items-center justify-center gap-2" style={{ background: `linear-gradient(to bottom, ${accent}, white)` }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[#222428]" style={{ backgroundColor: accent }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
+                </svg>
+              </div>
               <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: accent }}>
                 <Play className="w-4 h-4 text-[#222428] fill-[#222428] ml-0.5" />
               </div>
@@ -188,17 +209,12 @@ function FeaturedCard({ card, accent: accentOverride }: { card: typeof FEATURED_
               {'duration' in card && <p className="text-[12px] text-[#656b81] text-center">{card.duration}</p>}
             </div>
           )}
-          {hovered && (
-            <button className="absolute top-2 right-2 w-6 h-6 rounded-[24px] flex items-center justify-center text-[#656b81] hover:text-[#222428] transition-colors">
-              <CopyIcon />
-            </button>
-          )}
         </div>
 
         <div className={`flex flex-col gap-1 flex-1 min-h-0 ${card.type !== 'quote' ? 'justify-end' : ''}`}>
           {card.type !== 'quote' && (
             <>
-              {(card.type === 'audio' || card.type === 'clips') && (
+              {card.type === 'audio' && (
                 <span className="h-5 px-2 bg-[#222428] text-white text-[10px] font-medium rounded-[24px] flex items-center w-fit mb-0.5">
                   {card.badge}
                 </span>
@@ -271,7 +287,7 @@ const SIGNAL_CHIPS = [
 
 // ─── AI Panel ─────────────────────────────────────────────────────────────────
 
-function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, selectedSignal, onClearSignal }: {
+function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, selectedSignal, onClearSignal, copiedCard, onClearCopied }: {
   open: boolean
   onClose: () => void
   theme: ThemeCard
@@ -279,6 +295,8 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
   onDismissAnalysis?: () => void
   selectedSignal: typeof DETAIL_SIGNALS[0] | null
   onClearSignal: () => void
+  copiedCard?: typeof FEATURED_CARDS[0] | null
+  onClearCopied?: () => void
 }) {
   const [signalTab, setSignalTab] = useState<'summary' | 'feedback' | 'details' | 'updates'>('summary')
   const [hoveredFeedback, setHoveredFeedback] = useState<number | null>(null)
@@ -293,8 +311,8 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
 
   if (!open) return null
 
-  const showBack = !!selectedSignal || !!showAnalysis
-  const handleBack = selectedSignal ? onClearSignal : onDismissAnalysis
+  const showBack = !!selectedSignal || !!showAnalysis || !!copiedCard
+  const handleBack = selectedSignal ? onClearSignal : copiedCard ? onClearCopied : onDismissAnalysis
 
   let signalMentions = 0, signalCustomers = 0, signalWow = ''
   let feedbackTotal = 0, feedbackGradient = ''
@@ -356,7 +374,99 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
 
       {/* Body — animated between views */}
       <AnimatePresence mode="wait">
-        {selectedSignal ? (
+        {copiedCard ? (
+          <motion.div
+            key={`copied-${copiedCard.id}`}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+            className="flex-1 overflow-y-auto px-6 pb-6 pt-24 flex flex-col gap-5"
+          >
+            {/* User bubble */}
+            <div className="flex justify-end">
+              <div className="max-w-[80%] bg-[#f1f2f5] rounded-[12px] px-4 py-3">
+                <p className="text-[14px] text-[#222428]">Copied from Featured</p>
+              </div>
+            </div>
+
+            {/* AI response with mini card */}
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#E7E7E5' }}>
+                <span className="text-[#222428] leading-[0] flex items-center justify-center">
+                  <IconSparksFilled css={{ width: 14, height: 14 }} />
+                </span>
+              </div>
+              <div className="flex-1 flex flex-col gap-3">
+                <p className="text-[14px] text-[#222428] leading-[1.6]">Here&apos;s the card you copied. What would you like to do with it?</p>
+
+                {/* Mini card preview */}
+                {(() => {
+                  const cardAccent = TAG_COLORS[theme.tags[0]?.label] ?? CARD_ACCENT.audio
+                  return (
+                <div className="rounded-[14px] relative" style={{ backgroundColor: cardAccent, padding: '2px 2px 6px 2px' }}>
+                  {/* Play button top-right */}
+                  {copiedCard.type === 'audio' && (
+                    <div className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center shrink-0 z-10" style={{ backgroundColor: cardAccent }}>
+                      <Play className="w-3 h-3 text-[#222428] fill-[#222428] ml-0.5" />
+                    </div>
+                  )}
+                  <div className="rounded-[12px] bg-white px-4 pt-4 pb-4 flex flex-col gap-2.5">
+                    {/* Type badge */}
+                    <span className="h-5 px-2 rounded-full text-[10px] font-medium flex items-center w-fit text-white" style={{ backgroundColor: '#222428' }}>
+                      {copiedCard.type === 'audio' ? (('badge' in copiedCard && copiedCard.badge) ? copiedCard.badge as string : 'Audio') : 'Quote'}
+                    </span>
+                    {/* Title */}
+                    <p className="text-[14px] font-medium text-[#222428] leading-snug">{copiedCard.title}</p>
+                    {/* Description or quote */}
+                    {'description' in copiedCard && copiedCard.description && (
+                      <p className="text-[12px] text-[#656b81] leading-[1.4]">{copiedCard.description as string}</p>
+                    )}
+                    {copiedCard.type === 'quote' && 'quote' in copiedCard && (
+                      <p className="text-[12px] text-[#656b81] leading-[1.4] italic">&ldquo;{copiedCard.quote as string}&rdquo;</p>
+                    )}
+                    {/* Meta row */}
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                      <span className="flex items-center gap-1 py-1 px-2 rounded-full border text-[11px] text-[#222428] whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                        <GongIcon />{'source' in copiedCard ? copiedCard.source as string : 'Gong'}
+                      </span>
+                      {'person' in copiedCard && copiedCard.person && (
+                        <span className="flex items-center gap-1 py-1 px-2 rounded-full border text-[11px] text-[#222428] whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                          {copiedCard.person as string}
+                        </span>
+                      )}
+                      {'company' in copiedCard && copiedCard.company && (
+                        <span className="flex items-center gap-1 py-1 px-2 rounded-full border text-[11px] text-[#222428] whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                          {copiedCard.company as string}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1 py-1 px-2 rounded-full border text-[11px] text-[#222428] whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                        <CalendarIcon />{copiedCard.date}
+                      </span>
+                      {'duration' in copiedCard && copiedCard.duration && (
+                        <span className="flex items-center gap-1 py-1 px-2 rounded-full border text-[11px] text-[#222428] whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                          {copiedCard.duration as string}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                  )
+                })()}
+
+                <a
+                  href="https://replit.com/t/miro/repls/TEMPLATE-Miro-AI-First-canvas"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="self-start h-8 px-4 rounded-[18px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors inline-flex items-center"
+                >
+                  Open in Board
+                </a>
+
+              </div>
+            </div>
+          </motion.div>
+        ) : selectedSignal ? (
           <motion.div
             key={`signal-${selectedSignal.id}`}
             initial={{ opacity: 0, x: 20 }}
@@ -438,18 +548,25 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                   { type: 'Problem' as const, tagColor: '#FFD8F4', text: `"The overall experience feels slow and unresponsive when this issue occurs. Each attempt is followed by a noticeable delay."`, author: 'Marco Rossi, PM', date: 'Added 1 month ago', stars: 2 },
                   { type: 'Praise' as const, tagColor: '#DEDAFF', text: `When it works well, the experience is seamless. Users appreciate the reliability when things are functioning as expected.`, author: 'Priya Nair, Designer', date: 'Added 2 months ago', stars: null },
                 ].map((item, i) => (
-                  <div key={i} className="rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
+                  <motion.div layout key={i} className="rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
                     onMouseEnter={() => setHoveredFeedback(i)}
                     onMouseLeave={() => setHoveredFeedback(null)}
                   >
                   <div className="rounded-[16px] bg-white p-4 flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <span className="flex items-center h-6 px-2 rounded-full text-xs text-[#222428]" style={{ backgroundColor: item.tagColor }}>{item.type}</span>
-                      <button className="text-[#aeb2c0] hover:text-[#656b81] transition-colors">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                          <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
-                        </svg>
-                      </button>
+                      <div className={`flex items-center gap-1 transition-opacity duration-150 ${hoveredFeedback === i ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                        <button className="w-6 h-6 flex items-center justify-center text-[#aeb2c0] hover:text-[#656b81] transition-colors">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path fill="currentColor" d="M10 7H5a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-5h2v5a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3h5v2Zm11.992-3.876-1 8-1.984-.248.637-5.108-7.938 7.939-1.414-1.414 7.94-7.94-5.109.64-.248-1.985 8-1 1.116 1.116Z" />
+                          </svg>
+                        </button>
+                        <button className="text-[#aeb2c0] hover:text-[#656b81] transition-colors">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     {item.stars !== null && (
                       <div className="flex items-center gap-0.5">
@@ -496,7 +613,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                       )}
                     </AnimatePresence>
                   </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}
@@ -621,6 +738,18 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
       </AnimatePresence>
 
       {/* Prompt chips — always visible above input */}
+      {copiedCard && (
+        <div className="px-6 pb-2 pt-4 shrink-0">
+          <div className="rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
+            {['Add to opportunity summary', 'Find related signals', 'Draft a follow-up'].map((chip) => (
+              <button key={chip} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors">
+                <span className="text-gray-400 flex-shrink-0 leading-[0]"><IconSparksFilled css={{ width: 16, height: 16 }} /></span>
+                <span className="text-gray-900">{chip}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {selectedSignal && !showAnalysis && (
         <div className="px-6 pb-2 pt-4 shrink-0">
           <div className="rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
@@ -635,7 +764,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
       )}
 
       {/* Input */}
-      <div className="px-6 pb-6 pt-4 shrink-0">
+      <div className="px-6 pb-6 shrink-0">
         <ChatInput onSubmit={() => {}} />
       </div>
     </motion.aside>
@@ -660,12 +789,15 @@ export default function ThemeDetailPage() {
   const params = useParams()
   const [aiOpen, setAiOpen] = useState(true)
   const [selectedSignal, setSelectedSignal] = useState<typeof DETAIL_SIGNALS[0] | null>(null)
+  const [copiedCard, setCopiedCard] = useState<typeof FEATURED_CARDS[0] | null>(null)
+  const [showToast, setShowToast] = useState(false)
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [direction, setDirection] = useState(1)
   const [activeTab, setActiveTab] = useState<'signals' | 'details' | 'comments' | 'updates'>('signals')
   const [showAnalysis, setShowAnalysis] = useState(false)
 
-  const selectSignal = (row: typeof DETAIL_SIGNALS[0]) => { setSelectedSignal(row) }
+  const selectSignal = (row: typeof DETAIL_SIGNALS[0]) => { setSelectedSignal(row); setAiOpen(true) }
 
   const theme = THEME_CARDS.find((c) => c.id === String(params.id))
 
@@ -714,14 +846,14 @@ export default function ThemeDetailPage() {
               className="text-[14px] font-medium text-[#656b81] hover:text-[#222428] transition-colors whitespace-nowrap"
               style={{ fontFamily: 'Roobert, sans-serif' }}
             >
-              Themes
+              Opportunities
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-[#aeb2c0] shrink-0" />
             <span
               className="text-[14px] font-medium text-[#222428] truncate"
               style={{ fontFamily: 'Roobert, sans-serif' }}
             >
-              Theme detail
+              Opportunity detail
             </span>
           </div>
 
@@ -776,7 +908,7 @@ export default function ThemeDetailPage() {
           {/* ── Confidence drivers ── */}
           <section className="mb-[60px]">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-[24px] font-serif text-[#222428]">Confidence drivers</h2>
+              <h2 className="text-[22px] font-heading font-medium text-[#222428] leading-snug">Confidence drivers</h2>
             </div>
             <div className="grid grid-cols-4 divide-x divide-[#e0e2e8]">
               {[
@@ -796,7 +928,7 @@ export default function ThemeDetailPage() {
           {/* ── Featured ── */}
           <section className="mb-[60px]">
             <div className="flex items-center gap-2 mb-5">
-              <h2 className="text-[24px] font-serif text-[#222428]">Featured</h2>
+              <h2 className="text-[22px] font-heading font-medium text-[#222428] leading-snug">Featured</h2>
               <span className="text-[14px] text-[#656b81]">{signalCount} signals</span>
               <span className="flex items-center gap-1 py-1 px-2.5 rounded-full text-xs text-[#222428]" style={{ backgroundColor: '#BADEB1' }}>
                 7 new
@@ -825,7 +957,12 @@ export default function ThemeDetailPage() {
                     className={`grid ${aiOpen ? 'grid-cols-2' : 'grid-cols-3'} gap-[22px] pb-1`}
                   >
                     {pages[safePage].map((card) => (
-                      <FeaturedCard key={card.id} card={card} accent={heroColor} />
+                      <FeaturedCard key={card.id} card={card} accent={heroColor} onCopy={(c) => {
+                        setCopiedCard(c); setSelectedSignal(null); setShowAnalysis(false); setAiOpen(true)
+                        setShowToast(true)
+                        if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+                        toastTimerRef.current = setTimeout(() => setShowToast(false), 4000)
+                      }} />
                     ))}
                   </motion.div>
                 </AnimatePresence>
@@ -1067,13 +1204,44 @@ export default function ThemeDetailPage() {
 
       <AIPanel
         open={aiOpen}
-        onClose={() => { setAiOpen(false); setShowAnalysis(false); setSelectedSignal(null) }}
+        onClose={() => { setAiOpen(false); setShowAnalysis(false); setSelectedSignal(null); setCopiedCard(null) }}
         theme={theme}
         showAnalysis={showAnalysis}
         onDismissAnalysis={() => setShowAnalysis(false)}
         selectedSignal={selectedSignal}
         onClearSignal={() => setSelectedSignal(null)}
+        copiedCard={copiedCard}
+        onClearCopied={() => setCopiedCard(null)}
       />
+
+      {/* Toast */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            key="toast"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4 py-3 rounded-[14px] shadow-lg z-50"
+            style={{ backgroundColor: '#222428' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="2" y="2" width="10" height="10" rx="1.5" stroke="white" strokeWidth="1.3" />
+              <path d="M4 12v2M12 4h2" stroke="white" strokeWidth="1.3" strokeLinecap="round" />
+            </svg>
+            <span className="text-white text-[13px] font-medium">Copied to Assistant</span>
+            <button
+              onClick={() => { setShowToast(false); if (toastTimerRef.current) clearTimeout(toastTimerRef.current) }}
+              className="ml-1 text-white/50 hover:text-white transition-colors"
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

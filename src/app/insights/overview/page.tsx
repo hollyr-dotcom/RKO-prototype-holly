@@ -183,7 +183,7 @@ export default function InsightsOverviewPage() {
           {/* Overview heading */}
           <div className="flex items-center justify-between mb-[60px]">
             <div>
-              <h1 className="text-[60px] font-serif text-[#222428]">Overview</h1>
+              <h1 className="text-[72px] font-serif text-[#222428] leading-none">Overview</h1>
             </div>
             <p className="text-[20px] text-[#222428]/70 max-w-sm leading-relaxed text-right">
               Gain a high-level overview of key insights, emerging trends, and important updates.
