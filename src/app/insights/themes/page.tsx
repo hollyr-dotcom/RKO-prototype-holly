@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Users, ThumbsUp, Copy } from "lucide-react";
+import { Bell, Users, ThumbsUp, Copy, MoreVertical } from "lucide-react";
 import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconRocket, IconChatLinesTwo, IconBoard, IconChatTwo, IconInsights } from "@mirohq/design-system-icons";
 import InsightsTopBar from "@/components/InsightsTopBar";
 import { THEME_CARDS, type ThemeCard, type ThemeTag } from "@/data/themes-data";
@@ -599,17 +599,33 @@ function ThemeCardItem({ card, index, aiOpen, onCopy }: { card: ThemeCard; index
     >
       <AnimatePresence>
         {hovered && (
-          <motion.button
-            key="copy"
+          <motion.div
+            key="hover-actions"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            onClick={(e) => { e.stopPropagation(); onCopy?.(card); }}
-            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full border border-[#e0e2e8] bg-white text-[#656b81] hover:text-[#222428] z-10"
+            className="absolute top-4 right-4 flex items-center gap-1.5 z-10"
           >
-            <Copy size={14} strokeWidth={1.5} />
-          </motion.button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onCopy?.(card); }}
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-[#e0e2e8] bg-white text-[#656b81] hover:text-[#222428]"
+            >
+              <IconSparksFilled css={{ width: 16, height: 16 }} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onCopy?.(card); }}
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-[#e0e2e8] bg-white text-[#656b81] hover:text-[#222428]"
+            >
+              <Copy size={14} strokeWidth={1.5} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); }}
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-[#e0e2e8] bg-white text-[#656b81] hover:text-[#222428]"
+            >
+              <MoreVertical size={14} strokeWidth={1.5} />
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
       <div className="rounded-[24px] p-6 flex gap-4 h-full">
