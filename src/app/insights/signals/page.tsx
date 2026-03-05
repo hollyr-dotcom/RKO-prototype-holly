@@ -323,13 +323,15 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
         {/* Top media area */}
         <div className="relative rounded-[12px] overflow-hidden shrink-0" style={{ height: card.type === 'quote' ? 220 : 162 }}>
           {card.type === 'audio' && (
-            <div className="h-full to-white flex items-center justify-center gap-2" style={{ background: `linear-gradient(to bottom, ${accent}, white)` }}>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[#222428]" style={{ backgroundColor: accent }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
-                </svg>
-              </div>
+            <div className="h-full to-white flex items-center justify-center" style={{ background: `linear-gradient(to bottom, ${accent}, white)` }}>
               <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: accent }}>
+                <Play className="w-4 h-4 text-[#222428] fill-[#222428] ml-0.5" />
+              </div>
+            </div>
+          )}
+          {card.type === 'clips' && (
+            <div className="h-full bg-gradient-to-b from-[rgba(181,169,255,0.3)] to-white flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-[rgba(181,169,255,0.3)] flex items-center justify-center">
                 <Play className="w-4 h-4 text-[#222428] fill-[#222428] ml-0.5" />
               </div>
             </div>
@@ -353,7 +355,7 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
         <div className={`flex flex-col gap-1.5 flex-1 min-h-0 ${card.type !== 'quote' ? 'justify-end' : ''}`}>
           {card.type !== 'quote' && (
             <>
-              {card.type === 'audio' && (
+              {(card.type === 'audio' || card.type === 'clips') && (
                 <span className="h-5 px-2 bg-[#222428] text-white text-[10px] font-medium rounded-[24px] flex items-center w-fit">
                   {card.badge}
                 </span>
@@ -442,7 +444,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
       style={{ left: expanded ? expandedLeft : 'calc(100vw - 472px - 16px)', transition: 'left 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 shrink-0 border-b border-[#e0e2e8]">
+      <div className="flex items-center justify-between px-6 py-4 shrink-0">
         <span className="text-[18px] font-heading font-medium text-[#222428]">Signal</span>
         <div className="flex items-center gap-1">
           <button onClick={() => setExpanded(e => !e)} className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
@@ -469,84 +471,11 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
         </div>
       </div>
 
-      {/* Body — two columns when expanded */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto px-8 pt-12 pb-8 flex flex-col gap-5">
 
-        {/* Left column — linked opportunity (expanded only) */}
-        <AnimatePresence>
-          {expanded && (
-            <motion.div
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 320, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
-              className="shrink-0 border-r border-[#e0e2e8] overflow-y-auto flex flex-col"
-              style={{ backgroundColor: '#FBFAF7' }}
-            >
-              <div className="px-6 py-8 flex flex-col gap-5">
-                <p className="text-[11px] font-medium text-[#aeb2c0] uppercase tracking-widest">Linked opportunity</p>
-
-                {themeCard ? (
-                  <>
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1.5">
-                      {themeCard.tags.map((tag) => (
-                        <span
-                          key={tag.label}
-                          className="flex items-center h-6 px-2.5 rounded-full text-xs text-[#222428]"
-                          style={{
-                            backgroundColor: tag.label === 'New' ? '#BADEB1' : tag.label === 'Customer' ? '#FFF6B6' : tag.label === 'Market' ? '#C6DCFF' : tag.label === 'Urgent' ? '#FFD8F4' : tag.label === 'Strengthening' ? '#F8D3AF' : tag.label === 'Weakening' ? '#DEDAFF' : '#e9eaef',
-                          }}
-                        >
-                          {tag.label}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Title */}
-                    <h3 className="text-[20px] font-serif text-[#222428] leading-[1.3]">{themeCard.title}</h3>
-
-                    {/* Description */}
-                    <p className="text-[14px] text-[#656b81] leading-[1.6]">{themeCard.description}</p>
-
-                    <div className="h-px bg-[#e0e2e8]" />
-
-                    {/* Meta grid */}
-                    <div className="grid grid-cols-2 gap-y-4">
-                      {[
-                        { label: 'ARR impact', value: themeCard.meta.arr },
-                        { label: 'Confidence', value: `${themeCard.meta.confidence} ${themeCard.meta.confidenceDelta}` },
-                        { label: 'Likes', value: String(themeCard.meta.likes) },
-                        { label: 'Comments', value: String(themeCard.meta.comments ?? '—') },
-                      ].map((stat) => (
-                        <div key={stat.label}>
-                          <p className="text-[11px] text-[#aeb2c0] mb-0.5">{stat.label}</p>
-                          <p className="text-[15px] text-[#222428]">{stat.value}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <button
-                      onClick={() => router.push(`/insights/themes/${themeCard.id}`)}
-                      className="h-9 px-5 rounded-[18px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors w-fit"
-                    >
-                      View opportunity
-                    </button>
-                  </>
-                ) : (
-                  <p className="text-[14px] text-[#656b81]">No linked opportunity found.</p>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Right column — signal detail */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto px-8 pt-8 pb-8 flex flex-col gap-5">
-
-            {/* Title */}
-            <h2 className="text-[24px] font-serif text-[#222428] leading-[1.35]">{signal.title}</h2>
+        {/* Title */}
+        <h2 className="text-[24px] font-serif text-[#222428] leading-[1.35]">{signal.title}</h2>
 
         {/* Tabs */}
         <div className="flex items-center gap-0.5 flex-wrap mb-4 mt-3">
@@ -664,7 +593,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                 stars: null,
               },
             ].map((item, i) => (
-              <motion.div layout key={i} className="rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
+              <div key={i} className="rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
                 onMouseEnter={() => setHoveredFeedback(i)}
                 onMouseLeave={() => setHoveredFeedback(null)}
               >
@@ -676,18 +605,11 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                       {item.type}
                     </span>
                   </div>
-                  <div className={`flex items-center gap-1 transition-opacity duration-150 ${hoveredFeedback === i ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    <button className="w-6 h-6 flex items-center justify-center text-[#aeb2c0] hover:text-[#656b81] transition-colors">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                        <path fill="currentColor" d="M10 7H5a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-5h2v5a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3h5v2Zm11.992-3.876-1 8-1.984-.248.637-5.108-7.938 7.939-1.414-1.414 7.94-7.94-5.109.64-.248-1.985 8-1 1.116 1.116Z" />
-                      </svg>
-                    </button>
-                    <button className="text-[#aeb2c0] hover:text-[#656b81] transition-colors">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
-                      </svg>
-                    </button>
-                  </div>
+                  <button className="text-[#aeb2c0] hover:text-[#656b81] transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                      <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
+                    </svg>
+                  </button>
                 </div>
 
                 {/* Stars */}
@@ -742,7 +664,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                   )}
                 </AnimatePresence>
               </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
@@ -819,27 +741,25 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
         )}
 
 
-          </div>
+      </div>
 
-          {/* Prompt chips + input */}
-          <div className="px-6 pb-6 pt-4 shrink-0 flex flex-col gap-3 border-t border-[#e0e2e8]">
-            <div className="-mx-0 rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
-              {SIGNAL_CHIPS.map((chip) => (
-                <button
-                  key={chip}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors"
-                >
-                  <span className="text-gray-400 flex-shrink-0 leading-[0]">
-                    <IconSparksFilled css={{ width: 16, height: 16 }} />
-                  </span>
-                  <span className="text-gray-900">{chip}</span>
-                </button>
-              ))}
-            </div>
-            <ChatInput onSubmit={() => {}} />
-          </div>
-        </div>{/* end right column */}
-      </div>{/* end two-column body */}
+      {/* Prompt chips + input */}
+      <div className="px-6 pb-6 pt-4 shrink-0 flex flex-col gap-3">
+        <div className="-mx-0 rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
+          {SIGNAL_CHIPS.map((chip) => (
+            <button
+              key={chip}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors"
+            >
+              <span className="text-gray-400 flex-shrink-0 leading-[0]">
+                <IconSparksFilled css={{ width: 16, height: 16 }} />
+              </span>
+              <span className="text-gray-900">{chip}</span>
+            </button>
+          ))}
+        </div>
+        <ChatInput onSubmit={() => {}} />
+      </div>
     </motion.aside>
   )
 }
@@ -1137,7 +1057,7 @@ export default function SignalsPage() {
           {/* ── Featured ── */}
           <section className="mb-[60px]">
             <div className="flex items-center gap-2 mb-5">
-              <h2 className="text-[22px] font-heading font-medium text-[#222428] leading-snug">Featured</h2>
+              <h2 className="text-[24px] font-serif text-[#222428]">Featured</h2>
               <span className="text-[14px] text-[#656b81]">12 signals</span>
               <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium text-[#222428]" style={{ backgroundColor: '#BADEB1' }}>7 new</span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[#aeb2c0]">
@@ -1197,7 +1117,7 @@ export default function SignalsPage() {
             {/* Title + controls — sticky, not inside scroll container */}
             <div className="sticky top-0 z-10 bg-[#FBFAF7] pb-0">
               <div className="flex items-center gap-2 pb-5">
-                <h2 className="text-[22px] font-heading font-medium text-[#222428] leading-snug">Signals</h2>
+                <h2 className="text-[24px] font-serif text-[#222428]">Signals</h2>
                 <span className="text-[14px] text-[#656b81]">14 results</span>
                 <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium" style={{ backgroundColor: '#BADEB1', color: '#222428' }}>6 new</span>
                 <div className="flex items-center gap-2 ml-auto">
