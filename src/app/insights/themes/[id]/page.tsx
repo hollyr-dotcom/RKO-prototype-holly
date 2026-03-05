@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -162,8 +162,16 @@ function AppleLogoMark() {
 
 function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
   const accent = CARD_ACCENT[card.type]
+  const [hovered, setHovered] = useState(false)
   return (
-    <div className="w-full h-full rounded-[16px] overflow-hidden" style={{ backgroundColor: accent, padding: '2px 2px 6px 2px' }}>
+    <motion.div
+      className="w-full h-full rounded-[16px] cursor-pointer"
+      style={{ backgroundColor: accent, padding: '2px 2px 6px 2px' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      animate={{ scale: hovered ? 1.02 : 1 }}
+      transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+    >
       <div className="bg-white rounded-[16px] flex flex-col gap-3 p-3 h-full">
         <div className="relative rounded-[12px] overflow-hidden shrink-0" style={{ height: card.type === 'quote' ? 220 : 162 }}>
           {card.type === 'audio' && (
@@ -233,28 +241,86 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
           </span>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
 // ─── Detail signals table ──────────────────────────────────────────────────────
 
 const DETAIL_SIGNALS = [
-  { id: '1', sourceIcon: 'audio', title: 'Canvas lag with 40+ concurrent users', description: 'Three enterprise accounts flagged as Q3 retention blocker.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFED7B' }, revenue: '$2.1M', company: { name: 'Google', letter: 'G', bg: '#4285F4' } },
-  { id: '2', sourceIcon: 'globe', title: 'AI suggestions interrupt live workshops', description: 'Mid-session interruptions break workshop flow and focus.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFABEC' }, revenue: '$850K', company: { name: 'Blizzard', letter: 'B', bg: '#00AEFF' } },
-  { id: '3', sourceIcon: 'mobile', title: 'Cursors invisible to collaborators on 4K boards', description: 'Collaboration breaks down when cursor presence disappears.', person: { name: 'Mika B', initials: 'MB', bg: '#DBFAAD' }, revenue: '$620K', company: { name: 'Apple', letter: 'A', bg: '#555' } },
-  { id: '4', sourceIcon: 'globe', title: 'SAML / SSO breaks with Okta and Azure AD', description: 'Six-figure deals stalled at procurement over SSO failures.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFED7B' }, revenue: '$1.4M', company: { name: 'Adobe', letter: 'A', bg: '#E0001B' } },
-  { id: '5', sourceIcon: 'audio', title: 'PDF exports lose fonts on large frames', description: 'Enterprise handoff workflows blocked by export fidelity.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFABEC' }, revenue: '$540K', company: { name: 'Google', letter: 'G', bg: '#4285F4' } },
-  { id: '6', sourceIcon: 'mobile', title: 'SCIM provisioning fails silently on first sync', description: 'IT teams report silent failures blocking org-wide rollouts.', person: { name: 'Mika B', initials: 'MB', bg: '#DBFAAD' }, revenue: '$1.1M', company: { name: 'Apple', letter: 'A', bg: '#555' } },
-  { id: '7', sourceIcon: 'globe', title: 'Boards with 500+ objects take 8+ seconds to load', description: 'Heavy boards cause session abandonment in enterprise accounts.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFED7B' }, revenue: '$760K', company: { name: 'Blizzard', letter: 'B', bg: '#00AEFF' } },
-  { id: '8', sourceIcon: 'audio', title: 'Auto-layout breaks on complex system maps', description: 'Architecture diagrams with 50+ nodes fail to auto-arrange.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFABEC' }, revenue: '$720K', company: { name: 'Adobe', letter: 'A', bg: '#E0001B' } },
+  { id: '1', sourceIcon: 'audio', title: 'Canvas lag with 40+ concurrent users', description: 'Three enterprise accounts flagged as Q3 retention blocker.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFED7B' }, revenue: '$2.1M', company: { name: 'Google', letter: 'G', bg: '#4285F4' }, feedback: { survey: 110, call: 62, message: 18, appStore: 30 } },
+  { id: '2', sourceIcon: 'globe', title: 'AI suggestions interrupt live workshops', description: 'Mid-session interruptions break workshop flow and focus.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFABEC' }, revenue: '$850K', company: { name: 'Blizzard', letter: 'B', bg: '#00AEFF' }, feedback: { survey: 42, call: 28, message: 14, appStore: 9 } },
+  { id: '3', sourceIcon: 'mobile', title: 'Cursors invisible to collaborators on 4K boards', description: 'Collaboration breaks down when cursor presence disappears.', person: { name: 'Mika B', initials: 'MB', bg: '#DBFAAD' }, revenue: '$620K', company: { name: 'Apple', letter: 'A', bg: '#555' }, feedback: { survey: 30, call: 15, message: 22, appStore: 18 } },
+  { id: '4', sourceIcon: 'globe', title: 'SAML / SSO breaks with Okta and Azure AD', description: 'Six-figure deals stalled at procurement over SSO failures.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFED7B' }, revenue: '$1.4M', company: { name: 'Adobe', letter: 'A', bg: '#E0001B' }, feedback: { survey: 74, call: 55, message: 8, appStore: 12 } },
+  { id: '5', sourceIcon: 'audio', title: 'PDF exports lose fonts on large frames', description: 'Enterprise handoff workflows blocked by export fidelity.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFABEC' }, revenue: '$540K', company: { name: 'Google', letter: 'G', bg: '#4285F4' }, feedback: { survey: 28, call: 19, message: 11, appStore: 6 } },
+  { id: '6', sourceIcon: 'mobile', title: 'SCIM provisioning fails silently on first sync', description: 'IT teams report silent failures blocking org-wide rollouts.', person: { name: 'Mika B', initials: 'MB', bg: '#DBFAAD' }, revenue: '$1.1M', company: { name: 'Apple', letter: 'A', bg: '#555' }, feedback: { survey: 58, call: 40, message: 20, appStore: 15 } },
+  { id: '7', sourceIcon: 'globe', title: 'Boards with 500+ objects take 8+ seconds to load', description: 'Heavy boards cause session abandonment in enterprise accounts.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFED7B' }, revenue: '$760K', company: { name: 'Blizzard', letter: 'B', bg: '#00AEFF' }, feedback: { survey: 38, call: 24, message: 16, appStore: 10 } },
+  { id: '8', sourceIcon: 'audio', title: 'Auto-layout breaks on complex system maps', description: 'Architecture diagrams with 50+ nodes fail to auto-arrange.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFABEC' }, revenue: '$720K', company: { name: 'Adobe', letter: 'A', bg: '#E0001B' }, feedback: { survey: 36, call: 22, message: 19, appStore: 13 } },
+]
+
+// ─── Signal chips (used in AI panel) ─────────────────────────────────────────
+
+const SIGNAL_CHIPS = [
+  'Map this signal to a theme',
+  'Show related signals',
+  'Draft a roadmap recommendation',
 ]
 
 // ─── AI Panel ─────────────────────────────────────────────────────────────────
 
-function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis }: { open: boolean; onClose: () => void; theme: ThemeCard; showAnalysis?: boolean; onDismissAnalysis?: () => void }) {
+function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, selectedSignal, onClearSignal }: {
+  open: boolean
+  onClose: () => void
+  theme: ThemeCard
+  showAnalysis?: boolean
+  onDismissAnalysis?: () => void
+  selectedSignal: typeof DETAIL_SIGNALS[0] | null
+  onClearSignal: () => void
+}) {
+  const [signalTab, setSignalTab] = useState<'summary' | 'feedback' | 'details' | 'updates'>('summary')
   const analysisData = THEME_ANALYSIS['analysis-' + theme.id]
+
+  // Reset tab when signal changes
+  const prevSignalId = React.useRef<string | null>(null)
+  if (selectedSignal?.id !== prevSignalId.current) {
+    prevSignalId.current = selectedSignal?.id ?? null
+    if (signalTab !== 'summary') setSignalTab('summary')
+  }
+
   if (!open) return null
+
+  const showBack = !!selectedSignal || !!showAnalysis
+  const handleBack = selectedSignal ? onClearSignal : onDismissAnalysis
+
+  let signalMentions = 0, signalCustomers = 0, signalWow = ''
+  let feedbackTotal = 0, feedbackGradient = ''
+  let feedbackItems: { color: string; label: string; value: number }[] = []
+  if (selectedSignal) {
+    const revenueNum = parseFloat(selectedSignal.revenue.replace(/[^0-9.]/g, ''))
+    const isMillions = selectedSignal.revenue.includes('M')
+    const revenueK = isMillions ? revenueNum * 1000 : revenueNum
+    signalMentions = Math.round(revenueK * 0.14 + 40)
+    signalCustomers = Math.round(revenueK * 0.008 + 5)
+    signalWow = `+${Math.round(revenueK * 0.012 + 8)}%`
+
+    const fb = selectedSignal.feedback
+    feedbackTotal = fb.survey + fb.call + fb.message + fb.appStore
+    feedbackItems = [
+      { color: '#b5a9ff', label: 'Survey', value: fb.survey },
+      { color: '#ffabec', label: 'Call', value: fb.call },
+      { color: '#ffbd83', label: 'Message', value: fb.message },
+      { color: '#c2eb7f', label: 'App Store', value: fb.appStore },
+    ]
+    const gap = 0.4
+    const s = (fb.survey / feedbackTotal) * 100
+    const c = (fb.call / feedbackTotal) * 100
+    const m = (fb.message / feedbackTotal) * 100
+    const s2 = s + gap, c2 = s2 + c, c3 = c2 + gap, m2 = c3 + m, m3 = m2 + gap
+    feedbackGradient = `conic-gradient(#b5a9ff 0% ${s.toFixed(1)}%, white ${s.toFixed(1)}% ${s2.toFixed(1)}%, #ffabec ${s2.toFixed(1)}% ${c2.toFixed(1)}%, white ${c2.toFixed(1)}% ${c3.toFixed(1)}%, #ffbd83 ${c3.toFixed(1)}% ${m2.toFixed(1)}%, white ${m2.toFixed(1)}% ${m3.toFixed(1)}%, #c2eb7f ${m3.toFixed(1)}% 100%)`
+  }
+
+  const SIGNAL_TABS = ['Summary', 'Feedback', 'Details', 'Updates'] as const
+
   return (
     <motion.aside
       initial={{ x: 40, opacity: 0 }}
@@ -263,14 +329,19 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis }: { op
       transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
       className="fixed top-4 right-4 bottom-4 w-[400px] bg-white rounded-[20px] shadow-[0_0_12px_rgba(34,36,40,0.04),-2px_0_8px_rgba(34,36,40,0.12)] flex flex-col overflow-hidden z-30"
     >
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-6 border-b border-[#e0e2e8] bg-white z-10">
+      {/* Header */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-6 bg-white z-10">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#E7E7E5' }}>
-            <span className="text-[#222428] leading-[0] flex items-center justify-center">
-              <IconSparksFilled css={{ width: 16, height: 16 }} />
-            </span>
-          </div>
-          <p className="text-[#222428] text-base font-semibold" style={{ fontFamily: 'Roobert, sans-serif' }}>Insights Assistant</p>
+          {showBack ? (
+            <button onClick={handleBack} className="flex items-center gap-2 text-[#656b81] hover:text-[#222428] transition-colors">
+              <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
+                <path d="M7 1L1 7L7 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="text-sm font-medium">Back</span>
+            </button>
+          ) : (
+            <p className="text-[#222428] text-base font-semibold" style={{ fontFamily: 'Roobert, sans-serif' }}>Insights Assistant</p>
+          )}
         </div>
         <button onClick={onClose} className="w-6 h-6 flex items-center justify-center text-[#656b81] hover:text-[#222428] transition-colors">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -279,29 +350,175 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis }: { op
         </button>
       </div>
 
-      <div className={`flex-1 overflow-y-auto flex flex-col px-6 pb-0 pt-24 ${showAnalysis ? '' : 'justify-end'}`}>
-        {showAnalysis ? (
-          <AnimatePresence mode="wait">
-            <motion.div key="analysis" className="flex flex-col gap-6 px-4 pb-4">
-              {/* User bubble */}
-              <motion.div
-                className="flex justify-end"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
-              >
+      {/* Body — animated between views */}
+      <AnimatePresence mode="wait">
+        {selectedSignal ? (
+          <motion.div
+            key={`signal-${selectedSignal.id}`}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+            className="flex-1 overflow-y-auto px-6 pb-6 pt-24 flex flex-col gap-5"
+          >
+            <h2 className="text-[24px] font-serif text-[#222428] leading-[1.35]">{selectedSignal.title}</h2>
+
+            {/* Tabs */}
+            <div className="flex items-center gap-0.5 flex-wrap">
+              {SIGNAL_TABS.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setSignalTab(tab.toLowerCase() as typeof signalTab)}
+                  className={`h-8 px-3 rounded-lg text-[14px] font-semibold transition-colors ${
+                    signalTab === tab.toLowerCase() ? 'bg-[#E7E7E5] text-[#222428]' : 'text-[#656b81] hover:bg-[#FBFAF7]'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {signalTab === 'summary' && (
+              <>
+                <p className="text-[16px] text-[#656b81] leading-[1.6]">
+                  {selectedSignal.description} With an estimated {selectedSignal.revenue} ARR impact, it represents a meaningful opportunity to address unmet needs and improve retention.
+                </p>
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-[20px] font-serif text-[#222428]">Confidence drivers</h3>
+                  <div className="grid grid-cols-2">
+                    {[
+                      { value: signalMentions, label: 'Total Mentions' },
+                      { value: signalCustomers, label: 'Unique Customers' },
+                      { value: selectedSignal.revenue, label: 'Est. ARR Impact' },
+                      { value: signalWow, label: 'Frequency (WoW)' },
+                    ].map((stat) => (
+                      <div key={stat.label} className="py-3">
+                        <p className="text-[32px] font-serif text-[#222428] leading-[1.2]">{stat.value}</p>
+                        <p className="text-[14px] text-[#656b81] mt-1">{stat.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="h-px bg-[#e0e2e8]" />
+
+                <div className="flex flex-col gap-4">
+                  <h3 className="text-[20px] font-serif text-[#222428]">Total feedback</h3>
+                  <div className="flex items-center gap-6">
+                    <div className="relative w-[140px] h-[140px] shrink-0">
+                      <div className="w-full h-full rounded-full" style={{ background: feedbackGradient }} />
+                      <div className="absolute inset-[22%] bg-white rounded-full flex items-center justify-center">
+                        <span className="text-[24px] font-serif text-[#222428]">{feedbackTotal}</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-6">
+                      {feedbackItems.map((item) => (
+                        <div key={item.label} className="flex items-center gap-2">
+                          <div className="w-1 rounded-full self-stretch shrink-0" style={{ backgroundColor: item.color }} />
+                          <div>
+                            <p className="text-[12px] text-[#656b81]">{item.label}</p>
+                            <p className="text-[18px] text-[#222428] leading-[1.2]">{item.value}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {signalTab === 'feedback' && (
+              <div className="flex flex-col gap-3">
+                {[
+                  { type: 'Request' as const, tagColor: '#c2eb7f', text: `Users are reporting that ${selectedSignal.title.toLowerCase()} is creating friction in their workflow.`, author: selectedSignal.person.name, date: 'Added 1 month ago', stars: null },
+                  { type: 'Problem' as const, tagColor: '#ffabec', text: `"The overall experience feels slow and unresponsive when this issue occurs. Each attempt is followed by a noticeable delay."`, author: 'Marco Rossi, PM', date: 'Added 1 month ago', stars: 2 },
+                  { type: 'Praise' as const, tagColor: '#b5a9ff', text: `When it works well, the experience is seamless. Users appreciate the reliability when things are functioning as expected.`, author: 'Priya Nair, Designer', date: 'Added 2 months ago', stars: null },
+                ].map((item, i) => (
+                  <div key={i} className="rounded-[12px] border border-[#e0e2e8] bg-white p-4 flex flex-col gap-3">
+                    <span className="flex items-center h-6 px-2 rounded-full text-xs text-[#222428] self-start" style={{ backgroundColor: item.tagColor }}>{item.type}</span>
+                    {item.stars !== null && (
+                      <div className="flex items-center gap-0.5">
+                        {Array.from({ length: 5 }, (_, si) => (
+                          <svg key={si} width="14" height="14" viewBox="0 0 16 16" fill={si < item.stars! ? '#222428' : '#e0e2e8'}>
+                            <path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.4l-3.7 1.9.7-4.1-3-2.9 4.2-.7L8 1z" />
+                          </svg>
+                        ))}
+                      </div>
+                    )}
+                    <p className="text-[13px] leading-[1.6] text-[#222428]">{item.text}</p>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[12px] font-medium text-[#222428]">{item.author}</span>
+                      <span className="text-[11px] text-[#aeb2c0]">{item.date}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {signalTab === 'details' && (
+              <div>
+                {[
+                  { label: 'Source', value: selectedSignal.sourceIcon === 'audio' ? 'Audio / Gong' : selectedSignal.sourceIcon === 'globe' ? 'Web / Market' : 'Mobile / App Store' },
+                  { label: 'Person', value: selectedSignal.person.name },
+                  { label: 'Est. ARR impact', value: selectedSignal.revenue + ' ARR' },
+                  { label: 'Company', value: selectedSignal.company.name },
+                  { label: 'Total mentions', value: String(signalMentions) },
+                  { label: 'Unique customers', value: String(signalCustomers) },
+                  { label: 'Frequency (WoW)', value: signalWow },
+                ].map((row) => (
+                  <div key={row.label} className="grid gap-6 py-3.5 border-b border-[#f1f2f5] last:border-0 items-start" style={{ gridTemplateColumns: '140px 1fr' }}>
+                    <span className="text-sm text-[#656b81]">{row.label}</span>
+                    <span className="text-sm text-[#222428]">{row.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {signalTab === 'updates' && (
+              <div className="flex flex-col gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#E7E7E5' }}>
+                    <span className="text-[#222428] leading-[0] flex items-center justify-center">
+                      <IconSparksFilled css={{ width: 14, height: 14 }} />
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[13px] font-semibold text-[#222428]">Signal added</span>
+                      <span className="text-[12px] text-[#aeb2c0]">Jul 14</span>
+                    </div>
+                    <p className="text-[13px] text-[#656b81] leading-[1.5]">This signal was captured and added to the theme.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Chips */}
+            <div className="rounded-[24px] overflow-hidden py-1.5 mt-auto" style={{ backgroundColor: '#FBFAF7' }}>
+              {SIGNAL_CHIPS.map((chip) => (
+                <button key={chip} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors">
+                  <span className="text-gray-400 flex-shrink-0 leading-[0]"><IconSparksFilled css={{ width: 16, height: 16 }} /></span>
+                  <span className="text-gray-900">{chip}</span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        ) : showAnalysis ? (
+          <motion.div
+            key="analysis"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+            className="flex-1 overflow-y-auto flex flex-col px-6 pb-0 pt-24"
+          >
+            <div className="flex flex-col gap-6 px-4 pb-4">
+              <motion.div className="flex justify-end" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}>
                 <div className="max-w-[80%] bg-[#f1f2f5] rounded-[12px] px-4 py-3">
                   <p className="text-[14px] text-[#222428]">View analysis</p>
                 </div>
               </motion.div>
-
-              {/* AI response */}
-              <motion.div
-                className="flex items-start gap-3"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: 0.2, ease: [0.2, 0, 0, 1] }}
-              >
+              <motion.div className="flex items-start gap-3" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2, ease: [0.2, 0, 0, 1] }}>
                 <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#E7E7E5' }}>
                   <span className="text-[#222428] leading-[0] flex items-center justify-center">
                     <IconSparksFilled css={{ width: 14, height: 14 }} />
@@ -309,79 +526,62 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis }: { op
                 </div>
                 <div className="flex-1 flex flex-col gap-3">
                   {(analysisData?.response ?? '').split('\n\n').map((para, i) => (
-                    <motion.p
-                      key={i}
-                      className="text-[14px] text-[#222428] leading-[1.6]"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.35 + i * 0.08, ease: [0.2, 0, 0, 1] }}
-                    >
-                      {para.split(/\*\*(.*?)\*\*/g).map((part, j) =>
-                        j % 2 === 1 ? <strong key={j}>{part}</strong> : part
-                      )}
+                    <motion.p key={i} className="text-[14px] text-[#222428] leading-[1.6]" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.35 + i * 0.08, ease: [0.2, 0, 0, 1] }}>
+                      {para.split(/\*\*(.*?)\*\*/g).map((part, j) => j % 2 === 1 ? <strong key={j}>{part}</strong> : part)}
                     </motion.p>
                   ))}
                   {analysisData?.prompts && (
-                    <motion.div
-                      className="flex flex-col gap-2 mt-2"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.8, ease: [0.2, 0, 0, 1] }}
-                    >
+                    <motion.div className="flex flex-col gap-2 mt-2" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.8, ease: [0.2, 0, 0, 1] }}>
                       <div className="-mx-4 rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
                         {analysisData.prompts.map((chip) => (
                           <button key={chip} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors">
-                            <span className="text-gray-400 flex-shrink-0">
-                              <IconSparksFilled css={{ width: 16, height: 16 }} />
-                            </span>
+                            <span className="text-gray-400 flex-shrink-0"><IconSparksFilled css={{ width: 16, height: 16 }} /></span>
                             <span className="text-gray-900">{chip}</span>
                           </button>
                         ))}
                       </div>
                     </motion.div>
                   )}
-                  <motion.button
-                    onClick={onDismissAnalysis}
-                    className="self-start mt-2 h-8 px-3 rounded-lg text-sm font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#2B2D33] hover:text-white hover:border-[#2B2D33] transition-colors"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 1.0, ease: [0.2, 0, 0, 1] }}
-                  >
-                    Back to overview
-                  </motion.button>
                 </div>
               </motion.div>
-            </motion.div>
-          </AnimatePresence>
+            </div>
+          </motion.div>
         ) : (
-          <div className="flex flex-col gap-6 px-4">
-            <div className="flex flex-col gap-2">
-              <p className="text-[#222428] text-[28px] font-serif leading-[1.4]">Theme deep-dive</p>
-              <div className="text-[#656b81] text-[16px] leading-[1.5]">
-                <p>
-                  This theme has a confidence score of {theme.meta.confidence} and {theme.meta.confidenceDelta} movement this week.
-                  {' '}{theme.meta.likes} team members have upvoted it, signalling strong internal alignment.
-                </p>
-                <p className="mt-4">
-                  I can help you map signals to this theme, draft a recommendation for the roadmap, or pull in related customer quotes.
-                </p>
+          <motion.div
+            key="default"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+            className="flex-1 overflow-y-auto flex flex-col px-6 pb-0 pt-24 justify-end"
+          >
+            <div className="flex flex-col gap-6 px-4">
+              <div className="flex flex-col gap-2">
+                <p className="text-[#222428] text-[28px] font-serif leading-[1.4]">Theme deep-dive</p>
+                <div className="text-[#656b81] text-[16px] leading-[1.5]">
+                  <p>
+                    This theme has a confidence score of {theme.meta.confidence} and {theme.meta.confidenceDelta} movement this week.
+                    {' '}{theme.meta.likes} team members have upvoted it, signalling strong internal alignment.
+                  </p>
+                  <p className="mt-4">
+                    I can help you map signals to this theme, draft a recommendation for the roadmap, or pull in related customer quotes.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col gap-3">
+                <div className="-mx-4 rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
+                  {['Summarise signals for this theme', 'Draft a roadmap recommendation', 'Show related customer quotes'].map((chip) => (
+                    <button key={chip} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors">
+                      <span className="text-gray-400 flex-shrink-0"><IconSparksFilled css={{ width: 16, height: 16 }} /></span>
+                      <span className="text-gray-900">{chip}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-            <div className="flex flex-col gap-3">
-              <div className="-mx-4 rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
-                {['Summarise signals for this theme', 'Draft a roadmap recommendation', 'Show related customer quotes'].map((chip) => (
-                  <button key={chip} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors">
-                    <span className="text-gray-400 flex-shrink-0">
-                      <IconSparksFilled css={{ width: 16, height: 16 }} />
-                    </span>
-                    <span className="text-gray-900">{chip}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
 
       {/* Input */}
       <div className="px-6 pb-6 pt-4 shrink-0">
@@ -408,10 +608,13 @@ function deriveStats(card: ThemeCard) {
 export default function ThemeDetailPage() {
   const params = useParams()
   const [aiOpen, setAiOpen] = useState(true)
+  const [selectedSignal, setSelectedSignal] = useState<typeof DETAIL_SIGNALS[0] | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [direction, setDirection] = useState(1)
   const [activeTab, setActiveTab] = useState<'signals' | 'details' | 'comments' | 'updates'>('signals')
   const [showAnalysis, setShowAnalysis] = useState(false)
+
+  const selectSignal = (row: typeof DETAIL_SIGNALS[0]) => { setSelectedSignal(row) }
 
   const theme = THEME_CARDS.find((c) => c.id === String(params.id))
 
@@ -522,10 +725,6 @@ export default function ThemeDetailPage() {
           <section className="mb-8">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[24px] font-serif text-[#222428]">Confidence drivers</h2>
-              <button onClick={() => { setShowAnalysis(true); setAiOpen(true); }} className="flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[#222428] text-sm font-medium text-white hover:bg-[#2e3036] transition-colors">
-                <span className="leading-[0]"><IconSparksFilled css={{ width: 14, height: 14 }} /></span>
-                View analysis
-              </button>
             </div>
             <div className="grid grid-cols-4 divide-x divide-[#e0e2e8]">
               {[
@@ -555,7 +754,7 @@ export default function ThemeDetailPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex-1 min-w-0 overflow-hidden relative">
+              <div className="flex-1 min-w-0 overflow-visible relative">
                 <AnimatePresence mode="wait" custom={direction}>
                   <motion.div
                     key={currentPage}
@@ -654,7 +853,8 @@ export default function ThemeDetailPage() {
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25, delay: i * 0.04 }}
-                    className="grid gap-4 px-5 py-3.5 items-center border-b border-[#e0e2e8] last:border-0 hover:bg-[#fafafa] transition-colors cursor-pointer"
+                    onClick={() => selectSignal(row)}
+                    className={`grid gap-4 px-5 py-3.5 items-center border-b border-[#e0e2e8] last:border-0 hover:bg-[#E7E7E5] transition-colors cursor-pointer ${selectedSignal?.id === row.id ? 'bg-[#E7E7E5]' : ''}`}
                     style={{ gridTemplateColumns: '24px 48px 1fr 1fr 120px 90px 110px' }}
                   >
                     <span className="text-xs text-[#aeb2c0]">{row.id}</span>
@@ -798,7 +998,15 @@ export default function ThemeDetailPage() {
         </main>
       </div>
 
-      <AIPanel open={aiOpen} onClose={() => { setAiOpen(false); setShowAnalysis(false); }} theme={theme} showAnalysis={showAnalysis} onDismissAnalysis={() => setShowAnalysis(false)} />
+      <AIPanel
+        open={aiOpen}
+        onClose={() => { setAiOpen(false); setShowAnalysis(false); setSelectedSignal(null) }}
+        theme={theme}
+        showAnalysis={showAnalysis}
+        onDismissAnalysis={() => setShowAnalysis(false)}
+        selectedSignal={selectedSignal}
+        onClearSignal={() => setSelectedSignal(null)}
+      />
     </div>
   )
 }

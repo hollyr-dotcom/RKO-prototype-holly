@@ -37,42 +37,49 @@ const data = [
     value: newAvg,
     insight: `${newThemes.length} new themes surfacing — early momentum building across customer calls.`,
     quote: `"${newThemes[0].title}"`,
+    analysis: `**Monday opened with new signal momentum.**\n\n${newThemes.length} new themes emerged from customer calls and market signals — notably around ${newThemes[0].title} and ${newThemes[1]?.title ?? 'emerging UX patterns'}. Early confidence scores are moderate but climbing.\n\nThis is typically a good sign: new themes that surface mid-week tend to consolidate faster when there's existing signal overlap. I'd flag these for review before Thursday's planning session.`,
   },
   {
     day: 'T',
     value: weakeningAvg,
     insight: `${weakeningThemes.length} weakening themes pulled sentiment down this session.`,
     quote: `"${weakeningThemes[0].title}"`,
+    analysis: `**Sentiment dipped on Tuesday — ${weakeningThemes.length} themes are weakening.**\n\n${weakeningThemes.map(t => `**${t.title}**`).join(' and ')} both showed declining confidence this session. Signal volume is still present but the sources are becoming less consistent.\n\nWeakening themes don't always mean the problem is resolved — sometimes it means customers have stopped raising it because they've found workarounds. I'd recommend one more review cycle before archiving either theme.`,
   },
   {
     day: 'W',
     value: Math.round((overallAvg + newAvg) / 2),
     insight: 'Recovery driven by customer signal strength and new enterprise feedback.',
     quote: `"${THEME_CARDS[3].title}"`,
+    analysis: `**Wednesday saw a meaningful recovery in sentiment.**\n\nCustomer signal strength rebounded, driven primarily by enterprise feedback on ${THEME_CARDS[3].title}. Two Gong calls this afternoon added high-confidence signals to existing themes, lifting the weekly average.\n\nThe recovery is real but narrow — it's concentrated in enterprise accounts. SMB sentiment remained flat. Worth watching whether this broadens out by end of week.`,
   },
   {
     day: 'TH',
     value: urgentAvg,
     insight: `${urgentThemes.length} urgent themes reached peak confidence — action recommended.`,
     quote: `"${urgentThemes[0].title}"`,
+    analysis: `**Thursday was the week's sentiment peak — ${urgentThemes.length} urgent themes hit high confidence.**\n\n${urgentThemes[0].title} reached ${urgentThemes[0].meta.confidence} confidence — the highest of any active theme this week. Two enterprise accounts flagged it as a blocker in the same 24-hour window.\n\n**Recommended action**: this theme is ready to move from insight to roadmap input. The signal quality is high and the ARR impact is significant. I'd suggest adding it to Thursday's planning review.`,
   },
   {
     day: 'F',
     value: mixedAvg,
     insight: 'Mixed signals — mobile and performance themes dragging on overall score.',
     quote: `"${THEME_CARDS[6].title}"`,
+    analysis: `**Friday showed mixed signals — two themes are dragging on overall sentiment.**\n\nMobile parity and canvas performance signals continued to accumulate without resolution, pulling the weekly average down from Thursday's peak. These themes have been active for 3+ weeks without roadmap action.\n\nThe pattern here is worth flagging: sustained unresolved signals tend to generate a second wave of customer frustration. Both themes now have enough signal volume to justify prioritisation conversations.`,
   },
   {
     day: 'S',
     value: strengtheningAvg,
     insight: `${strengtheningThemes.length} strengthening themes sustaining a positive weekly trend.`,
     quote: `"${strengtheningThemes[0].title}"`,
+    analysis: `**Saturday's data shows ${strengtheningThemes.length} themes strengthening week over week.**\n\n${strengtheningThemes[0].title} is the standout — confidence has climbed consistently across the past 5 sessions, driven by repeat signals from different source types (calls, surveys, community posts).\n\nMulti-source strengthening is a reliable indicator that a theme is real and broad, not a single-account concern. This is the kind of momentum that warrants moving a theme to active development.`,
   },
   {
     day: 'S',
     value: overallAvg,
     insight: 'Overall sentiment aligned with average confidence across all active themes.',
     quote: `"${THEME_CARDS[0].title}"`,
+    analysis: `**Sunday closed the week at the overall average — ${overallAvg}% confidence across all active themes.**\n\nThis is a stable reading. No single theme is dominating sentiment, and the distribution between urgent, strengthening, and weakening themes is broadly balanced.\n\n**Weekly summary**: the week's highlight was Thursday's urgent theme peak. The main risk heading into next week is the unresolved mobile and performance signals accumulating without roadmap response. I'd prioritise those two for the Monday review.`,
   },
 ]
 
@@ -91,7 +98,7 @@ function SentimentPopover({
   onOpenChat,
   onMouseEnter,
   onMouseLeave,
-}: HoveredDot & { onOpenChat?: () => void; onMouseEnter: () => void; onMouseLeave: () => void }) {
+}: HoveredDot & { onOpenChat?: (index: number) => void; onMouseEnter: () => void; onMouseLeave: () => void }) {
   const point = data[index]
   if (!point) return null
 
@@ -103,6 +110,7 @@ function SentimentPopover({
         top: cy,
         transform: 'translate(-50%, calc(-100% - 16px))',
         width: 374,
+        paddingBottom: 24,
       }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -130,41 +138,30 @@ function SentimentPopover({
           </p>
         </div>
 
-        <div className="flex justify-end">
+        <div>
           <button
-            onClick={onOpenChat}
+            onClick={() => onOpenChat?.(index)}
             className="px-4 py-1.5 rounded-[6px] text-white text-sm font-medium transition-opacity hover:opacity-80"
             style={{ backgroundColor: '#3859FF' }}
           >
             View analysis
           </button>
         </div>
+
       </div>
 
-      {/* Caret */}
-      <div
-        className="absolute left-1/2 -translate-x-1/2"
-        style={{
-          bottom: -9,
-          width: 0,
-          height: 0,
-          borderLeft: '12px solid transparent',
-          borderRight: '12px solid transparent',
-          borderTop: '9px solid #1a1b1e',
-        }}
-      />
     </div>
   )
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function SentimentChart({ onOpenChat }: { onOpenChat?: () => void }) {
+export function SentimentChart({ onOpenChat }: { onOpenChat?: (index: number) => void }) {
   const [hoveredDot, setHoveredDot] = useState<HoveredDot | null>(null)
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const scheduleClose = () => {
-    closeTimer.current = setTimeout(() => setHoveredDot(null), 300)
+    closeTimer.current = setTimeout(() => setHoveredDot(null), 800)
   }
 
   const cancelClose = () => {
