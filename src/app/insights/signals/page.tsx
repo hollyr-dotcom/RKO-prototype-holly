@@ -997,6 +997,10 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
         )}
       </div>
 
+      {/* Input */}
+      <div className="px-6 pb-6 pt-4 shrink-0">
+        <ChatInput onSubmit={() => {}} />
+      </div>
     </motion.aside>
   )
 }
@@ -1034,7 +1038,7 @@ export default function SignalsPage() {
         <div
           className="flex-1 overflow-y-auto min-w-0"
           style={{
-            maxWidth: selectedSignal || aiOpen ? 'calc(100% - 548px)' : '100%',
+            maxWidth: selectedSignal || aiOpen ? 'calc(100% - 488px)' : '100%',
             transition: 'max-width 0.25s ease',
           }}
         >
