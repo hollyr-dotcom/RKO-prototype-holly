@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Users } from "lucide-react";
-import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconRocket, IconThumbsUp, IconChatLinesTwo, IconBoard, IconChatTwo, IconInsights } from "@mirohq/design-system-icons";
+import { Bell, Users, ThumbsUp } from "lucide-react";
+import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconRocket, IconChatLinesTwo, IconBoard, IconChatTwo, IconInsights } from "@mirohq/design-system-icons";
 import InsightsTopBar from "@/components/InsightsTopBar";
 import { THEME_CARDS, type ThemeCard, type ThemeTag } from "@/data/themes-data";
 import { ChatInput } from "@/components/toolbar/ChatInput";
@@ -364,7 +364,7 @@ function CheckIcon() {
 }
 
 function ThumbsUpIcon() {
-  return <IconThumbsUp css={{ width: 14, height: 14 }} />;
+  return <ThumbsUp size={14} strokeWidth={1.5} />;
 }
 
 function CommentIcon() {
@@ -386,9 +386,9 @@ function BookmarkIcon() {
 function MoreIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="4" r="1" fill="#656b81" />
-      <circle cx="8" cy="8" r="1" fill="#656b81" />
-      <circle cx="8" cy="12" r="1" fill="#656b81" />
+      <circle cx="8" cy="4" r="1" stroke="#656b81" strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="1" stroke="#656b81" strokeWidth="1.2" />
+      <circle cx="8" cy="12" r="1" stroke="#656b81" strokeWidth="1.2" />
     </svg>
   );
 }
@@ -520,8 +520,8 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
                   <span>{card.meta.confidence}</span>
                   <span className="text-[12px] text-[#656b81]">{card.meta.confidenceDelta}</span>
                 </div>
-                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428]" style={{ backgroundColor: '#e9eaef' }}>
-                  <IconThumbsUp css={{ width: 16, height: 16 }} />
+                <div className="flex items-center gap-1 h-7 px-2 rounded-[24px] text-[14px] text-[#222428] border border-[#e0e2e8]">
+                  <ThumbsUpIcon />
                   <span>{card.meta.likes}</span>
                 </div>
                 {card.meta.comments !== undefined && (
