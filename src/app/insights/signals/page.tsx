@@ -1181,7 +1181,7 @@ export default function SignalsPage() {
       </div>
 
       {/* Floating input bar */}
-      {!aiOpen && (
+      {!aiOpen && !selectedSignal && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20" style={{ width: 560 }}>
           <div
             className="bg-white rounded-full"
