@@ -247,7 +247,7 @@ export default function InsightsOverviewPage() {
           </div>
 
           {/* Charts row */}
-          <div className="grid gap-4 mb-6 grid-cols-1">
+          <div className={`grid gap-4 mb-6 ${aiOpen ? 'grid-cols-1' : 'grid-cols-2'}`}>
             <SentimentChart onOpenChat={(index) => { setAnalysisIndex(index); setAiOpen(true) }} />
             <ThemeMatrix />
           </div>
