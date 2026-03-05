@@ -616,7 +616,7 @@ export default function ThemesPage() {
 
         {/* ── Heading ── */}
         <div className="flex flex-col items-center text-center mb-10">
-          <h1 id="themes-heading" className="text-[60px] font-serif text-[#222428]">Opportunities</h1>
+          <h1 id="themes-heading" className="text-[80px] font-serif text-[#222428] leading-none">Opportunities</h1>
           <p className="text-[20px] text-[#222428]/70 max-w-sm leading-relaxed mt-3">
             Discover emerging trends and potential disruptions, plus important updates
           </p>
