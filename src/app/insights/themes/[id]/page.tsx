@@ -81,7 +81,7 @@ function MoreIcon() {
 function ThumbsUpIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 16 16" style={{ fill: 'none' }}>
-      <path d="M9 1.5C8.5 3.5 7 5 5 6v7h7.5l1.5-6H11V5c0-1-.5-3.5-2-3.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" style={{ fill: 'none' }} />
+      <path d="M9 1.5C8.5 3.5 7 5 5 6v7h7.5l1.5-6H11V5c0-1-.5-3.5-2-3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} />
       <path d="M5 6H2.5A1 1 0 0 0 1.5 7v5a1 1 0 0 0 1 1H5" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" style={{ fill: 'none' }} />
     </svg>
   )
