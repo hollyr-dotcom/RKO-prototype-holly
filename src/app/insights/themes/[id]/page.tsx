@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, Play, Search, SlidersHorizontal, ChevronDown, RotateCcw } from 'lucide-react'
-import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconThumbsUp, IconChatLinesTwo, IconChatTwo } from '@mirohq/design-system-icons'
+import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconChatLinesTwo, IconChatTwo } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
 import { THEME_CARDS, THEME_ANALYSIS, type ThemeCard } from '@/data/themes-data'
 import { ChatInput } from '@/components/toolbar/ChatInput'
@@ -72,14 +72,19 @@ function BookmarkIcon() {
 function MoreIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="4" r="1" fill="currentColor" />
-      <circle cx="8" cy="8" r="1" fill="currentColor" />
-      <circle cx="8" cy="12" r="1" fill="currentColor" />
+      <circle cx="8" cy="4" r="1" stroke="currentColor" strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="1" stroke="currentColor" strokeWidth="1.2" />
+      <circle cx="8" cy="12" r="1" stroke="currentColor" strokeWidth="1.2" />
     </svg>
   )
 }
 function ThumbsUpIcon() {
-  return <IconThumbsUp css={{ width: 14, height: 14 }} />
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <path d="M9 1.5C8.5 3.5 7 5 5 6v7h7.5l1.5-6H11V5c0-1-.5-3.5-2-3.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M5 6H2.5A1 1 0 0 0 1.5 7v5a1 1 0 0 0 1 1H5" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+    </svg>
+  )
 }
 function GiftIcon() {
   return (
