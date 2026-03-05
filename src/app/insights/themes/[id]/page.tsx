@@ -798,7 +798,9 @@ export default function ThemeDetailPage() {
             <div className="flex items-center gap-2 mb-5">
               <h2 className="text-[24px] font-serif text-[#222428]">Featured</h2>
               <span className="text-[14px] text-[#656b81]">{signalCount} signals</span>
-              <span className="text-[14px] text-[#656b81]">7 new</span>
+              <span className="flex items-center gap-1 py-1 px-2.5 rounded-full text-xs text-[#222428]" style={{ backgroundColor: '#BADEB1' }}>
+                <GiftIcon />7 new
+              </span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[#aeb2c0]">
                 <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.2" />
                 <path d="M8 5.5v.5M8 7.5v4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
