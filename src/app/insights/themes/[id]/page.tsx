@@ -537,15 +537,6 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
               </div>
             )}
 
-            {/* Chips */}
-            <div className="rounded-[24px] overflow-hidden py-1.5 mt-auto" style={{ backgroundColor: '#FBFAF7' }}>
-              {SIGNAL_CHIPS.map((chip) => (
-                <button key={chip} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors">
-                  <span className="text-gray-400 flex-shrink-0 leading-[0]"><IconSparksFilled css={{ width: 16, height: 16 }} /></span>
-                  <span className="text-gray-900">{chip}</span>
-                </button>
-              ))}
-            </div>
           </motion.div>
         ) : showAnalysis ? (
           <motion.div
@@ -626,6 +617,20 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Prompt chips — always visible above input */}
+      {selectedSignal && !showAnalysis && (
+        <div className="px-6 pb-2 shrink-0">
+          <div className="rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
+            {SIGNAL_CHIPS.map((chip) => (
+              <button key={chip} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors">
+                <span className="text-gray-400 flex-shrink-0 leading-[0]"><IconSparksFilled css={{ width: 16, height: 16 }} /></span>
+                <span className="text-gray-900">{chip}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Input */}
       <div className="px-6 pb-6 pt-4 shrink-0">
