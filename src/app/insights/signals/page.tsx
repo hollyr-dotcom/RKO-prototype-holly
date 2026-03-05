@@ -1047,7 +1047,7 @@ export default function SignalsPage() {
           {/* ── Heading ── */}
           <div className="flex items-center justify-between mb-[60px]">
             <div>
-              <h1 id="signals-heading" className="text-[60px] font-serif text-[#222428]">Signals</h1>
+              <h1 id="signals-heading" className="text-[80px] font-serif text-[#222428] leading-none">Signals</h1>
             </div>
             <p className="text-[20px] text-[#222428]/70 max-w-sm leading-relaxed text-right">
               Track early indicators and emerging patterns across your product and market.
