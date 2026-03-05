@@ -1172,7 +1172,7 @@ export default function SignalsPage() {
 
         </main>
         </div>
-        {/* Spacer that reserves room for the fixed panel + 60px gap */}
+        {/* Spacer: panel width (472) + right offset (16) + 60px gap = 548 */}
         <div
           style={{
             width: selectedSignal || aiOpen ? 548 : 0,
