@@ -64,25 +64,25 @@ function CopyIcon() {
 }
 function BookmarkIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M4 2h8a1 1 0 011 1v10l-5-3-5 3V3a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+    <svg width="16" height="16" viewBox="0 0 16 16">
+      <path className="fill-none" d="M4 2h8a1 1 0 011 1v10l-5-3-5 3V3a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
     </svg>
   )
 }
 function MoreIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="4" r="1" stroke="currentColor" strokeWidth="1.2" />
-      <circle cx="8" cy="8" r="1" stroke="currentColor" strokeWidth="1.2" />
-      <circle cx="8" cy="12" r="1" stroke="currentColor" strokeWidth="1.2" />
+    <svg width="16" height="16" viewBox="0 0 16 16">
+      <circle cx="8" cy="4" r="1" className="fill-none" stroke="currentColor" strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="1" className="fill-none" stroke="currentColor" strokeWidth="1.2" />
+      <circle cx="8" cy="12" r="1" className="fill-none" stroke="currentColor" strokeWidth="1.2" />
     </svg>
   )
 }
 function ThumbsUpIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-      <path d="M9 1.5C8.5 3.5 7 5 5 6v7h7.5l1.5-6H11V5c0-1-.5-3.5-2-3.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
-      <path d="M5 6H2.5A1 1 0 0 0 1.5 7v5a1 1 0 0 0 1 1H5" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+    <svg width="14" height="14" viewBox="0 0 16 16">
+      <path className="fill-none" d="M9 1.5C8.5 3.5 7 5 5 6v7h7.5l1.5-6H11V5c0-1-.5-3.5-2-3.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+      <path className="fill-none" d="M5 6H2.5A1 1 0 0 0 1.5 7v5a1 1 0 0 0 1 1H5" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
     </svg>
   )
 }
