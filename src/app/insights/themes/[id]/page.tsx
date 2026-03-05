@@ -167,7 +167,7 @@ function FeaturedCard({ card, accent: accentOverride }: { card: typeof FEATURED_
   return (
     <motion.div
       className="w-full h-full rounded-[16px] cursor-pointer"
-      style={{ backgroundColor: accent, padding: '2px 2px 6px 2px' }}
+      style={{ backgroundColor: accent + '66', padding: '2px 2px 6px 2px' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       animate={{ scale: hovered ? 1.02 : 1 }}
