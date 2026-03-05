@@ -156,9 +156,7 @@ function ThemeMatrixPopover({
         </div>
 
         <div className="flex flex-col gap-1">
-          <p
-            className="text-[20px] font-serif text-white leading-[1.4] line-clamp-2"
-          >
+          <p className="text-lg font-heading font-medium text-white leading-snug mb-1 line-clamp-2">
             {card.title}
           </p>
           <p className="text-[13px] text-white leading-[1.4] opacity-70 line-clamp-2">

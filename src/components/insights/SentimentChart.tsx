@@ -123,7 +123,7 @@ function SentimentPopover({
         }}
       >
         <div className="flex flex-col gap-1">
-          <p className="text-[20px] font-serif text-white leading-[1.4]">
+          <p className="text-lg font-heading font-medium text-white leading-snug mb-1">
             {point.insight}
           </p>
         </div>

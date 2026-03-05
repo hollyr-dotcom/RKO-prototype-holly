@@ -490,7 +490,7 @@ function ThemeCardItem({ card, index, aiOpen }: { card: ThemeCard; index: number
         </div>
 
         {/* Title */}
-        <p className="text-[24px] font-serif text-[#222428] leading-snug">
+        <p className="text-lg font-heading font-medium text-gray-900 leading-snug mb-1">
           {card.title}
         </p>
 
