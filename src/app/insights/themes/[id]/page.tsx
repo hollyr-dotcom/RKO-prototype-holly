@@ -772,12 +772,9 @@ export default function ThemeDetailPage() {
           </motion.section>
 
           {/* ── Confidence drivers ── */}
-          <section className="mb-[60px] group">
+          <section className="mb-[60px]">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[24px] font-serif text-[#222428]">Confidence drivers</h2>
-              <button className="opacity-0 group-hover:opacity-100 transition-opacity w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#e7e7e5] text-[#656b81]">
-                <CopyIcon />
-              </button>
             </div>
             <div className="grid grid-cols-4 divide-x divide-[#e0e2e8]">
               {[
