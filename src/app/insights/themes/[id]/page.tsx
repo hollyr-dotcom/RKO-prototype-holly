@@ -1052,6 +1052,17 @@ export default function ThemeDetailPage() {
         </main>
       </div>
 
+      {!aiOpen && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20" style={{ width: 560 }}>
+          <div
+            className="bg-white rounded-full"
+            style={{ padding: 6, boxShadow: '0px 6px 16px 0px rgba(34,36,40,0.12), 0px 0px 8px 0px rgba(34,36,40,0.06)' }}
+          >
+            <ChatInput onSubmit={() => setAiOpen(true)} onOpenChat={() => setAiOpen(true)} onFocusChange={(focused) => { if (focused) setAiOpen(true) }} />
+          </div>
+        </div>
+      )}
+
       <AIPanel
         open={aiOpen}
         onClose={() => { setAiOpen(false); setShowAnalysis(false); setSelectedSignal(null) }}
