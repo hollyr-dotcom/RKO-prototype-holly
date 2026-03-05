@@ -700,7 +700,7 @@ export default function ThemeDetailPage() {
 
       <div
         className="flex-1 overflow-y-auto"
-        style={{ paddingRight: aiOpen ? 488 : 0, transition: 'padding-right 0.25s ease' }}
+        style={{ maxWidth: aiOpen ? 'calc(100% - 488px)' : '100%', transition: 'max-width 0.25s ease' }}
       >
         <main className="px-0 py-[60px] mx-[60px]">
 
@@ -882,7 +882,7 @@ export default function ThemeDetailPage() {
             {/* Signals table */}
             {activeTab === 'signals' && (
               <div className="overflow-x-auto">
-                <div style={{ minWidth: 900 }}>
+                <div>
                   {/* Header */}
                   <div
                     className="grid gap-4 px-5 py-3 border-b border-[#e0e2e8] text-xs font-semibold text-[#656b81] uppercase tracking-wide"
