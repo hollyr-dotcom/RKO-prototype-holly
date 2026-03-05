@@ -614,12 +614,6 @@ function ThemeCardItem({ card, index, aiOpen, onCopy }: { card: ThemeCard; index
               <IconSparksFilled css={{ width: 16, height: 16 }} />
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); onCopy?.(card); }}
-              className="w-8 h-8 flex items-center justify-center rounded-full border border-[#e0e2e8] bg-white text-[#656b81] hover:text-[#222428]"
-            >
-              <Copy size={14} strokeWidth={1.5} />
-            </button>
-            <button
               onClick={(e) => { e.stopPropagation(); }}
               className="w-8 h-8 flex items-center justify-center rounded-full border border-[#e0e2e8] bg-white text-[#656b81] hover:text-[#222428]"
             >
@@ -719,9 +713,6 @@ function ThemeCardItem({ card, index, aiOpen, onCopy }: { card: ThemeCard; index
           )}
           <button className="ml-1 w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#C6DCFF] transition-colors">
             <BookmarkIcon />
-          </button>
-          <button className="ml-auto w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#C6DCFF] transition-colors">
-            <MoreIcon />
           </button>
         </div>
       </div>
