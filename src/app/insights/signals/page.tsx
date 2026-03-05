@@ -981,32 +981,15 @@ export default function SignalsPage() {
       >
         <main className="px-0 py-[60px] mx-[60px]">
 
-          <motion.section
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
-            className="rounded-[24px] p-8 pt-[132px] mb-[60px] relative min-h-[390px] shadow-sm"
-            style={{ backgroundColor: 'white' }}
-            aria-labelledby="signals-heading"
-          >
-
-            <div className="absolute bottom-8 left-8">
-              <div
-                className="flex items-center justify-center flex-shrink-0 overflow-hidden mb-4"
-                style={{ width: 64, height: 64, borderRadius: 20, boxShadow: 'rgba(34,36,40,0.06) 0px 1px 4px', backgroundColor: 'rgba(34,36,40,0.08)' }}
-              >
-                <span className="inline-flex items-center justify-center flex-shrink-0 text-[#222428]" style={{ width: 38, height: 38 }}>
-                  <IconRectanglesThreeOverlap css={{ width: 24, height: 24 }} />
-                </span>
-              </div>
-              <h1 id="signals-heading" className="text-[60px] font-serif text-[#222428] mb-3">
-                Signals
-              </h1>
-              <p className="text-[20px] text-[#222428]/70 max-w-md leading-relaxed">
-                Track early indicators and emerging patterns across your product and market.
-              </p>
+          {/* ── Heading ── */}
+          <div className="flex items-center justify-between mb-[60px]">
+            <div>
+              <h1 id="signals-heading" className="text-[60px] font-serif text-[#222428]">Signals</h1>
             </div>
-          </motion.section>
+            <p className="text-[20px] text-[#222428]/70 max-w-sm leading-relaxed text-right">
+              Track early indicators and emerging patterns across your product and market.
+            </p>
+          </div>
 
           {/* ── Featured ── */}
           <section className="mb-[60px]">
