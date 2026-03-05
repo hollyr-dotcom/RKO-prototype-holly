@@ -327,7 +327,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 40, opacity: 0 }}
       transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
-      className="fixed top-4 right-4 bottom-4 w-[400px] bg-white rounded-[20px] shadow-[0_0_12px_rgba(34,36,40,0.04),-2px_0_8px_rgba(34,36,40,0.12)] flex flex-col overflow-hidden z-30"
+      className="fixed top-4 right-4 bottom-4 w-[472px] bg-white rounded-[20px] shadow-[0_0_12px_rgba(34,36,40,0.04),-2px_0_8px_rgba(34,36,40,0.12)] flex flex-col overflow-hidden z-30"
     >
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-6 bg-white z-10">
@@ -651,7 +651,7 @@ export default function ThemeDetailPage() {
 
       <div
         className="flex-1 overflow-y-auto"
-        style={{ paddingRight: aiOpen ? 400 : 0, transition: 'padding-right 0.25s ease' }}
+        style={{ paddingRight: aiOpen ? 488 : 0, transition: 'padding-right 0.25s ease' }}
       >
         <main className="px-0 py-[60px] mx-[60px]">
 

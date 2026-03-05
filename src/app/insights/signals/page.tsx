@@ -411,7 +411,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 40, opacity: 0 }}
       transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
-      className="fixed top-4 right-4 bottom-4 w-[400px] bg-white rounded-[20px] shadow-[0_2px_10px_rgba(5,0,56,0.08)] flex flex-col overflow-hidden z-30"
+      className="fixed top-4 right-4 bottom-4 w-[472px] bg-white rounded-[20px] shadow-[0_2px_10px_rgba(5,0,56,0.08)] flex flex-col overflow-hidden z-30"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 shrink-0">
@@ -790,7 +790,7 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 40, opacity: 0 }}
       transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
-      className="fixed top-4 right-4 bottom-4 w-[400px] bg-white rounded-[20px] shadow-[0_0_12px_rgba(34,36,40,0.04),-2px_0_8px_rgba(34,36,40,0.12)] flex flex-col overflow-hidden z-30"
+      className="fixed top-4 right-4 bottom-4 w-[472px] bg-white rounded-[20px] shadow-[0_0_12px_rgba(34,36,40,0.04),-2px_0_8px_rgba(34,36,40,0.12)] flex flex-col overflow-hidden z-30"
     >
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-6 border-b border-[#e0e2e8] bg-white z-10">
         <div className="flex items-center gap-3">
@@ -960,7 +960,7 @@ export default function SignalsPage() {
 
       <div
         className="flex-1 overflow-y-auto"
-        style={{ paddingRight: selectedSignal ? 400 : aiOpen ? 400 : 0, transition: 'padding-right 0.25s ease' }}
+        style={{ paddingRight: selectedSignal ? 488 : aiOpen ? 488 : 0, transition: 'padding-right 0.25s ease' }}
       >
         <main className="px-0 py-[60px] mx-[60px]">
 
@@ -1071,7 +1071,7 @@ export default function SignalsPage() {
             </div>
 
               <div className="overflow-hidden">
-                <div className="grid gap-4 px-5 py-3 border-b border-[#e0e2e8] text-xs font-semibold text-[#656b81] uppercase tracking-wide" style={{ gridTemplateColumns: '24px 48px 1fr 1fr 180px 90px 90px 90px' }}>
+                <div className="grid gap-4 px-5 py-3 border-b border-[#e0e2e8] text-xs font-semibold text-[#656b81] uppercase tracking-wide" style={{ gridTemplateColumns: (aiOpen || selectedSignal) ? '24px 48px 1fr 1fr 100px 90px 90px 90px' : '24px 48px 1fr 1fr 180px 90px 90px 90px' }}>
                   <span />
                   <span>Source</span>
                   <span>Title</span>
@@ -1089,7 +1089,7 @@ export default function SignalsPage() {
                     transition={{ duration: 0.25, delay: i * 0.05 }}
                     onClick={() => selectSignal(row)}
                     className={`grid gap-4 px-5 py-3.5 items-center border-b border-[#e0e2e8] last:border-0 hover:bg-[#E7E7E5] transition-colors cursor-pointer ${selectedSignal?.id === row.id ? 'bg-[#E7E7E5]' : ''}`}
-                    style={{ gridTemplateColumns: '24px 48px 1fr 1fr 180px 90px 90px 90px' }}
+                    style={{ gridTemplateColumns: (aiOpen || selectedSignal) ? '24px 48px 1fr 1fr 100px 90px 90px 90px' : '24px 48px 1fr 1fr 180px 90px 90px 90px' }}
                   >
                     <span className="text-xs text-[#aeb2c0]">{row.id}</span>
                     <SourceIconComp type={row.sourceIcon} />
