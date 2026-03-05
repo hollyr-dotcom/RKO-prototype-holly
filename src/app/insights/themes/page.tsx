@@ -622,42 +622,29 @@ export default function ThemesPage() {
           </p>
         </div>
 
-        {/* ── Filter tabs ── */}
-        <div className="flex items-center justify-center gap-2 flex-wrap mb-10">
-          {filters.map((f) => (
-            <CategoryCard
-              key={f.label}
-              label={f.label}
-              count={f.count}
-              active={f.active}
-              onClick={() => toggle(f.label)}
-            />
-          ))}
-        </div>
-
-        {/* ── Section header ── */}
-        <div className="flex items-center justify-between sticky top-0 z-20 pt-4 pb-5" style={{ backgroundColor: '#FBFAF7' }}>
-          <div className="flex items-center gap-2">
-            <h2 className="text-[24px] font-serif text-[#222428]">Results</h2>
-            <InfoIcon />
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#C6DCFF] transition-colors">
-              <SearchIcon />
-            </button>
-            <button className="flex items-center gap-1.5 h-8 px-3 rounded-[24px] border border-[#e0e2e8] text-sm text-[#222428] hover:bg-[#C6DCFF] transition-colors">
-              Relevance
-              <ChevronDownIcon />
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#C6DCFF] transition-colors">
-              <FilterIcon />
-            </button>
-          </div>
-        </div>
-
-        {/* ── Cards ── */}
+        {/* ── Section header + Cards ── */}
         <div className="flex justify-center">
           <div className="flex flex-col gap-8" style={{ width: 712 }}>
+
+            {/* Section header */}
+            <div className="flex items-center justify-between sticky top-0 z-20 pt-4 pb-5" style={{ backgroundColor: '#FBFAF7' }}>
+              <div className="flex items-center gap-2">
+                <h2 className="text-[24px] font-serif text-[#222428]">Results</h2>
+                <InfoIcon />
+              </div>
+              <div className="flex items-center gap-3">
+                <button className="w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#C6DCFF] transition-colors">
+                  <SearchIcon />
+                </button>
+                <button className="flex items-center gap-1.5 h-8 px-3 rounded-[24px] border border-[#e0e2e8] text-sm text-[#222428] hover:bg-[#C6DCFF] transition-colors">
+                  Relevance
+                  <ChevronDownIcon />
+                </button>
+                <button className="w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#C6DCFF] transition-colors">
+                  <FilterIcon />
+                </button>
+              </div>
+            </div>
             {visibleCards.map((card, i) => (
               <ThemeCardItem key={card.id} card={card} index={i} aiOpen={aiOpen} />
             ))}
