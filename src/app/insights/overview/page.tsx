@@ -217,7 +217,7 @@ export default function InsightsOverviewPage() {
               background="#f1fecf"
               description={
                 <>
-                  Improved by visual polish fixes shipped this sprint. New suggestion added{' '}
+                  New suggestion added{' '}
                   <Link href="/insights/themes/9" className="underline text-[#222428] font-medium ">
                     Visual Polish Improvements.
                   </Link>
@@ -231,7 +231,7 @@ export default function InsightsOverviewPage() {
               background="#dce8ff"
               description={
                 <>
-                  Driven by Canvas performance improvements, Zapier web hooks. New theme added{' '}
+                  New theme added{' '}
                   <Link href="/insights/themes/5" className="underline text-[#222428] font-medium ">
                     Canvas Performance
                   </Link>
@@ -251,8 +251,7 @@ export default function InsightsOverviewPage() {
                   </Link>{' '}
                   <Link href="/insights/themes/30" className="underline text-[#222428] font-medium ">
                     Onboarding flow.
-                  </Link>{' '}
-                  Items moved to &ldquo;Next&rdquo; on Roadmap to continue momentum.
+                  </Link>
                 </>
               }
             />
@@ -261,7 +260,7 @@ export default function InsightsOverviewPage() {
               value="-30 secs"
               sub="15m"
               background="#f8d3af"
-              description="Decline led by resolved mobile crash on board entry. Recommended action is to increase monitoring."
+              description="Decline led by resolved mobile crash on board entry."
             />
           </div>
 
