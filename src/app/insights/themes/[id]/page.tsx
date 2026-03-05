@@ -881,50 +881,52 @@ export default function ThemeDetailPage() {
 
             {/* Signals table */}
             {activeTab === 'signals' && (
-              <div className="overflow-hidden">
-                {/* Header */}
-                <div
-                  className="grid gap-4 px-5 py-3 border-b border-[#e0e2e8] text-xs font-semibold text-[#656b81] uppercase tracking-wide"
-                  style={{ gridTemplateColumns: '24px 48px 1fr 1fr 120px 90px 110px' }}
-                >
-                  <span />
-                  <span>Source</span>
-                  <span>Title</span>
-                  <span>Description</span>
-                  <span>Person</span>
-                  <span>Est. revenue</span>
-                  <span>Company</span>
-                </div>
-
-                {DETAIL_SIGNALS.map((row, i) => (
-                  <motion.div
-                    key={row.id}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25, delay: i * 0.04 }}
-                    onClick={() => selectSignal(row)}
-                    className={`grid gap-4 px-5 py-3.5 items-center border-b border-[#e0e2e8] last:border-0 hover:bg-[#E7E7E5] transition-colors cursor-pointer ${selectedSignal?.id === row.id ? 'bg-[#E7E7E5]' : ''}`}
-                    style={{ gridTemplateColumns: '24px 48px 1fr 1fr 120px 90px 110px' }}
+              <div className="overflow-x-auto">
+                <div style={{ minWidth: 900 }}>
+                  {/* Header */}
+                  <div
+                    className="grid gap-4 px-5 py-3 border-b border-[#e0e2e8] text-xs font-semibold text-[#656b81] uppercase tracking-wide"
+                    style={{ gridTemplateColumns: '24px 56px 260px 200px 140px 110px 130px' }}
                   >
-                    <span className="text-xs text-[#aeb2c0]">{row.id}</span>
-                    <SourceIconComp type={row.sourceIcon} />
-                    <p className="text-sm font-semibold text-[#222428] truncate">{row.title}</p>
-                    <p className="text-sm text-[#656b81] truncate">{row.description}</p>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-[#222428] shrink-0" style={{ backgroundColor: row.person.bg }}>
-                        {row.person.initials}
+                    <span />
+                    <span>Source</span>
+                    <span>Title</span>
+                    <span>Description</span>
+                    <span>Person</span>
+                    <span>Est. revenue</span>
+                    <span>Company</span>
+                  </div>
+
+                  {DETAIL_SIGNALS.map((row, i) => (
+                    <motion.div
+                      key={row.id}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25, delay: i * 0.04 }}
+                      onClick={() => selectSignal(row)}
+                      className={`grid gap-4 px-5 py-3.5 items-center border-b border-[#e0e2e8] last:border-0 hover:bg-[#E7E7E5] transition-colors cursor-pointer ${selectedSignal?.id === row.id ? 'bg-[#E7E7E5]' : ''}`}
+                      style={{ gridTemplateColumns: '24px 56px 260px 200px 140px 110px 130px' }}
+                    >
+                      <span className="text-xs text-[#aeb2c0]">{row.id}</span>
+                      <SourceIconComp type={row.sourceIcon} />
+                      <p className="text-sm font-semibold text-[#222428]">{row.title}</p>
+                      <p className="text-sm text-[#656b81]">{row.description}</p>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-[#222428] shrink-0" style={{ backgroundColor: row.person.bg }}>
+                          {row.person.initials}
+                        </div>
+                        <span className="text-sm text-[#656b81]">{row.person.name}</span>
                       </div>
-                      <span className="text-sm text-[#656b81] truncate">{row.person.name}</span>
-                    </div>
-                    <p className="text-sm text-[#656b81]">{row.revenue}</p>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ backgroundColor: row.company.bg }}>
-                        {row.company.letter}
+                      <p className="text-sm text-[#656b81]">{row.revenue}</p>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ backgroundColor: row.company.bg }}>
+                          {row.company.letter}
+                        </div>
+                        <span className="text-sm text-[#656b81]">{row.company.name}</span>
                       </div>
-                      <span className="text-sm text-[#656b81] truncate">{row.company.name}</span>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             )}
 
