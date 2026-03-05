@@ -624,10 +624,10 @@ export default function ThemesPage() {
 
         {/* ── Section header + Cards ── */}
         <div className="flex justify-center">
-          <div className="flex flex-col gap-8" style={{ width: 712 }}>
+          <div className="flex flex-col gap-4" style={{ width: 712 }}>
 
             {/* Section header */}
-            <div className="flex items-center justify-between sticky top-0 z-20 pt-4 pb-5" style={{ backgroundColor: '#FBFAF7' }}>
+            <div className="flex items-center justify-between sticky top-0 z-20 pt-4 pb-2" style={{ backgroundColor: '#FBFAF7' }}>
               <div className="flex items-center gap-2">
                 <h2 className="text-[24px] font-serif text-[#222428]">Results</h2>
                 <InfoIcon />
@@ -645,9 +645,11 @@ export default function ThemesPage() {
                 </button>
               </div>
             </div>
-            {visibleCards.map((card, i) => (
-              <ThemeCardItem key={card.id} card={card} index={i} aiOpen={aiOpen} />
-            ))}
+            <div className="flex flex-col gap-8">
+              {visibleCards.map((card, i) => (
+                <ThemeCardItem key={card.id} card={card} index={i} aiOpen={aiOpen} />
+              ))}
+            </div>
           </div>
         </div>
 
