@@ -193,6 +193,9 @@ function FeaturedCard({ card, accent: accentOverride, onCopy }: { card: typeof F
         <div className="rounded-[12px] overflow-hidden shrink-0" style={{ height: card.type === 'quote' ? 220 : 162 }}>
           {card.type === 'audio' && (
             <div className="h-full to-white flex items-center justify-center" style={{ background: `linear-gradient(to bottom, ${accent}, white)` }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: accent }}>
+                <Play className="w-4 h-4 text-[#222428] fill-[#222428] ml-0.5" />
+              </div>
             </div>
           )}
           {card.type === 'quote' && (
