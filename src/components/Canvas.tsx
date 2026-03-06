@@ -4699,13 +4699,16 @@ export function Canvas() {
           }
           // Place the insight card in the centre
           const id = createShapeId();
-          const hasImage = card.style === 'theme' && !!card.image;
+          const w = 260;
+          const h = card.style === 'theme'
+            ? (card.image ? 340 : 220)
+            : (card.cardType === 'quote' ? 440 : 380);
           editor.createShape({
             id,
             type: INSIGHT_CARD_SHAPE_TYPE,
-            x: -140,
-            y: -160,
-            props: { w: 280, h: hasImage ? 340 : 220, card },
+            x: -(w / 2),
+            y: -(h / 2),
+            props: { w, h, card },
           });
           editor.select(id);
           editor.zoomToSelection({ animation: { duration: 400 } });

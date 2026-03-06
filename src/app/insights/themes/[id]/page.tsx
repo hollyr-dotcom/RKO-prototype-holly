@@ -472,7 +472,8 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                       source: 'source' in copiedCard ? copiedCard.source as string : undefined,
                       date: copiedCard.date,
                     }
-                    localStorage.setItem('pendingInsightCard', JSON.stringify({ style: 'signal', title, description, badge, accent, showPlay: copiedCard.type === 'audio', meta }))
+                    const quote = 'quote' in copiedCard ? copiedCard.quote as string : undefined
+                    localStorage.setItem('pendingInsightCard', JSON.stringify({ style: 'featured', cardType: copiedCard.type, title, description: 'description' in copiedCard ? copiedCard.description as string : undefined, quote, badge, accent, meta }))
                   }}
                   className="self-start h-8 px-4 rounded-[18px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors inline-flex items-center"
                 >

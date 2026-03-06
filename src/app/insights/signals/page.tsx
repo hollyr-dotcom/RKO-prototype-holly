@@ -1043,12 +1043,13 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                         ? copiedSignal.accent as string
                         : CARD_ACCENT[copiedSignal.type] ?? '#f1f2f5'
                       localStorage.setItem('pendingInsightCard', JSON.stringify({
-                        style: 'signal',
+                        style: 'featured',
+                        cardType: copiedSignal.type,
                         title: copiedSignal.title,
-                        description,
+                        description: 'description' in copiedSignal ? copiedSignal.description : undefined,
+                        quote: 'quote' in copiedSignal ? copiedSignal.quote : undefined,
                         badge: 'badge' in copiedSignal ? copiedSignal.badge : undefined,
                         accent,
-                        showPlay: ['audio', 'clips'].includes(copiedSignal.type as string),
                         meta: {
                           person: 'person' in copiedSignal ? copiedSignal.person : undefined,
                           company: 'company' in copiedSignal ? copiedSignal.company : undefined,
