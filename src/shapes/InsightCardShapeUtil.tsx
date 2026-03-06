@@ -178,15 +178,9 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
                 display: "flex", alignItems: "center", justifyContent: "center",
                 flexShrink: 0,
               }}>
-                {/* CSS play triangle */}
-                <div style={{
-                  marginLeft: 3,
-                  width: 0,
-                  height: 0,
-                  borderTop: "7px solid transparent",
-                  borderBottom: "7px solid transparent",
-                  borderLeft: "12px solid #222428",
-                }} />
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="#222428">
+                  <path d="M4 2 L14 8 L4 14 Z" />
+                </svg>
               </div>
             )}
             {isQuote && card.quote && (
