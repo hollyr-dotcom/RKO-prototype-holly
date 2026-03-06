@@ -960,6 +960,41 @@ export function Canvas() {
   editorRefForCursor.current = editor;
   const aiCursor = useAICursor(editorRefForCursor);
 
+  // ── Place card from Insights panel once Liveblocks is synced ──
+  // Must run AFTER Liveblocks initializes (store.clear + store.put) so our shapes aren't wiped.
+  useEffect(() => {
+    if (!editor || storeWithStatus.status !== 'synced-remote') return;
+    try {
+      const pending = localStorage.getItem('pendingInsightCard');
+      if (!pending) return;
+      localStorage.removeItem('pendingInsightCard');
+      const payload = JSON.parse(pending) as InsightCardData & { relatedRows?: InsightTableData['rows'] };
+      const card: InsightCardData = payload;
+      // Clear all existing shapes from the board
+      const existing = editor.getCurrentPageShapes();
+      if (existing.length > 0) editor.deleteShapes(existing.map((s) => s.id));
+      const cardW = 260;
+      const cardH = card.style === 'theme'
+        ? (card.image ? 340 : 220)
+        : (card.cardType === 'quote' ? 440 : 380);
+      const gap = 24;
+      const tableW = 740;
+      const rowCount = (payload.relatedRows ?? []).length;
+      const tableH = 42 + 32 + 44 + rowCount * 92;
+      const totalW = cardW + gap + tableW;
+      const cardId = createShapeId();
+      editor.createShape({ id: cardId, type: INSIGHT_CARD_SHAPE_TYPE, x: -(totalW / 2), y: -(cardH / 2), props: { w: cardW, h: cardH, card } });
+      const table: InsightTableData = { heading: card.style === 'theme' ? 'Related themes' : 'Related signals', rows: payload.relatedRows ?? [] };
+      const tableId = createShapeId();
+      editor.createShape({ id: tableId, type: INSIGHT_TABLE_SHAPE_TYPE, x: -(totalW / 2) + cardW + gap, y: -(cardH / 2), props: { w: tableW, h: tableH, table } });
+      editor.selectAll();
+      editor.zoomToSelection({ animation: { duration: 400 } });
+    } catch (e) {
+      // Ignore — best-effort
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor, storeWithStatus.status]);
+
   // Camera tracking — follows AI cursor across the canvas
   const cameraTracker = useCameraTracking({
     editor,
@@ -4685,61 +4720,6 @@ export function Canvas() {
         // Ignore — migration is best-effort
       }
     }, 3000);
-
-    // ── Place card from Insights panel if one was queued ──
-    try {
-      const pending = localStorage.getItem('pendingInsightCard');
-      if (pending) {
-        localStorage.removeItem('pendingInsightCard');
-        const payload = JSON.parse(pending) as InsightCardData & { relatedRows?: InsightTableData['rows'] };
-        const card: InsightCardData = payload;
-        setTimeout(() => {
-          // Clear all existing shapes from the board
-          const existing = editor.getCurrentPageShapes();
-          if (existing.length > 0) {
-            editor.deleteShapes(existing.map((s) => s.id));
-          }
-          const cardW = 260;
-          const cardH = card.style === 'theme'
-            ? (card.image ? 340 : 220)
-            : (card.cardType === 'quote' ? 440 : 380);
-          const gap = 24;
-          const tableW = 740;
-          const rowCount = (payload.relatedRows ?? []).length;
-          const tableH = 42 + 32 + 44 + rowCount * 92; // floating title + toolbar + header + rows
-          const totalW = cardW + gap + tableW;
-
-          // Place card on the left
-          const cardId = createShapeId();
-          editor.createShape({
-            id: cardId,
-            type: INSIGHT_CARD_SHAPE_TYPE,
-            x: -(totalW / 2),
-            y: -(cardH / 2),
-            props: { w: cardW, h: cardH, card },
-          });
-
-          // Place table to the right
-          const tableId = createShapeId();
-          const table: InsightTableData = {
-            heading: card.style === 'theme' ? 'Related themes' : 'Related signals',
-            rows: payload.relatedRows ?? [],
-          };
-          editor.createShape({
-            id: tableId,
-            type: INSIGHT_TABLE_SHAPE_TYPE,
-            x: -(totalW / 2) + cardW + gap,
-            y: -(cardH / 2), // align table box top with card top (title floats above)
-            props: { w: tableW, h: tableH, table },
-          });
-
-          editor.selectAll();
-          editor.zoomToSelection({ animation: { duration: 400 } });
-        }, 600);
-      }
-    } catch (e) {
-      // Ignore — best-effort
-    }
 
     // ── Recompute connector-line paths when connected shapes move ──
     editor.sideEffects.registerAfterChangeHandler('shape', (_prev, next) => {

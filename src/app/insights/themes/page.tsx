@@ -267,7 +267,6 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                       const accent = TAG_BG[firstTag ?? ''] ?? '#f1f2f5'
                       const relatedRows = THEME_CARDS
                         .filter(c => c.id !== copiedThemeCard.id)
-                        .slice(0, 5)
                         .map(c => ({
                           title: c.title,
                           description: c.description,
