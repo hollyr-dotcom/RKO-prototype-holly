@@ -3462,15 +3462,15 @@ export function Canvas() {
             editor.updateShape({
               id: fromShape.id,
               type: fromShape.type,
-              meta: { ...fromShape.meta, isConnected: true },
-            });
+              meta: { ...(fromShape.meta as Record<string, unknown>), isConnected: true },
+            } as any);
           }
           if (toShape) {
             editor.updateShape({
               id: toShape.id,
               type: toShape.type,
-              meta: { ...toShape.meta, isConnected: true },
-            });
+              meta: { ...(toShape.meta as Record<string, unknown>), isConnected: true },
+            } as any);
           }
         };
 
