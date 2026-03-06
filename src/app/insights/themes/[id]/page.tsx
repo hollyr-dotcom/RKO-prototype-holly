@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, Play, Search, SlidersHorizontal, ChevronDown, RotateCcw, ThumbsUp, MoreVertical } from 'lucide-react'
 import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconChatLinesTwo, IconChatTwo } from '@mirohq/design-system-icons'
@@ -453,11 +453,8 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                   )
                 })()}
 
-                <a
-                  href="/space/space-insights/canvas/canvas-insights-untitled"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => {
+                <button
+                  onClick={async () => {
                     const title = copiedCard.title
                     const description = ('description' in copiedCard && copiedCard.description)
                       ? copiedCard.description as string
@@ -484,11 +481,22 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                         date: c.date,
                       }))
                     localStorage.setItem('pendingInsightCard', JSON.stringify({ style: 'featured', cardType: copiedCard.type, title, description: 'description' in copiedCard ? copiedCard.description as string : undefined, quote, badge, accent, meta, relatedRows, tableHeading: theme.title }))
+                    try {
+                      const res = await fetch('/api/canvases', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: theme.title, spaceId: 'space-insights' }),
+                      })
+                      const canvas = await res.json()
+                      router.push(`/space/space-insights/canvas/${canvas.id}`)
+                    } catch {
+                      router.push('/space/space-insights/canvas/canvas-insights-untitled')
+                    }
                   }}
                   className="self-start h-8 px-4 rounded-[18px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors inline-flex items-center"
                 >
                   Open in Canvas
-                </a>
+                </button>
 
               </div>
             </div>
@@ -807,6 +815,7 @@ function deriveStats(card: ThemeCard) {
 
 export default function ThemeDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const [aiOpen, setAiOpen] = useState(true)
   const [selectedSignal, setSelectedSignal] = useState<typeof DETAIL_SIGNALS[0] | null>(null)
   const [copiedCard, setCopiedCard] = useState<typeof FEATURED_CARDS[0] | null>(null)

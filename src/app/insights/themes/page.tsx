@@ -257,39 +257,46 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                   </div>
                 </motion.div>
                 {/* Open in Canvas button */}
-                <motion.a
-                  href="/space/space-insights/canvas/canvas-insights-untitled"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => {
-                    if (copiedThemeCard) {
-                      const firstTag = copiedThemeCard.tags?.[0]?.label
-                      const accent = TAG_BG[firstTag ?? ''] ?? '#f1f2f5'
-                      const relatedRows = THEME_SIGNALS.map(c => ({
-                          title: c.title,
-                          description: (c as any).description ?? (c as any).quote ?? undefined,
-                          source: c.source,
-                          type: c.type,
-                          company: 'company' in c ? c.company as string : undefined,
-                          date: c.date,
-                        }))
-                      localStorage.setItem('pendingInsightCard', JSON.stringify({
-                        style: 'theme',
-                        title: copiedThemeCard.title,
-                        description: copiedThemeCard.description,
-                        tags: copiedThemeCard.tags,
-                        image: copiedThemeCard.image,
-                        accent,
-                        meta: {
-                          arr: copiedThemeCard.meta?.arr,
-                          confidence: copiedThemeCard.meta?.confidence,
-                          confidenceDelta: copiedThemeCard.meta?.confidenceDelta,
-                          likes: copiedThemeCard.meta?.likes,
-                          comments: copiedThemeCard.meta?.comments,
-                        },
-                        relatedRows,
-                        tableHeading: copiedThemeCard.title,
-                      }))
+                <motion.button
+                  onClick={async () => {
+                    if (!copiedThemeCard) return
+                    const firstTag = copiedThemeCard.tags?.[0]?.label
+                    const accent = TAG_BG[firstTag ?? ''] ?? '#f1f2f5'
+                    const relatedRows = THEME_SIGNALS.map(c => ({
+                      title: c.title,
+                      description: (c as any).description ?? (c as any).quote ?? undefined,
+                      source: c.source,
+                      type: c.type,
+                      company: 'company' in c ? c.company as string : undefined,
+                      date: c.date,
+                    }))
+                    localStorage.setItem('pendingInsightCard', JSON.stringify({
+                      style: 'theme',
+                      title: copiedThemeCard.title,
+                      description: copiedThemeCard.description,
+                      tags: copiedThemeCard.tags,
+                      image: copiedThemeCard.image,
+                      accent,
+                      meta: {
+                        arr: copiedThemeCard.meta?.arr,
+                        confidence: copiedThemeCard.meta?.confidence,
+                        confidenceDelta: copiedThemeCard.meta?.confidenceDelta,
+                        likes: copiedThemeCard.meta?.likes,
+                        comments: copiedThemeCard.meta?.comments,
+                      },
+                      relatedRows,
+                      tableHeading: copiedThemeCard.title,
+                    }))
+                    try {
+                      const res = await fetch('/api/canvases', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: copiedThemeCard.title, spaceId: 'space-insights' }),
+                      })
+                      const canvas = await res.json()
+                      router.push(`/space/space-insights/canvas/${canvas.id}`)
+                    } catch {
+                      router.push('/space/space-insights/canvas/canvas-insights-untitled')
                     }
                   }}
                   className="self-start h-8 px-4 rounded-[18px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors inline-flex items-center"
@@ -298,7 +305,7 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                   transition={{ duration: 0.3, delay: 0.45, ease: [0.2, 0, 0, 1] }}
                 >
                   Open in Canvas
-                </motion.a>
+                </motion.button>
               </div>
             </motion.div>
           </div>
