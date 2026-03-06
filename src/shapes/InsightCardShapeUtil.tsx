@@ -170,7 +170,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
     return (
       <HTMLContainer id={shape.id} style={{
         width: w, borderRadius: 16,
-        backgroundColor: accent + "66",
+        backgroundColor: accent,
         padding: "2px 2px 6px 2px",
         boxSizing: "border-box",
         fontFamily: "sans-serif",
@@ -187,7 +187,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
           {/* Gradient media area — matches the page exactly */}
           <div style={{
             borderRadius: 12, overflow: "hidden", flexShrink: 0, height: mediaH,
-            background: `linear-gradient(to bottom, ${accent}, ${accent}22)`,
+            background: `linear-gradient(to bottom, ${accent}, white)`,
             display: "flex", flexDirection: "column",
             alignItems: "center", justifyContent: "center",
             gap: 10, padding: "16px 20px", boxSizing: "border-box",
