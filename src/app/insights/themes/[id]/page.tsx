@@ -192,15 +192,7 @@ function FeaturedCard({ card, accent: accentOverride, onCopy }: { card: typeof F
         </AnimatePresence>
         <div className="rounded-[12px] overflow-hidden shrink-0" style={{ height: card.type === 'quote' ? 220 : 162 }}>
           {card.type === 'audio' && (
-            <div className="h-full to-white flex items-center justify-center gap-2" style={{ background: `linear-gradient(to bottom, ${accent}, white)` }}>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[#222428]" style={{ backgroundColor: accent }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
-                </svg>
-              </div>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: accent }}>
-                <Play className="w-4 h-4 text-[#222428] fill-[#222428] ml-0.5" />
-              </div>
+            <div className="h-full to-white flex items-center justify-center" style={{ background: `linear-gradient(to bottom, ${accent}, white)` }}>
             </div>
           )}
           {card.type === 'quote' && (
