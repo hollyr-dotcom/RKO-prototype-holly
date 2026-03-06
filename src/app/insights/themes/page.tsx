@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Users, ThumbsUp, Copy } from "lucide-react";
+import { Bell, Users, ThumbsUp, Copy, MoreVertical } from "lucide-react";
 import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconRocket, IconChatLinesTwo, IconBoard, IconChatTwo, IconInsights } from "@mirohq/design-system-icons";
 import InsightsTopBar from "@/components/InsightsTopBar";
 import { THEME_CARDS, THEME_SIGNALS, type ThemeCard, type ThemeTag } from "@/data/themes-data";
@@ -209,11 +209,18 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
               <div className="flex-1 flex flex-col gap-3">
                 {/* Mini card */}
                 <motion.div
-                  className="rounded-[16px] border border-[#e0e2e8] bg-white overflow-hidden"
+                  className="rounded-[18px] relative"
+                  style={{ backgroundColor: (TAG_BG[copiedThemeCard.tags[0]?.label] ?? '#E7E7E5') + '99', padding: '3px 3px 6px 3px' }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: 0.3, ease: [0.2, 0, 0, 1] }}
                 >
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                    <button className="w-6 h-6 flex items-center justify-center rounded-full text-[#aeb2c0] hover:text-[#656b81] transition-colors">
+                      <MoreVertical size={14} strokeWidth={1.5} />
+                    </button>
+                  </div>
+                  <div className="rounded-[14px] bg-white overflow-hidden">
                   {copiedThemeCard.image && (
                     <div className="w-full h-[120px] overflow-hidden bg-[#C6DCFF]">
                       <img src={copiedThemeCard.image} alt="" className="w-full h-full object-cover" />
@@ -255,6 +262,7 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                         </span>
                       )}
                     </div>
+                  </div>
                   </div>
                 </motion.div>
                 {/* Open in Canvas button */}
@@ -641,7 +649,8 @@ function ThemeCardItem({ card, index, aiOpen, onCopy }: { card: ThemeCard; index
       onClick={navigateToDetail}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative rounded-[24px] border border-neutral-200 bg-white cursor-pointer"
+      className="relative rounded-[26px] cursor-pointer"
+      style={{ backgroundColor: (TAG_BG[card.tags[0]?.label] ?? '#E7E7E5') + '99', padding: '3px 3px 6px 3px' }}
     >
       <AnimatePresence>
         {hovered && (
@@ -662,7 +671,7 @@ function ThemeCardItem({ card, index, aiOpen, onCopy }: { card: ThemeCard; index
           </motion.div>
         )}
       </AnimatePresence>
-      <div className="rounded-[24px] p-6 flex gap-4 h-full">
+      <div className="rounded-[24px] bg-white p-6 flex gap-4 h-full">
       {/* Thumbnail */}
       {card.image && (
         <div className="w-[120px] h-[120px] rounded-[24px] overflow-hidden shrink-0 bg-[#C6DCFF]">

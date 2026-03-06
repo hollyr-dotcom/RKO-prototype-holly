@@ -580,7 +580,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 
             {/* Confidence drivers */}
             <div className="flex flex-col gap-2 mt-3">
-              <h3 className="text-[20px] font-serif text-[#222428]">Confidence drivers</h3>
+              <h3 className="text-[20px] font-serif text-[#222428] py-3">Confidence drivers</h3>
               <div className="grid grid-cols-2">
                 {[
                   { value: mentions, label: 'Total Mentions' },
@@ -993,19 +993,22 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                 </span>
               </div>
               <div className="flex-1 flex flex-col gap-3">
+                {(() => {
+                  const cardAccent = ('accent' in copiedSignal && copiedSignal.accent) ? copiedSignal.accent as string : CARD_ACCENT[copiedSignal.type];
+                  return (
                 <motion.div
                   className="rounded-[16px] overflow-hidden"
-                  style={{ backgroundColor: ('accent' in copiedSignal && copiedSignal.accent) ? copiedSignal.accent as string : CARD_ACCENT[copiedSignal.type], padding: '2px 2px 6px 2px' }}
+                  style={{ backgroundColor: cardAccent + '99', padding: '3px 3px 6px 3px' }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: 0.3, ease: [0.2, 0, 0, 1] }}
                 >
-                  <div className="relative bg-white rounded-[14px] p-4 flex flex-col gap-2.5">
+                  <div className="relative bg-white rounded-[14px] p-4 flex flex-col gap-2.5 border border-[#e0e2e8]">
                     <div className="absolute top-3 right-3 flex items-center gap-1.5">
                       <button className="w-6 h-6 flex items-center justify-center rounded-full text-[#aeb2c0] hover:text-[#656b81] transition-colors">
                         <MoreVertical size={14} strokeWidth={1.5} />
                       </button>
-                      <button className="w-7 h-7 flex items-center justify-center rounded-full bg-[#BADEB1]">
+                      <button className="w-7 h-7 flex items-center justify-center rounded-full" style={{ backgroundColor: cardAccent }}>
                         <Play size={12} strokeWidth={2} className="text-[#222428] fill-[#222428] ml-0.5" />
                       </button>
                     </div>
@@ -1031,6 +1034,8 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                     </div>
                   </div>
                 </motion.div>
+                  );
+                })()}
                 <motion.button
                   onClick={async () => {
                     if (!copiedSignal) return

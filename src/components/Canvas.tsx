@@ -4267,7 +4267,7 @@ export function Canvas() {
             type: shapeToMove.type,
             x,
             y,
-          });
+          } as any);
         }
       }
 
