@@ -1036,6 +1036,26 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                 >
                   Open in Board
                 </motion.a>
+                <motion.div
+                  className="-mx-4 rounded-[24px] overflow-hidden py-1.5"
+                  style={{ backgroundColor: '#FBFAF7' }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.7, ease: [0.2, 0, 0, 1] }}
+                >
+                  {['Show related opportunities', 'Summarize key themes from this signal', 'Find similar signals from last quarter'].map((chip) => (
+                    <button
+                      key={chip}
+                      onClick={() => setActivePrompt(chip)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="text-gray-400 flex-shrink-0">
+                        <IconSparksFilled css={{ width: 16, height: 16 }} />
+                      </span>
+                      <span className="text-gray-900">{chip}</span>
+                    </button>
+                  ))}
+                </motion.div>
               </div>
             </motion.div>
           </div>
