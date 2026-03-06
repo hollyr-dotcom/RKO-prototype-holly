@@ -973,10 +973,10 @@ export function Canvas() {
       // Clear all existing shapes from the board
       const existing = editor.getCurrentPageShapes();
       if (existing.length > 0) editor.deleteShapes(existing.map((s) => s.id));
-      const cardW = 260;
+      const cardW = 280;
       const cardH = card.style === 'theme'
         ? (card.image ? 340 : 220)
-        : (card.cardType === 'quote' ? 440 : 380);
+        : (card.cardType === 'quote' ? 320 : 300);
       const gap = 24;
       const tableW = 740;
       const rowCount = (payload.relatedRows ?? []).length;
