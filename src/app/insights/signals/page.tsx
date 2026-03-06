@@ -306,7 +306,7 @@ const CARD_ACCENT: Record<string, string> = {
 
 }
 
-function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
+function FeaturedCard({ card, onAiStar }: { card: typeof FEATURED_CARDS[0]; onAiStar?: (card: typeof FEATURED_CARDS[0]) => void }) {
   const accent = ('accent' in card && card.accent) ? card.accent as string : CARD_ACCENT[card.type]
   const [hovered, setHovered] = useState(false)
 
@@ -339,7 +339,10 @@ function FeaturedCard({ card }: { card: typeof FEATURED_CARDS[0] }) {
               )}
             </div>
           )}
-          <button className="absolute top-2 right-2 w-6 h-6 rounded-[6px] bg-white/80 flex items-center justify-center text-[#656b81] hover:bg-white transition-colors">
+          <button
+            onClick={(e) => { e.stopPropagation(); onAiStar?.(card); }}
+            className="absolute top-2 right-2 w-6 h-6 rounded-[6px] bg-white/80 flex items-center justify-center text-[#656b81] hover:bg-white transition-colors"
+          >
             <IconSparksFilled css={{ width: 14, height: 14 }} />
           </button>
         </div>
@@ -928,7 +931,7 @@ const PROMPT_RESPONSES: Record<string, { response: string; followUps: string[] }
   },
 }
 
-function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean; onClose: () => void; copiedSignal?: typeof FEATURED_CARDS[0] | null; onClearCopied?: () => void }) {
   const [activePrompt, setActivePrompt] = useState<string | null>(null)
 
   if (!open) return null
@@ -961,7 +964,70 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
         </button>
       </div>
 
-      <div className={`flex-1 overflow-y-auto flex flex-col px-6 pb-0 pt-24 ${activePrompt ? '' : 'justify-end'}`}>
+      <div className={`flex-1 overflow-y-auto flex flex-col px-6 pb-0 pt-24 ${activePrompt || copiedSignal ? '' : 'justify-end'}`}>
+        {copiedSignal && !activePrompt ? (
+          <div className="flex flex-col gap-6 px-4 pb-4">
+            <motion.div
+              className="flex justify-end"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
+            >
+              <div className="max-w-[80%] bg-[#f1f2f5] rounded-[12px] px-4 py-3">
+                <p className="text-[14px] text-[#222428]">Copied from Signals</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="flex items-start gap-3"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.2, ease: [0.2, 0, 0, 1] }}
+            >
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#E7E7E5' }}>
+                <span className="text-[#222428] leading-[0] flex items-center justify-center">
+                  <IconSparksFilled css={{ width: 14, height: 14 }} />
+                </span>
+              </div>
+              <div className="flex-1 flex flex-col gap-3">
+                <motion.div
+                  className="rounded-[16px] border border-[#e0e2e8] bg-white overflow-hidden"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.3, ease: [0.2, 0, 0, 1] }}
+                >
+                  <div className="p-4 flex flex-col gap-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-2.5 py-1 rounded-full text-xs text-[#222428] bg-[#f1f2f5]">{copiedSignal.source}</span>
+                      <span className="px-2.5 py-1 rounded-full text-xs text-[#222428] bg-[#f1f2f5]">{copiedSignal.date}</span>
+                    </div>
+                    <p className="text-[15px] font-heading font-medium text-[#222428] leading-snug">{copiedSignal.title}</p>
+                    {'description' in copiedSignal && copiedSignal.description && (
+                      <p className="text-[13px] text-[#656b81] leading-[1.5] line-clamp-2">{copiedSignal.description}</p>
+                    )}
+                    {'quote' in copiedSignal && copiedSignal.quote && (
+                      <p className="text-[13px] text-[#656b81] leading-[1.5] italic line-clamp-3">{copiedSignal.quote}</p>
+                    )}
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <span className="h-6 px-2 rounded-[24px] text-[12px] text-[#222428] bg-white border border-[#e0e2e8] flex items-center">{copiedSignal.person}</span>
+                      {'company' in copiedSignal && copiedSignal.company && (
+                        <span className="h-6 px-2 rounded-[24px] text-[12px] text-[#222428] bg-white border border-[#e0e2e8] flex items-center">{copiedSignal.company}</span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+                <motion.p
+                  className="text-[14px] text-[#222428] leading-[1.6]"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.5, ease: [0.2, 0, 0, 1] }}
+                >
+                  Here&apos;s a summary of <strong>{copiedSignal.title}</strong>. How would you like to explore this signal further?
+                </motion.p>
+              </div>
+            </motion.div>
+          </div>
+        ) : null}
         {activePrompt && promptData ? (
           <AnimatePresence mode="wait">
             <motion.div key={activePrompt} className="flex flex-col gap-6 px-4 pb-4">
@@ -1083,10 +1149,12 @@ function AIPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
 export default function SignalsPage() {
   const [aiOpen, setAiOpen] = useState(false)
   const [selectedSignal, setSelectedSignal] = useState<typeof SIGNAL_ROWS[0] | null>(null)
+  const [copiedSignal, setCopiedSignal] = useState<typeof FEATURED_CARDS[0] | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [direction, setDirection] = useState(1)
   const openAiPanel = () => { setAiOpen(true); setSelectedSignal(null) }
   const selectSignal = (row: typeof SIGNAL_ROWS[0]) => { setSelectedSignal(row); setAiOpen(false) }
+  const handleAiStar = (card: typeof FEATURED_CARDS[0]) => { setCopiedSignal(card); setAiOpen(true); setSelectedSignal(null) }
 
   const cardsPerPage = (aiOpen || selectedSignal) ? 2 : 3
   const totalPages = Math.ceil(FEATURED_CARDS.length / cardsPerPage)
@@ -1159,7 +1227,7 @@ export default function SignalsPage() {
                     className={`grid gap-[22px] pb-1 ${(aiOpen || selectedSignal) ? 'grid-cols-2' : 'grid-cols-3'}`}
                   >
                     {pages[safePage].map((card) => (
-                      <FeaturedCard key={card.id} card={card} />
+                      <FeaturedCard key={card.id} card={card} onAiStar={handleAiStar} />
                     ))}
                   </motion.div>
                 </AnimatePresence>
@@ -1269,7 +1337,7 @@ export default function SignalsPage() {
         </div>
       )}
 
-      <AIPanel open={aiOpen} onClose={() => setAiOpen(false)} />
+      <AIPanel open={aiOpen} onClose={() => { setAiOpen(false); setCopiedSignal(null); }} copiedSignal={copiedSignal} onClearCopied={() => setCopiedSignal(null)} />
 
       <AnimatePresence>
         {selectedSignal && (
