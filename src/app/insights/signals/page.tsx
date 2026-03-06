@@ -633,37 +633,39 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
         )}
 
         {/* Feedback tab */}
-        {activeTab === 'feedback' && (
+        {activeTab === 'feedback' && (() => {
+          const feedbackItems = [
+            {
+              type: 'Request' as const,
+              tagColor: '#BADEB1',
+              platforms: ['mobile', 'apple'],
+              text: `Users are reporting that ${signal.title.toLowerCase()} is creating friction in their workflow. This is making it difficult to complete key tasks efficiently, and engagement may decline as a result.`,
+              author: 'Kajsa Bell, CPO',
+              date: 'Added 1 month ago',
+              stars: null,
+            },
+            {
+              type: 'Problem' as const,
+              tagColor: '#FFD8F4',
+              platforms: ['mobile', 'apple'],
+              text: `"The overall experience feels slow and unresponsive when this issue occurs. Each attempt is followed by a noticeable delay, creating the impression that the system is overprocessing before responding."`,
+              author: 'Marco Rossi, PM',
+              date: 'Added 1 month ago',
+              stars: 2,
+            },
+            {
+              type: 'Praise' as const,
+              tagColor: '#DEDAFF',
+              platforms: ['mobile'],
+              text: `When it works well, the experience is seamless. Users appreciate the speed and reliability when ${signal.theme.toLowerCase()} is functioning as expected.`,
+              author: 'Priya Nair, Designer',
+              date: 'Added 2 months ago',
+              stars: null,
+            },
+          ];
+          return (
           <div className="flex flex-col gap-8">
-            {[
-              {
-                type: 'Request' as const,
-                tagColor: '#BADEB1',
-                platforms: ['mobile', 'apple'],
-                text: `Users are reporting that ${signal.title.toLowerCase()} is creating friction in their workflow. This is making it difficult to complete key tasks efficiently, and engagement may decline as a result.`,
-                author: 'Kajsa Bell, CPO',
-                date: 'Added 1 month ago',
-                stars: null,
-              },
-              {
-                type: 'Problem' as const,
-                tagColor: '#FFD8F4',
-                platforms: ['mobile', 'apple'],
-                text: `"The overall experience feels slow and unresponsive when this issue occurs. Each attempt is followed by a noticeable delay, creating the impression that the system is overprocessing before responding."`,
-                author: 'Marco Rossi, PM',
-                date: 'Added 1 month ago',
-                stars: 2,
-              },
-              {
-                type: 'Praise' as const,
-                tagColor: '#DEDAFF',
-                platforms: ['mobile'],
-                text: `When it works well, the experience is seamless. Users appreciate the speed and reliability when ${signal.theme.toLowerCase()} is functioning as expected.`,
-                author: 'Priya Nair, Designer',
-                date: 'Added 2 months ago',
-                stars: null,
-              },
-            ].map((item, i) => (
+            {feedbackItems.map((item, i) => (
               <motion.div layout key={i} className="rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
                 onMouseEnter={() => setHoveredFeedback(i)}
                 onMouseLeave={() => setHoveredFeedback(null)}
@@ -677,10 +679,39 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                     </span>
                   </div>
                   <div className={`flex items-center gap-1 transition-opacity duration-150 ${hoveredFeedback === i ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    <button className="w-6 h-6 flex items-center justify-center text-[#aeb2c0] hover:text-[#656b81] transition-colors">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                        <path fill="currentColor" d="M10 7H5a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-5h2v5a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3h5v2Zm11.992-3.876-1 8-1.984-.248.637-5.108-7.938 7.939-1.414-1.414 7.94-7.94-5.109.64-.248-1.985 8-1 1.116 1.116Z" />
-                      </svg>
+                    <button
+                      onClick={async () => {
+                        const canvasName = `${signal.title} · ${item.type}`;
+                        const relatedRows = feedbackItems.map(f => ({
+                          title: f.author,
+                          description: f.text,
+                          source: f.type,
+                          type: 'quote' as const,
+                        }));
+                        localStorage.setItem('pendingInsightCard', JSON.stringify({
+                          style: 'featured',
+                          cardType: 'quote',
+                          title: item.author,
+                          quote: item.text,
+                          badge: item.type,
+                          accent: item.tagColor,
+                          meta: { person: item.author, date: item.date },
+                          relatedRows,
+                          tableHeading: signal.title,
+                        }));
+                        try {
+                          const spaceRes = await fetch('/api/spaces/space-insights');
+                          const spaceData = spaceRes.ok ? await spaceRes.json() : null;
+                          const existing = (spaceData?.canvases ?? []).find((c: { name: string }) => c.name === canvasName);
+                          if (existing) { router.push(`/space/space-insights/canvas/${existing.id}`); return; }
+                          const res = await fetch('/api/canvases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: canvasName, spaceId: 'space-insights' }) });
+                          const canvas = await res.json();
+                          router.push(`/space/space-insights/canvas/${canvas.id}`);
+                        } catch {}
+                      }}
+                      className="h-7 px-3 rounded-full text-xs font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#f1f2f5] transition-colors whitespace-nowrap"
+                    >
+                      Add to board
                     </button>
                     <button className="text-[#aeb2c0] hover:text-[#656b81] transition-colors">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -745,7 +776,8 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
               </motion.div>
             ))}
           </div>
-        )}
+          );
+        })()}
 
         {/* Details tab */}
         {activeTab === 'details' && (
