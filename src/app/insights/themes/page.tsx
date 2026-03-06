@@ -228,7 +228,7 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                   )}
                   <div className="p-4 flex flex-col gap-2.5">
                     {/* Tags */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-1.5 flex-wrap pb-4">
                       {copiedThemeCard.tags.map((tag) => (
                         <span
                           key={tag.label}
