@@ -454,12 +454,29 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                 })()}
 
                 <a
-                  href="https://replit.com/t/miro/repls/TEMPLATE-Miro-AI-First-canvas"
+                  href="/space/space-roadmaps/canvas/canvas-roadmaps-01"
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => {
+                    const title = copiedCard.title
+                    const description = ('description' in copiedCard && copiedCard.description)
+                      ? copiedCard.description as string
+                      : ('quote' in copiedCard && copiedCard.quote)
+                      ? copiedCard.quote as string
+                      : undefined
+                    const badge = 'badge' in copiedCard ? copiedCard.badge as string : copiedCard.type
+                    const accent = TAG_COLORS[theme.tags[0]?.label] ?? CARD_ACCENT.audio
+                    const meta = {
+                      person: 'person' in copiedCard ? copiedCard.person as string : undefined,
+                      company: 'company' in copiedCard ? copiedCard.company as string : undefined,
+                      source: 'source' in copiedCard ? copiedCard.source as string : undefined,
+                      date: copiedCard.date,
+                    }
+                    localStorage.setItem('pendingInsightCard', JSON.stringify({ title, description, badge, accent, meta }))
+                  }}
                   className="self-start h-8 px-4 rounded-[18px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors inline-flex items-center"
                 >
-                  Open in Board
+                  Open in Canvas
                 </a>
 
               </div>

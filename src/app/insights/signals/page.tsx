@@ -1029,15 +1029,39 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                   </div>
                 </motion.div>
                 <motion.a
-                  href="https://replit.com/t/miro/repls/TEMPLATE-Miro-AI-First-canvas"
+                  href="/space/space-roadmaps/canvas/canvas-roadmaps-01"
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => {
+                    if (copiedSignal) {
+                      const description = ('description' in copiedSignal && copiedSignal.description)
+                        ? copiedSignal.description
+                        : ('quote' in copiedSignal && copiedSignal.quote)
+                        ? copiedSignal.quote
+                        : undefined
+                      const accent = ('accent' in copiedSignal && copiedSignal.accent)
+                        ? copiedSignal.accent as string
+                        : CARD_ACCENT[copiedSignal.type] ?? '#f1f2f5'
+                      localStorage.setItem('pendingInsightCard', JSON.stringify({
+                        title: copiedSignal.title,
+                        description,
+                        badge: 'badge' in copiedSignal ? copiedSignal.badge : undefined,
+                        accent,
+                        meta: {
+                          person: 'person' in copiedSignal ? copiedSignal.person : undefined,
+                          company: 'company' in copiedSignal ? copiedSignal.company : undefined,
+                          source: copiedSignal.source,
+                          date: copiedSignal.date,
+                        },
+                      }))
+                    }
+                  }}
                   className="self-start h-8 px-4 rounded-[18px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors inline-flex items-center"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: 0.5, ease: [0.2, 0, 0, 1] }}
                 >
-                  Open in Board
+                  Open in Canvas
                 </motion.a>
                 <motion.p
                   className="text-[14px] text-[#222428] leading-[1.6]"

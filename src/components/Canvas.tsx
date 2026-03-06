@@ -37,6 +37,7 @@ import { ApproveButtonShapeUtil } from "@/shapes/ApproveButtonShapeUtil";
 import { PeopleListShapeUtil } from "@/shapes/PeopleListShapeUtil";
 import { WorkdayCardShapeUtil } from "@/shapes/WorkdayCardShapeUtil";
 import { SlackCardShapeUtil } from "@/shapes/SlackCardShapeUtil";
+import { InsightCardShapeUtil, INSIGHT_CARD_SHAPE_TYPE, type InsightCardData } from "@/shapes/InsightCardShapeUtil";
 import { ConnectorLineShapeUtil, CONNECTOR_LINE_SHAPE_TYPE, computeConnectorPath } from "@/shapes/ConnectorLineShapeUtil";
 import { Toolbar } from "./toolbar/Toolbar";
 import { StartingPromptCards } from "./StartingPromptCards";
@@ -849,7 +850,7 @@ export function Canvas() {
 
   // LiveBlocks multiplayer store -- syncs tldraw state across users
   const [sessionUser] = useState(() => authUser ? getSessionUser(authUser) : getLocalDevUser());
-  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil, ApproveButtonShapeUtil, PeopleListShapeUtil, WorkdayCardShapeUtil, SlackCardShapeUtil, ConnectorLineShapeUtil], []);
+  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil, ApproveButtonShapeUtil, PeopleListShapeUtil, WorkdayCardShapeUtil, SlackCardShapeUtil, InsightCardShapeUtil, ConnectorLineShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 
   // Prevent browser back/forward navigation from trackpad gestures (Safari + fallback)
@@ -4683,6 +4684,30 @@ export function Canvas() {
         // Ignore — migration is best-effort
       }
     }, 3000);
+
+    // ── Place card from Insights panel if one was queued ──
+    try {
+      const pending = localStorage.getItem('pendingInsightCard');
+      if (pending) {
+        localStorage.removeItem('pendingInsightCard');
+        const card = JSON.parse(pending) as InsightCardData;
+        setTimeout(() => {
+          const id = createShapeId();
+          const vp = editor.getViewportPageBounds();
+          editor.createShape({
+            id,
+            type: INSIGHT_CARD_SHAPE_TYPE,
+            x: vp.x + vp.w / 2 - 140,
+            y: vp.y + vp.h / 2 - 100,
+            props: { w: 280, h: 200, card },
+          });
+          editor.select(id);
+          editor.zoomToSelection({ animation: { duration: 400 } });
+        }, 600);
+      }
+    } catch (e) {
+      // Ignore — best-effort
+    }
 
     // ── Recompute connector-line paths when connected shapes move ──
     editor.sideEffects.registerAfterChangeHandler('shape', (_prev, next) => {

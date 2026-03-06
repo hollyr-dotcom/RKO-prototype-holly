@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Users, ThumbsUp, Copy, MoreVertical } from "lucide-react";
+import { Bell, Users, ThumbsUp, Copy } from "lucide-react";
 import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconRocket, IconChatLinesTwo, IconBoard, IconChatTwo, IconInsights } from "@mirohq/design-system-icons";
 import InsightsTopBar from "@/components/InsightsTopBar";
 import { THEME_CARDS, type ThemeCard, type ThemeTag } from "@/data/themes-data";
@@ -256,17 +256,36 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                     </div>
                   </div>
                 </motion.div>
-                {/* Open in Board button */}
+                {/* Open in Canvas button */}
                 <motion.a
-                  href="https://replit.com/t/miro/repls/TEMPLATE-Miro-AI-First-canvas"
+                  href="/space/space-roadmaps/canvas/canvas-roadmaps-01"
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => {
+                    if (copiedThemeCard) {
+                      const firstTag = copiedThemeCard.tags?.[0]?.label
+                      const accent = TAG_BG[firstTag ?? ''] ?? '#f1f2f5'
+                      localStorage.setItem('pendingInsightCard', JSON.stringify({
+                        title: copiedThemeCard.title,
+                        description: copiedThemeCard.description,
+                        tags: copiedThemeCard.tags,
+                        accent,
+                        meta: {
+                          arr: copiedThemeCard.meta?.arr,
+                          confidence: copiedThemeCard.meta?.confidence,
+                          confidenceDelta: copiedThemeCard.meta?.confidenceDelta,
+                          likes: copiedThemeCard.meta?.likes,
+                          comments: copiedThemeCard.meta?.comments,
+                        },
+                      }))
+                    }
+                  }}
                   className="self-start h-8 px-4 rounded-[18px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors inline-flex items-center"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: 0.45, ease: [0.2, 0, 0, 1] }}
                 >
-                  Open in Board
+                  Open in Canvas
                 </motion.a>
               </div>
             </motion.div>
@@ -612,12 +631,6 @@ function ThemeCardItem({ card, index, aiOpen, onCopy }: { card: ThemeCard; index
               className="w-8 h-8 flex items-center justify-center rounded-full border border-[#e0e2e8] bg-white text-[#656b81] hover:text-[#222428]"
             >
               <IconSparksFilled css={{ width: 16, height: 16 }} />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); }}
-              className="w-8 h-8 flex items-center justify-center rounded-full border border-[#e0e2e8] bg-white text-[#656b81] hover:text-[#222428]"
-            >
-              <MoreVertical size={14} strokeWidth={1.5} />
             </button>
           </motion.div>
         )}
