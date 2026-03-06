@@ -224,7 +224,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
             <p style={{ fontSize: 16, fontWeight: 600, color: "#222428", lineHeight: 1.35, margin: 0 }}>
               {card.title}
             </p>
-            {card.description && (
+            {card.description && !isQuote && (
               <p style={{ fontSize: 12, color: "#656b81", lineHeight: 1.4, margin: 0 }}>
                 {card.description}
               </p>
