@@ -1041,26 +1041,6 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                 </motion.a>
               </div>
             </motion.div>
-            <motion.div
-              className="rounded-[24px] overflow-hidden py-1.5 mt-auto"
-              style={{ backgroundColor: '#FBFAF7' }}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.7, ease: [0.2, 0, 0, 1] }}
-            >
-              {['Show related opportunities', 'Summarize key themes from this signal', 'Find similar signals from last quarter'].map((chip) => (
-                <button
-                  key={chip}
-                  onClick={() => setActivePrompt(chip)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors"
-                >
-                  <span className="text-gray-400 flex-shrink-0">
-                    <IconSparksFilled css={{ width: 16, height: 16 }} />
-                  </span>
-                  <span className="text-gray-900">{chip}</span>
-                </button>
-              ))}
-            </motion.div>
           </div>
         ) : null}
         {activePrompt && promptData ? (
@@ -1173,6 +1153,29 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
         ) : null}
       </div>
 
+      {copiedSignal && !activePrompt && (
+        <motion.div
+          className="px-6 pb-4 shrink-0"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.7, ease: [0.2, 0, 0, 1] }}
+        >
+          <div className="rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
+            {['Show related opportunities', 'Summarize key themes from this signal', 'Find similar signals from last quarter'].map((chip) => (
+              <button
+                key={chip}
+                onClick={() => setActivePrompt(chip)}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors"
+              >
+                <span className="text-gray-400 flex-shrink-0">
+                  <IconSparksFilled css={{ width: 16, height: 16 }} />
+                </span>
+                <span className="text-gray-900">{chip}</span>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+      )}
       {/* Input */}
       <div className="px-6 pb-6 shrink-0">
         <ChatInput onSubmit={() => {}} />
