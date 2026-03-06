@@ -478,6 +478,8 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                       .slice(0, 5)
                       .map(c => ({
                         title: c.title,
+                        description: 'description' in c ? c.description as string : ('quote' in c ? c.quote as string : undefined),
+                        source: 'source' in c ? c.source as string : undefined,
                         type: c.type,
                         company: 'company' in c ? c.company as string : undefined,
                         date: c.date,

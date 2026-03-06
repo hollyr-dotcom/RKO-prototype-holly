@@ -18,6 +18,7 @@ export const INSIGHT_TABLE_SHAPE_TYPE = "insight-table" as const;
 export interface InsightTableRow {
   title: string;
   description?: string;
+  source?: string;
   type?: string;
   company?: string;
   date?: string;
@@ -67,11 +68,12 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 // Column widths
-const COL_NUM  = 44;
-const COL_TITLE = 220;
+const COL_NUM   = 44;
+const COL_TITLE = 180;
+const COL_DESC  = 220; // description column
 const COL_TYPE  = 72;
-const COL_CO    = 120;
-const COL_META  = 100; // ARR or date
+const COL_CO    = 110;
+const COL_META  = 90; // date
 
 const ROW_H = 92;
 const HEADER_H = 44;
@@ -182,7 +184,14 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
         }}>
           {/* Row number column */}
           <div style={{ width: COL_NUM, borderRight: BORDER, flexShrink: 0 }} />
-          <HeaderCell label="Signal" icon={iconBookmark} flex />
+          <div style={{ width: COL_TITLE, flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "0 8px", height: HEADER_H, borderRight: BORDER }}>
+            <span style={{ color: "#9ca0ad", display: "flex" }}>{iconBookmark}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#656b81" }}>Signal</span>
+          </div>
+          <div style={{ width: COL_DESC, flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "0 8px", height: HEADER_H, borderRight: BORDER }}>
+            <span style={{ color: "#9ca0ad", display: "flex" }}>{iconText}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#656b81" }}>Description</span>
+          </div>
           <div style={{ width: COL_TYPE, flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "0 8px", height: HEADER_H, borderRight: BORDER }}>
             <span style={{ color: "#9ca0ad", display: "flex" }}>{iconTag}</span>
             <span style={{ fontSize: 12, fontWeight: 600, color: "#656b81" }}>Type</span>
@@ -218,9 +227,9 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
                   {i + 1}
                 </div>
 
-                {/* Title + tags */}
+                {/* Title + source + tags */}
                 <div style={{
-                  flex: 1, minWidth: 0, borderRight: BORDER,
+                  width: COL_TITLE, flexShrink: 0, borderRight: BORDER,
                   padding: "10px 10px",
                   display: "flex", flexDirection: "column", justifyContent: "center", gap: 5,
                 }}>
@@ -234,21 +243,44 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
                   }}>
                     {row.title}
                   </span>
-                  {row.tags && row.tags.length > 0 && (
-                    <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
-                      {row.tags.slice(0, 2).map(tag => (
-                        <span key={tag} style={{
-                          fontSize: 10, padding: "2px 7px", borderRadius: 99,
-                          backgroundColor: TAG_BG[tag] ?? "#f1f2f5", color: "#222428",
-                        }}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
+                    {row.source && (
+                      <span style={{
+                        fontSize: 10, padding: "2px 7px", borderRadius: 99,
+                        backgroundColor: "#e9eaef", color: "#656b81", fontWeight: 500,
+                      }}>
+                        {row.source}
+                      </span>
+                    )}
+                    {row.tags && row.tags.slice(0, 1).map(tag => (
+                      <span key={tag} style={{
+                        fontSize: 10, padding: "2px 7px", borderRadius: 99,
+                        backgroundColor: TAG_BG[tag] ?? "#f1f2f5", color: "#222428",
+                      }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                   {row.arr && (
                     <span style={{ fontSize: 11, color: "#656b81" }}>{row.arr}</span>
                   )}
+                </div>
+
+                {/* Description */}
+                <div style={{
+                  width: COL_DESC, flexShrink: 0, borderRight: BORDER,
+                  padding: "10px 10px",
+                  display: "flex", alignItems: "center",
+                }}>
+                  <span style={{
+                    fontSize: 12, color: "#656b81", lineHeight: 1.4,
+                    display: "-webkit-box",
+                    WebkitBoxOrient: "vertical" as const,
+                    WebkitLineClamp: 3,
+                    overflow: "hidden",
+                  }}>
+                    {row.description ?? "—"}
+                  </span>
                 </div>
 
                 {/* Type */}

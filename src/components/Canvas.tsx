@@ -4704,7 +4704,7 @@ export function Canvas() {
             ? (card.image ? 340 : 220)
             : (card.cardType === 'quote' ? 440 : 380);
           const gap = 24;
-          const tableW = 600;
+          const tableW = 740;
           const tableH = cardH;
           const totalW = cardW + gap + tableW;
 

@@ -1049,6 +1049,8 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                         .slice(0, 5)
                         .map(c => ({
                           title: c.title,
+                          description: 'description' in c ? c.description as string : ('quote' in c ? c.quote as string : undefined),
+                          source: c.source,
                           type: c.type,
                           company: 'company' in c ? c.company as string : undefined,
                           date: c.date,

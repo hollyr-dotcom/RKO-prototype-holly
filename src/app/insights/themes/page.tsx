@@ -270,6 +270,8 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                         .slice(0, 5)
                         .map(c => ({
                           title: c.title,
+                          description: c.description,
+                          source: 'Insights',
                           type: 'theme',
                           tags: c.tags.map(t => t.label),
                           arr: c.meta.arr,
