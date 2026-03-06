@@ -968,7 +968,7 @@ export function Canvas() {
       const pending = localStorage.getItem('pendingInsightCard');
       if (!pending) return;
       localStorage.removeItem('pendingInsightCard');
-      const payload = JSON.parse(pending) as InsightCardData & { relatedRows?: InsightTableData['rows'] };
+      const payload = JSON.parse(pending) as InsightCardData & { relatedRows?: InsightTableData['rows']; tableHeading?: string };
       const card: InsightCardData = payload;
       // Clear all existing shapes from the board
       const existing = editor.getCurrentPageShapes();
@@ -984,7 +984,7 @@ export function Canvas() {
       const totalW = cardW + gap + tableW;
       const cardId = createShapeId();
       editor.createShape({ id: cardId, type: INSIGHT_CARD_SHAPE_TYPE, x: -(totalW / 2), y: -(cardH / 2), props: { w: cardW, h: cardH, card } });
-      const table: InsightTableData = { heading: card.style === 'theme' ? 'Related themes' : 'Related signals', rows: payload.relatedRows ?? [] };
+      const table: InsightTableData = { heading: payload.tableHeading ?? (card.style === 'theme' ? 'Related themes' : 'Related signals'), rows: payload.relatedRows ?? [] };
       const tableId = createShapeId();
       editor.createShape({ id: tableId, type: INSIGHT_TABLE_SHAPE_TYPE, x: -(totalW / 2) + cardW + gap, y: -(cardH / 2), props: { w: tableW, h: tableH, table } });
       editor.selectAll();
