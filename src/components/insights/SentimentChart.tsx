@@ -192,7 +192,7 @@ export function SentimentChart({ onOpenChat, onOpenChatHeader }: { onOpenChat?: 
 
   return (
     <section
-      className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-8 flex flex-col"
+      className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-8 flex flex-col h-full"
       onMouseEnter={() => setCardHovered(true)}
       onMouseLeave={() => setCardHovered(false)}
     >
@@ -226,7 +226,7 @@ export function SentimentChart({ onOpenChat, onOpenChatHeader }: { onOpenChat?: 
           )}
         </AnimatePresence>
       </div>
-      <figure className="flex-1 min-h-[300px] relative">
+      <figure className="flex-1 min-h-0 relative">
         {hoveredDot && (
           <SentimentPopover
             cx={hoveredDot.cx}
@@ -237,7 +237,7 @@ export function SentimentChart({ onOpenChat, onOpenChatHeader }: { onOpenChat?: 
             onMouseLeave={scheduleClose}
           />
         )}
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
             margin={{ top: 16, right: 0, left: 16, bottom: 0 }}

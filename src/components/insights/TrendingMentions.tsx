@@ -62,7 +62,7 @@ export function TrendingMentions({ onOpenChat }: { onOpenChat?: () => void }) {
 
   return (
     <div
-      className="bg-white rounded-[24px] border border-gray-100 shadow-sm flex flex-col gap-5 p-8"
+      className="bg-white rounded-[24px] border border-gray-100 shadow-sm flex flex-col gap-5 p-8 h-full"
       onMouseEnter={() => setCardHovered(true)}
       onMouseLeave={() => setCardHovered(false)}
     >

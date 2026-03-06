@@ -206,7 +206,7 @@ export function ThemeMatrix({ onOpenChat }: { onOpenChat?: () => void }) {
 
   return (
     <section
-      className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-8 flex flex-col"
+      className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-8 flex flex-col h-full"
       onMouseEnter={() => setCardHovered(true)}
       onMouseLeave={() => setCardHovered(false)}
     >

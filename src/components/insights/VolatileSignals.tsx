@@ -48,11 +48,11 @@ const DATES = ['12/13', '12/20', '12/27', '1/02', '1/09', '1/16', '1/23']
 // ─── SVG constants ────────────────────────────────────────────────────────────
 
 const W = 460
-const H = 210
+const H = 220
 const PL = 6
 const PR = 36
-const PT = 24
-const PB = 24
+const PT = 8
+const PB = 20
 const CW = W - PL - PR
 const CH = H - PT - PB
 
@@ -82,7 +82,7 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
 
   return (
     <div
-      className="bg-white rounded-[24px] border border-gray-100 shadow-sm flex flex-col gap-4 p-8 relative"
+      className="bg-white rounded-[24px] border border-gray-100 shadow-sm flex flex-col gap-4 p-8 relative h-full"
       onMouseEnter={() => setCardHovered(true)}
       onMouseLeave={() => setCardHovered(false)}
     >
