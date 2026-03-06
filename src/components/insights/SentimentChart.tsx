@@ -143,8 +143,8 @@ function SentimentPopover({
         <div>
           <button
             onClick={() => onOpenChat?.(index)}
-            className="px-4 py-1.5 rounded-[6px] text-white text-sm font-medium transition-opacity hover:opacity-80"
-            style={{ backgroundColor: '#659DF2' }}
+            className="px-4 py-1.5 rounded-[6px] bg-white text-[#222428] text-sm font-medium transition-opacity hover:opacity-80"
+            style={{ border: '1px solid #e0e2e8' }}
           >
             View analysis
           </button>
