@@ -4705,7 +4705,8 @@ export function Canvas() {
             : (card.cardType === 'quote' ? 440 : 380);
           const gap = 24;
           const tableW = 740;
-          const tableH = cardH + 42; // extra for floating title
+          const rowCount = (payload.relatedRows ?? []).length;
+          const tableH = 42 + 32 + 44 + rowCount * 92; // floating title + toolbar + header + rows
           const totalW = cardW + gap + tableW;
 
           // Place card on the left
