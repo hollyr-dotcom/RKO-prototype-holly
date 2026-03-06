@@ -169,17 +169,17 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
     // ── Featured card: matches FeaturedCard component on the page exactly ──
     return (
       <HTMLContainer id={shape.id} style={{
-        width: w, borderRadius: 16,
+        width: w, height: h, borderRadius: 16,
         backgroundColor: accent,
         padding: "2px 2px 6px 2px",
         boxSizing: "border-box",
         fontFamily: "sans-serif",
         pointerEvents: "all",
       }}>
-        {/* Inner white card */}
+        {/* Inner white card — fills exactly the space inside the colored border */}
         <div style={{
           borderRadius: 12, backgroundColor: "white",
-          width: w - 4,
+          width: w - 4, height: h - 8,
           display: "flex", flexDirection: "column", gap: 10, padding: 20,
           boxSizing: "border-box", position: "relative", overflow: "hidden",
         }}>
