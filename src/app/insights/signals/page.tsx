@@ -688,7 +688,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                           source: f.type,
                           type: 'quote' as const,
                         }));
-                        localStorage.setItem('pendingInsightCard', JSON.stringify({
+                        localStorage.setItem('nCard', JSON.stringify({
                           style: 'featured',
                           cardType: 'quote',
                           title: item.author,

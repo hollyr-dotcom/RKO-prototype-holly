@@ -279,7 +279,7 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                       company: 'company' in c ? c.company as string : undefined,
                       date: c.date,
                     }))
-                    localStorage.setItem('pendingInsightCard', JSON.stringify({
+                    localStorage.setItem('nCard', JSON.stringify({
                       style: 'theme',
                       title: copiedThemeCard.title,
                       description: copiedThemeCard.description,
