@@ -169,13 +169,16 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
             alignItems: "center", justifyContent: "center",
             gap: 10, padding: "16px 20px", boxSizing: "border-box",
           }}>
-            {isAudio && (
+            {/* Show play button for audio cards, or any featured card that isn't a quote */}
+            {(isAudio || (!isQuote && card.style === 'featured')) && (
               <div style={{
                 width: 36, height: 36, borderRadius: "50%",
-                backgroundColor: accent,
+                backgroundColor: "rgba(255,255,255,0.85)",
+                boxShadow: "0 1px 6px rgba(0,0,0,0.12)",
                 display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
               }}>
-                {/* CSS play triangle — SVG fill unreliable in tldraw HTML canvas */}
+                {/* CSS play triangle */}
                 <div style={{
                   marginLeft: 3,
                   width: 0,
