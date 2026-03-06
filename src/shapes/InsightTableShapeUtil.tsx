@@ -223,18 +223,8 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
             </span>
             <div style={{ color: "#656b81", display: "flex", cursor: "default" }}><IcoExpand /></div>
           </div>
-          {/* Right: toolbar icons + dots */}
-          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <ToolbarBtn icon={<IcoSync />} label="Sync" />
-            <ToolbarBtn icon={<IcoLayout />} label="Layout" />
-            <ToolbarBtn icon={<IcoFilter />} label="Filter" />
-            <ToolbarBtn icon={<IcoSort />} label="Sort" />
-            <ToolbarBtn icon={<IcoGroup />} label="Group by" />
-            <ToolbarBtn icon={<IcoHide />} label="Hide" />
-            <ToolbarBtn icon={<IcoSettings />} label="View settings" />
-            <div style={{ width: 1, height: 16, backgroundColor: "#e0e2e8", margin: "0 4px" }} />
-            <div style={{ display: "flex", alignItems: "center", cursor: "default", padding: "4px" }}><IcoDots /></div>
-          </div>
+          {/* Right: dots only */}
+          <div style={{ display: "flex", alignItems: "center", cursor: "default", padding: "4px" }}><IcoDots /></div>
         </div>
 
         {/* ── Table box (starts below floating header) ──────────────── */}
@@ -250,6 +240,22 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
           display: "flex",
           flexDirection: "column",
         }}>
+
+        {/* ── Toolbar (inside table, above column headers) ──────────── */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 2,
+          padding: "4px 10px",
+          borderBottom: BORDER,
+          flexShrink: 0,
+        }}>
+          <ToolbarBtn icon={<IcoSync />} label="Sync" />
+          <ToolbarBtn icon={<IcoLayout />} label="Layout" />
+          <ToolbarBtn icon={<IcoFilter />} label="Filter" />
+          <ToolbarBtn icon={<IcoSort />} label="Sort" />
+          <ToolbarBtn icon={<IcoGroup />} label="Group by" />
+          <ToolbarBtn icon={<IcoHide />} label="Hide" />
+          <ToolbarBtn icon={<IcoSettings />} label="View settings" />
+        </div>
 
         {/* ── Header row ────────────────────────────────────────────── */}
         <div style={{ display: "flex", borderBottom: BORDER, backgroundColor: "white", flexShrink: 0 }}>
