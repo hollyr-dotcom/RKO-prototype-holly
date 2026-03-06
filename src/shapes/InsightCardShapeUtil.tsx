@@ -171,7 +171,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
       <HTMLContainer id={shape.id} style={{
         width: w, borderRadius: 16,
         backgroundColor: accent + "66",
-        padding: "6px",
+        padding: "2px 2px 6px 2px",
         boxSizing: "border-box",
         fontFamily: "sans-serif",
         pointerEvents: "all",
@@ -179,7 +179,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
         {/* Inner white card */}
         <div style={{
           borderRadius: 12, backgroundColor: "white",
-          width: w - 12,
+          width: w - 4,
           display: "flex", flexDirection: "column", gap: 10, padding: 20,
           boxSizing: "border-box", position: "relative", overflow: "hidden",
         }}>
