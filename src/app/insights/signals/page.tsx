@@ -1070,7 +1070,7 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                         date: copiedSignal.date,
                       },
                       relatedRows,
-                      tableHeading: copiedSignal.title,
+                      tableHeading: 'Featured',
                     }))
                     try {
                       const spaceRes = await fetch('/api/spaces/space-insights')
