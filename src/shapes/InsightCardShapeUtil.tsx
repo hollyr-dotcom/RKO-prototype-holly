@@ -175,10 +175,15 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
                 backgroundColor: accent,
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                {/* Play triangle */}
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="#222428">
-                  <polygon points="3,1 13,7 3,13" />
-                </svg>
+                {/* CSS play triangle — SVG fill unreliable in tldraw HTML canvas */}
+                <div style={{
+                  marginLeft: 3,
+                  width: 0,
+                  height: 0,
+                  borderTop: "7px solid transparent",
+                  borderBottom: "7px solid transparent",
+                  borderLeft: "12px solid #222428",
+                }} />
               </div>
             )}
             {isQuote && card.quote && (
