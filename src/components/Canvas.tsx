@@ -977,16 +977,19 @@ export function Canvas() {
       const cardH = card.style === 'theme'
         ? (card.image ? 340 : 220)
         : (card.cardType === 'quote' ? 320 : 300);
+      const hasTable = (payload.relatedRows ?? []).length > 0;
       const gap = 24;
       const tableW = 740;
       const rowCount = (payload.relatedRows ?? []).length;
       const tableH = 42 + 32 + 44 + rowCount * 92;
-      const totalW = cardW + gap + tableW;
+      const totalW = hasTable ? cardW + gap + tableW : cardW;
       const cardId = createShapeId();
       editor.createShape({ id: cardId, type: INSIGHT_CARD_SHAPE_TYPE, x: -(totalW / 2), y: -(cardH / 2), props: { w: cardW, h: cardH, card } });
-      const table: InsightTableData = { heading: payload.tableHeading ?? (card.style === 'theme' ? 'Related themes' : 'Related signals'), rows: payload.relatedRows ?? [] };
-      const tableId = createShapeId();
-      editor.createShape({ id: tableId, type: INSIGHT_TABLE_SHAPE_TYPE, x: -(totalW / 2) + cardW + gap, y: -(cardH / 2), props: { w: tableW, h: tableH, table } });
+      if (hasTable) {
+        const table: InsightTableData = { heading: payload.tableHeading ?? (card.style === 'theme' ? 'Related themes' : 'Related signals'), rows: payload.relatedRows ?? [] };
+        const tableId = createShapeId();
+        editor.createShape({ id: tableId, type: INSIGHT_TABLE_SHAPE_TYPE, x: -(totalW / 2) + cardW + gap, y: -(cardH / 2), props: { w: tableW, h: tableH, table } });
+      }
       editor.selectAll();
       editor.zoomToSelection({ animation: { duration: 400 } });
     } catch (e) {

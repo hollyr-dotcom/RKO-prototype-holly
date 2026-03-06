@@ -565,8 +565,8 @@ function CommentIcon() {
 
 function BookmarkIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M4 2h8a1 1 0 011 1v10l-5-3-5 3V3a1 1 0 011-1z" stroke="#656b81" strokeWidth="1.2" strokeLinejoin="round" />
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[#656b81] group-hover:text-white transition-colors">
+      <path d="M4 2h8a1 1 0 011 1v10l-5-3-5 3V3a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -760,7 +760,7 @@ function ThemeCardItem({ card, index, aiOpen, onCopy }: { card: ThemeCard; index
               {card.secondaryAction.label}
             </button>
           )}
-          <button className="ml-1 w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#C6DCFF] transition-colors">
+          <button className="ml-1 w-8 h-8 flex items-center justify-center rounded-full border border-[#e0e2e8] bg-transparent hover:bg-[#222428] hover:border-[#222428] transition-colors group">
             <BookmarkIcon />
           </button>
         </div>

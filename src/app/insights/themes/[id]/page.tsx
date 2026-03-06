@@ -126,18 +126,11 @@ const CARD_ACCENT: Record<string, string> = {
 }
 
 const FEATURED_CARDS = [
-  { id: '1', type: 'audio' as const, badge: '1 Clip', title: 'User Interview: Sam Ledezma', description: 'Discussion on "Heavy Board" load times and visual comfort.', date: 'Jul 14', source: 'Gong', person: 'Sam Ledezma', company: 'Figma', accent: '#BADEB1' },
-  { id: '2', type: 'audio' as const, badge: '1 Clip', title: 'Call with Siemens Admin', description: 'Ayoub El Assri discusses SCIM provisioning hurdles.', date: 'Jul 14', source: 'Gong', person: 'Ayoub El Assri', company: 'Siemens' },
   { id: '3', type: 'quote' as const, quote: '"The new feature clearly drives revenue when adopted, but most users aren\'t getting there. We\'re investing in big bets while the core experience that drives engagement feels stuck."', duration: '32m 34s', title: 'Call with Spotify', person: 'John Cusick', company: 'Spotify', date: 'Jul 14', source: 'Gong', logo: 'spotify' },
   { id: '4', type: 'quote' as const, quote: '"The Miro Assist summarization has cut our research review time by 60%… We can now cluster insights across thousands of sticky notes in seconds."', duration: '12m 04s', title: 'Call with Apple', person: 'James Watson', company: 'Apple', date: 'Jul 14', source: 'Gong', logo: 'apple' },
-  { id: '5', type: 'audio' as const, badge: '1 Clip', title: 'User Interview: Priya Nair', description: 'Frustration with AI suggestions appearing mid-session — breaks focus during live workshops.', date: 'Jul 18', source: 'Gong', person: 'Priya Nair', company: 'Miro', accent: '#BADEB1' },
-  { id: '6', type: 'audio' as const, badge: '1 Clip', title: 'Call with Adobe', description: 'Team requests persistent cursor visibility across large boards during collaborative reviews.', date: 'Jul 21', source: 'Gong', person: 'Sofia Reyes', company: 'Adobe', accent: '#BADEB1' },
   { id: '7', type: 'quote' as const, quote: '"We run design sprints with 40+ people on a single board. The lag when everyone is active at once is a dealbreaker — we\'ve nearly lost the account over it."', duration: '28m 12s', title: 'Call with Spotify', person: 'Anna Bergström', company: 'Spotify', date: 'Jul 22', source: 'Gong', logo: 'spotify' },
   { id: '8', type: 'quote' as const, quote: '"We need SSO that actually works with our IdP out of the box. Every workaround costs us an IT sprint and delays our org-wide rollout."', duration: '41m 07s', title: 'Call with Apple', person: 'Derek Chu', company: 'Apple', date: 'Jul 25', source: 'Gong', logo: 'apple' },
-  { id: '9', type: 'audio' as const, badge: '1 Clip', title: 'User Interview: Tomás Herrera', description: 'Wants template locking so junior designers can\'t accidentally overwrite research structures.', date: 'Aug 1', source: 'Gong', person: 'Tomás Herrera', company: 'Atlassian' },
-  { id: '10', type: 'audio' as const, badge: '1 Clip', title: 'Call with Siemens PM', description: 'Requesting granular export controls — PDF fidelity and selective frame exports are blocking enterprise handoff.', date: 'Aug 3', source: 'Gong', person: 'Klaus Weber', company: 'Siemens' },
   { id: '11', type: 'quote' as const, quote: '"Diagramming in Miro is close but the auto-layout still falls short for complex system maps. One misaligned node and the whole thing breaks."', duration: '19m 48s', title: 'Call with Spotify', person: 'Clara Johansson', company: 'Spotify', date: 'Aug 6', source: 'Gong', logo: 'spotify' },
-  { id: '12', type: 'audio' as const, badge: '1 Clip', title: 'User Interview: Kenji Watanabe', description: 'Wants real-time translation in sticky notes for cross-regional workshops — a blocker for APAC teams.', date: 'Aug 8', source: 'Gong', person: 'Kenji Watanabe', company: 'Sony', accent: '#BADEB1' },
 ]
 
 
@@ -209,11 +202,6 @@ function FeaturedCard({ card, accent: accentOverride, onCopy }: { card: typeof F
         <div className={`flex flex-col gap-1 flex-1 min-h-0 ${card.type !== 'quote' ? 'justify-end' : ''}`}>
           {card.type !== 'quote' && (
             <>
-              {card.type === 'audio' && (
-                <span className="h-5 px-2 bg-[#222428] text-white text-[10px] font-medium rounded-[24px] flex items-center w-fit mb-0.5">
-                  {card.badge}
-                </span>
-              )}
               <p className="text-lg font-heading font-medium text-gray-900 leading-snug">{card.title}</p>
               {'description' in card && card.description && <p className="text-[12px] text-[#656b81] leading-[1.4]">{card.description}</p>}
             </>
@@ -306,6 +294,31 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
   }
 
   if (!open) return null
+
+  const openFeedbackOnCanvas = async (item: { type: string; tagColor: string; text: string; author: string; date: string }) => {
+    localStorage.setItem('pendingInsightCard', JSON.stringify({
+      style: 'featured',
+      cardType: 'quote',
+      quote: item.text,
+      title: item.author.split(',')[0],
+      badge: item.type,
+      accent: item.tagColor,
+      meta: { person: item.author.split(',')[0], source: 'Gong', date: item.date.replace('Added ', '') },
+      tableHeading: selectedSignal?.title ?? 'Related signals',
+      relatedRows: [],
+    }))
+    try {
+      const spaceRes = await fetch('/api/spaces/space-insights')
+      const spaceData = spaceRes.ok ? await spaceRes.json() : null
+      const existing = (spaceData?.canvases ?? []).find((c: { name: string }) => c.name === theme.title)
+      if (existing) { router.push(`/space/space-insights/canvas/${existing.id}`); return }
+      const res = await fetch('/api/canvases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: theme.title, spaceId: 'space-insights' }) })
+      const canvas = await res.json()
+      router.push(`/space/space-insights/canvas/${canvas.id}`)
+    } catch {
+      router.push('/space/space-insights/canvas/canvas-insights-untitled')
+    }
+  }
 
   const showBack = !!selectedSignal || !!showAnalysis || !!copiedCard
   const handleBack = selectedSignal ? onClearSignal : copiedCard ? onClearCopied : onDismissAnalysis
@@ -591,17 +604,18 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                   { type: 'Problem' as const, tagColor: '#FFD8F4', text: `"The overall experience feels slow and unresponsive when this issue occurs. Each attempt is followed by a noticeable delay."`, author: 'Marco Rossi, PM', date: 'Added 1 month ago', stars: 2 },
                   { type: 'Praise' as const, tagColor: '#DEDAFF', text: `When it works well, the experience is seamless. Users appreciate the reliability when things are functioning as expected.`, author: 'Priya Nair, Designer', date: 'Added 2 months ago', stars: null },
                 ].map((item, i) => (
-                  <motion.div layout key={i} className="rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
+                  <div key={i} className="group rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
                     onMouseEnter={() => setHoveredFeedback(i)}
                     onMouseLeave={() => setHoveredFeedback(null)}
                   >
                   <div className="rounded-[16px] bg-white p-4 flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <span className="flex items-center h-6 px-2 rounded-full text-xs text-[#222428]" style={{ backgroundColor: item.tagColor }}>{item.type}</span>
-                      <button className="w-6 h-6 flex items-center justify-center text-[#aeb2c0] hover:text-[#656b81] transition-colors">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                          <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
-                        </svg>
+                      <button
+                        className="w-6 h-6 rounded-full border border-[#e0e2e8] bg-white items-center justify-center text-[#656b81] hover:text-[#222428] transition-colors hidden group-hover:flex"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <IconSparksFilled css={{ width: 14, height: 14 }} />
                       </button>
                     </div>
                     {item.stars !== null && (
@@ -614,42 +628,18 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                       </div>
                     )}
                     <p className="text-[13px] leading-[1.6] text-[#222428]">{item.text}</p>
-                    <AnimatePresence mode="wait">
-                      {hoveredFeedback === i ? (
-                        <motion.div
-                          key="chips"
-                          className="flex items-center gap-1.5 overflow-x-auto shrink-0 no-scrollbar"
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 4 }}
-                          transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
-                        >
-                          <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
-                            <GongIcon />Gong
-                          </span>
-                          <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
-                            {item.author.split(',')[0]}
-                          </span>
-                          <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
-                            <CalendarIcon />{item.date.replace('Added ', '')}
-                          </span>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="text"
-                          className="flex flex-col gap-0.5"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.1 }}
-                        >
-                          <span className="text-[12px] font-medium text-[#222428]">{item.author}</span>
-                          <span className="text-[11px] text-[#aeb2c0]">{item.date}</span>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[12px] font-medium text-[#222428]">{item.author}</span>
+                      <span className="text-[11px] text-[#aeb2c0]">{item.date}</span>
+                    </div>
+                    <button
+                      className="self-start h-7 px-3 rounded-[24px] text-xs font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors"
+                      onClick={(e) => { e.stopPropagation(); openFeedbackOnCanvas(item) }}
+                    >
+                      Add to board
+                    </button>
                   </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             )}
@@ -835,6 +825,27 @@ export default function ThemeDetailPage() {
   const [showAnalysis, setShowAnalysis] = useState(false)
 
   const selectSignal = (row: typeof DETAIL_SIGNALS[0]) => { setSelectedSignal(row); setAiOpen(true) }
+
+  const SOURCE_LABEL: Record<string, string> = { audio: 'Gong', globe: 'Web', mobile: 'App Store' }
+  const openSignalOnCanvas = async (row: typeof DETAIL_SIGNALS[0], themeTitle: string, accent: string) => {
+    localStorage.setItem('pendingInsightCard', JSON.stringify({
+      style: 'featured', cardType: 'audio',
+      title: row.title, description: row.description,
+      badge: SOURCE_LABEL[row.sourceIcon] ?? row.sourceIcon,
+      accent,
+      meta: { person: row.person.name, company: row.company.name, source: SOURCE_LABEL[row.sourceIcon] ?? row.sourceIcon, arr: row.revenue },
+      tableHeading: themeTitle, relatedRows: [],
+    }))
+    try {
+      const spaceRes = await fetch('/api/spaces/space-insights')
+      const spaceData = spaceRes.ok ? await spaceRes.json() : null
+      const existing = (spaceData?.canvases ?? []).find((c: { name: string }) => c.name === themeTitle)
+      if (existing) { router.push(`/space/space-insights/canvas/${existing.id}`); return }
+      const res = await fetch('/api/canvases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: themeTitle, spaceId: 'space-insights' }) })
+      const canvas = await res.json()
+      router.push(`/space/space-insights/canvas/${canvas.id}`)
+    } catch { router.push('/space/space-insights/canvas/canvas-insights-untitled') }
+  }
 
   const theme = THEME_CARDS.find((c) => c.id === String(params.id))
 

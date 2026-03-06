@@ -2,6 +2,7 @@
 
 import React, { ReactNode, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { IconSparksFilled } from '@mirohq/design-system-icons'
 
 interface MetricCardProps {
   label: string
@@ -9,9 +10,10 @@ interface MetricCardProps {
   sub: string
   description: ReactNode
   background?: string
+  onOpenChat?: () => void
 }
 
-export function MetricCard({ label, value, sub, description, background = '#f1fecf' }: MetricCardProps) {
+export function MetricCard({ label, value, sub, description, background = '#f1fecf', onOpenChat }: MetricCardProps) {
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -32,12 +34,11 @@ export function MetricCard({ label, value, sub, description, background = '#f1fe
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors -mt-1 -mr-1 shrink-0"
+                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors"
+                style={{ backgroundColor: 'transparent', border: '1.5px solid #e0e2e8', color: '#222428' }}
+                onClick={(e) => { e.stopPropagation(); onOpenChat?.() }}
               >
-                <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
-                  <rect x="4" y="4" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.2" />
-                  <path d="M2 10V2h8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <span className="leading-[0]"><IconSparksFilled css={{ width: 14, height: 14 }} /></span>
               </motion.button>
             )}
           </AnimatePresence>

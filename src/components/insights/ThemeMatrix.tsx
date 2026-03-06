@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   ScatterChart,
   Scatter,
@@ -9,8 +10,70 @@ import {
   YAxis,
   ResponsiveContainer,
 } from 'recharts'
-import { IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconRocket, IconThumbsUp, IconChatLinesTwo } from '@mirohq/design-system-icons'
+import { IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconSparksFilled, IconRocket, IconThumbsUp, IconChatLinesTwo } from '@mirohq/design-system-icons'
 import { THEME_CARDS, type ThemeCard } from '@/data/themes-data'
+
+// ─── Popover ──────────────────────────────────────────────────────────────────
+
+interface HoveredDot { cx: number; cy: number; card: ThemeCard }
+
+function ThemeMatrixPopover({ cx, cy, card, onMouseEnter, onMouseLeave }: HoveredDot & { onMouseEnter: () => void; onMouseLeave: () => void }) {
+  const router = useRouter()
+  const flipRight = cx < 160
+  return (
+    <div
+      className="absolute z-50"
+      style={{
+        left: cx,
+        top: cy,
+        transform: flipRight ? 'translate(-16px, calc(-100% - 16px))' : 'translate(-50%, calc(-100% - 16px))',
+        width: 330,
+      }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      <div className="rounded-[8px] px-5 py-4 flex flex-col gap-4" style={{ backgroundColor: '#1a1b1e', boxShadow: '0px 8px 32px rgba(5,0,56,0.12)' }}>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {card.tags.map((t) => <TagPill key={t.label} label={t.label} />)}
+        </div>
+        <div className="flex flex-col gap-1">
+          <p className="text-lg font-heading font-medium text-white leading-snug mb-1 line-clamp-2">{card.title}</p>
+          <p className="text-[13px] text-white leading-[1.4] opacity-70 line-clamp-2">{card.description}</p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+            <span>{card.meta.arr}</span>
+          </div>
+          <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+            <IconRocket css={{ width: 14, height: 14 }} />
+            <span>{card.meta.confidence}</span>
+            <span className="text-[11px] text-[#aeb2c0]">{card.meta.confidenceDelta}</span>
+          </div>
+          <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+            <IconThumbsUp css={{ width: 14, height: 14 }} />
+            <span>{card.meta.likes}</span>
+          </div>
+          {card.meta.comments !== undefined && (
+            <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+              <IconChatLinesTwo css={{ width: 14, height: 14 }} />
+              <span>{card.meta.comments}</span>
+            </div>
+          )}
+        </div>
+        <div>
+          <button
+            onClick={() => router.push(`/insights/themes/${card.id}`)}
+            className="px-4 py-1.5 rounded-[6px] text-white text-sm font-medium transition-opacity hover:opacity-80"
+            style={{ backgroundColor: '#3859FF' }}
+          >
+            View details
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 
 // ─── Tag pills ───────────────────────────────────────────────────────────────
 
@@ -112,110 +175,15 @@ const scatterData = THEME_CARDS.map((card) => ({
   card,
 }))
 
-// ─── Popover ──────────────────────────────────────────────────────────────────
-
-interface HoveredDot {
-  cx: number
-  cy: number
-  card: ThemeCard
-}
-
-function ThemeMatrixPopover({
-  cx,
-  cy,
-  card,
-  onMouseEnter,
-  onMouseLeave,
-}: HoveredDot & { onMouseEnter: () => void; onMouseLeave: () => void }) {
-  const router = useRouter()
-  const confidence = parseInt(card.meta.confidence, 10)
-
-  // Flip popover to right side if too close to left edge
-  const flipRight = cx < 160
-
-  return (
-    <div
-      className="absolute z-50"
-      style={{
-        left: cx,
-        top: cy,
-        transform: flipRight
-          ? 'translate(-16px, calc(-100% - 16px))'
-          : 'translate(-50%, calc(-100% - 16px))',
-        width: 330,
-      }}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    >
-      <div
-        className="rounded-[8px] px-5 py-6 flex flex-col gap-[28px]"
-        style={{ backgroundColor: '#1a1b1e', boxShadow: '0px 8px 32px rgba(5,0,56,0.12)' }}
-      >
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {card.tags.map((t) => <TagPill key={t.label} label={t.label} />)}
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <p className="text-lg font-heading font-medium text-white leading-snug mb-1 line-clamp-2">
-            {card.title}
-          </p>
-          <p className="text-[13px] text-white leading-[1.4] opacity-70 line-clamp-2">
-            {card.description}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-            <span>{card.meta.arr}</span>
-          </div>
-          <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-            <IconRocket css={{ width: 14, height: 14 }} />
-            <span>{card.meta.confidence}</span>
-            <span className="text-[11px] text-[#aeb2c0]">{card.meta.confidenceDelta}</span>
-          </div>
-          <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-            <IconThumbsUp css={{ width: 14, height: 14 }} />
-            <span>{card.meta.likes}</span>
-          </div>
-          {card.meta.comments !== undefined && (
-            <div className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[13px] text-white" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-              <IconChatLinesTwo css={{ width: 14, height: 14 }} />
-              <span>{card.meta.comments}</span>
-            </div>
-          )}
-        </div>
-
-        <div>
-          <button
-            onClick={() => router.push(`/insights/themes/${card.id}`)}
-            className="px-4 py-1.5 rounded-[6px] text-white text-sm font-medium transition-opacity hover:opacity-80"
-            style={{ backgroundColor: '#3859FF' }}
-          >
-            View details
-          </button>
-        </div>
-      </div>
-
-    </div>
-  )
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function ThemeMatrix() {
+export function ThemeMatrix({ onOpenChat }: { onOpenChat?: () => void }) {
+  const [cardHovered, setCardHovered] = useState(false)
   const [hoveredDot, setHoveredDot] = useState<HoveredDot | null>(null)
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const scheduleClose = () => {
-    closeTimer.current = setTimeout(() => setHoveredDot(null), 300)
-  }
-
-  const cancelClose = () => {
-    if (closeTimer.current) {
-      clearTimeout(closeTimer.current)
-      closeTimer.current = null
-    }
-  }
+  const scheduleClose = () => { closeTimer.current = setTimeout(() => setHoveredDot(null), 300) }
+  const cancelClose = () => { if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null } }
 
   const renderDot = (props: any) => {
     const { cx, cy, payload } = props
@@ -223,37 +191,49 @@ export function ThemeMatrix() {
     const isHovered = hoveredDot?.card.id === payload.card.id
     return (
       <g key={`dot-${payload.card.id}`}>
-        {isHovered && (
-          <circle
-            cx={cx}
-            cy={cy}
-            r={14}
-            fill={color}
-            opacity={0.25}
-          />
-        )}
+        {isHovered && <circle cx={cx} cy={cy} r={14} fill={color} opacity={0.25} />}
         <circle
-        cx={cx}
-        cy={cy}
-        r={isHovered ? 10 : 6}
-        fill={color}
-        opacity={1}
-        style={{ cursor: 'pointer', transition: 'r 0.15s ease' }}
-        onMouseEnter={() => {
-          cancelClose()
-          setHoveredDot({ cx, cy, card: payload.card })
-        }}
-        onMouseLeave={scheduleClose}
-      />
+          cx={cx} cy={cy}
+          r={isHovered ? 10 : 6}
+          fill={color}
+          style={{ cursor: 'pointer', transition: 'r 0.15s ease' }}
+          onMouseEnter={() => { cancelClose(); setHoveredDot({ cx, cy, card: payload.card }) }}
+          onMouseLeave={scheduleClose}
+        />
       </g>
     )
   }
 
   return (
-    <section className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-8 flex flex-col">
-      <div className="mb-4">
-        <h2 className="text-[22px] font-heading font-medium text-gray-900 leading-snug mb-1">Theme Matrix</h2>
-        <p className="text-sm text-gray-500">Hover a dot to explore a theme</p>
+    <section
+      className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-8 flex flex-col"
+      onMouseEnter={() => setCardHovered(true)}
+      onMouseLeave={() => setCardHovered(false)}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h2 className="text-[22px] font-heading font-medium text-gray-900 leading-snug mb-1">Theme Matrix</h2>
+          <p className="text-sm text-gray-500">Confidence vs implementation effort</p>
+        </div>
+        <AnimatePresence>
+          {cardHovered && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              onClick={onOpenChat}
+              className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors"
+              style={{
+                backgroundColor: 'transparent',
+                border: '1.5px solid #e0e2e8',
+                color: '#222428',
+              }}
+            >
+              <span className="leading-[0]"><IconSparksFilled css={{ width: 14, height: 14 }} /></span>
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Legend */}
@@ -271,14 +251,11 @@ export function ThemeMatrix() {
         ))}
       </div>
 
-      <figure className="flex-1 min-h-[450px] flex flex-col relative">
+      <figure className="flex-1 min-h-[300px] flex flex-col relative">
         {hoveredDot && (
           <ThemeMatrixPopover
-            cx={hoveredDot.cx}
-            cy={hoveredDot.cy}
-            card={hoveredDot.card}
-            onMouseEnter={cancelClose}
-            onMouseLeave={scheduleClose}
+            cx={hoveredDot.cx} cy={hoveredDot.cy} card={hoveredDot.card}
+            onMouseEnter={cancelClose} onMouseLeave={scheduleClose}
           />
         )}
         <div className="flex flex-1 border-b border-gray-200">
@@ -294,10 +271,7 @@ export function ThemeMatrix() {
           <div className="flex flex-col w-8 shrink-0 pt-8 pb-2 border-l border-gray-200">
             <span className="text-[12px] text-gray-400 leading-none pl-2">100%</span>
             <div className="flex-1 flex items-center justify-center">
-              <span
-                className="text-[14px] font-bold -rotate-90 whitespace-nowrap"
-                style={{ fontFamily: 'Roobert, sans-serif', color: '#222428' }}
-              >
+              <span className="text-[14px] font-heading font-semibold -rotate-90 whitespace-nowrap text-[#222428]">
                 Confidence
               </span>
             </div>
@@ -306,10 +280,7 @@ export function ThemeMatrix() {
         </div>
         <div className="flex justify-between items-center mt-2">
           <span className="text-[12px] text-gray-400">Low effort</span>
-          <span
-            className="text-[14px] font-bold"
-            style={{ fontFamily: 'Roobert, sans-serif', color: '#222428' }}
-          >
+          <span className="text-[14px] font-heading font-semibold text-[#222428]">
             Effort
           </span>
           <span className="text-[12px] text-gray-400">High effort</span>

@@ -204,7 +204,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
           {/* Gradient media area — matches the page exactly */}
           <div style={{
             borderRadius: 12, overflow: "hidden", flexShrink: 0, height: mediaH,
-            background: isQuote ? `linear-gradient(to bottom, #fff7ca, white)` : `linear-gradient(to bottom, ${accent}, white)`,
+            background: `linear-gradient(to bottom, ${accent}, white)`,
             display: "flex", flexDirection: "column",
             alignItems: "center", justifyContent: "center",
             gap: 10, padding: "16px 20px", boxSizing: "border-box",
@@ -229,15 +229,6 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
 
           {/* Content below media */}
           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-            {isAudio && card.badge && (
-              <span style={{
-                display: "inline-flex", alignItems: "center", height: 20, padding: "0 8px",
-                borderRadius: 99, fontSize: 10, fontWeight: 500,
-                color: "white", backgroundColor: "#222428", width: "fit-content",
-              }}>
-                {card.badge}
-              </span>
-            )}
             <p style={{ fontSize: 16, fontWeight: 600, color: "#222428", lineHeight: 1.35, margin: 0 }}>
               {card.title}
             </p>

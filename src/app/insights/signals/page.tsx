@@ -16,7 +16,6 @@ const FEATURED_CARDS = [
   {
     id: '1',
     type: 'audio' as const,
-    badge: '1 Clip',
     title: 'User Interview: Sam Ledezma',
     description: 'Discussion on "Heavy Board" load times and visual comfort.',
     date: 'Jul 14',
@@ -28,7 +27,6 @@ const FEATURED_CARDS = [
   {
     id: '2',
     type: 'audio' as const,
-    badge: '1 Clip',
     title: 'Call with Siemens Admin',
     description: 'Ayoub El Assri discusses SCIM provisioning hurdles.',
     date: 'Jul 14',
@@ -63,7 +61,6 @@ const FEATURED_CARDS = [
   {
     id: '5',
     type: 'audio' as const,
-    badge: '1 Clip',
     title: 'User Interview: Priya Nair',
     description: 'Frustration with AI suggestions appearing mid-session — breaks focus during live workshops.',
     date: 'Jul 18',
@@ -75,7 +72,6 @@ const FEATURED_CARDS = [
   {
     id: '6',
     type: 'audio' as const,
-    badge: '1 Clip',
     title: 'Call with Adobe',
     description: 'Team requests persistent cursor visibility across large boards during collaborative reviews.',
     date: 'Jul 21',
@@ -111,7 +107,6 @@ const FEATURED_CARDS = [
   {
     id: '9',
     type: 'audio' as const,
-    badge: '1 Clip',
     title: 'User Interview: Tomás Herrera',
     description: 'Wants template locking so junior designers can\'t accidentally overwrite research structures.',
     date: 'Aug 1',
@@ -122,7 +117,6 @@ const FEATURED_CARDS = [
   {
     id: '10',
     type: 'audio' as const,
-    badge: '1 Clip',
     title: 'Call with Siemens PM',
     description: 'Requesting granular export controls — PDF fidelity and selective frame exports are blocking enterprise handoff.',
     date: 'Aug 3',
@@ -145,7 +139,6 @@ const FEATURED_CARDS = [
   {
     id: '12',
     type: 'audio' as const,
-    badge: '1 Clip',
     title: 'User Interview: Kenji Watanabe',
     description: 'Wants real-time translation in sticky notes for cross-regional workshops — a blocker for APAC teams.',
     date: 'Aug 8',
@@ -353,11 +346,6 @@ function FeaturedCard({ card, onAiStar }: { card: typeof FEATURED_CARDS[0]; onAi
         <div className={`flex flex-col gap-1.5 flex-1 min-h-0 ${card.type !== 'quote' ? 'justify-end' : ''}`}>
           {card.type !== 'quote' && (
             <>
-              {card.type === 'audio' && (
-                <span className="h-5 px-2 bg-[#222428] text-white text-[10px] font-medium rounded-[24px] flex items-center w-fit">
-                  {card.badge}
-                </span>
-              )}
               <p className="text-lg font-heading font-medium text-gray-900 leading-snug">{card.title}</p>
               {'description' in card && card.description && (
                 <p className="text-[12px] text-[#656b81] leading-[1.4]">{card.description}</p>
@@ -640,80 +628,51 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 
         {/* Feedback tab */}
         {activeTab === 'feedback' && (
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-3">
             {feedbackItems.map((item, i) => (
-              <motion.div layout key={i} className="rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
+              <div key={i} className="rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
                 onMouseEnter={() => setHoveredFeedback(i)}
                 onMouseLeave={() => setHoveredFeedback(null)}
               >
               <div className="rounded-[16px] bg-white p-4 flex flex-col gap-3">
-                {/* Top row */}
+
+                {/* Top row — always visible */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center h-6 px-2 rounded-full text-xs text-[#222428] whitespace-nowrap" style={{ backgroundColor: item.tagColor }}>
-                      {item.type}
-                    </span>
-                  </div>
-                  <div className={`flex items-center gap-1 transition-opacity duration-150 ${hoveredFeedback === i ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    <button
-                      onClick={async () => {
-                        const canvasName = `${signal.title} · ${item.type}`;
-                        const relatedRows = feedbackItems.map(f => ({
-                          title: f.author,
-                          description: f.text,
-                          source: f.type,
-                          type: 'quote' as const,
-                        }));
-                        localStorage.setItem('nCard', JSON.stringify({
-                          style: 'featured',
-                          cardType: 'quote',
-                          title: item.author,
-                          quote: item.text,
-                          badge: item.type,
-                          accent: item.tagColor,
-                          meta: { person: item.author, date: item.date },
-                          relatedRows,
-                          tableHeading: signal.title,
-                        }));
-                        try {
-                          const spaceRes = await fetch('/api/spaces/space-insights');
-                          const spaceData = spaceRes.ok ? await spaceRes.json() : null;
-                          const existing = (spaceData?.canvases ?? []).find((c: { name: string }) => c.name === canvasName);
-                          if (existing) { router.push(`/space/space-insights/canvas/${existing.id}`); return; }
-                          const res = await fetch('/api/canvases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: canvasName, spaceId: 'space-insights' }) });
-                          const canvas = await res.json();
-                          router.push(`/space/space-insights/canvas/${canvas.id}`);
-                        } catch {}
-                      }}
-                      className="h-7 px-3 rounded-full text-xs font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#f1f2f5] transition-colors whitespace-nowrap"
-                    >
-                      Add to board
-                    </button>
-                    <button className="text-[#aeb2c0] hover:text-[#656b81] transition-colors">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
-                      </svg>
-                    </button>
-                  </div>
+                  <span className="flex items-center h-6 px-2 rounded-full text-xs text-[#222428] whitespace-nowrap" style={{ backgroundColor: item.tagColor }}>
+                    {item.type}
+                  </span>
+                  <button className="text-[#aeb2c0] hover:text-[#656b81] transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                      <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
+                    </svg>
+                  </button>
                 </div>
 
-                {/* Stars */}
-                {item.stars !== null && (
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }, (_, si) => (
-                      <svg key={si} width="14" height="14" viewBox="0 0 16 16" fill={si < item.stars! ? '#222428' : '#e0e2e8'}>
-                        <path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.4l-3.7 1.9.7-4.1-3-2.9 4.2-.7L8 1z" />
-                      </svg>
-                    ))}
-                  </div>
-                )}
+                {/* Stars — only on hover */}
+                <AnimatePresence>
+                  {hoveredFeedback === i && item.stars !== null && (
+                    <motion.div
+                      className="flex items-center gap-0.5 overflow-hidden"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+                    >
+                      {Array.from({ length: 5 }, (_, si) => (
+                        <svg key={si} width="14" height="14" viewBox="0 0 16 16" fill={si < item.stars! ? '#222428' : '#e0e2e8'}>
+                          <path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.4l-3.7 1.9.7-4.1-3-2.9 4.2-.7L8 1z" />
+                        </svg>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                {/* Text */}
-                <p className={`text-[13px] leading-[1.6] ${item.type === 'Problem' ? 'text-[#222428] font-medium' : 'text-[#222428]'}`}>
+                {/* Text — clamped when inactive, full on hover */}
+                <p className={`text-[13px] leading-[1.6] ${item.type === 'Problem' ? 'text-[#222428] font-medium' : 'text-[#222428]'} ${hoveredFeedback === i ? '' : 'line-clamp-2'}`}>
                   {item.text}
                 </p>
 
-                {/* Footer */}
+                {/* Footer — author only when inactive, chips on hover */}
                 <AnimatePresence mode="wait">
                   {hoveredFeedback === i ? (
                     <motion.div
@@ -736,20 +695,44 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                     </motion.div>
                   ) : (
                     <motion.div
-                      key="text"
-                      className="flex flex-col gap-0.5"
+                      key="author"
+                      className="flex items-center"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.1 }}
                     >
-                      <span className="text-[12px] font-medium text-[#222428]">{item.author}</span>
-                      <span className="text-[11px] text-[#aeb2c0]">{item.date}</span>
+                      <span className="text-[12px] text-[#aeb2c0]">{item.author.split(',')[0]}</span>
                     </motion.div>
                   )}
                 </AnimatePresence>
+
+                <button
+                  onClick={async () => {
+                    localStorage.setItem('pendingInsightCard', JSON.stringify({
+                      style: 'featured', cardType: 'quote',
+                      title: item.author.split(',')[0], quote: item.text,
+                      badge: item.type, accent: item.tagColor,
+                      meta: { person: item.author.split(',')[0], source: 'Gong', date: item.date.replace('Added ', '') },
+                      tableHeading: signal.title, relatedRows: [],
+                    }));
+                    try {
+                      const spaceRes = await fetch('/api/spaces/space-insights');
+                      const spaceData = spaceRes.ok ? await spaceRes.json() : null;
+                      const existing = (spaceData?.canvases ?? []).find((c: { name: string }) => c.name === signal.theme);
+                      if (existing) { router.push(`/space/space-insights/canvas/${existing.id}`); return; }
+                      const res = await fetch('/api/canvases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: signal.theme, spaceId: 'space-insights' }) });
+                      const canvas = await res.json();
+                      router.push(`/space/space-insights/canvas/${canvas.id}`);
+                    } catch { router.push('/space/space-insights/canvas/canvas-insights-untitled'); }
+                  }}
+                  className="self-start h-7 px-3 rounded-[24px] text-xs font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors"
+                >
+                  Add to board
+                </button>
+
               </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
@@ -1019,11 +1002,6 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                         <Play size={12} strokeWidth={2} className="text-[#222428] fill-[#222428] ml-0.5" />
                       </button>
                     </div>
-                    {'badge' in copiedSignal && copiedSignal.badge && (
-                      <span className="h-5 px-2 bg-[#222428] text-white text-[10px] font-medium rounded-[24px] flex items-center w-fit">
-                        {copiedSignal.badge}
-                      </span>
-                    )}
                     <p className="text-[15px] font-heading font-medium text-[#222428] leading-snug">{copiedSignal.title}</p>
                     {'description' in copiedSignal && copiedSignal.description && (
                       <p className="text-[13px] text-[#656b81] leading-[1.5] line-clamp-2">{copiedSignal.description}</p>
@@ -1062,7 +1040,7 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                         company: 'company' in c ? c.company as string : undefined,
                         date: c.date,
                       }))
-                    localStorage.setItem('pendingInsightCard', JSON.stringify({
+                    localStorage.setItem('nCard', JSON.stringify({
                       style: 'featured',
                       cardType: copiedSignal.type,
                       title: copiedSignal.title,
@@ -1264,9 +1242,32 @@ export default function SignalsPage() {
   const [copiedSignal, setCopiedSignal] = useState<typeof FEATURED_CARDS[0] | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [direction, setDirection] = useState(1)
+  const router = useRouter()
   const openAiPanel = () => { setAiOpen(true); setSelectedSignal(null) }
   const selectSignal = (row: typeof SIGNAL_ROWS[0]) => { setSelectedSignal(row); setAiOpen(false) }
   const handleAiStar = (card: typeof FEATURED_CARDS[0]) => { setCopiedSignal(card); setAiOpen(true); setSelectedSignal(null) }
+
+  const TAG_ACCENT: Record<string, string> = { Customer: '#FFF6B6', Urgent: '#FFD8F4', Market: '#C6DCFF', New: '#BADEB1', Strengthening: '#F8D3AF' }
+  const SRC_LABEL: Record<string, string> = { audio: 'Gong', globe: 'Web', mobile: 'App Store' }
+  const openSignalOnCanvas = async (row: typeof SIGNAL_ROWS[0]) => {
+    localStorage.setItem('pendingInsightCard', JSON.stringify({
+      style: 'featured', cardType: 'audio',
+      title: row.title, description: row.theme,
+      badge: SRC_LABEL[row.sourceIcon] ?? row.sourceIcon,
+      accent: TAG_ACCENT[row.tags[0]?.label ?? ''] ?? '#e9eaef',
+      meta: { source: SRC_LABEL[row.sourceIcon] ?? row.sourceIcon, arr: row.revenue },
+      tableHeading: row.theme, relatedRows: [],
+    }))
+    try {
+      const spaceRes = await fetch('/api/spaces/space-insights')
+      const spaceData = spaceRes.ok ? await spaceRes.json() : null
+      const existing = (spaceData?.canvases ?? []).find((c: { name: string }) => c.name === row.theme)
+      if (existing) { router.push(`/space/space-insights/canvas/${existing.id}`); return }
+      const res = await fetch('/api/canvases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: row.theme, spaceId: 'space-insights' }) })
+      const canvas = await res.json()
+      router.push(`/space/space-insights/canvas/${canvas.id}`)
+    } catch { router.push('/space/space-insights/canvas/canvas-insights-untitled') }
+  }
 
   const cardsPerPage = (aiOpen || selectedSignal) ? 2 : 3
   const totalPages = Math.ceil(FEATURED_CARDS.length / cardsPerPage)
