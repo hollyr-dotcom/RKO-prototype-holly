@@ -170,7 +170,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
             gap: 10, padding: "16px 20px", boxSizing: "border-box",
           }}>
             {/* Show play button for audio cards, or any featured card that isn't a quote */}
-            {(isAudio || (!isQuote && card.style === 'featured')) && (
+            {!isQuote && (
               <div style={{
                 width: 36, height: 36, borderRadius: "50%",
                 backgroundColor: "rgba(255,255,255,0.85)",
@@ -178,9 +178,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
                 display: "flex", alignItems: "center", justifyContent: "center",
                 flexShrink: 0,
               }}>
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="#222428">
-                  <path d="M4 2 L14 8 L4 14 Z" />
-                </svg>
+                <span style={{ fontSize: 14, color: "#222428", lineHeight: 1, marginLeft: 2 }}>▶</span>
               </div>
             )}
             {isQuote && card.quote && (
