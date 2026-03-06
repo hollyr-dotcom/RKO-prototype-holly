@@ -998,9 +998,14 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                   transition={{ duration: 0.3, delay: 0.3, ease: [0.2, 0, 0, 1] }}
                 >
                   <div className="relative bg-white rounded-[14px] p-4 flex flex-col gap-2.5">
-                    <button className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full text-[#aeb2c0] hover:text-[#656b81] transition-colors">
-                      <MoreVertical size={14} strokeWidth={1.5} />
-                    </button>
+                    <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                      <button className="w-6 h-6 flex items-center justify-center rounded-full text-[#aeb2c0] hover:text-[#656b81] transition-colors">
+                        <MoreVertical size={14} strokeWidth={1.5} />
+                      </button>
+                      <button className="w-7 h-7 flex items-center justify-center rounded-full bg-[#BADEB1]">
+                        <Play size={12} strokeWidth={2} className="text-[#222428] fill-[#222428] ml-0.5" />
+                      </button>
+                    </div>
                     {'badge' in copiedSignal && copiedSignal.badge && (
                       <span className="h-5 px-2 bg-[#222428] text-white text-[10px] font-medium rounded-[24px] flex items-center w-fit">
                         {copiedSignal.badge}
