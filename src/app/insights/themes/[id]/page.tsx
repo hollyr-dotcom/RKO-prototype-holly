@@ -125,12 +125,15 @@ const CARD_ACCENT: Record<string, string> = {
 
 }
 
-const FEATURED_CARDS = [
-  { id: '3', type: 'quote' as const, quote: '"The new feature clearly drives revenue when adopted, but most users aren\'t getting there. We\'re investing in big bets while the core experience that drives engagement feels stuck."', duration: '32m 34s', title: 'Call with Spotify', person: 'John Cusick', company: 'Spotify', date: 'Jul 14', source: 'Gong', logo: 'spotify' },
-  { id: '4', type: 'quote' as const, quote: '"The Miro Assist summarization has cut our research review time by 60%… We can now cluster insights across thousands of sticky notes in seconds."', duration: '12m 04s', title: 'Call with Apple', person: 'James Watson', company: 'Apple', date: 'Jul 14', source: 'Gong', logo: 'apple' },
-  { id: '7', type: 'quote' as const, quote: '"We run design sprints with 40+ people on a single board. The lag when everyone is active at once is a dealbreaker — we\'ve nearly lost the account over it."', duration: '28m 12s', title: 'Call with Spotify', person: 'Anna Bergström', company: 'Spotify', date: 'Jul 22', source: 'Gong', logo: 'spotify' },
-  { id: '8', type: 'quote' as const, quote: '"We need SSO that actually works with our IdP out of the box. Every workaround costs us an IT sprint and delays our org-wide rollout."', duration: '41m 07s', title: 'Call with Apple', person: 'Derek Chu', company: 'Apple', date: 'Jul 25', source: 'Gong', logo: 'apple' },
-  { id: '11', type: 'quote' as const, quote: '"Diagramming in Miro is close but the auto-layout still falls short for complex system maps. One misaligned node and the whole thing breaks."', duration: '19m 48s', title: 'Call with Spotify', person: 'Clara Johansson', company: 'Spotify', date: 'Aug 6', source: 'Gong', logo: 'spotify' },
+type FeaturedCardType = 'audio' | 'quote' | 'clips'
+interface FeaturedCard { id: string; type: FeaturedCardType; quote?: string; duration?: string; title: string; person?: string; company?: string; date?: string; source?: string; logo?: string; accent?: string; description?: string; badge?: string }
+
+const FEATURED_CARDS: FeaturedCard[] = [
+  { id: '3', type: 'quote', quote: '"The new feature clearly drives revenue when adopted, but most users aren\'t getting there. We\'re investing in big bets while the core experience that drives engagement feels stuck."', duration: '32m 34s', title: 'Call with Spotify', person: 'John Cusick', company: 'Spotify', date: 'Jul 14', source: 'Gong', logo: 'spotify' },
+  { id: '4', type: 'quote', quote: '"The Miro Assist summarization has cut our research review time by 60%… We can now cluster insights across thousands of sticky notes in seconds."', duration: '12m 04s', title: 'Call with Apple', person: 'James Watson', company: 'Apple', date: 'Jul 14', source: 'Gong', logo: 'apple' },
+  { id: '7', type: 'quote', quote: '"We run design sprints with 40+ people on a single board. The lag when everyone is active at once is a dealbreaker — we\'ve nearly lost the account over it."', duration: '28m 12s', title: 'Call with Spotify', person: 'Anna Bergström', company: 'Spotify', date: 'Jul 22', source: 'Gong', logo: 'spotify' },
+  { id: '8', type: 'quote', quote: '"We need SSO that actually works with our IdP out of the box. Every workaround costs us an IT sprint and delays our org-wide rollout."', duration: '41m 07s', title: 'Call with Apple', person: 'Derek Chu', company: 'Apple', date: 'Jul 25', source: 'Gong', logo: 'apple' },
+  { id: '11', type: 'quote', quote: '"Diagramming in Miro is close but the auto-layout still falls short for complex system maps. One misaligned node and the whole thing breaks."', duration: '19m 48s', title: 'Call with Spotify', person: 'Clara Johansson', company: 'Spotify', date: 'Aug 6', source: 'Gong', logo: 'spotify' },
 ]
 
 
@@ -203,7 +206,7 @@ function FeaturedCard({ card, accent: accentOverride, onCopy }: { card: typeof F
           {card.type !== 'quote' && (
             <>
               <p className="text-lg font-heading font-medium text-gray-900 leading-snug">{card.title}</p>
-              {'description' in card && card.description && <p className="text-[12px] text-[#656b81] leading-[1.4]">{card.description}</p>}
+              {'description' in card && card.description && <p className="text-[12px] text-[#656b81] leading-[1.4]">{card.description as string}</p>}
             </>
           )}
           {card.type === 'quote' && (
