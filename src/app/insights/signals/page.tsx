@@ -991,12 +991,13 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
               </div>
               <div className="flex-1 flex flex-col gap-3">
                 <motion.div
-                  className="rounded-[16px] border border-[#e0e2e8] bg-white overflow-hidden"
+                  className="rounded-[16px] overflow-hidden"
+                  style={{ backgroundColor: ('accent' in copiedSignal && copiedSignal.accent) ? copiedSignal.accent as string : CARD_ACCENT[copiedSignal.type], padding: '2px 2px 6px 2px' }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: 0.3, ease: [0.2, 0, 0, 1] }}
                 >
-                  <div className="p-4 flex flex-col gap-2.5">
+                  <div className="bg-white rounded-[14px] p-4 flex flex-col gap-2.5">
                     <div className="flex items-center gap-1.5">
                       <span className="px-2.5 py-1 rounded-full text-xs text-[#222428] bg-[#f1f2f5]">{copiedSignal.source}</span>
                       <span className="px-2.5 py-1 rounded-full text-xs text-[#222428] bg-[#f1f2f5]">{copiedSignal.date}</span>
@@ -1103,7 +1104,7 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
               </motion.div>
             </motion.div>
           </AnimatePresence>
-        ) : (
+        ) : !copiedSignal ? (
           <div className="flex flex-col gap-6 px-4">
             <div className="flex flex-col gap-2">
               <p className="text-[#222428] text-[28px] font-serif leading-[1.4]">
@@ -1135,7 +1136,7 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
               ))}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Input */}
