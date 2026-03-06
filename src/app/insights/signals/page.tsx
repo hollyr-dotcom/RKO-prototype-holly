@@ -1044,6 +1044,15 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                       const accent = ('accent' in copiedSignal && copiedSignal.accent)
                         ? copiedSignal.accent as string
                         : CARD_ACCENT[copiedSignal.type] ?? '#f1f2f5'
+                      const relatedRows = FEATURED_CARDS
+                        .filter(c => c.id !== copiedSignal.id)
+                        .slice(0, 5)
+                        .map(c => ({
+                          title: c.title,
+                          type: c.type,
+                          company: 'company' in c ? c.company as string : undefined,
+                          date: c.date,
+                        }))
                       localStorage.setItem('pendingInsightCard', JSON.stringify({
                         style: 'featured',
                         cardType: copiedSignal.type,
@@ -1058,6 +1067,7 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                           source: copiedSignal.source,
                           date: copiedSignal.date,
                         },
+                        relatedRows,
                       }))
                     }
                   }}

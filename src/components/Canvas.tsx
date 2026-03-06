@@ -38,6 +38,7 @@ import { PeopleListShapeUtil } from "@/shapes/PeopleListShapeUtil";
 import { WorkdayCardShapeUtil } from "@/shapes/WorkdayCardShapeUtil";
 import { SlackCardShapeUtil } from "@/shapes/SlackCardShapeUtil";
 import { InsightCardShapeUtil, INSIGHT_CARD_SHAPE_TYPE, type InsightCardData } from "@/shapes/InsightCardShapeUtil";
+import { InsightTableShapeUtil, INSIGHT_TABLE_SHAPE_TYPE, type InsightTableData } from "@/shapes/InsightTableShapeUtil";
 import { ConnectorLineShapeUtil, CONNECTOR_LINE_SHAPE_TYPE, computeConnectorPath } from "@/shapes/ConnectorLineShapeUtil";
 import { Toolbar } from "./toolbar/Toolbar";
 import { StartingPromptCards } from "./StartingPromptCards";
@@ -850,7 +851,7 @@ export function Canvas() {
 
   // LiveBlocks multiplayer store -- syncs tldraw state across users
   const [sessionUser] = useState(() => authUser ? getSessionUser(authUser) : getLocalDevUser());
-  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil, ApproveButtonShapeUtil, PeopleListShapeUtil, WorkdayCardShapeUtil, SlackCardShapeUtil, InsightCardShapeUtil, ConnectorLineShapeUtil], []);
+  const customShapeUtils = useMemo(() => [DocumentShapeUtil, DataTableShapeUtil, CommentShapeUtil, TaskCardShapeUtil, GanttChartShapeUtil, KanbanBoardShapeUtil, ApproveButtonShapeUtil, PeopleListShapeUtil, WorkdayCardShapeUtil, SlackCardShapeUtil, InsightCardShapeUtil, InsightTableShapeUtil, ConnectorLineShapeUtil], []);
   const storeWithStatus = useStorageStore({ shapeUtils: customShapeUtils, user: sessionUser });
 
   // Prevent browser back/forward navigation from trackpad gestures (Safari + fallback)
@@ -4690,27 +4691,48 @@ export function Canvas() {
       const pending = localStorage.getItem('pendingInsightCard');
       if (pending) {
         localStorage.removeItem('pendingInsightCard');
-        const card = JSON.parse(pending) as InsightCardData;
+        const payload = JSON.parse(pending) as InsightCardData & { relatedRows?: InsightTableData['rows'] };
+        const card: InsightCardData = payload;
         setTimeout(() => {
           // Clear all existing shapes from the board
           const existing = editor.getCurrentPageShapes();
           if (existing.length > 0) {
             editor.deleteShapes(existing.map((s) => s.id));
           }
-          // Place the insight card in the centre
-          const id = createShapeId();
-          const w = 260;
-          const h = card.style === 'theme'
+          const cardW = 260;
+          const cardH = card.style === 'theme'
             ? (card.image ? 340 : 220)
             : (card.cardType === 'quote' ? 440 : 380);
+          const gap = 24;
+          const tableW = 500;
+          const tableH = cardH;
+          const totalW = cardW + gap + tableW;
+
+          // Place card on the left
+          const cardId = createShapeId();
           editor.createShape({
-            id,
+            id: cardId,
             type: INSIGHT_CARD_SHAPE_TYPE,
-            x: -(w / 2),
-            y: -(h / 2),
-            props: { w, h, card },
+            x: -(totalW / 2),
+            y: -(cardH / 2),
+            props: { w: cardW, h: cardH, card },
           });
-          editor.select(id);
+
+          // Place table to the right
+          const tableId = createShapeId();
+          const table: InsightTableData = {
+            heading: card.style === 'theme' ? 'Related themes' : 'Related signals',
+            rows: payload.relatedRows ?? [],
+          };
+          editor.createShape({
+            id: tableId,
+            type: INSIGHT_TABLE_SHAPE_TYPE,
+            x: -(totalW / 2) + cardW + gap,
+            y: -(tableH / 2),
+            props: { w: tableW, h: tableH, table },
+          });
+
+          editor.selectAll();
           editor.zoomToSelection({ animation: { duration: 400 } });
         }, 600);
       }

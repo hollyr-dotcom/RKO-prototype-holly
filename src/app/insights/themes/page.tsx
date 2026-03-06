@@ -265,6 +265,15 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                     if (copiedThemeCard) {
                       const firstTag = copiedThemeCard.tags?.[0]?.label
                       const accent = TAG_BG[firstTag ?? ''] ?? '#f1f2f5'
+                      const relatedRows = THEME_CARDS
+                        .filter(c => c.id !== copiedThemeCard.id)
+                        .slice(0, 5)
+                        .map(c => ({
+                          title: c.title,
+                          type: 'theme',
+                          tags: c.tags.map(t => t.label),
+                          arr: c.meta.arr,
+                        }))
                       localStorage.setItem('pendingInsightCard', JSON.stringify({
                         style: 'theme',
                         title: copiedThemeCard.title,
@@ -279,6 +288,7 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                           likes: copiedThemeCard.meta?.likes,
                           comments: copiedThemeCard.meta?.comments,
                         },
+                        relatedRows,
                       }))
                     }
                   }}
