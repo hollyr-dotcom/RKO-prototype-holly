@@ -421,6 +421,12 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
   const router = useRouter()
   const themeCard = THEME_CARDS.find(c => c.title.toLowerCase().includes(signal.theme.toLowerCase()) || signal.theme.toLowerCase().includes(c.title.toLowerCase().split(' ').slice(0, 3).join(' ')))
 
+  const feedbackItems = [
+    { type: 'Request' as const, tagColor: '#BADEB1', platforms: ['mobile', 'apple'], text: `Users are reporting that ${signal.title.toLowerCase()} is creating friction in their workflow. This is making it difficult to complete key tasks efficiently, and engagement may decline as a result.`, author: 'Kajsa Bell, CPO', date: 'Added 1 month ago', stars: null },
+    { type: 'Problem' as const, tagColor: '#FFD8F4', platforms: ['mobile', 'apple'], text: `"The overall experience feels slow and unresponsive when this issue occurs. Each attempt is followed by a noticeable delay, creating the impression that the system is overprocessing before responding."`, author: 'Marco Rossi, PM', date: 'Added 1 month ago', stars: 2 },
+    { type: 'Praise' as const, tagColor: '#DEDAFF', platforms: ['mobile'], text: `When it works well, the experience is seamless. Users appreciate the speed and reliability when ${signal.theme.toLowerCase()} is functioning as expected.`, author: 'Priya Nair, Designer', date: 'Added 2 months ago', stars: null },
+  ];
+
   const expandedLeft = navWidth
 
   const revenueNum = parseFloat(signal.revenue.replace(/[^0-9.]/g, ''))
@@ -633,37 +639,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
         )}
 
         {/* Feedback tab */}
-        {activeTab === 'feedback' && (() => {
-          const feedbackItems = [
-            {
-              type: 'Request' as const,
-              tagColor: '#BADEB1',
-              platforms: ['mobile', 'apple'],
-              text: `Users are reporting that ${signal.title.toLowerCase()} is creating friction in their workflow. This is making it difficult to complete key tasks efficiently, and engagement may decline as a result.`,
-              author: 'Kajsa Bell, CPO',
-              date: 'Added 1 month ago',
-              stars: null,
-            },
-            {
-              type: 'Problem' as const,
-              tagColor: '#FFD8F4',
-              platforms: ['mobile', 'apple'],
-              text: `"The overall experience feels slow and unresponsive when this issue occurs. Each attempt is followed by a noticeable delay, creating the impression that the system is overprocessing before responding."`,
-              author: 'Marco Rossi, PM',
-              date: 'Added 1 month ago',
-              stars: 2,
-            },
-            {
-              type: 'Praise' as const,
-              tagColor: '#DEDAFF',
-              platforms: ['mobile'],
-              text: `When it works well, the experience is seamless. Users appreciate the speed and reliability when ${signal.theme.toLowerCase()} is functioning as expected.`,
-              author: 'Priya Nair, Designer',
-              date: 'Added 2 months ago',
-              stars: null,
-            },
-          ];
-          return (
+        {activeTab === 'feedback' && (
           <div className="flex flex-col gap-8">
             {feedbackItems.map((item, i) => (
               <motion.div layout key={i} className="rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
@@ -776,8 +752,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
               </motion.div>
             ))}
           </div>
-          );
-        })()}
+        )}
 
         {/* Details tab */}
         {activeTab === 'details' && (
