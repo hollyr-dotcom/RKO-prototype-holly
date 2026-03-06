@@ -1029,7 +1029,7 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                   </div>
                 </motion.div>
                 <motion.a
-                  href="/space/space-roadmaps/canvas/canvas-roadmaps-01"
+                  href="/space/space-insights/canvas/canvas-insights-untitled"
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => {

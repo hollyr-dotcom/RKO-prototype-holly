@@ -144,5 +144,14 @@
     "createdAt": "2026-01-06T09:00:00Z",
     "updatedAt": "2026-02-23T08:00:00Z",
     "order": 15
+  },
+  {
+    "id": "space-insights",
+    "name": "Insights",
+    "description": "Boards created from Insights",
+    "emoji": "✨",
+    "createdAt": "2026-03-05T10:00:00Z",
+    "updatedAt": "2026-03-05T10:00:00Z",
+    "order": 16
   }
 ]

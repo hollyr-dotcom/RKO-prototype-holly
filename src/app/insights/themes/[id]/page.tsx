@@ -454,7 +454,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                 })()}
 
                 <a
-                  href="/space/space-roadmaps/canvas/canvas-roadmaps-01"
+                  href="/space/space-insights/canvas/canvas-insights-untitled"
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => {

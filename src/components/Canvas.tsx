@@ -4692,13 +4692,18 @@ export function Canvas() {
         localStorage.removeItem('pendingInsightCard');
         const card = JSON.parse(pending) as InsightCardData;
         setTimeout(() => {
+          // Clear all existing shapes from the board
+          const existing = editor.getCurrentPageShapes();
+          if (existing.length > 0) {
+            editor.deleteShapes(existing.map((s) => s.id));
+          }
+          // Place the insight card in the centre
           const id = createShapeId();
-          const vp = editor.getViewportPageBounds();
           editor.createShape({
             id,
             type: INSIGHT_CARD_SHAPE_TYPE,
-            x: vp.x + vp.w / 2 - 140,
-            y: vp.y + vp.h / 2 - 100,
+            x: -140,
+            y: -100,
             props: { w: 280, h: 200, card },
           });
           editor.select(id);
