@@ -289,6 +289,13 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                       tableHeading: copiedThemeCard.title,
                     }))
                     try {
+                      const spaceRes = await fetch('/api/spaces/space-insights')
+                      const spaceData = spaceRes.ok ? await spaceRes.json() : null
+                      const existing = (spaceData?.canvases ?? []).find((c: { name: string }) => c.name === copiedThemeCard.title)
+                      if (existing) {
+                        router.push(`/space/space-insights/canvas/${existing.id}`)
+                        return
+                      }
                       const res = await fetch('/api/canvases', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

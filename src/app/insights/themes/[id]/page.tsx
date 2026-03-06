@@ -483,6 +483,13 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                       }))
                     localStorage.setItem('pendingInsightCard', JSON.stringify({ style: 'featured', cardType: copiedCard.type, title, description: 'description' in copiedCard ? copiedCard.description as string : undefined, quote, badge, accent, meta, relatedRows, tableHeading: theme.title }))
                     try {
+                      const spaceRes = await fetch('/api/spaces/space-insights')
+                      const spaceData = spaceRes.ok ? await spaceRes.json() : null
+                      const existing = (spaceData?.canvases ?? []).find((c: { name: string }) => c.name === theme.title)
+                      if (existing) {
+                        router.push(`/space/space-insights/canvas/${existing.id}`)
+                        return
+                      }
                       const res = await fetch('/api/canvases', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

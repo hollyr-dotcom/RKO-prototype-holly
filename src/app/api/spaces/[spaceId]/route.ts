@@ -13,14 +13,31 @@ export async function GET(
 
     const { spaceId } = await params;
 
-    const { data: space, error } = await supabase
+    let { data: space, error } = await supabase
       .from('spaces')
       .select('*')
       .eq('id', spaceId)
       .single();
 
     if (error || !space) {
-      return NextResponse.json({ error: "Space not found" }, { status: 404 });
+      // Auto-create the space if it doesn't exist yet
+      const now = new Date().toISOString();
+      const defaultNames: Record<string, string> = {
+        'space-insights': 'Insights',
+      };
+      const name = defaultNames[spaceId];
+      if (!name) {
+        return NextResponse.json({ error: "Space not found" }, { status: 404 });
+      }
+      const { data: created, error: createError } = await supabase
+        .from('spaces')
+        .insert({ id: spaceId, name, description: '', created_at: now, updated_at: now, order: 9999 })
+        .select()
+        .single();
+      if (createError || !created) {
+        return NextResponse.json({ error: "Space not found" }, { status: 404 });
+      }
+      space = created;
     }
 
     const { data: canvases, error: canvasError } = await supabase
@@ -38,9 +55,17 @@ export async function GET(
       .eq('space_id', spaceId)
       .order('order', { ascending: true });
 
+    // Deduplicate canvases by name — keep the most recent (highest order / latest id) per name
+    const seen = new Map<string, typeof canvases[0]>();
+    for (const c of (canvases || [])) {
+      const prev = seen.get(c.name);
+      if (!prev || c.order > prev.order) seen.set(c.name, c);
+    }
+    const dedupedCanvases = [...seen.values()].sort((a, b) => a.order - b.order);
+
     return NextResponse.json({
       ...spaceRowToApi(space),
-      canvases: (canvases || []).map(canvasRowToApi),
+      canvases: dedupedCanvases.map(canvasRowToApi),
       boardSections: (sections || []).map(boardSectionRowToApi),
     });
   } catch (error) {

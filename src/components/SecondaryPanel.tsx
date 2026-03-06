@@ -29,7 +29,7 @@ type Space = {
 };
 
 // Fixed pages for a space — Overview + space-specific sections
-const SPACE_SECTIONS: Record<string, { id: string; label: string }[]> = {
+const SPACE_SECTIONS: Record<string, { id: string; label: string; href?: string }[]> = {
   // Portfolio
   "space-paygrid": [
     { id: "tasks", label: "Tasks" },
@@ -98,6 +98,12 @@ const SPACE_SECTIONS: Record<string, { id: string; label: string }[]> = {
     { id: "people", label: "People" },
     { id: "budget", label: "Budget" },
     { id: "timeline", label: "Timeline" },
+  ],
+  // Insights
+  "space-insights": [
+    { id: "overview",      label: "Overview",      href: "/insights/overview" },
+    { id: "opportunities", label: "Opportunities", href: "/insights/themes" },
+    { id: "signals",       label: "Signals",       href: "/insights/signals" },
   ],
   // 1:1s
   "space-1on1-james": [
@@ -505,25 +511,27 @@ export function SecondaryPanel() {
                 initial="hidden"
                 animate="visible"
               >
-                <motion.div variants={staggerItem}>
-                  <CapabilityItem
-                    label="Overview"
-                    isSelected={selectedCapability === "overview"}
-                    onClick={() => {}}
-                    href={`/space/${params.spaceId}`}
-                    highlightColor="var(--space-100)"
-                    activeTextColor="var(--space-accent)"
-                  />
-                </motion.div>
+                {!(SPACE_SECTIONS[params.spaceId ?? ""] ?? []).some(s => s.id === "overview") && (
+                  <motion.div variants={staggerItem}>
+                    <CapabilityItem
+                      label="Overview"
+                      isSelected={selectedCapability === "overview"}
+                      onClick={() => {}}
+                      href={`/space/${params.spaceId}`}
+                      highlightColor="var(--space-100)"
+                      activeTextColor="var(--space-accent)"
+                    />
+                  </motion.div>
+                )}
                 {(params.spaceId && SPACE_SECTIONS[params.spaceId] || []).map((section) => (
                   <motion.div key={section.id} variants={staggerItem}>
                     <CapabilityItem
                       label={section.label}
                       isSelected={selectedCapability === section.id}
                       onClick={() => {}}
-                      href={`/space/${params.spaceId}/${section.id}`}
-                      highlightColor="var(--space-100)"
-                      activeTextColor="var(--space-accent)"
+                      href={section.href ?? `/space/${params.spaceId}/${section.id}`}
+                      highlightColor={params.spaceId === "space-insights" ? "#E7E7E5" : "var(--space-100)"}
+                      activeTextColor={params.spaceId === "space-insights" ? "#222428" : "var(--space-accent)"}
                     />
                   </motion.div>
                 ))}
@@ -547,7 +555,9 @@ export function SecondaryPanel() {
               </div>
 
               {/* Board items — grouped by section or flat list */}
-              {params.spaceId && BOARD_SECTIONS[params.spaceId] ? (
+              {params.spaceId === "space-insights" ? (
+                <InsightsBoardList canvases={canvases} activePath={pathname} />
+              ) : params.spaceId && BOARD_SECTIONS[params.spaceId] ? (
                 <GroupedBoardList
                   sections={BOARD_SECTIONS[params.spaceId]}
                   canvases={canvases}
@@ -829,5 +839,121 @@ function BoardSectionItem({
         )}
       </AnimatePresence>
     </Reorder.Item>
+  );
+}
+
+/* ── Static insights board list ────────────────────────────────── */
+
+const INSIGHTS_STATIC_SECTIONS = [
+  {
+    label: "Research",
+    items: [
+      {
+        label: "Interview Synthesis",
+        icon: <path fill="currentColor" d="M20 12a8 8 0 1 0-14.816 4.19l.103.82-.764 2.458 2.431-.77.83.103A7.976 7.976 0 0 0 12 20a8 8 0 0 0 8-8Zm2 0c0 5.523-4.477 10-10 10a9.973 9.973 0 0 1-4.864-1.263l-3.833 1.216-1.258-1.25 1.201-3.867A9.958 9.958 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10ZM7.95 8h2v2h-2V8Zm6 0h2v2h-2V8Zm2.949 5a5 5 0 0 1-9.797 0H9.17a2.998 2.998 0 0 0 5.655 0H16.9Z" />,
+      },
+      {
+        label: "Survey Analysis — Q1",
+        icon: <path fill="currentColor" d="M11.625 9.219l4.122 3.299 4.405-7.048 1.696 1.06-5 8-1.473.251-4.148-3.319-3.395 5.092-1.664-1.109 4-6 1.457-.226Z" />,
+      },
+    ],
+  },
+  {
+    label: "Analysis",
+    items: [
+      {
+        label: "Opportunity Clustering",
+        icon: <><path fill="currentColor" d="M5.5 16A2.5 2.5 0 0 0 8 18.5v1A2.5 2.5 0 0 0 5.5 22h-1A2.5 2.5 0 0 0 2 19.5v-1A2.5 2.5 0 0 0 4.5 16h1Z" /><path fill="currentColor" d="M10.678 5.207c.325-1.368 2.319-1.37 2.644 0l.027.142.042.255a6.26 6.26 0 0 0 5.26 5.046c1.553.224 1.561 2.473 0 2.699a6.26 6.26 0 0 0-5.302 5.301c-.225 1.563-2.475 1.554-2.699 0a6.26 6.26 0 0 0-5.3-5.3c-1.56-.225-1.557-2.474 0-2.699l.255-.042a6.26 6.26 0 0 0 5.046-5.26l.028-.141Z" /><path fill="currentColor" d="M19.5 2A2.5 2.5 0 0 0 22 4.5v1A2.5 2.5 0 0 0 19.5 8h-1A2.5 2.5 0 0 0 16 5.5v-1A2.5 2.5 0 0 0 18.5 2h1Z" /></>,
+      },
+      {
+        label: "Sentiment Trends",
+        icon: <path fill="currentColor" fillRule="evenodd" d="m9 20.868.438.292a5 5 0 0 0 2.773.84h4.29a5.5 5.5 0 0 0 5.5-5.5V12a4 4 0 0 0-4-4h-3.147l.853-2.772a3.35 3.35 0 0 0-6.352-2.13l-.867 2.384A6.61 6.61 0 0 1 7.7 7H3L2 8v12l1 1h6v-.132Zm3.797-17.944a1.35 1.35 0 0 0-1.562.857l-.868 2.385A8.609 8.609 0 0 1 9 8.6v9.864l1.547 1.031a3 3 0 0 0 1.664.504h4.29a3.5 3.5 0 0 0 3.5-3.5V12a2 2 0 0 0-2-2h-4.5l-.957-1.294 1.252-4.066a1.351 1.351 0 0 0-.999-1.716ZM4 19V9h3v10H4Z" clipRule="evenodd" />,
+      },
+      {
+        label: "Competitor Signals",
+        icon: <path fill="currentColor" d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2ZM9.043 13c.245 2.895 1.524 5.343 3.016 6.744 1.465-1.392 2.673-3.832 2.902-6.744H9.043Zm-4.979 0a8.006 8.006 0 0 0 5.197 6.519C8.065 17.772 7.218 15.497 7.037 13H4.064Zm12.9 0c-.168 2.465-.95 4.723-2.099 6.469A8.004 8.004 0 0 0 19.935 13h-2.97Zm-2.226-8.52c1.196 1.748 2.044 4.023 2.225 6.52h2.973a8.007 8.007 0 0 0-5.198-6.52ZM12 4.312C10.534 5.723 9.285 8.145 9.043 11h5.914c-.242-2.856-1.49-5.277-2.957-6.688Zm-2.74.168A8.007 8.007 0 0 0 4.065 11h2.973c.181-2.497 1.028-4.772 2.224-6.52Z" />,
+      },
+    ],
+  },
+  {
+    label: "Outcomes",
+    items: [
+      {
+        label: "Roadmap Recommendations",
+        icon: <path fill="currentColor" fillRule="evenodd" d="M19.274 2.961a11.706 11.706 0 0 1 .765.038l.049.005h.014l.005.002h.002l.883.87.001.003v.005l.002.014a3.545 3.545 0 0 1 .019.204c.01.132.02.32.025.551a12.12 12.12 0 0 1-.11 1.857c-.203 1.486-.75 3.437-2.16 5.13l-.062.067-.622.621.895 4.476-.273.903-4 4-1.688-.51-.94-4.705-4.572-4.571-4.703-.94-.511-1.688 4-4 .903-.273 4.475.894.622-.621.283-.267c1.444-1.278 3.3-1.769 4.733-1.956a13.589 13.589 0 0 1 1.965-.109Zm-5.189 13.367.528 2.644 2.301-2.301-.528-2.644-2.301 2.301ZM19.039 4.96c-.401 0-.912.02-1.473.094-1.263.165-2.651.575-3.662 1.468l-.197.185L9.414 11 13 14.586l4.25-4.251c1.075-1.302 1.525-2.84 1.696-4.096.067-.49.09-.929.093-1.279ZM5.027 9.386l2.644.528 2.3-2.3-2.643-.529-2.3 2.3Zm1.68 6.321c-.782.782-1.136 1.153-1.36 1.645-.16.353-.271.82-.32 1.62.8-.049 1.268-.159 1.621-.32.492-.223.863-.577 1.645-1.359l1.414 1.414c-.718.718-1.347 1.364-2.23 1.766C6.585 20.878 5.529 21 4 21l-1-1c0-1.53.122-2.585.527-3.477.402-.883 1.048-1.512 1.766-2.23l1.414 1.414Z" clipRule="evenodd" />,
+      },
+      {
+        label: "Stakeholder Readout",
+        icon: <path fill="currentColor" d="M20 12a8 8 0 1 0-14.953 3.959l.137.23.103.822-.764 2.457 2.431-.77.83.103.282.167A7.965 7.965 0 0 0 12 20a8 8 0 0 0 8-8Zm2 0c0 5.523-4.477 10-10 10a9.971 9.971 0 0 1-4.864-1.263l-3.833 1.216-1.258-1.25 1.201-3.867A9.958 9.958 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10ZM7 11h2v2H7v-2Zm4 0h2v2h-2v-2Zm4 0h2v2h-2v-2Z" />,
+      },
+    ],
+  },
+];
+
+function InsightsBoardList({ canvases, activePath }: { canvases: Canvas[]; activePath: string }) {
+  return (
+    <div className="flex flex-col gap-2 mt-1">
+      {INSIGHTS_STATIC_SECTIONS.map((section) => (
+        <div key={section.label} className="flex flex-col">
+          <div className="group flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full font-semibold text-gray-500">
+            <span className="flex-1 text-left">{section.label}</span>
+          </div>
+          <div className="pt-[6px]">
+            <div className="flex flex-col gap-0.5">
+              {section.items.map((item) => (
+                <a
+                  key={item.label}
+                  href="#"
+                  className="flex items-center gap-3 h-9 px-3 rounded-lg text-sm transition-colors duration-200 text-gray-700 hover:bg-gray-100"
+                >
+                  <span className="w-5 h-5 flex items-center justify-center flex-shrink-0 text-gray-400">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" style={{ width: 20, height: 20 }}>
+                      {item.icon}
+                    </svg>
+                  </span>
+                  <span className="truncate flex-1">{item.label}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Dynamic boards from "Open in Canvas" */}
+      {canvases.length > 0 && (
+        <div className="flex flex-col">
+          <div className="group flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full font-semibold text-gray-500">
+            <span className="flex-1 text-left">Saved</span>
+          </div>
+          <div className="pt-[6px]">
+            <div className="flex flex-col gap-0.5">
+              {canvases.map((canvas) => {
+                const href = `/space/space-insights/canvas/${canvas.id}`;
+                const isActive = activePath === href;
+                return (
+                  <Link
+                    key={canvas.id}
+                    href={href}
+                    className="flex items-center gap-3 h-9 px-3 rounded-lg text-sm transition-colors duration-200"
+                    style={{
+                      color: isActive ? "rgb(56,56,56)" : "rgb(107,107,107)",
+                      fontWeight: isActive ? 500 : 400,
+                      backgroundColor: isActive ? "var(--color-gray-200)" : "transparent",
+                    }}
+                  >
+                    <span className="w-5 h-5 flex items-center justify-center flex-shrink-0 text-gray-400">
+                      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" style={{ width: 20, height: 20 }}>
+                        <path fill="currentColor" fillRule="evenodd" d="M18 14h-7v-2h7v2ZM13 3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2.584l1.25 3H15.5l-1.25-3h-4.5L8.5 22H6.333l1.25-3H5a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h6V1h2v2ZM5 5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1H5Z" clipRule="evenodd" />
+                      </svg>
+                    </span>
+                    <span className="truncate flex-1">{canvas.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

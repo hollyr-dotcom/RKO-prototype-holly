@@ -579,7 +579,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
             </p>
 
             {/* Confidence drivers */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 mt-3">
               <h3 className="text-[20px] font-serif text-[#222428]">Confidence drivers</h3>
               <div className="grid grid-cols-2">
                 {[
@@ -762,7 +762,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
             ].map((row) => (
               <div
                 key={row.label}
-                className="grid gap-6 py-3.5 border-b border-[#f1f2f5] last:border-0 items-start"
+                className="grid gap-6 py-3.5 items-start"
                 style={{ gridTemplateColumns: '140px 1fr' }}
               >
                 <span className="text-sm text-[#656b81]">{row.label}</span>
@@ -822,7 +822,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
           </div>
 
           {/* Prompt chips + input */}
-          <div className="px-6 pb-6 pt-4 shrink-0 flex flex-col gap-3 border-t border-[#e0e2e8]">
+          <div className="px-6 pb-6 pt-4 shrink-0 flex flex-col gap-3">
             <div className="-mx-0 rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
               {SIGNAL_CHIPS.map((chip) => (
                 <button
@@ -935,6 +935,7 @@ const PROMPT_RESPONSES: Record<string, { response: string; followUps: string[] }
 
 function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean; onClose: () => void; copiedSignal?: typeof FEATURED_CARDS[0] | null; onClearCopied?: () => void }) {
   const [activePrompt, setActivePrompt] = useState<string | null>(null)
+  const router = useRouter()
 
   if (!open) return null
 
@@ -948,7 +949,7 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
       transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
       className="fixed top-4 right-4 bottom-4 w-[472px] bg-white rounded-[20px] shadow-[0_0_12px_rgba(34,36,40,0.04),-2px_0_8px_rgba(34,36,40,0.12)] flex flex-col overflow-hidden z-30"
     >
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-6 border-b border-[#e0e2e8] bg-white z-10">
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-6 bg-white z-10">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#E7E7E5' }}>
             <span className="text-[#222428] leading-[0] flex items-center justify-center">
@@ -1030,47 +1031,61 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                     </div>
                   </div>
                 </motion.div>
-                <motion.a
-                  href="/space/space-insights/canvas/canvas-insights-untitled"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => {
-                    if (copiedSignal) {
-                      const description = ('description' in copiedSignal && copiedSignal.description)
-                        ? copiedSignal.description
-                        : ('quote' in copiedSignal && copiedSignal.quote)
-                        ? copiedSignal.quote
-                        : undefined
-                      const accent = ('accent' in copiedSignal && copiedSignal.accent)
-                        ? copiedSignal.accent as string
-                        : CARD_ACCENT[copiedSignal.type] ?? '#f1f2f5'
-                      const relatedRows = FEATURED_CARDS
-                        .filter(c => c.id !== copiedSignal.id)
-                        .slice(0, 5)
-                        .map(c => ({
-                          title: c.title,
-                          description: (c as any).description ?? (c as any).quote ?? undefined,
-                          source: c.source,
-                          type: c.type,
-                          company: 'company' in c ? c.company as string : undefined,
-                          date: c.date,
-                        }))
-                      localStorage.setItem('pendingInsightCard', JSON.stringify({
-                        style: 'featured',
-                        cardType: copiedSignal.type,
-                        title: copiedSignal.title,
-                        description: 'description' in copiedSignal ? copiedSignal.description : undefined,
-                        quote: 'quote' in copiedSignal ? copiedSignal.quote : undefined,
-                        badge: 'badge' in copiedSignal ? copiedSignal.badge : undefined,
-                        accent,
-                        meta: {
-                          person: 'person' in copiedSignal ? copiedSignal.person : undefined,
-                          company: 'company' in copiedSignal ? copiedSignal.company : undefined,
-                          source: copiedSignal.source,
-                          date: copiedSignal.date,
-                        },
-                        relatedRows,
+                <motion.button
+                  onClick={async () => {
+                    if (!copiedSignal) return
+                    const description = ('description' in copiedSignal && copiedSignal.description)
+                      ? copiedSignal.description
+                      : ('quote' in copiedSignal && copiedSignal.quote)
+                      ? copiedSignal.quote
+                      : undefined
+                    const accent = ('accent' in copiedSignal && copiedSignal.accent)
+                      ? copiedSignal.accent as string
+                      : CARD_ACCENT[copiedSignal.type] ?? '#f1f2f5'
+                    const relatedRows = FEATURED_CARDS
+                      .filter(c => c.id !== copiedSignal.id)
+                      .map(c => ({
+                        title: c.title,
+                        description: (c as any).description ?? (c as any).quote ?? undefined,
+                        source: c.source,
+                        type: c.type,
+                        company: 'company' in c ? c.company as string : undefined,
+                        date: c.date,
                       }))
+                    localStorage.setItem('pendingInsightCard', JSON.stringify({
+                      style: 'featured',
+                      cardType: copiedSignal.type,
+                      title: copiedSignal.title,
+                      description,
+                      quote: 'quote' in copiedSignal ? copiedSignal.quote : undefined,
+                      badge: 'badge' in copiedSignal ? copiedSignal.badge : undefined,
+                      accent,
+                      meta: {
+                        person: 'person' in copiedSignal ? copiedSignal.person : undefined,
+                        company: 'company' in copiedSignal ? copiedSignal.company : undefined,
+                        source: copiedSignal.source,
+                        date: copiedSignal.date,
+                      },
+                      relatedRows,
+                      tableHeading: copiedSignal.title,
+                    }))
+                    try {
+                      const spaceRes = await fetch('/api/spaces/space-insights')
+                      const spaceData = spaceRes.ok ? await spaceRes.json() : null
+                      const existing = (spaceData?.canvases ?? []).find((c: { name: string }) => c.name === copiedSignal.title)
+                      if (existing) {
+                        router.push(`/space/space-insights/canvas/${existing.id}`)
+                        return
+                      }
+                      const res = await fetch('/api/canvases', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: copiedSignal.title, spaceId: 'space-insights' }),
+                      })
+                      const canvas = await res.json()
+                      router.push(`/space/space-insights/canvas/${canvas.id}`)
+                    } catch {
+                      router.push('/space/space-insights/canvas/canvas-insights-untitled')
                     }
                   }}
                   className="self-start h-8 px-4 rounded-[18px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors inline-flex items-center"
@@ -1079,7 +1094,7 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                   transition={{ duration: 0.3, delay: 0.5, ease: [0.2, 0, 0, 1] }}
                 >
                   Open in Canvas
-                </motion.a>
+                </motion.button>
                 <motion.p
                   className="text-[14px] text-[#222428] leading-[1.6]"
                   initial={{ opacity: 0, y: 10 }}
