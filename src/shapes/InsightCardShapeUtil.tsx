@@ -179,7 +179,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
         {/* Inner white card */}
         <div style={{
           borderRadius: 16, backgroundColor: "white",
-          width: w - 4, height: h - 8,
+          width: w - 4,
           display: "flex", flexDirection: "column", gap: 10, padding: 20,
           boxSizing: "border-box", position: "relative", overflow: "hidden",
         }}>
@@ -211,7 +211,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
           </div>
 
           {/* Content below media */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 5, flex: 1, minHeight: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
             {isAudio && card.badge && (
               <span style={{
                 display: "inline-flex", alignItems: "center", height: 20, padding: "0 8px",
