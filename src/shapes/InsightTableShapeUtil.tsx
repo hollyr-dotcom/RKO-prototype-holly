@@ -196,44 +196,48 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
         position: "relative",
         overflow: "visible",
       }}>
-        {/* ── Floating title (above the table box) ──────────────────── */}
+        {/* ── Floating header bar (title + toolbar, full width) ─────── */}
         <div style={{
-          position: "absolute", top: 0, left: 0,
-          display: "flex", alignItems: "center", gap: 8,
+          position: "absolute", top: 0, left: 0, width: w,
           height: TITLE_H,
+          display: "flex", alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 10px",
+          backgroundColor: "white",
+          border: BORDER,
+          borderRadius: 8,
+          boxShadow: "0 1px 6px rgba(0,0,0,0.08)",
+          boxSizing: "border-box",
         }}>
-          {/* Title pill */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: 6,
-            padding: "5px 10px", borderRadius: 6,
-            backgroundColor: "white", border: BORDER,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-          }}>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <rect x="1" y="3" width="14" height="10" rx="2" stroke="#656b81" strokeWidth="1.5" fill="none"/>
-              <path d="M1 7h14M5 3v10" stroke="#656b81" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#222428" }}>{table.heading}</span>
+          {/* Left: title + count + expand */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <rect x="1" y="3" width="14" height="10" rx="2" stroke="#656b81" strokeWidth="1.5" fill="none"/>
+                <path d="M1 7h14M5 3v10" stroke="#656b81" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#222428" }}>{table.heading}</span>
+            </div>
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#656b81", backgroundColor: "#f1f2f5", borderRadius: 99, padding: "1px 7px" }}>
+              {table.rows.length}
+            </span>
+            <div style={{ color: "#656b81", display: "flex", cursor: "default" }}><IcoExpand /></div>
           </div>
-          {/* Row count badge */}
-          <span style={{
-            fontSize: 11, fontWeight: 600, color: "#656b81",
-            backgroundColor: "white", border: BORDER,
-            borderRadius: 99, padding: "2px 8px",
-          }}>
-            {table.rows.length}
-          </span>
-          {/* Expand icon */}
-          <div style={{ color: "#656b81", display: "flex", cursor: "default" }}>
-            <IcoExpand />
-          </div>
-          {/* Three-dot menu */}
-          <div style={{ display: "flex", alignItems: "center", cursor: "default" }}>
-            <IcoDots />
+          {/* Right: toolbar icons + dots */}
+          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <ToolbarBtn icon={<IcoSync />} label="Sync" />
+            <ToolbarBtn icon={<IcoLayout />} label="Layout" />
+            <ToolbarBtn icon={<IcoFilter />} label="Filter" />
+            <ToolbarBtn icon={<IcoSort />} label="Sort" />
+            <ToolbarBtn icon={<IcoGroup />} label="Group by" />
+            <ToolbarBtn icon={<IcoHide />} label="Hide" />
+            <ToolbarBtn icon={<IcoSettings />} label="View settings" />
+            <div style={{ width: 1, height: 16, backgroundColor: "#e0e2e8", margin: "0 4px" }} />
+            <div style={{ display: "flex", alignItems: "center", cursor: "default", padding: "4px" }}><IcoDots /></div>
           </div>
         </div>
 
-        {/* ── Table box (starts below floating title) ───────────────── */}
+        {/* ── Table box (starts below floating header) ──────────────── */}
         <div style={{
           position: "absolute",
           top: TITLE_H + 6,
@@ -246,23 +250,6 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
           display: "flex",
           flexDirection: "column",
         }}>
-
-        {/* ── Toolbar ───────────────────────────────────────────────── */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 2,
-          padding: "6px 12px",
-          borderBottom: BORDER,
-          backgroundColor: "white",
-          flexShrink: 0,
-        }}>
-          <ToolbarBtn icon={<IcoSync />} label="Sync" />
-          <ToolbarBtn icon={<IcoLayout />} label="Layout" />
-          <ToolbarBtn icon={<IcoFilter />} label="Filter" />
-          <ToolbarBtn icon={<IcoSort />} label="Sort" />
-          <ToolbarBtn icon={<IcoGroup />} label="Group by" />
-          <ToolbarBtn icon={<IcoHide />} label="Hide" />
-          <ToolbarBtn icon={<IcoSettings />} label="View settings" />
-        </div>
 
         {/* ── Header row ────────────────────────────────────────────── */}
         <div style={{ display: "flex", borderBottom: BORDER, backgroundColor: "white", flexShrink: 0 }}>
