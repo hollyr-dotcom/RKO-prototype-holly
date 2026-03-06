@@ -1041,8 +1041,6 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                     if (!copiedSignal) return
                     const description = ('description' in copiedSignal && copiedSignal.description)
                       ? copiedSignal.description
-                      : ('quote' in copiedSignal && copiedSignal.quote)
-                      ? copiedSignal.quote
                       : undefined
                     const accent = ('accent' in copiedSignal && copiedSignal.accent)
                       ? copiedSignal.accent as string
