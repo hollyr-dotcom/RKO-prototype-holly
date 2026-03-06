@@ -285,6 +285,21 @@ export const THEME_CARDS: ThemeCard[] = [
   },
 ]
 
+export const THEME_SIGNALS = [
+  { id: '1', type: 'audio' as const, badge: '1 Clip', title: 'User Interview: Sam Ledezma', description: 'Discussion on "Heavy Board" load times and visual comfort.', date: 'Jul 14', source: 'Gong', person: 'Sam Ledezma', company: 'Figma' },
+  { id: '2', type: 'audio' as const, badge: '1 Clip', title: 'Call with Siemens Admin', description: 'Ayoub El Assri discusses SCIM provisioning hurdles.', date: 'Jul 14', source: 'Gong', person: 'Ayoub El Assri', company: 'Siemens' },
+  { id: '3', type: 'quote' as const, quote: '"The new feature clearly drives revenue when adopted, but most users aren\'t getting there. We\'re investing in big bets while the core experience that drives engagement feels stuck."', title: 'Call with Spotify', person: 'John Cusick', company: 'Spotify', date: 'Jul 14', source: 'Gong' },
+  { id: '4', type: 'quote' as const, quote: '"The Miro Assist summarization has cut our research review time by 60%… We can now cluster insights across thousands of sticky notes in seconds."', title: 'Call with Apple', person: 'James Watson', company: 'Apple', date: 'Jul 14', source: 'Gong' },
+  { id: '5', type: 'audio' as const, badge: '1 Clip', title: 'User Interview: Priya Nair', description: 'Frustration with AI suggestions appearing mid-session — breaks focus during live workshops.', date: 'Jul 18', source: 'Gong', person: 'Priya Nair', company: 'Miro' },
+  { id: '6', type: 'audio' as const, badge: '1 Clip', title: 'Call with Adobe', description: 'Team requests persistent cursor visibility across large boards during collaborative reviews.', date: 'Jul 21', source: 'Gong', person: 'Sofia Reyes', company: 'Adobe' },
+  { id: '7', type: 'quote' as const, quote: '"We run design sprints with 40+ people on a single board. The lag when everyone is active at once is a dealbreaker — we\'ve nearly lost the account over it."', title: 'Call with Spotify', person: 'Anna Bergström', company: 'Spotify', date: 'Jul 22', source: 'Gong' },
+  { id: '8', type: 'quote' as const, quote: '"We need SSO that actually works with our IdP out of the box. Every workaround costs us an IT sprint and delays our org-wide rollout."', title: 'Call with Apple', person: 'Derek Chu', company: 'Apple', date: 'Jul 25', source: 'Gong' },
+  { id: '9', type: 'audio' as const, badge: '1 Clip', title: 'User Interview: Tomás Herrera', description: 'Wants template locking so junior designers can\'t accidentally overwrite research structures.', date: 'Aug 1', source: 'Gong', person: 'Tomás Herrera', company: 'Atlassian' },
+  { id: '10', type: 'audio' as const, badge: '1 Clip', title: 'Call with Siemens PM', description: 'Requesting granular export controls — PDF fidelity and selective frame exports are blocking enterprise handoff.', date: 'Aug 3', source: 'Gong', person: 'Klaus Weber', company: 'Siemens' },
+  { id: '11', type: 'quote' as const, quote: '"Diagramming in Miro is close but the auto-layout still falls short for complex system maps. One misaligned node and the whole thing breaks."', title: 'Call with Spotify', person: 'Clara Johansson', company: 'Spotify', date: 'Aug 6', source: 'Gong' },
+  { id: '12', type: 'audio' as const, badge: '1 Clip', title: 'User Interview: Kenji Watanabe', description: 'Wants real-time translation in sticky notes for cross-regional workshops — a blocker for APAC teams.', date: 'Aug 8', source: 'Gong', person: 'Kenji Watanabe', company: 'Sony' },
+]
+
 export const THEME_ANALYSIS: Record<string, { response: string; prompts?: string[] }> = {
   'analysis-1': {
     response: `**Jira custom fields demand surged +65% this quarter** is your highest-confidence theme at 99% — and it's still climbing (+1%).

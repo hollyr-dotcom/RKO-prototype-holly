@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Users, ThumbsUp, Copy } from "lucide-react";
 import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconRocket, IconChatLinesTwo, IconBoard, IconChatTwo, IconInsights } from "@mirohq/design-system-icons";
 import InsightsTopBar from "@/components/InsightsTopBar";
-import { THEME_CARDS, type ThemeCard, type ThemeTag } from "@/data/themes-data";
+import { THEME_CARDS, THEME_SIGNALS, type ThemeCard, type ThemeTag } from "@/data/themes-data";
 import { ChatInput } from "@/components/toolbar/ChatInput";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -265,15 +265,13 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                     if (copiedThemeCard) {
                       const firstTag = copiedThemeCard.tags?.[0]?.label
                       const accent = TAG_BG[firstTag ?? ''] ?? '#f1f2f5'
-                      const relatedRows = THEME_CARDS
-                        .filter(c => c.id !== copiedThemeCard.id)
-                        .map(c => ({
+                      const relatedRows = THEME_SIGNALS.map(c => ({
                           title: c.title,
-                          description: c.description,
-                          source: 'Insights',
-                          type: 'theme',
-                          tags: c.tags.map(t => t.label),
-                          arr: c.meta.arr,
+                          description: (c as any).description ?? (c as any).quote ?? undefined,
+                          source: c.source,
+                          type: c.type,
+                          company: 'company' in c ? c.company as string : undefined,
+                          date: c.date,
                         }))
                       localStorage.setItem('pendingInsightCard', JSON.stringify({
                         style: 'theme',
@@ -290,6 +288,7 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                           comments: copiedThemeCard.meta?.comments,
                         },
                         relatedRows,
+                        tableHeading: copiedThemeCard.title,
                       }))
                     }
                   }}
