@@ -1025,6 +1025,17 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                 >
                   Here&apos;s a summary of <strong>{copiedSignal.title}</strong>. How would you like to explore this signal further?
                 </motion.p>
+                <motion.a
+                  href="https://replit.com/t/miro/repls/TEMPLATE-Miro-AI-First-canvas"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="self-start h-8 px-4 rounded-[18px] text-sm text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors inline-flex items-center"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.6, ease: [0.2, 0, 0, 1] }}
+                >
+                  Open in Board
+                </motion.a>
               </div>
             </motion.div>
           </div>
