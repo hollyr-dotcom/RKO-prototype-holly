@@ -550,18 +550,11 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                   <div className="rounded-[16px] bg-white p-4 flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <span className="flex items-center h-6 px-2 rounded-full text-xs text-[#222428]" style={{ backgroundColor: item.tagColor }}>{item.type}</span>
-                      <div className={`flex items-center gap-1 transition-opacity duration-150 ${hoveredFeedback === i ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                        <button className="w-6 h-6 flex items-center justify-center text-[#aeb2c0] hover:text-[#656b81] transition-colors">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                            <path fill="currentColor" d="M10 7H5a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-5h2v5a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3h5v2Zm11.992-3.876-1 8-1.984-.248.637-5.108-7.938 7.939-1.414-1.414 7.94-7.94-5.109.64-.248-1.985 8-1 1.116 1.116Z" />
-                          </svg>
-                        </button>
-                        <button className="text-[#aeb2c0] hover:text-[#656b81] transition-colors">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
-                          </svg>
-                        </button>
-                      </div>
+                      <button className="w-6 h-6 flex items-center justify-center text-[#aeb2c0] hover:text-[#656b81] transition-colors">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                          <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
+                        </svg>
+                      </button>
                     </div>
                     {item.stars !== null && (
                       <div className="flex items-center gap-0.5">
