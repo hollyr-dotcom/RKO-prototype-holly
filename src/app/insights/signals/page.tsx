@@ -998,10 +998,11 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                   transition={{ duration: 0.3, delay: 0.3, ease: [0.2, 0, 0, 1] }}
                 >
                   <div className="bg-white rounded-[14px] p-4 flex flex-col gap-2.5">
-                    <div className="flex items-center gap-1.5">
-                      <span className="px-2.5 py-1 rounded-full text-xs text-[#222428] bg-[#f1f2f5]">{copiedSignal.source}</span>
-                      <span className="px-2.5 py-1 rounded-full text-xs text-[#222428] bg-[#f1f2f5]">{copiedSignal.date}</span>
-                    </div>
+                    {'badge' in copiedSignal && copiedSignal.badge && (
+                      <span className="h-5 px-2 bg-[#222428] text-white text-[10px] font-medium rounded-[24px] flex items-center w-fit">
+                        {copiedSignal.badge}
+                      </span>
+                    )}
                     <p className="text-[15px] font-heading font-medium text-[#222428] leading-snug">{copiedSignal.title}</p>
                     {'description' in copiedSignal && copiedSignal.description && (
                       <p className="text-[13px] text-[#656b81] leading-[1.5] line-clamp-2">{copiedSignal.description}</p>
@@ -1009,11 +1010,13 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                     {'quote' in copiedSignal && copiedSignal.quote && (
                       <p className="text-[13px] text-[#656b81] leading-[1.5] italic line-clamp-3">{copiedSignal.quote}</p>
                     )}
-                    <div className="flex items-center gap-1.5 mt-2">
+                    <div className="flex items-center gap-1.5 flex-wrap mt-2">
                       <span className="h-6 px-2 rounded-[24px] text-[12px] text-[#222428] bg-white border border-[#e0e2e8] flex items-center">{copiedSignal.person}</span>
                       {'company' in copiedSignal && copiedSignal.company && (
                         <span className="h-6 px-2 rounded-[24px] text-[12px] text-[#222428] bg-white border border-[#e0e2e8] flex items-center">{copiedSignal.company}</span>
                       )}
+                      <span className="h-6 px-2 rounded-[24px] text-[12px] text-[#222428] bg-white border border-[#e0e2e8] flex items-center">{copiedSignal.source}</span>
+                      <span className="h-6 px-2 rounded-[24px] text-[12px] text-[#222428] bg-white border border-[#e0e2e8] flex items-center">{copiedSignal.date}</span>
                     </div>
                   </div>
                 </motion.div>
