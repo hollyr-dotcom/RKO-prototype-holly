@@ -61,9 +61,14 @@ export function useStorageStore({
       // because tldraw's TLRecord doesn't satisfy LiveBlocks' Lson constraint.
       // All reads are cast to TLRecord at the consumption site.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const liveRecords = root.get("records") as unknown as LiveMap<string, any>;
+      let liveRecords = root.get("records") as unknown as LiveMap<string, any>;
       if (!liveRecords) {
-        return;
+        // New room — initialize empty records LiveMap
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        root.set("records", new LiveMap<string, any>());
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        liveRecords = root.get("records") as unknown as LiveMap<string, any>;
+        if (!liveRecords) return;
       }
 
       // Initialize tldraw store with records from LiveBlocks Storage
