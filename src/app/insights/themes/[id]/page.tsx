@@ -475,7 +475,6 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                     const quote = 'quote' in copiedCard ? copiedCard.quote as string : undefined
                     const relatedRows = FEATURED_CARDS
                       .filter(c => c.id !== copiedCard.id)
-                      .slice(0, 5)
                       .map(c => ({
                         title: c.title,
                         description: (c as any).description ?? (c as any).quote ?? undefined,
