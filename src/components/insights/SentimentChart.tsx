@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   AreaChart,
   Area,
@@ -10,6 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { HelpCircle } from 'lucide-react'
+import { IconSparksFilled } from '@mirohq/design-system-icons'
 import { THEME_CARDS } from '@/data/themes-data'
 
 // ─── Derive sentiment from real theme data ────────────────────────────────────
@@ -142,7 +144,7 @@ function SentimentPopover({
           <button
             onClick={() => onOpenChat?.(index)}
             className="px-4 py-1.5 rounded-[6px] text-white text-sm font-medium transition-opacity hover:opacity-80"
-            style={{ backgroundColor: '#3859FF' }}
+            style={{ backgroundColor: '#659DF2' }}
           >
             View analysis
           </button>
@@ -156,9 +158,10 @@ function SentimentPopover({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function SentimentChart({ onOpenChat }: { onOpenChat?: (index: number) => void }) {
+export function SentimentChart({ onOpenChat, onOpenChatHeader }: { onOpenChat?: (index: number) => void; onOpenChatHeader?: () => void }) {
   const [hoveredDot, setHoveredDot] = useState<HoveredDot | null>(null)
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [cardHovered, setCardHovered] = useState(false)
 
   const scheduleClose = () => {
     closeTimer.current = setTimeout(() => setHoveredDot(null), 800)
@@ -179,28 +182,51 @@ export function SentimentChart({ onOpenChat }: { onOpenChat?: (index: number) =>
         cx={cx}
         cy={cy}
         r={7}
-        fill="#3859FF"
+        fill="#659DF2"
         stroke="white"
         strokeWidth={2}
-        onMouseEnter={() => { cancelClose(); setHoveredDot({ cx, cy, index }) }}
-        onMouseLeave={scheduleClose}
         style={{ cursor: 'pointer' }}
       />
     )
   }
 
   return (
-    <section className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-8 flex flex-col">
-      <div className="mb-4">
-        <div className="flex items-center gap-2 mb-1">
-          <h2 className="text-[22px] font-heading font-medium text-gray-900 leading-snug">Customer sentiment</h2>
-          <HelpCircle className="w-5 h-5 text-gray-400" />
+    <section
+      className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-8 flex flex-col"
+      onMouseEnter={() => setCardHovered(true)}
+      onMouseLeave={() => setCardHovered(false)}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-[22px] font-heading font-medium text-gray-900 leading-snug">Customer sentiment</h2>
+            <HelpCircle className="w-5 h-5 text-gray-400" />
+          </div>
+          <p className="text-sm text-gray-500">
+            Based on confidence scores across {THEME_CARDS.length} active themes · avg {overallAvg}%
+          </p>
         </div>
-        <p className="text-sm text-gray-500">
-          Based on confidence scores across {THEME_CARDS.length} active themes · avg {overallAvg}%
-        </p>
+        <AnimatePresence>
+          {cardHovered && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              onClick={onOpenChatHeader}
+              className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors"
+              style={{
+                backgroundColor: 'transparent',
+                border: '1.5px solid #e0e2e8',
+                color: '#222428',
+              }}
+            >
+              <span className="leading-[0]"><IconSparksFilled css={{ width: 14, height: 14 }} /></span>
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
-      <figure className="flex-1 min-h-[450px] relative">
+      <figure className="flex-1 min-h-[300px] relative">
         {hoveredDot && (
           <SentimentPopover
             cx={hoveredDot.cx}
@@ -211,16 +237,22 @@ export function SentimentChart({ onOpenChat }: { onOpenChat?: (index: number) =>
             onMouseLeave={scheduleClose}
           />
         )}
-        <ResponsiveContainer width="100%" height={450}>
+        <ResponsiveContainer width="100%" height={300}>
           <AreaChart
             data={data}
             margin={{ top: 16, right: 0, left: 16, bottom: 0 }}
+            onMouseMove={(e: any) => {
+              if (e?.activeCoordinate && e.activeTooltipIndex !== undefined) {
+                cancelClose()
+                setHoveredDot({ cx: e.activeCoordinate.x, cy: e.activeCoordinate.y, index: e.activeTooltipIndex })
+              }
+            }}
             onMouseLeave={scheduleClose}
           >
             <defs>
               <linearGradient id="sentimentGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3859FF" stopOpacity={0.45} />
-                <stop offset="100%" stopColor="#3859FF" stopOpacity={0.0} />
+                <stop offset="0%" stopColor="#659DF2" stopOpacity={0.45} />
+                <stop offset="100%" stopColor="#659DF2" stopOpacity={0.0} />
               </linearGradient>
             </defs>
             <XAxis
@@ -247,10 +279,10 @@ export function SentimentChart({ onOpenChat }: { onOpenChat?: (index: number) =>
             <Area
               type="monotone"
               dataKey="value"
-              stroke="#3859FF"
+              stroke="#659DF2"
               strokeWidth={2}
               fill="url(#sentimentGradient)"
-              dot={{ fill: '#3859FF', strokeWidth: 0, r: 5, fillOpacity: 1 }}
+              dot={{ fill: '#659DF2', strokeWidth: 0, r: 5, fillOpacity: 1 }}
               activeDot={renderActiveDot}
             />
           </AreaChart>

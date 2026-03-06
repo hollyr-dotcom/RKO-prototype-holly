@@ -26,18 +26,33 @@ function buildSeries(confidenceStr: string, deltaNum: number): number[] {
   })
 }
 
-const BAR_COLORS = ['#3859FF', '#7B9BFF', '#C5D4FF']
+const TAG_COLORS: Record<string, string> = {
+  Urgent: '#FFD8F4',
+  Weakening: '#DEDAFF',
+  Strengthening: '#F8D3AF',
+  New: '#BADEB1',
+  Customer: '#FFF6B6',
+  Market: '#C6DCFF',
+}
+
+function getThemeColor(theme: ReturnType<typeof getVolatileThemes>[number]): string {
+  const labels = theme.tags.map(t => t.label)
+  for (const priority of ['Urgent', 'Weakening', 'Strengthening', 'New', 'Customer', 'Market']) {
+    if (labels.includes(priority)) return TAG_COLORS[priority]
+  }
+  return TAG_COLORS[labels[0]] ?? '#C6DCFF'
+}
 
 const DATES = ['12/13', '12/20', '12/27', '1/02', '1/09', '1/16', '1/23']
 
 // ─── SVG constants ────────────────────────────────────────────────────────────
 
 const W = 460
-const H = 190
+const H = 210
 const PL = 6
 const PR = 36
-const PT = 8
-const PB = 22
+const PT = 24
+const PB = 24
 const CW = W - PL - PR
 const CH = H - PT - PB
 
@@ -54,6 +69,7 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
   const themes = getVolatileThemes(3)
   const series = themes.map(t => buildSeries(t.meta.confidence, t.deltaNum))
   const [hovered, setHovered] = useState<number | null>(null)
+  const [hoveredBar, setHoveredBar] = useState<{ si: number; di: number } | null>(null)
   const [cardHovered, setCardHovered] = useState(false)
 
   const numDates = DATES.length
@@ -66,8 +82,7 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
 
   return (
     <div
-      className="bg-white rounded-[12px] flex flex-col gap-4 p-8 relative"
-      style={{ boxShadow: '0px 4px 20px rgba(34,36,40,0.08)' }}
+      className="bg-white rounded-[24px] border border-gray-100 shadow-sm flex flex-col gap-4 p-8 relative"
       onMouseEnter={() => setCardHovered(true)}
       onMouseLeave={() => setCardHovered(false)}
     >
@@ -103,33 +118,52 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
 
         {/* Y-axis ticks */}
         {TICKS.map(tick => (
-          <text key={tick} x={W - PR + 6} y={yp(tick) + 4} fontSize={10} fill="#959aac" textAnchor="start">{tick}</text>
+          <text key={tick} x={W - PR + 8} y={yp(tick) + 4} fontSize={10} fill="#959aac" textAnchor="start">{tick}</text>
         ))}
 
         {/* Bars */}
         {series.map((vals, si) =>
           vals.map((v, di) => {
             const x = PL + di * groupW + groupPad + si * (barW + barGap)
-            const barH = Math.max(2, baseY - yp(v))
+            const barH = Math.max(4, baseY - yp(v))
+            const top = yp(v)
+            const r = Math.min(4, barW / 2, barH / 2)
+            const d = `M${x},${top + baseY - top} L${x},${top + r} Q${x},${top} ${x + r},${top} L${x + barW - r},${top} Q${x + barW},${top} ${x + barW},${top + r} L${x + barW},${top + baseY - top} Z`
             const isActive = hovered === null || hovered === si
             return (
-              <rect
+              <path
                 key={`${si}-${di}`}
-                x={x}
-                y={yp(v)}
-                width={barW}
-                height={barH}
-                rx={3}
-                fill={BAR_COLORS[si]}
+                d={d}
+                fill={getThemeColor(themes[si])}
                 opacity={isActive ? 1 : 0.15}
                 style={{ cursor: 'pointer', transition: 'opacity 0.15s' }}
-                onMouseEnter={() => setHovered(si)}
-                onMouseLeave={() => setHovered(null)}
+                onMouseEnter={() => { setHovered(si); setHoveredBar({ si, di }) }}
+                onMouseLeave={() => { setHovered(null); setHoveredBar(null) }}
                 onClick={() => router.push(`/insights/themes/${themes[si].id}`)}
               />
             )
           })
         )}
+
+        {/* Hover tooltip */}
+        {hoveredBar && (() => {
+          const { si, di } = hoveredBar
+          const v = series[si][di]
+          const x = PL + di * groupW + groupPad + si * (barW + barGap) + barW / 2
+          const y = yp(v) - 8
+          const label = themes[si].meta.confidenceDelta
+          const tw = label.length * 7 + 16
+          return (
+            <g pointerEvents="none">
+              <rect x={x - tw / 2} y={y - 20} width={tw} height={22} rx={4} fill="#222428" />
+              <text x={x} y={y - 5} fill="white" fontSize={11} fontWeight={500} textAnchor="middle">{label}</text>
+            </g>
+          )
+        })()}
+
+        {/* Axis border lines */}
+        <line x1={W - PR} y1={PT} x2={W - PR} y2={baseY} stroke="#e9eaef" strokeWidth={1} />
+        <line x1={PL} y1={baseY} x2={W - PR} y2={baseY} stroke="#e9eaef" strokeWidth={1} />
 
         {/* X-axis date labels */}
         {DATES.map((d, i) => (
@@ -145,11 +179,11 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
       </svg>
 
       {/* Legend */}
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col">
         {themes.map((theme, i) => (
           <button
             key={theme.id}
-            className="flex items-center gap-2.5 text-left px-3 py-2 rounded-[10px] transition-colors"
+            className="flex items-center gap-2.5 text-left px-3 py-1 rounded-[10px] transition-colors"
             style={{ backgroundColor: hovered === i ? '#f1f2f5' : 'transparent' }}
             onClick={() => router.push(`/insights/themes/${theme.id}`)}
             onMouseEnter={() => setHovered(i)}
@@ -157,7 +191,7 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
           >
             <span
               className="w-2.5 h-2.5 rounded-sm shrink-0"
-              style={{ backgroundColor: BAR_COLORS[i] }}
+              style={{ backgroundColor: getThemeColor(themes[i]) }}
             />
             <span
               className="text-[13px] leading-snug truncate flex-1 transition-colors"
