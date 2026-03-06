@@ -4705,7 +4705,7 @@ export function Canvas() {
             : (card.cardType === 'quote' ? 440 : 380);
           const gap = 24;
           const tableW = 740;
-          const tableH = cardH;
+          const tableH = cardH + 42; // extra for floating title
           const totalW = cardW + gap + tableW;
 
           // Place card on the left
@@ -4728,7 +4728,7 @@ export function Canvas() {
             id: tableId,
             type: INSIGHT_TABLE_SHAPE_TYPE,
             x: -(totalW / 2) + cardW + gap,
-            y: -(tableH / 2),
+            y: -(cardH / 2), // align table box top with card top (title floats above)
             props: { w: tableW, h: tableH, table },
           });
 

@@ -186,59 +186,66 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
 
   override component(shape: IInsightTableShape) {
     const { table, w, h } = shape.props;
+    const TITLE_H = 36;
 
     return (
       <HTMLContainer id={shape.id} style={{
         width: w, height: h,
-        backgroundColor: "white",
-        border: BORDER,
-        borderRadius: 8,
         fontFamily: "sans-serif",
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
         pointerEvents: "all",
+        position: "relative",
+        overflow: "visible",
       }}>
-
-        {/* ── Title bar ─────────────────────────────────────────────── */}
+        {/* ── Floating title (above the table box) ──────────────────── */}
         <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "8px 12px",
-          borderBottom: BORDER,
-          backgroundColor: "white",
-          flexShrink: 0,
+          position: "absolute", top: 0, left: 0,
+          display: "flex", alignItems: "center", gap: 8,
+          height: TITLE_H,
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {/* Title pill */}
-            <div style={{
-              display: "flex", alignItems: "center", gap: 6,
-              padding: "4px 10px", borderRadius: 6,
-              backgroundColor: "#f1f2f5",
-            }}>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <rect x="1" y="3" width="14" height="10" rx="2" stroke="#656b81" strokeWidth="1.5" fill="none"/>
-                <path d="M1 7h14M5 3v10" stroke="#656b81" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#222428" }}>{table.heading}</span>
-            </div>
-            {/* Row count badge */}
-            <span style={{
-              fontSize: 11, fontWeight: 600, color: "#656b81",
-              backgroundColor: "#f1f2f5", borderRadius: 99,
-              padding: "1px 7px",
-            }}>
-              {table.rows.length}
-            </span>
-            {/* Expand icon */}
-            <div style={{ color: "#656b81", display: "flex", cursor: "default" }}>
-              <IcoExpand />
-            </div>
+          {/* Title pill */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "5px 10px", borderRadius: 6,
+            backgroundColor: "white", border: BORDER,
+            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+          }}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="3" width="14" height="10" rx="2" stroke="#656b81" strokeWidth="1.5" fill="none"/>
+              <path d="M1 7h14M5 3v10" stroke="#656b81" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#222428" }}>{table.heading}</span>
+          </div>
+          {/* Row count badge */}
+          <span style={{
+            fontSize: 11, fontWeight: 600, color: "#656b81",
+            backgroundColor: "white", border: BORDER,
+            borderRadius: 99, padding: "2px 8px",
+          }}>
+            {table.rows.length}
+          </span>
+          {/* Expand icon */}
+          <div style={{ color: "#656b81", display: "flex", cursor: "default" }}>
+            <IcoExpand />
           </div>
           {/* Three-dot menu */}
-          <div style={{ display: "flex", alignItems: "center", cursor: "default", padding: "4px", borderRadius: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", cursor: "default" }}>
             <IcoDots />
           </div>
         </div>
+
+        {/* ── Table box (starts below floating title) ───────────────── */}
+        <div style={{
+          position: "absolute",
+          top: TITLE_H + 6,
+          left: 0, right: 0,
+          height: h - TITLE_H - 6,
+          backgroundColor: "white",
+          border: BORDER,
+          borderRadius: 8,
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}>
 
         {/* ── Toolbar ───────────────────────────────────────────────── */}
         <div style={{
@@ -384,6 +391,7 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
             );
           })}
         </div>
+        </div>{/* end table box */}
       </HTMLContainer>
     );
   }
