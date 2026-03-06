@@ -196,35 +196,28 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
         position: "relative",
         overflow: "visible",
       }}>
-        {/* ── Floating header bar (title + toolbar, full width) ─────── */}
+        {/* ── Floating header bar (hugs content) ────────────────────── */}
         <div style={{
-          position: "absolute", top: 0, left: 0, width: w,
-          height: TITLE_H,
-          display: "flex", alignItems: "center",
-          justifyContent: "space-between",
+          position: "absolute", top: 0, left: 0,
+          display: "inline-flex", alignItems: "center", gap: 8,
           padding: "0 10px",
+          height: TITLE_H,
           backgroundColor: "white",
           border: BORDER,
           borderRadius: 8,
           boxShadow: "0 1px 6px rgba(0,0,0,0.08)",
-          boxSizing: "border-box",
+          whiteSpace: "nowrap",
         }}>
-          {/* Left: title + count + expand */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <rect x="1" y="3" width="14" height="10" rx="2" stroke="#656b81" strokeWidth="1.5" fill="none"/>
-                <path d="M1 7h14M5 3v10" stroke="#656b81" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#222428" }}>{table.heading}</span>
-            </div>
-            <span style={{ fontSize: 11, fontWeight: 600, color: "#656b81", backgroundColor: "#f1f2f5", borderRadius: 99, padding: "1px 7px" }}>
-              {table.rows.length}
-            </span>
-            <div style={{ color: "#656b81", display: "flex", cursor: "default" }}><IcoExpand /></div>
-          </div>
-          {/* Right: dots only */}
-          <div style={{ display: "flex", alignItems: "center", cursor: "default", padding: "4px" }}><IcoDots /></div>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <rect x="1" y="3" width="14" height="10" rx="2" stroke="#656b81" strokeWidth="1.5" fill="none"/>
+            <path d="M1 7h14M5 3v10" stroke="#656b81" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#222428" }}>{table.heading}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#656b81", backgroundColor: "#f1f2f5", borderRadius: 99, padding: "1px 7px" }}>
+            {table.rows.length}
+          </span>
+          <div style={{ color: "#656b81", display: "flex", cursor: "default" }}><IcoExpand /></div>
+          <div style={{ display: "flex", alignItems: "center", cursor: "default" }}><IcoDots /></div>
         </div>
 
         {/* ── Table box (starts below floating header) ──────────────── */}
