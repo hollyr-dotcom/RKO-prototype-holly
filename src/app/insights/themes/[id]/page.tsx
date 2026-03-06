@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronRight, Play, Search, SlidersHorizontal, ChevronDown, RotateCcw, ThumbsUp } from 'lucide-react'
+import { ChevronRight, Play, Search, SlidersHorizontal, ChevronDown, RotateCcw, ThumbsUp, MoreVertical } from 'lucide-react'
 import { IconSparksFilled, IconSmileyChat, IconGlobe, IconExclamationPointCircle, IconChartLine, IconArrowDown, IconChatLinesTwo, IconChatTwo } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
 import { THEME_CARDS, THEME_ANALYSIS, type ThemeCard } from '@/data/themes-data'
@@ -400,12 +400,16 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                   const cardAccent = TAG_COLORS[theme.tags[0]?.label] ?? CARD_ACCENT.audio
                   return (
                 <div className="rounded-[14px] relative" style={{ backgroundColor: cardAccent, padding: '2px 2px 6px 2px' }}>
-                  {/* Play button top-right */}
-                  {copiedCard.type === 'audio' && (
-                    <div className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center shrink-0 z-10" style={{ backgroundColor: cardAccent }}>
-                      <Play className="w-3 h-3 text-[#222428] fill-[#222428] ml-0.5" />
-                    </div>
-                  )}
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                    <button className="w-6 h-6 flex items-center justify-center rounded-full text-[#aeb2c0] hover:text-[#656b81] transition-colors">
+                      <MoreVertical size={14} strokeWidth={1.5} />
+                    </button>
+                    {copiedCard.type === 'audio' && (
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: cardAccent }}>
+                        <Play className="w-3 h-3 text-[#222428] fill-[#222428] ml-0.5" />
+                      </div>
+                    )}
+                  </div>
                   <div className="rounded-[12px] bg-white px-4 pt-4 pb-4 flex flex-col gap-2.5">
                     {/* Type badge */}
                     <span className="h-5 px-2 rounded-full text-[10px] font-medium flex items-center w-fit text-white" style={{ backgroundColor: '#222428' }}>
