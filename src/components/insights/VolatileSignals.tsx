@@ -22,20 +22,15 @@ function buildSeries(confidenceStr: string, deltaNum: number): number[] {
     const t = i / 6
     const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
     const base = start + (end - start) * ease
-    const wobble = i === 0 || i === 6 ? 0 : Math.sin(i * 0.7 + deltaNum * 0.1) * 0.8
-    return Math.round(Math.max(10, Math.min(99, base + wobble)))
+    return Math.round(Math.max(10, Math.min(99, base)))
   })
 }
 
-const COLORS = [
-  { stroke: '#3859FF', fill: '#3859FF' },
-  { stroke: '#3859FF', fill: '#3859FF' },
-  { stroke: '#3859FF', fill: '#3859FF' },
-]
+const BAR_COLORS = ['#3859FF', '#7B9BFF', '#C5D4FF']
 
 const DATES = ['12/13', '12/20', '12/27', '1/02', '1/09', '1/16', '1/23']
 
-// ─── SVG helpers ──────────────────────────────────────────────────────────────
+// ─── SVG constants ────────────────────────────────────────────────────────────
 
 const W = 460
 const H = 190
@@ -46,66 +41,11 @@ const PB = 22
 const CW = W - PL - PR
 const CH = H - PT - PB
 
-function xp(i: number) { return PL + (i / 6) * CW }
+const Y_MIN = 0
+const Y_MAX = 100
+const TICKS = [0, 25, 50, 75, 100]
 
-function niceRange(series: number[][]): { yMin: number; yMax: number; ticks: number[] } {
-  const all = series.flat()
-  const rawMin = Math.min(...all)
-  const rawMax = Math.max(...all)
-  const range = rawMax - rawMin
-  const pad = Math.max(1, Math.round(range * 0.1))
-  const rawStep = Math.max(1, Math.round((range + pad * 2) / 2))
-  const yMin = Math.max(0, Math.floor((rawMin - pad) / rawStep) * rawStep)
-  const yMax = Math.min(100, Math.ceil((rawMax + pad) / rawStep) * rawStep)
-  const ticks: number[] = []
-  for (let t = yMin; t <= yMax; t += rawStep) ticks.push(t)
-  return { yMin, yMax, ticks }
-}
-
-function makeYp(yMin: number, yMax: number) {
-  return (v: number) => PT + CH - ((v - yMin) / (yMax - yMin)) * CH
-}
-
-function linePath(values: number[], yp: (v: number) => number) {
-  const pts = values.map((v, i) => ({ x: xp(i), y: yp(v) }))
-  if (pts.length < 2) return ''
-  let d = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[Math.max(0, i - 1)]
-    const p1 = pts[i]
-    const p2 = pts[i + 1]
-    const p3 = pts[Math.min(pts.length - 1, i + 2)]
-    const cp1x = p1.x + (p2.x - p0.x) / 2
-    const cp1y = p1.y + (p2.y - p0.y) / 2
-    const cp2x = p2.x - (p3.x - p1.x) / 2
-    const cp2y = p2.y - (p3.y - p1.y) / 2
-    d += ` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`
-  }
-  return d
-}
-function areaPath(values: number[], yp: (v: number) => number, yMin: number) {
-  const line = linePath(values, yp)
-  const base = yp(yMin).toFixed(1)
-  return `${line} L${xp(6).toFixed(1)},${base} L${xp(0).toFixed(1)},${base} Z`
-}
-
-// ─── Analysis text per theme ───────────────────────────────────────────────────
-
-function buildAnalysis(themes: ReturnType<typeof getVolatileThemes>): string {
-  const top = themes[0]
-  const rising = themes.filter(t => t.deltaNum > 0)
-  const falling = themes.filter(t => t.deltaNum < 0)
-
-  const risingStr = rising.map(t => `**${t.title.split(' ').slice(0, 4).join(' ')}…** (${t.meta.confidenceDelta})`).join(' and ')
-  const fallingStr = falling.map(t => `**${t.title.split(' ').slice(0, 4).join(' ')}…** (${t.meta.confidenceDelta})`).join(' and ')
-
-  let analysis = `**${top.title.split(' ').slice(0, 5).join(' ')}…** is the fastest-moving theme this period at **${top.meta.confidenceDelta}**, now at ${top.meta.confidence} confidence.`
-
-  if (risingStr) analysis += `\n\nRising themes — ${risingStr} — are gaining consistent signal across multiple sources. These are good candidates to move forward in the roadmap.`
-  if (fallingStr) analysis += `\n\nFalling themes — ${fallingStr} — may be stabilising or losing customer urgency. Worth monitoring before committing roadmap resources.`
-
-  return analysis
-}
+function yp(v: number) { return PT + CH - ((v - Y_MIN) / (Y_MAX - Y_MIN)) * CH }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -113,10 +53,16 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
   const router = useRouter()
   const themes = getVolatileThemes(3)
   const series = themes.map(t => buildSeries(t.meta.confidence, t.deltaNum))
-  const { yMin, yMax, ticks } = niceRange(series)
-  const yp = makeYp(yMin, yMax)
   const [hovered, setHovered] = useState<number | null>(null)
   const [cardHovered, setCardHovered] = useState(false)
+
+  const numDates = DATES.length
+  const numSeries = series.length
+  const groupW = CW / numDates
+  const barW = Math.floor(groupW * 0.2)
+  const barGap = 2
+  const groupPad = (groupW - numSeries * barW - (numSeries - 1) * barGap) / 2
+  const baseY = yp(Y_MIN)
 
   return (
     <div
@@ -154,54 +100,47 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
 
       {/* Chart */}
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ overflow: 'visible', display: 'block' }}>
-        <defs>
-          {COLORS.map((c, i) => (
-            <linearGradient key={i} id={`vsgrad${i}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={c.fill} stopOpacity={hovered === null || hovered === i ? 0.15 : 0.04} />
-              <stop offset="100%" stopColor={c.fill} stopOpacity={0} />
-            </linearGradient>
-          ))}
-        </defs>
 
-        {ticks.map(tick => (
+        {/* Y-axis ticks */}
+        {TICKS.map(tick => (
           <text key={tick} x={W - PR + 6} y={yp(tick) + 4} fontSize={10} fill="#959aac" textAnchor="start">{tick}</text>
         ))}
 
-        {[...series].reverse().map((vals, ri) => {
-          const i = series.length - 1 - ri
-          return <path key={i} d={areaPath(vals, yp, yMin)} fill={`url(#vsgrad${i})`} />
-        })}
+        {/* Bars */}
+        {series.map((vals, si) =>
+          vals.map((v, di) => {
+            const x = PL + di * groupW + groupPad + si * (barW + barGap)
+            const barH = Math.max(2, baseY - yp(v))
+            const isActive = hovered === null || hovered === si
+            return (
+              <rect
+                key={`${si}-${di}`}
+                x={x}
+                y={yp(v)}
+                width={barW}
+                height={barH}
+                rx={3}
+                fill={BAR_COLORS[si]}
+                opacity={isActive ? 1 : 0.15}
+                style={{ cursor: 'pointer', transition: 'opacity 0.15s' }}
+                onMouseEnter={() => setHovered(si)}
+                onMouseLeave={() => setHovered(null)}
+                onClick={() => router.push(`/insights/themes/${themes[si].id}`)}
+              />
+            )
+          })
+        )}
 
-        {series.map((vals, i) => (
-          <path
-            key={i}
-            d={linePath(vals, yp)}
-            fill="none"
-            stroke={COLORS[i].stroke}
-            strokeWidth={hovered === i ? 2.5 : 1.5}
-            strokeOpacity={hovered === null || hovered === i ? 1 : 0.25}
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            style={{ transition: 'stroke-opacity 0.15s, stroke-width 0.15s' }}
-          />
-        ))}
-
-        {series.map((vals, i) => (
-          <path
-            key={`hit-${i}`}
-            d={linePath(vals, yp)}
-            fill="none"
-            stroke="transparent"
-            strokeWidth={16}
-            style={{ cursor: 'pointer' }}
-            onMouseEnter={() => setHovered(i)}
-            onMouseLeave={() => setHovered(null)}
-            onClick={() => router.push(`/insights/themes/${themes[i].id}`)}
-          />
-        ))}
-
+        {/* X-axis date labels */}
         {DATES.map((d, i) => (
-          <text key={d} x={xp(i)} y={H - 4} fontSize={10} fill="#959aac" textAnchor="middle">{d}</text>
+          <text
+            key={d}
+            x={PL + i * groupW + groupW / 2}
+            y={H - 4}
+            fontSize={10}
+            fill="#959aac"
+            textAnchor="middle"
+          >{d}</text>
         ))}
       </svg>
 
@@ -216,6 +155,10 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
             onMouseEnter={() => setHovered(i)}
             onMouseLeave={() => setHovered(null)}
           >
+            <span
+              className="w-2.5 h-2.5 rounded-sm shrink-0"
+              style={{ backgroundColor: BAR_COLORS[i] }}
+            />
             <span
               className="text-[13px] leading-snug truncate flex-1 transition-colors"
               style={{ color: hovered === i ? '#222428' : '#656b81' }}
