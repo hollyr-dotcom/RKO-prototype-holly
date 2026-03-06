@@ -266,9 +266,11 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                       const firstTag = copiedThemeCard.tags?.[0]?.label
                       const accent = TAG_BG[firstTag ?? ''] ?? '#f1f2f5'
                       localStorage.setItem('pendingInsightCard', JSON.stringify({
+                        style: 'theme',
                         title: copiedThemeCard.title,
                         description: copiedThemeCard.description,
                         tags: copiedThemeCard.tags,
+                        image: copiedThemeCard.image,
                         accent,
                         meta: {
                           arr: copiedThemeCard.meta?.arr,
