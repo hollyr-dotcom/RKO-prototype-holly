@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bell, Users, Search, SlidersHorizontal, ChevronDown, ChevronRight, Play } from 'lucide-react'
+import { Bell, Users, Search, SlidersHorizontal, ChevronDown, ChevronRight, Play, MoreVertical } from 'lucide-react'
 import { IconSparksFilled, IconSmileyChat, IconGlobe, IconRectanglesThreeOverlap } from '@mirohq/design-system-icons'
 import InsightsTopBar from '@/components/InsightsTopBar'
 import { ChatInput } from '@/components/toolbar/ChatInput'
@@ -997,7 +997,10 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: 0.3, ease: [0.2, 0, 0, 1] }}
                 >
-                  <div className="bg-white rounded-[14px] p-4 flex flex-col gap-2.5">
+                  <div className="relative bg-white rounded-[14px] p-4 flex flex-col gap-2.5">
+                    <button className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full text-[#aeb2c0] hover:text-[#656b81] transition-colors">
+                      <MoreVertical size={14} strokeWidth={1.5} />
+                    </button>
                     {'badge' in copiedSignal && copiedSignal.badge && (
                       <span className="h-5 px-2 bg-[#222428] text-white text-[10px] font-medium rounded-[24px] flex items-center w-fit">
                         {copiedSignal.badge}
