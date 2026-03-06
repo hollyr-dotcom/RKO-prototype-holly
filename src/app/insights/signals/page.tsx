@@ -339,12 +339,14 @@ function FeaturedCard({ card, onAiStar }: { card: typeof FEATURED_CARDS[0]; onAi
               )}
             </div>
           )}
-          <button
-            onClick={(e) => { e.stopPropagation(); onAiStar?.(card); }}
-            className="absolute top-2 right-2 w-6 h-6 rounded-[6px] bg-white/80 flex items-center justify-center text-[#656b81] hover:bg-white transition-colors"
-          >
-            <IconSparksFilled css={{ width: 14, height: 14 }} />
-          </button>
+          {hovered && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onAiStar?.(card); }}
+              className="absolute top-2 right-2 w-6 h-6 rounded-[6px] bg-white/80 flex items-center justify-center text-[#656b81] hover:bg-white transition-colors"
+            >
+              <IconSparksFilled css={{ width: 14, height: 14 }} />
+            </button>
+          )}
         </div>
 
         {/* Content */}
