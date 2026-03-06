@@ -92,14 +92,14 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
     const isQuote = card.cardType === 'quote';
     const mediaH = isQuote ? 200 : 150;
 
-    // Auto-size height to content
+    // Auto-size height to content — measure the inner white card, add border padding
     const editor = useEditor();
-    const innerRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
-      const el = innerRef.current;
+      const el = contentRef.current;
       if (!el) return;
       const observer = new ResizeObserver(() => {
-        const newH = el.offsetHeight;
+        const newH = el.offsetHeight + 8; // 2px top + 6px bottom border
         if (newH > 0 && Math.abs(newH - h) > 4) {
           editor.updateShape({ id: shape.id, type: shape.type, props: { h: newH } } as any);
         }
@@ -112,7 +112,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
       // ── Theme card: matches chat card design — colored border wrapper, inner white card ──
       const tagColor = TAG_BG[card.tags?.[0]?.label ?? ''] ?? '#E7E7E5';
       return (
-        <HTMLContainer id={shape.id} ref={innerRef} style={{
+        <HTMLContainer id={shape.id} style={{
           width: w, height: h, borderRadius: 18,
           backgroundColor: tagColor + '99',
           padding: '3px 3px 6px 3px',
@@ -134,11 +134,11 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
             </div>
           </div>
           {/* Inner white card */}
-          <div style={{
+          <div ref={contentRef} style={{
             borderRadius: 14, backgroundColor: 'white',
-            width: '100%', height: '100%',
+            width: '100%',
             display: 'flex', flexDirection: 'column',
-            boxSizing: 'border-box', overflow: 'hidden',
+            boxSizing: 'border-box',
           }}>
             {card.image && (
               <div style={{ width: '100%', height: 120, overflow: 'hidden', backgroundColor: tagColor, flexShrink: 0 }}>
@@ -185,7 +185,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
 
     // ── Featured card: matches FeaturedCard component on the page exactly ──
     return (
-      <HTMLContainer id={shape.id} ref={innerRef} style={{
+      <HTMLContainer id={shape.id} style={{
         width: w, height: h, borderRadius: 16,
         backgroundColor: accent,
         padding: "2px 2px 6px 2px",
@@ -194,7 +194,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
         pointerEvents: "all",
       }}>
         {/* Inner white card — fills exactly the space inside the colored border */}
-        <div style={{
+        <div ref={contentRef} style={{
           borderRadius: 12, backgroundColor: "white",
           width: w - 4,
           display: "flex", flexDirection: "column", gap: 10, padding: 20,
