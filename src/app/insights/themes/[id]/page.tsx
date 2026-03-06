@@ -295,6 +295,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
 }) {
   const [signalTab, setSignalTab] = useState<'summary' | 'feedback' | 'details' | 'updates'>('summary')
   const [hoveredFeedback, setHoveredFeedback] = useState<number | null>(null)
+  const router = useRouter()
   const analysisData = THEME_ANALYSIS['analysis-' + theme.id]
 
   // Reset tab when signal changes
