@@ -149,17 +149,6 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
           display: "flex", flexDirection: "column", gap: 10, padding: 20,
           boxSizing: "border-box", position: "relative", overflow: "hidden",
         }}>
-          {/* Sparkle button top-right */}
-          <div style={{
-            position: "absolute", top: 10, right: 10,
-            width: 26, height: 26, borderRadius: "50%",
-            border: "1px solid #e0e2e8", backgroundColor: "white",
-            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1,
-          }}>
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="#656b81">
-              <path d="M8 1.5l1.6 4.9H15l-4.2 3 1.6 4.9L8 11.3l-4.4 3.1 1.6-4.9L1 7.4h5.4z"/>
-            </svg>
-          </div>
 
           {/* Gradient media area — matches the page exactly */}
           <div style={{
