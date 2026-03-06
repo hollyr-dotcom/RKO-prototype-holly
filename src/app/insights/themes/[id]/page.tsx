@@ -186,7 +186,7 @@ function FeaturedCard({ card, accent: accentOverride, onCopy }: { card: typeof F
               className="absolute top-3 right-3 w-7 h-7 rounded-full border border-[#e0e2e8] bg-white flex items-center justify-center text-[#656b81] hover:text-[#222428] z-10"
               onClick={(e) => { e.stopPropagation(); onCopy?.(card) }}
             >
-              <CopyIcon />
+              <IconSparksFilled css={{ width: 14, height: 14 }} />
             </motion.button>
           )}
         </AnimatePresence>
