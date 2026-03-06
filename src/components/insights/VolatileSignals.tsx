@@ -26,22 +26,7 @@ function buildSeries(confidenceStr: string, deltaNum: number): number[] {
   })
 }
 
-const TAG_COLORS: Record<string, string> = {
-  Urgent: '#FFD8F4',
-  Weakening: '#DEDAFF',
-  Strengthening: '#F8D3AF',
-  New: '#BADEB1',
-  Customer: '#FFF6B6',
-  Market: '#C6DCFF',
-}
-
-function getThemeColor(theme: ReturnType<typeof getVolatileThemes>[number]): string {
-  const labels = theme.tags.map(t => t.label)
-  for (const priority of ['Urgent', 'Weakening', 'Strengthening', 'New', 'Customer', 'Market']) {
-    if (labels.includes(priority)) return TAG_COLORS[priority]
-  }
-  return TAG_COLORS[labels[0]] ?? '#C6DCFF'
-}
+const BAR_COLORS = ['#067429', '#79E49B', '#ADF0C7']
 
 const DATES = ['12/13', '12/20', '12/27', '1/02', '1/09', '1/16', '1/23']
 
@@ -134,7 +119,7 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
               <path
                 key={`${si}-${di}`}
                 d={d}
-                fill={getThemeColor(themes[si])}
+                fill={BAR_COLORS[si]}
                 opacity={isActive ? 1 : 0.15}
                 style={{ cursor: 'pointer', transition: 'opacity 0.15s' }}
                 onMouseEnter={() => { setHovered(si); setHoveredBar({ si, di }) }}
@@ -191,7 +176,7 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
           >
             <span
               className="w-2.5 h-2.5 rounded-sm shrink-0"
-              style={{ backgroundColor: getThemeColor(themes[i]) }}
+              style={{ backgroundColor: BAR_COLORS[i] }}
             />
             <span
               className="text-[13px] leading-snug truncate flex-1 transition-colors"

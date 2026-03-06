@@ -52,7 +52,7 @@ declare module "tldraw" {
 type IInsightCardShape = TLShape<typeof INSIGHT_CARD_SHAPE_TYPE>;
 
 const TAG_BG: Record<string, string> = {
-  New: "#BADEB1", Urgent: "#FFD8F4", Customer: "#FFF6B6",
+  New: "#ADF0C7", Urgent: "#FFD8F4", Customer: "#FFF6B6",
   Market: "#C6DCFF", Strengthening: "#F8D3AF", Weakening: "#f1f2f5",
 };
 

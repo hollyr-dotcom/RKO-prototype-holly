@@ -22,7 +22,7 @@ const FEATURED_CARDS = [
     source: 'Gong',
     person: 'Sam Ledezma',
     company: 'Figma',
-    accent: '#BADEB1',
+    accent: '#ADF0C7',
   },
   {
     id: '2',
@@ -67,7 +67,7 @@ const FEATURED_CARDS = [
     source: 'Gong',
     person: 'Priya Nair',
     company: 'Miro',
-    accent: '#BADEB1',
+    accent: '#ADF0C7',
   },
   {
     id: '6',
@@ -78,7 +78,7 @@ const FEATURED_CARDS = [
     source: 'Gong',
     person: 'Sofia Reyes',
     company: 'Adobe',
-    accent: '#BADEB1',
+    accent: '#ADF0C7',
   },
   {
     id: '7',
@@ -145,7 +145,7 @@ const FEATURED_CARDS = [
     source: 'Gong',
     person: 'Kenji Watanabe',
     company: 'Sony',
-    accent: '#BADEB1',
+    accent: '#ADF0C7',
   },
 ]
 
@@ -169,7 +169,7 @@ const SIGNAL_ROWS = [
 ]
 
 const TAG_COLORS: Record<string, string> = {
-  New: '#BADEB1',
+  New: '#ADF0C7',
   Customer: '#FFF6B6',
   Market: '#C6DCFF',
   Urgent: '#FFD8F4',
@@ -410,7 +410,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
   const themeCard = THEME_CARDS.find(c => c.title.toLowerCase().includes(signal.theme.toLowerCase()) || signal.theme.toLowerCase().includes(c.title.toLowerCase().split(' ').slice(0, 3).join(' ')))
 
   const feedbackItems = [
-    { type: 'Request' as const, tagColor: '#BADEB1', platforms: ['mobile', 'apple'], text: `Users are reporting that ${signal.title.toLowerCase()} is creating friction in their workflow. This is making it difficult to complete key tasks efficiently, and engagement may decline as a result.`, author: 'Kajsa Bell, CPO', date: 'Added 1 month ago', stars: null },
+    { type: 'Request' as const, tagColor: '#ADF0C7', platforms: ['mobile', 'apple'], text: `Users are reporting that ${signal.title.toLowerCase()} is creating friction in their workflow. This is making it difficult to complete key tasks efficiently, and engagement may decline as a result.`, author: 'Kajsa Bell, CPO', date: 'Added 1 month ago', stars: null },
     { type: 'Problem' as const, tagColor: '#FFD8F4', platforms: ['mobile', 'apple'], text: `"The overall experience feels slow and unresponsive when this issue occurs. Each attempt is followed by a noticeable delay, creating the impression that the system is overprocessing before responding."`, author: 'Marco Rossi, PM', date: 'Added 1 month ago', stars: 2 },
     { type: 'Praise' as const, tagColor: '#DEDAFF', platforms: ['mobile'], text: `When it works well, the experience is seamless. Users appreciate the speed and reliability when ${signal.theme.toLowerCase()} is functioning as expected.`, author: 'Priya Nair, Designer', date: 'Added 2 months ago', stars: null },
   ];
@@ -489,7 +489,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                           key={tag.label}
                           className="flex items-center h-6 px-2.5 rounded-full text-xs text-[#222428]"
                           style={{
-                            backgroundColor: tag.label === 'New' ? '#BADEB1' : tag.label === 'Customer' ? '#FFF6B6' : tag.label === 'Market' ? '#C6DCFF' : tag.label === 'Urgent' ? '#FFD8F4' : tag.label === 'Strengthening' ? '#F8D3AF' : tag.label === 'Weakening' ? '#DEDAFF' : '#e9eaef',
+                            backgroundColor: tag.label === 'New' ? '#ADF0C7' : tag.label === 'Customer' ? '#FFF6B6' : tag.label === 'Market' ? '#C6DCFF' : tag.label === 'Urgent' ? '#FFD8F4' : tag.label === 'Strengthening' ? '#F8D3AF' : tag.label === 'Weakening' ? '#DEDAFF' : '#e9eaef',
                           }}
                         >
                           {tag.label}
@@ -761,14 +761,14 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                 )}
                 {row.type === 'revenue' && (
                   <div className="flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded-full bg-[#BADEB1] flex items-center justify-center text-[10px] font-bold text-[#222428]">$</span>
+                    <span className="w-4 h-4 rounded-full bg-[#ADF0C7] flex items-center justify-center text-[10px] font-bold text-[#222428]">$</span>
                     <span className="text-sm text-[#222428]">{row.value}</span>
                   </div>
                 )}
                 {row.type === 'score' && (
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-[#222428] font-medium">{row.value}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-[#BADEB1] text-[#222428] font-medium">{wowPct}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-[#ADF0C7] text-[#222428] font-medium">{wowPct}</span>
                   </div>
                 )}
                 {row.type === 'companies' && (
@@ -1247,7 +1247,7 @@ export default function SignalsPage() {
   const selectSignal = (row: typeof SIGNAL_ROWS[0]) => { setSelectedSignal(row); setAiOpen(false) }
   const handleAiStar = (card: typeof FEATURED_CARDS[0]) => { setCopiedSignal(card); setAiOpen(true); setSelectedSignal(null) }
 
-  const TAG_ACCENT: Record<string, string> = { Customer: '#FFF6B6', Urgent: '#FFD8F4', Market: '#C6DCFF', New: '#BADEB1', Strengthening: '#F8D3AF' }
+  const TAG_ACCENT: Record<string, string> = { Customer: '#FFF6B6', Urgent: '#FFD8F4', Market: '#C6DCFF', New: '#ADF0C7', Strengthening: '#F8D3AF' }
   const SRC_LABEL: Record<string, string> = { audio: 'Gong', globe: 'Web', mobile: 'App Store' }
   const openSignalOnCanvas = async (row: typeof SIGNAL_ROWS[0]) => {
     localStorage.setItem('pendingInsightCard', JSON.stringify({
@@ -1315,7 +1315,7 @@ export default function SignalsPage() {
             <div className="flex items-center gap-2 mb-5">
               <h2 className="text-[22px] font-heading font-medium text-[#222428] leading-snug">Featured</h2>
               <span className="text-[14px] text-[#656b81]">12 signals</span>
-              <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium text-[#222428]" style={{ backgroundColor: '#BADEB1' }}>7 new</span>
+              <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium text-[#222428]" style={{ backgroundColor: '#ADF0C7' }}>7 new</span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[#aeb2c0]">
                 <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.2" />
                 <path d="M8 5.5v.5M8 7.5v4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
@@ -1375,7 +1375,7 @@ export default function SignalsPage() {
               <div className="flex items-center gap-2 pb-5">
                 <h2 className="text-[22px] font-heading font-medium text-[#222428] leading-snug">Signals</h2>
                 <span className="text-[14px] text-[#656b81]">14 results</span>
-                <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium" style={{ backgroundColor: '#BADEB1', color: '#222428' }}>6 new</span>
+                <span className="flex items-center gap-1 h-6 px-2 rounded-full text-xs font-medium" style={{ backgroundColor: '#ADF0C7', color: '#222428' }}>6 new</span>
                 <div className="flex items-center gap-2 ml-auto">
                   <button className="w-8 h-8 flex items-center justify-center rounded-[24px] hover:bg-[#f1f2f5] transition-colors text-[#656b81]">
                     <Search className="w-4 h-4" />

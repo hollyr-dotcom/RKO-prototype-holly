@@ -13,7 +13,7 @@ import { ChatInput } from '@/components/toolbar/ChatInput'
 // ─── Tag colour map ────────────────────────────────────────────────────────────
 
 const TAG_COLORS: Record<string, string> = {
-  New: '#BADEB1',
+  New: '#ADF0C7',
   Urgent: '#FFD8F4',
   Customer: '#FFF6B6',
   Market: '#C6DCFF',
@@ -252,10 +252,10 @@ function FeaturedCard({ card, accent: accentOverride, onCopy }: { card: typeof F
 const DETAIL_SIGNALS = [
   { id: '1', sourceIcon: 'audio', title: 'Canvas lag with 40+ concurrent users', description: 'Three enterprise accounts flagged as Q3 retention blocker.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFF6B6' }, revenue: '$2.1M', company: { name: 'Google', letter: 'G', bg: '#4285F4' }, feedback: { survey: 110, call: 62, message: 18, appStore: 30 } },
   { id: '2', sourceIcon: 'globe', title: 'AI suggestions interrupt live workshops', description: 'Mid-session interruptions break workshop flow and focus.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFD8F4' }, revenue: '$850K', company: { name: 'Blizzard', letter: 'B', bg: '#00AEFF' }, feedback: { survey: 42, call: 28, message: 14, appStore: 9 } },
-  { id: '3', sourceIcon: 'mobile', title: 'Cursors invisible to collaborators on 4K boards', description: 'Collaboration breaks down when cursor presence disappears.', person: { name: 'Mika B', initials: 'MB', bg: '#BADEB1' }, revenue: '$620K', company: { name: 'Apple', letter: 'A', bg: '#555' }, feedback: { survey: 30, call: 15, message: 22, appStore: 18 } },
+  { id: '3', sourceIcon: 'mobile', title: 'Cursors invisible to collaborators on 4K boards', description: 'Collaboration breaks down when cursor presence disappears.', person: { name: 'Mika B', initials: 'MB', bg: '#ADF0C7' }, revenue: '$620K', company: { name: 'Apple', letter: 'A', bg: '#555' }, feedback: { survey: 30, call: 15, message: 22, appStore: 18 } },
   { id: '4', sourceIcon: 'globe', title: 'SAML / SSO breaks with Okta and Azure AD', description: 'Six-figure deals stalled at procurement over SSO failures.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFF6B6' }, revenue: '$1.4M', company: { name: 'Adobe', letter: 'A', bg: '#E0001B' }, feedback: { survey: 74, call: 55, message: 8, appStore: 12 } },
   { id: '5', sourceIcon: 'audio', title: 'PDF exports lose fonts on large frames', description: 'Enterprise handoff workflows blocked by export fidelity.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFD8F4' }, revenue: '$540K', company: { name: 'Google', letter: 'G', bg: '#4285F4' }, feedback: { survey: 28, call: 19, message: 11, appStore: 6 } },
-  { id: '6', sourceIcon: 'mobile', title: 'SCIM provisioning fails silently on first sync', description: 'IT teams report silent failures blocking org-wide rollouts.', person: { name: 'Mika B', initials: 'MB', bg: '#BADEB1' }, revenue: '$1.1M', company: { name: 'Apple', letter: 'A', bg: '#555' }, feedback: { survey: 58, call: 40, message: 20, appStore: 15 } },
+  { id: '6', sourceIcon: 'mobile', title: 'SCIM provisioning fails silently on first sync', description: 'IT teams report silent failures blocking org-wide rollouts.', person: { name: 'Mika B', initials: 'MB', bg: '#ADF0C7' }, revenue: '$1.1M', company: { name: 'Apple', letter: 'A', bg: '#555' }, feedback: { survey: 58, call: 40, message: 20, appStore: 15 } },
   { id: '7', sourceIcon: 'globe', title: 'Boards with 500+ objects take 8+ seconds to load', description: 'Heavy boards cause session abandonment in enterprise accounts.', person: { name: 'Zac Brown', initials: 'ZB', bg: '#FFF6B6' }, revenue: '$760K', company: { name: 'Blizzard', letter: 'B', bg: '#00AEFF' }, feedback: { survey: 38, call: 24, message: 16, appStore: 10 } },
   { id: '8', sourceIcon: 'audio', title: 'Auto-layout breaks on complex system maps', description: 'Architecture diagrams with 50+ nodes fail to auto-arrange.', person: { name: 'Sarah B', initials: 'SB', bg: '#FFD8F4' }, revenue: '$720K', company: { name: 'Adobe', letter: 'A', bg: '#E0001B' }, feedback: { survey: 36, call: 22, message: 19, appStore: 13 } },
 ]
@@ -600,7 +600,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
             {signalTab === 'feedback' && (
               <div className="flex flex-col gap-3">
                 {[
-                  { type: 'Request' as const, tagColor: '#BADEB1', text: `Users are reporting that ${selectedSignal.title.toLowerCase()} is creating friction in their workflow.`, author: selectedSignal.person.name, date: 'Added 1 month ago', stars: null },
+                  { type: 'Request' as const, tagColor: '#ADF0C7', text: `Users are reporting that ${selectedSignal.title.toLowerCase()} is creating friction in their workflow.`, author: selectedSignal.person.name, date: 'Added 1 month ago', stars: null },
                   { type: 'Problem' as const, tagColor: '#FFD8F4', text: `"The overall experience feels slow and unresponsive when this issue occurs. Each attempt is followed by a noticeable delay."`, author: 'Marco Rossi, PM', date: 'Added 1 month ago', stars: 2 },
                   { type: 'Praise' as const, tagColor: '#DEDAFF', text: `When it works well, the experience is seamless. Users appreciate the reliability when things are functioning as expected.`, author: 'Priya Nair, Designer', date: 'Added 2 months ago', stars: null },
                 ].map((item, i) => (
@@ -978,7 +978,7 @@ export default function ThemeDetailPage() {
             <div className="flex items-center gap-2 mb-5">
               <h2 className="text-[22px] font-heading font-medium text-[#222428] leading-snug">Featured</h2>
               <span className="text-[14px] text-[#656b81]">{signalCount} signals</span>
-              <span className="flex items-center gap-1 py-1 px-2.5 rounded-full text-xs text-[#222428]" style={{ backgroundColor: '#BADEB1' }}>
+              <span className="flex items-center gap-1 py-1 px-2.5 rounded-full text-xs text-[#222428]" style={{ backgroundColor: '#ADF0C7' }}>
                 7 new
               </span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-[#aeb2c0]">
@@ -1151,12 +1151,12 @@ export default function ThemeDetailPage() {
                     {row.type === 'score' && (
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-[#222428] font-medium">{row.value}</span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-[#BADEB1] text-[#222428] font-medium">{row.badge}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-[#ADF0C7] text-[#222428] font-medium">{row.badge}</span>
                       </div>
                     )}
                     {row.type === 'revenue' && (
                       <div className="flex items-center gap-1.5">
-                        <span className="w-4 h-4 rounded-full bg-[#BADEB1] flex items-center justify-center text-[10px] font-bold text-[#222428]">$</span>
+                        <span className="w-4 h-4 rounded-full bg-[#ADF0C7] flex items-center justify-center text-[10px] font-bold text-[#222428]">$</span>
                         <span className="text-sm text-[#222428]">{row.value}</span>
                       </div>
                     )}

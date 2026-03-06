@@ -241,7 +241,7 @@ export default function InsightsOverviewPage() {
               label="Feature adoption"
               value="+8.5%"
               sub="20%"
-              background="#BADEB1"
+              background="#ADF0C7"
               onOpenChat={() => openMetric('Feature adoption')}
               description={
                 <>

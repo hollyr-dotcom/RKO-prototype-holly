@@ -40,7 +40,7 @@ const TAG_COLORS: Record<string, string> = {
   Urgent: '#FFD8F4',
   Weakening: '#DEDAFF',
   Strengthening: '#F8D3AF',
-  New: '#BADEB1',
+  New: '#ADF0C7',
   Customer: '#FFF6B6',
   Market: '#C6DCFF',
 }

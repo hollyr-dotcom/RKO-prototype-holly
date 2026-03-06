@@ -182,7 +182,7 @@ export function SentimentChart({ onOpenChat, onOpenChatHeader }: { onOpenChat?: 
         cx={cx}
         cy={cy}
         r={7}
-        fill="#659DF2"
+        fill="#3859FF"
         stroke="white"
         strokeWidth={2}
         style={{ cursor: 'pointer' }}
@@ -251,8 +251,8 @@ export function SentimentChart({ onOpenChat, onOpenChatHeader }: { onOpenChat?: 
           >
             <defs>
               <linearGradient id="sentimentGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#659DF2" stopOpacity={0.45} />
-                <stop offset="100%" stopColor="#659DF2" stopOpacity={0.0} />
+                <stop offset="0%" stopColor="#3859FF" stopOpacity={0.45} />
+                <stop offset="100%" stopColor="#3859FF" stopOpacity={0.0} />
               </linearGradient>
             </defs>
             <XAxis
@@ -279,10 +279,10 @@ export function SentimentChart({ onOpenChat, onOpenChatHeader }: { onOpenChat?: 
             <Area
               type="monotone"
               dataKey="value"
-              stroke="#659DF2"
+              stroke="#3859FF"
               strokeWidth={2}
               fill="url(#sentimentGradient)"
-              dot={{ fill: '#659DF2', strokeWidth: 0, r: 5, fillOpacity: 1 }}
+              dot={{ fill: '#3859FF', strokeWidth: 0, r: 5, fillOpacity: 1 }}
               activeDot={renderActiveDot}
             />
           </AreaChart>

@@ -121,7 +121,7 @@ const THEME_CARD_COPY_CHIPS = [
 ]
 
 const TAG_BG: Record<string, string> = {
-  New: '#BADEB1',
+  New: '#ADF0C7',
   Urgent: '#FFD8F4',
   Customer: '#FFF6B6',
   Market: '#C6DCFF',
@@ -602,7 +602,7 @@ function SourceIcon() {
 
 const TAG_ACTIVE_COLORS: Record<string, string> = {
   All: "#222428",
-  New: "#BADEB1",
+  New: "#ADF0C7",
   Urgent: "#FFD8F4",
   Customer: "#FFF6B6",
   Market: "#C6DCFF",
@@ -688,8 +688,8 @@ function ThemeCardItem({ card, index, aiOpen, onCopy }: { card: ThemeCard; index
               key={tag.label}
               className="flex items-center gap-1 py-2 px-3 rounded-full border text-xs text-[#222428]"
               style={{
-                backgroundColor: tag.label === "New" ? "#BADEB1" : tag.label === "Customer" ? "#FFF6B6" : tag.label === "Market" ? "#C6DCFF" : tag.label === "Urgent" ? "#FFD8F4" : tag.label === "Strengthening" ? "#F8D3AF" : tag.label === "Weakening" ? "#DEDAFF" : "white",
-                borderColor: tag.label === "New" ? "#BADEB1" : tag.label === "Customer" ? "#FFF6B6" : tag.label === "Market" ? "#C6DCFF" : tag.label === "Urgent" ? "#FFD8F4" : tag.label === "Strengthening" ? "#F8D3AF" : tag.label === "Weakening" ? "#DEDAFF" : "#e0e2e8",
+                backgroundColor: tag.label === "New" ? "#ADF0C7" : tag.label === "Customer" ? "#FFF6B6" : tag.label === "Market" ? "#C6DCFF" : tag.label === "Urgent" ? "#FFD8F4" : tag.label === "Strengthening" ? "#F8D3AF" : tag.label === "Weakening" ? "#DEDAFF" : "white",
+                borderColor: tag.label === "New" ? "#ADF0C7" : tag.label === "Customer" ? "#FFF6B6" : tag.label === "Market" ? "#C6DCFF" : tag.label === "Urgent" ? "#FFD8F4" : tag.label === "Strengthening" ? "#F8D3AF" : tag.label === "Weakening" ? "#DEDAFF" : "#e0e2e8",
               }}
             >
               {tag.label === "New" ? <GiftIcon size={16} /> : tag.label === "Customer" ? <IconSmileyChat css={{ width: 16, height: 16 }} /> : tag.label === "Market" ? <IconGlobe css={{ width: 16, height: 16 }} /> : tag.label === "Urgent" ? <IconExclamationPointCircle css={{ width: 16, height: 16 }} /> : tag.label === "Strengthening" ? <IconChartLine css={{ width: 16, height: 16 }} /> : tag.label === "Weakening" ? <IconArrowDown css={{ width: 16, height: 16 }} /> : <BoardIcon size={12} />}

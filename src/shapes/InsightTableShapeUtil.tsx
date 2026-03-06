@@ -46,7 +46,7 @@ type IInsightTableShape = TLShape<typeof INSIGHT_TABLE_SHAPE_TYPE>;
 const COMPANY_COLORS: Record<string, { bg: string; color: string }> = {
   Figma:     { bg: "#C6DCFF", color: "#222428" },
   Siemens:   { bg: "#e0e0e0", color: "#222428" },
-  Spotify:   { bg: "#BADEB1", color: "#222428" },
+  Spotify:   { bg: "#ADF0C7", color: "#222428" },
   Apple:     { bg: "#e9eaef", color: "#222428" },
   Adobe:     { bg: "#FFD8F4", color: "#222428" },
   Atlassian: { bg: "#FFF6B6", color: "#222428" },
@@ -54,11 +54,11 @@ const COMPANY_COLORS: Record<string, { bg: string; color: string }> = {
   Notion:    { bg: "#F8D3AF", color: "#222428" },
   Brex:      { bg: "#FFD8F4", color: "#222428" },
   Google:    { bg: "#C6DCFF", color: "#222428" },
-  Navan:     { bg: "#BADEB1", color: "#222428" },
+  Navan:     { bg: "#ADF0C7", color: "#222428" },
 };
 
 const TAG_BG: Record<string, string> = {
-  New: "#BADEB1", Urgent: "#FFD8F4", Customer: "#FFF6B6",
+  New: "#ADF0C7", Urgent: "#FFD8F4", Customer: "#FFF6B6",
   Market: "#C6DCFF", Strengthening: "#F8D3AF", Weakening: "#f1f2f5",
 };
 

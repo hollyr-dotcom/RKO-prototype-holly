@@ -78,7 +78,7 @@ function ThemeMatrixPopover({ cx, cy, card, onMouseEnter, onMouseLeave }: Hovere
 // ─── Tag pills ───────────────────────────────────────────────────────────────
 
 const TAG_PILL_COLORS: Record<string, string> = {
-  New: '#BADEB1',
+  New: '#ADF0C7',
   Urgent: '#FFD8F4',
   Customer: '#FFF6B6',
   Market: '#C6DCFF',
@@ -155,7 +155,7 @@ const TAG_DOT_COLORS: Record<string, string> = {
   Urgent: '#FFD8F4',
   Weakening: '#DEDAFF',
   Strengthening: '#F8D3AF',
-  New: '#BADEB1',
+  New: '#ADF0C7',
   Customer: '#FFF6B6',
   Market: '#C6DCFF',
 }
@@ -242,7 +242,7 @@ export function ThemeMatrix({ onOpenChat }: { onOpenChat?: () => void }) {
           { label: 'Urgent', color: '#FFD8F4' },
           { label: 'Strengthening', color: '#F8D3AF' },
           { label: 'Weakening', color: '#DEDAFF' },
-          { label: 'New', color: '#BADEB1' },
+          { label: 'New', color: '#ADF0C7' },
         ].map(({ label, color }) => (
           <div key={label} className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
