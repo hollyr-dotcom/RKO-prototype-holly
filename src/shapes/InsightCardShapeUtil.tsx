@@ -173,8 +173,7 @@ export class InsightCardShapeUtil extends ShapeUtil<IInsightCardShape> {
             {!isQuote && (
               <div style={{
                 width: 36, height: 36, borderRadius: "50%",
-                backgroundColor: "rgba(255,255,255,0.85)",
-                boxShadow: "0 1px 6px rgba(0,0,0,0.12)",
+                backgroundColor: accent,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 flexShrink: 0,
               }}>
