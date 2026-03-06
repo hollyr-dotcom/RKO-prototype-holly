@@ -66,12 +66,13 @@ const TYPE_LABEL: Record<string, string> = {
   audio: "Audio", quote: "Quote", theme: "Theme", clips: "Clip",
 };
 
-const COL_NUM   = 44;
-const COL_TITLE = 180;
-const COL_DESC  = 220;
-const COL_TYPE  = 72;
-const COL_CO    = 110;
-const COL_META  = 90;
+const COL_NUM    = 44;
+const COL_TITLE  = 160;
+const COL_DESC   = 190;
+const COL_SOURCE = 80;
+const COL_TYPE   = 72;
+const COL_CO     = 100;
+const COL_META   = 80;
 const ROW_H     = 92;
 const HEADER_H  = 44;
 const BORDER    = "1px solid #e0e2e8";
@@ -261,6 +262,10 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
           <div style={{ width: COL_DESC, flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "0 8px", height: HEADER_H, borderRight: BORDER }}>
             <IcoText /><span style={{ fontSize: 12, fontWeight: 600, color: "#656b81" }}>Description</span>
           </div>
+          {/* Source */}
+          <div style={{ width: COL_SOURCE, flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "0 8px", height: HEADER_H, borderRight: BORDER }}>
+            <IcoText /><span style={{ fontSize: 12, fontWeight: 600, color: "#656b81" }}>Source</span>
+          </div>
           {/* Type */}
           <div style={{ width: COL_TYPE, flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "0 8px", height: HEADER_H, borderRight: BORDER }}>
             <IcoTag /><span style={{ fontSize: 12, fontWeight: 600, color: "#656b81" }}>Type</span>
@@ -296,7 +301,7 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
                   {i + 1}
                 </div>
 
-                {/* Title + source chip + tag */}
+                {/* Title + tag */}
                 <div style={{
                   width: COL_TITLE, flexShrink: 0, borderRight: BORDER,
                   padding: "10px 10px",
@@ -310,11 +315,6 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
                     {row.title}
                   </span>
                   <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
-                    {row.source && (
-                      <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 99, backgroundColor: "#e9eaef", color: "#656b81", fontWeight: 500 }}>
-                        {row.source}
-                      </span>
-                    )}
                     {row.tags && row.tags.slice(0, 1).map(tag => (
                       <span key={tag} style={{ fontSize: 10, padding: "2px 7px", borderRadius: 99, backgroundColor: TAG_BG[tag] ?? "#f1f2f5", color: "#222428" }}>
                         {tag}
@@ -336,6 +336,20 @@ export class InsightTableShapeUtil extends ShapeUtil<IInsightTableShape> {
                   }}>
                     {row.description ?? "—"}
                   </span>
+                </div>
+
+                {/* Source */}
+                <div style={{
+                  width: COL_SOURCE, flexShrink: 0, borderRight: BORDER,
+                  display: "flex", alignItems: "center", padding: "0 8px",
+                }}>
+                  {row.source ? (
+                    <span style={{ fontSize: 11, padding: "2px 7px", borderRadius: 99, backgroundColor: "#e9eaef", color: "#656b81", fontWeight: 500, whiteSpace: "nowrap" }}>
+                      {row.source}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: 12, color: "#9ca0ad" }}>—</span>
+                  )}
                 </div>
 
                 {/* Type */}
