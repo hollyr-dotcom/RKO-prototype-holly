@@ -138,6 +138,7 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
   onClearCopied?: () => void
 }) {
   const [activeChip, setActiveChip] = useState<string | null>(null)
+  const router = useRouter()
 
   const activePrompt = activeChip ?? chatPrompt
 
