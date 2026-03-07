@@ -88,19 +88,19 @@ export function TrendingMentions({ onOpenChat }: { onOpenChat?: () => void }) {
       </div>
 
       {/* Bars */}
-      <div className="flex flex-col gap-2 flex-1">
+      <div className="flex flex-col gap-2">
         {ITEMS.map((item) => {
           const barPct = (item.mentions / MAX) * 100
           return (
             <div
               key={item.id}
-              className="relative flex-1 cursor-pointer group self-stretch flex items-center"
+              className="relative h-12 cursor-pointer group flex items-center"
               onClick={() => router.push(`/insights/themes/${item.id}`)}
               onMouseEnter={() => setHoveredId(item.id)}
               onMouseLeave={() => setHoveredId(null)}
             >
               <div
-                className="absolute left-0 top-0 bottom-0 rounded-[8px] transition-opacity group-hover:opacity-70"
+                className="absolute left-0 top-0 bottom-0 inset-y-0 rounded-[8px] transition-opacity group-hover:opacity-70"
                 style={{ width: `${barPct}%`, backgroundColor: getBarColor(item.id) }}
               />
               <span className="relative z-10 text-[14px] font-semibold text-[#222428] leading-[1.5] ml-[21px] font-heading flex-1">

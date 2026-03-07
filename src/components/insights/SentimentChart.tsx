@@ -226,7 +226,7 @@ export function SentimentChart({ onOpenChat, onOpenChatHeader }: { onOpenChat?: 
           )}
         </AnimatePresence>
       </div>
-      <figure className="flex-1 min-h-0 relative">
+      <figure className="flex-1 min-h-0 relative" style={{ minHeight: 280 }}>
         {hoveredDot && (
           <SentimentPopover
             cx={hoveredDot.cx}
