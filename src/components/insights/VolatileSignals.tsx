@@ -84,6 +84,7 @@ function VolatilePopover({
         transform: 'translate(-50%, calc(-100% - 16px))',
         width: 320,
         paddingBottom: 24,
+        pointerEvents: 'auto',
       }}
     >
       <div
@@ -202,7 +203,7 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 4 }}
               transition={{ duration: 0.15 }}
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }}
+              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50, pointerEvents: 'none' }}
             >
               <VolatilePopover
                 cx={popover.cx}
