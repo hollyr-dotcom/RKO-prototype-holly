@@ -63,8 +63,8 @@ function ThemeMatrixPopover({ cx, cy, card, onMouseEnter, onMouseLeave }: Hovere
         <div>
           <button
             onClick={() => router.push(`/insights/themes/${card.id}`)}
-            className="px-4 py-1.5 rounded-[6px] text-white text-sm font-medium transition-opacity hover:opacity-80"
-            style={{ backgroundColor: '#3859FF' }}
+            className="px-4 py-1.5 rounded-[6px] text-sm font-medium transition-opacity hover:opacity-80"
+            style={{ backgroundColor: '#ffffff', color: '#222428', border: '1px solid #e0e2e8' }}
           >
             View details
           </button>

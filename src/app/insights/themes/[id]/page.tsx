@@ -557,7 +557,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                   {selectedSignal.description} With an estimated {selectedSignal.revenue} ARR impact, it represents a meaningful opportunity to address unmet needs and improve retention.
                 </p>
                 <div className="flex flex-col gap-2">
-                  <h3 className="text-[20px] font-serif text-[#222428]">Confidence drivers</h3>
+                  <h3 className="text-lg font-heading font-medium text-[#222428] leading-snug">Confidence drivers</h3>
                   <div className="grid grid-cols-2">
                     {[
                       { value: signalMentions, label: 'Total Mentions' },
@@ -576,7 +576,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                 <div className="h-px bg-[#e0e2e8]" />
 
                 <div className="flex flex-col gap-4">
-                  <h3 className="text-[20px] font-serif text-[#222428]">Total feedback</h3>
+                  <h3 className="text-lg font-heading font-medium text-[#222428] leading-snug">Total feedback</h3>
                   <div className="flex items-center gap-6">
                     <div className="relative w-[140px] h-[140px] shrink-0">
                       <div className="w-full h-full rounded-full" style={{ background: feedbackGradient }} />
@@ -584,11 +584,11 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                         <span className="text-[24px] font-serif text-[#222428]">{feedbackTotal}</span>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-6">
+                    <div className="flex flex-col gap-3 flex-1">
                       {feedbackItems.map((item) => (
                         <div key={item.label} className="flex items-center gap-2">
-                          <div className="w-1 rounded-full self-stretch shrink-0" style={{ backgroundColor: item.color }} />
-                          <div>
+                          <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                          <div className="flex items-baseline justify-between flex-1">
                             <p className="text-[12px] text-[#656b81]">{item.label}</p>
                             <p className="text-[18px] text-[#222428] leading-[1.2]">{item.value}</p>
                           </div>
@@ -825,6 +825,18 @@ function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[
   const wow = `+${Math.round(revenueK * 0.012 + 8)}%`
   const fb = signal.feedback
   const feedbackTotal = fb.survey + fb.call + fb.message + fb.appStore
+  const gap = 1.5
+  const s = (fb.survey / feedbackTotal) * 100
+  const c = (fb.call / feedbackTotal) * 100
+  const m = (fb.message / feedbackTotal) * 100
+  const s2 = s + gap, c2 = s2 + c, c3 = c2 + gap, m2 = c3 + m, m3 = m2 + gap
+  const feedbackGradient = `conic-gradient(#b5a9ff 0% ${s.toFixed(1)}%, white ${s.toFixed(1)}% ${s2.toFixed(1)}%, #ffabec ${s2.toFixed(1)}% ${c2.toFixed(1)}%, white ${c2.toFixed(1)}% ${c3.toFixed(1)}%, #ffbd83 ${c3.toFixed(1)}% ${m2.toFixed(1)}%, white ${m2.toFixed(1)}% ${m3.toFixed(1)}%, #c2eb7f ${m3.toFixed(1)}% 100%)`
+  const feedbackItems = [
+    { color: '#b5a9ff', label: 'Survey', value: fb.survey },
+    { color: '#ffabec', label: 'Call', value: fb.call },
+    { color: '#ffbd83', label: 'Message', value: fb.message },
+    { color: '#c2eb7f', label: 'App Store', value: fb.appStore },
+  ]
 
   return (
     <motion.aside
@@ -863,29 +875,57 @@ function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[
         </div>
 
         {tab === 'summary' && (
-          <div className="grid grid-cols-2">
-            {[
-              { value: String(mentions), label: 'Total Mentions' },
-              { value: String(customers), label: 'Unique Customers' },
-              { value: signal.revenue, label: 'Est. ARR Impact' },
-              { value: wow, label: 'Frequency (WoW)' },
-            ].map(stat => (
-              <div key={stat.label} className="py-3">
-                <p className="text-[32px] font-serif text-[#222428] leading-[1.2]">{stat.value}</p>
-                <p className="text-[14px] text-[#656b81] mt-1">{stat.label}</p>
+          <>
+            <p className="text-[16px] text-[#656b81] leading-[1.6]">
+              {signal.description} With an estimated {signal.revenue} ARR impact, it represents a meaningful opportunity to address unmet needs and improve retention.
+            </p>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-lg font-heading font-medium text-[#222428] leading-snug">Confidence drivers</h3>
+              <div className="grid grid-cols-2">
+                {[
+                  { value: String(mentions), label: 'Total Mentions' },
+                  { value: String(customers), label: 'Unique Customers' },
+                  { value: signal.revenue, label: 'Est. ARR Impact' },
+                  { value: wow, label: 'Frequency (WoW)' },
+                ].map(stat => (
+                  <div key={stat.label} className="py-3">
+                    <p className="text-[32px] font-serif text-[#222428] leading-[1.2]">{stat.value}</p>
+                    <p className="text-[14px] text-[#656b81] mt-1">{stat.label}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+
+            <div className="h-px bg-[#e0e2e8]" />
+
+            <div className="flex flex-col gap-4">
+              <h3 className="text-lg font-heading font-medium text-[#222428] leading-snug">Total feedback</h3>
+              <div className="flex items-center gap-6">
+                <div className="relative w-[140px] h-[140px] shrink-0">
+                  <div className="w-full h-full rounded-full" style={{ background: feedbackGradient }} />
+                  <div className="absolute inset-[22%] bg-white rounded-full flex items-center justify-center">
+                    <span className="text-[24px] font-serif text-[#222428]">{feedbackTotal}</span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3 flex-1">
+                  {feedbackItems.map(item => (
+                    <div key={item.label} className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                      <div className="flex items-baseline justify-between flex-1">
+                        <p className="text-[12px] text-[#656b81]">{item.label}</p>
+                        <p className="text-[18px] text-[#222428] leading-[1.2]">{item.value}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
         {tab === 'feedback' && (
           <div className="flex flex-col gap-3">
-            {[
-              { label: 'Survey', value: fb.survey, color: '#b5a9ff' },
-              { label: 'Gong call', value: fb.call, color: '#ffabec' },
-              { label: 'Message', value: fb.message, color: '#ffbd83' },
-              { label: 'App Store', value: fb.appStore, color: '#c2eb7f' },
-            ].map(item => (
+            {feedbackItems.map(item => (
               <div key={item.label} className="flex items-center gap-3 py-1">
                 <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                 <span className="text-sm text-[#656b81] flex-1">{item.label}</span>
@@ -1197,7 +1237,7 @@ export default function ThemeDetailPage() {
                       initial={{ opacity: 0, y: 4 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: i * 0.04 }}
-                      onClick={() => setDetailSignal(row)}
+                      onClick={() => { setDetailSignal(row); setAiOpen(false) }}
                       className={`grid gap-4 px-5 py-3.5 items-center border-b border-[#e0e2e8] last:border-0 hover:bg-[#E7E7E5] transition-colors cursor-pointer ${detailSignal?.id === row.id ? 'bg-[#E7E7E5]' : ''}`}
                       style={{ gridTemplateColumns: '24px 56px 260px 200px 140px 110px 130px' }}
                     >
@@ -1368,7 +1408,7 @@ export default function ThemeDetailPage() {
 
       <AnimatePresence>
         {detailSignal && (
-          <DetailSignalPanel signal={detailSignal} onClose={() => setDetailSignal(null)} />
+          <DetailSignalPanel signal={detailSignal} onClose={() => { setDetailSignal(null); setAiOpen(true) }} />
         )}
       </AnimatePresence>
 

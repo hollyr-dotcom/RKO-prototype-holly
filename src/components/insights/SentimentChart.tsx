@@ -226,7 +226,7 @@ export function SentimentChart({ onOpenChat, onOpenChatHeader }: { onOpenChat?: 
           )}
         </AnimatePresence>
       </div>
-      <figure className="flex-1 min-h-0 relative" style={{ minHeight: 280 }}>
+      <figure className="flex-1 min-h-0 relative" style={{ minHeight: 280 }} onMouseLeave={scheduleClose}>
         {hoveredDot && (
           <SentimentPopover
             cx={hoveredDot.cx}
@@ -247,7 +247,6 @@ export function SentimentChart({ onOpenChat, onOpenChatHeader }: { onOpenChat?: 
                 setHoveredDot({ cx: e.activeCoordinate.x, cy: e.activeCoordinate.y, index: e.activeTooltipIndex })
               }
             }}
-            onMouseLeave={scheduleClose}
           >
             <defs>
               <linearGradient id="sentimentGradient" x1="0" y1="0" x2="0" y2="1">
