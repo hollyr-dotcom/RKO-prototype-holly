@@ -170,7 +170,7 @@ export function VolatileSignals({ onOpenChat, onViewAnalysis }: { onOpenChat?: (
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-[22px] font-heading font-medium text-gray-900 leading-snug mb-1">
-            Most volatile opportunities
+            Most volatile insights
           </h2>
           <p className="text-sm text-gray-500">Based on % change in confidence score</p>
         </div>

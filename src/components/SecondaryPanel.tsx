@@ -102,7 +102,7 @@ const SPACE_SECTIONS: Record<string, { id: string; label: string; href?: string 
   // Insights
   "space-insights": [
     { id: "overview",      label: "Overview",      href: "/insights/overview" },
-    { id: "opportunities", label: "Opportunities", href: "/insights/themes" },
+    { id: "opportunities", label: "Insights", href: "/insights/themes" },
     { id: "signals",       label: "Signals",       href: "/insights/signals" },
   ],
   // 1:1s

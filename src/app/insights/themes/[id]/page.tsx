@@ -815,7 +815,7 @@ function deriveStats(card: ThemeCard) {
 // ─── Detail Signal Panel ───────────────────────────────────────────────────────
 
 function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[0]; onClose: () => void }) {
-  const [tab, setTab] = useState<'summary' | 'feedback'>('summary')
+  const [tab, setTab] = useState<'summary' | 'feedback' | 'details' | 'updates'>('summary')
 
   const revenueNum = parseFloat(signal.revenue.replace(/[^0-9.]/g, ''))
   const isMillions = signal.revenue.includes('M')
@@ -864,8 +864,8 @@ function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-0.5">
-          {(['Summary', 'Feedback'] as const).map(t => (
+        <div className="flex items-center gap-0.5 flex-wrap">
+          {(['Summary', 'Feedback', 'Details', 'Updates'] as const).map(t => (
             <button
               key={t}
               onClick={() => setTab(t.toLowerCase() as typeof tab)}
@@ -933,6 +933,44 @@ function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[
                 <span className="text-xs text-[#959aac] w-8 text-right">{Math.round(item.value / feedbackTotal * 100)}%</span>
               </div>
             ))}
+          </div>
+        )}
+
+        {tab === 'details' && (
+          <div>
+            {[
+              { label: 'Source', value: signal.sourceIcon === 'audio' ? 'Audio / Gong' : signal.sourceIcon === 'globe' ? 'Web / Market' : 'Mobile / App Store' },
+              { label: 'Person', value: signal.person.name },
+              { label: 'Est. ARR impact', value: signal.revenue + ' ARR' },
+              { label: 'Company', value: signal.company.name },
+              { label: 'Total mentions', value: String(mentions) },
+              { label: 'Unique customers', value: String(customers) },
+              { label: 'Frequency (WoW)', value: wow },
+            ].map(row => (
+              <div key={row.label} className="grid gap-6 py-3.5 border-b border-[#f1f2f5] last:border-0 items-start" style={{ gridTemplateColumns: '140px 1fr' }}>
+                <span className="text-sm text-[#656b81]">{row.label}</span>
+                <span className="text-sm text-[#222428]">{row.value}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'updates' && (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: '#E7E7E5' }}>
+                <span className="text-[#222428] leading-[0] flex items-center justify-center">
+                  <IconSparksFilled css={{ width: 14, height: 14 }} />
+                </span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[13px] font-semibold text-[#222428]">Signal added</span>
+                  <span className="text-[12px] text-[#aeb2c0]">Jul 14</span>
+                </div>
+                <p className="text-[13px] text-[#656b81] leading-[1.5]">This signal was captured and added to the opportunity.</p>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -1038,7 +1076,7 @@ export default function ThemeDetailPage() {
               className="text-[14px] font-medium text-[#656b81] hover:text-[#222428] transition-colors whitespace-nowrap"
               style={{ fontFamily: 'Roobert, sans-serif' }}
             >
-              Opportunities
+              Insights
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-[#aeb2c0] shrink-0" />
             <span

@@ -837,7 +837,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 const PROMPT_CHIPS = [
   'Walk me through the 2 unreviewed signals',
   'Why is Canvas Performance strengthening?',
-  'Which opportunities have new signals this week?',
+  'Which insights have new signals this week?',
 ]
 
 const PROMPT_RESPONSES: Record<string, { response: string; followUps: string[] }> = {
@@ -849,7 +849,7 @@ const PROMPT_RESPONSES: Record<string, { response: string; followUps: string[] }
     response: `**Canvas Performance** now has 8 signals — up from 5 last month. Three things are driving this:\n\n**Enterprise scale** — accounts with 40+ concurrent users are hitting consistent lag during live sessions. It's not edge-case behaviour anymore.\n\n**Comparison pressure** — four sales calls this week included direct comparisons to Figma's performance. Prospects are using it as a decision criterion.\n\n**Churn risk** — two accounts flagged it as a blocker to wider rollout, not just a complaint. That's a different level of urgency.\n\nThe theme confidence is at **84%** — the highest of any active theme right now. It's moved from 'monitoring' to 'act now' territory.`,
     followUps: ['Which accounts mentioned Canvas Performance?', 'Draft a roadmap recommendation', 'Show all Canvas Performance signals'],
   },
-  'Which opportunities have new signals this week?': {
+  'Which insights have new signals this week?': {
     response: `**4 themes** picked up new signals since your last review:\n\n**Canvas Performance** — 2 new signals. Enterprise lag and a direct Figma comparison from a sales call.\n\n**Enterprise Security** — 2 new signals. SSO enforcement gaps and missing audit log granularity, both from regulated-industry accounts.\n\n**AI UX Controls** — 1 new signal. Users want to reject AI suggestions inline without turning the feature off entirely.\n\n**Mobile Parity** — 1 new signal. iOS touch target sizing during workshops. Notable because it's the first from a non-enterprise account this month — the problem may be broader than enterprise.`,
     followUps: ['Tell me more about Mobile Parity', 'Show me the Enterprise Security signals', 'Which opportunity needs the most attention?'],
   },
@@ -871,7 +871,7 @@ const PROMPT_RESPONSES: Record<string, { response: string; followUps: string[] }
   },
   'Is APAC localisation a new opportunity?': {
     response: `Not yet — but it could become one.\n\n**Localisation & i18n** already exists as a theme with 3 signals, mostly focused on RTL language support and date formatting. The APAC signal fits within that theme for now, but it's a different dimension: **market entry blockers** rather than language rendering bugs.\n\nIf two more signals come in specifically about APAC rollout friction, it would justify splitting into a dedicated **APAC Market Readiness** theme. I'd leave it under Localisation & i18n for this cycle and revisit in 3–4 weeks.`,
-    followUps: ['Which opportunities have new signals this week?', 'Which opportunity needs the most attention?', 'Walk me through the 2 unreviewed signals'],
+    followUps: ['Which insights have new signals this week?', 'Which opportunity needs the most attention?', 'Walk me through the 2 unreviewed signals'],
   },
   'Which accounts mentioned Canvas Performance?': {
     response: `**3 enterprise accounts** flagged Canvas Performance this week:\n\n**Spotify** (sales call, Mon) — "We run design sprints with 40+ people on a single board. The lag when everyone is active at once is a dealbreaker."\n\n**Zalando** (support ticket, Wed) — Reported consistent cursor lag above 50 objects with live presence enabled. Opened as a bug, but the root cause is the same rendering bottleneck.\n\n**Shopify** (community post, Thu) — A power user compared Miro's performance unfavourably to Figma in a public thread. 34 upvotes.`,
@@ -887,7 +887,7 @@ const PROMPT_RESPONSES: Record<string, { response: string; followUps: string[] }
   },
   'Tell me more about Mobile Parity': {
     response: `**Mobile Parity** has 7 signals total, but this new one is different from the others.\n\nMost existing signals come from enterprise accounts where mobile use is incidental — someone checking a board on their phone, not actively editing. The new signal is from an **SMB facilitator** running a workshop where half the participants were on iOS tablets.\n\nThe specific complaint: touch targets on the toolbar are too small for reliable tapping during a fast-moving session. It caused delays and frustration in front of a client.\n\nThis is the first signal where mobile is the **primary device**, not a secondary one. It may indicate a different user segment starting to adopt Miro for facilitation on mobile.`,
-    followUps: ['Which opportunities have new signals this week?', 'Which opportunity needs the most attention?', 'Are there more signals from regulated industries?'],
+    followUps: ['Which insights have new signals this week?', 'Which opportunity needs the most attention?', 'Are there more signals from regulated industries?'],
   },
   'Show me the Enterprise Security signals': {
     response: `**Enterprise Security** has 5 signals total. The 2 new ones this week:\n\n**SSO enforcement for guests** (Spotify) — IT policy requires SSO for all board access. Guest accounts bypass it entirely.\n\n**Audit log granularity** (Zendesk) — Compliance needs shape-level edit history. Current logs are board-level only.\n\nThe 3 existing signals:\n- Admin controls for external sharing (flagged by 2 accounts)\n- IP allowlist not applying to embedded boards\n- No way to revoke access on a per-board basis for departing employees\n\nAll 5 point to gaps in the enterprise security model for regulated-industry customers.`,

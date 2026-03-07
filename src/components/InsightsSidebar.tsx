@@ -18,7 +18,7 @@ type Canvas = { id: string; name: string };
 
 const NAV_ITEMS = [
   { label: 'Overview', href: '/insights/overview' },
-  { label: 'Opportunities', href: '/insights/themes' },
+  { label: 'Insights', href: '/insights/themes' },
   { label: 'Signals', href: '/insights/signals' },
 ];
 
