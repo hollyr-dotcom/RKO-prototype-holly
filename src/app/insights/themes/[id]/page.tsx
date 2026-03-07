@@ -812,6 +812,106 @@ function deriveStats(card: ThemeCard) {
   return { mentions, customers, arrImpact, freq: card.meta.confidenceDelta }
 }
 
+// ─── Detail Signal Panel ───────────────────────────────────────────────────────
+
+function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[0]; onClose: () => void }) {
+  const [tab, setTab] = useState<'summary' | 'feedback'>('summary')
+
+  const revenueNum = parseFloat(signal.revenue.replace(/[^0-9.]/g, ''))
+  const isMillions = signal.revenue.includes('M')
+  const revenueK = isMillions ? revenueNum * 1000 : revenueNum
+  const mentions = Math.round(revenueK * 0.14 + 40)
+  const customers = Math.round(revenueK * 0.008 + 5)
+  const wow = `+${Math.round(revenueK * 0.012 + 8)}%`
+  const fb = signal.feedback
+  const feedbackTotal = fb.survey + fb.call + fb.message + fb.appStore
+
+  return (
+    <motion.aside
+      initial={{ x: 40, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: 40, opacity: 0 }}
+      transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
+      className="fixed top-4 right-4 bottom-4 w-[472px] bg-white rounded-[20px] shadow-[0_0_12px_rgba(34,36,40,0.04),-2px_0_8px_rgba(34,36,40,0.12)] flex flex-col overflow-hidden z-40"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-[#e0e2e8] shrink-0">
+        <span className="text-[18px] font-heading font-medium text-[#222428]">Signal</span>
+        <button onClick={onClose} className="w-6 h-6 flex items-center justify-center text-[#656b81] hover:text-[#222428] transition-colors">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
+        <div>
+          <h2 className="text-[22px] font-serif text-[#222428] leading-[1.35]">{signal.title}</h2>
+          <p className="text-sm text-[#656b81] mt-1 leading-[1.5]">{signal.description}</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex items-center gap-0.5">
+          {(['Summary', 'Feedback'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setTab(t.toLowerCase() as typeof tab)}
+              className={`h-8 px-3 rounded-[24px] text-[14px] font-semibold transition-colors ${tab === t.toLowerCase() ? 'bg-[#E7E7E5] text-[#222428]' : 'text-[#656b81] hover:bg-[#FBFAF7]'}`}
+            >{t}</button>
+          ))}
+        </div>
+
+        {tab === 'summary' && (
+          <div className="grid grid-cols-2">
+            {[
+              { value: String(mentions), label: 'Total Mentions' },
+              { value: String(customers), label: 'Unique Customers' },
+              { value: signal.revenue, label: 'Est. ARR Impact' },
+              { value: wow, label: 'Frequency (WoW)' },
+            ].map(stat => (
+              <div key={stat.label} className="py-3">
+                <p className="text-[32px] font-serif text-[#222428] leading-[1.2]">{stat.value}</p>
+                <p className="text-[14px] text-[#656b81] mt-1">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'feedback' && (
+          <div className="flex flex-col gap-3">
+            {[
+              { label: 'Survey', value: fb.survey, color: '#b5a9ff' },
+              { label: 'Gong call', value: fb.call, color: '#ffabec' },
+              { label: 'Message', value: fb.message, color: '#ffbd83' },
+              { label: 'App Store', value: fb.appStore, color: '#c2eb7f' },
+            ].map(item => (
+              <div key={item.label} className="flex items-center gap-3 py-1">
+                <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                <span className="text-sm text-[#656b81] flex-1">{item.label}</span>
+                <span className="text-sm font-medium text-[#222428]">{item.value}</span>
+                <span className="text-xs text-[#959aac] w-8 text-right">{Math.round(item.value / feedbackTotal * 100)}%</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Chips */}
+      <div className="px-6 pb-6 shrink-0">
+        <div className="rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
+          {SIGNAL_CHIPS.map(chip => (
+            <button key={chip} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors">
+              <span className="text-gray-400 flex-shrink-0"><IconSparksFilled css={{ width: 16, height: 16 }} /></span>
+              <span className="text-gray-900">{chip}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </motion.aside>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ThemeDetailPage() {
@@ -819,6 +919,7 @@ export default function ThemeDetailPage() {
   const router = useRouter()
   const [aiOpen, setAiOpen] = useState(true)
   const [selectedSignal, setSelectedSignal] = useState<typeof DETAIL_SIGNALS[0] | null>(null)
+  const [detailSignal, setDetailSignal] = useState<typeof DETAIL_SIGNALS[0] | null>(null)
   const [copiedCard, setCopiedCard] = useState<typeof FEATURED_CARDS[0] | null>(null)
   const [showToast, setShowToast] = useState(false)
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -1096,8 +1197,8 @@ export default function ThemeDetailPage() {
                       initial={{ opacity: 0, y: 4 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: i * 0.04 }}
-                      onClick={() => selectSignal(row)}
-                      className={`grid gap-4 px-5 py-3.5 items-center border-b border-[#e0e2e8] last:border-0 hover:bg-[#E7E7E5] transition-colors cursor-pointer ${selectedSignal?.id === row.id ? 'bg-[#E7E7E5]' : ''}`}
+                      onClick={() => setDetailSignal(row)}
+                      className={`grid gap-4 px-5 py-3.5 items-center border-b border-[#e0e2e8] last:border-0 hover:bg-[#E7E7E5] transition-colors cursor-pointer ${detailSignal?.id === row.id ? 'bg-[#E7E7E5]' : ''}`}
                       style={{ gridTemplateColumns: '24px 56px 260px 200px 140px 110px 130px' }}
                     >
                       <span className="text-xs text-[#aeb2c0]">{row.id}</span>
@@ -1264,6 +1365,12 @@ export default function ThemeDetailPage() {
         copiedCard={copiedCard}
         onClearCopied={() => setCopiedCard(null)}
       />
+
+      <AnimatePresence>
+        {detailSignal && (
+          <DetailSignalPanel signal={detailSignal} onClose={() => setDetailSignal(null)} />
+        )}
+      </AnimatePresence>
 
       {/* Toast */}
       <AnimatePresence>
