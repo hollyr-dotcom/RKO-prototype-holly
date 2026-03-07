@@ -303,8 +303,8 @@ export default function InsightsOverviewPage() {
 
           {/* Second charts row */}
           <div className={`grid mb-9 ${aiOpen ? 'grid-cols-1 gap-9' : 'grid-cols-2 gap-9'}`}>
-            <TrendingMentions onOpenChat={() => openMetric('Trending Mentions')} />
             <VolatileSignals onOpenChat={() => openMetric('Volatile Signals')} />
+            <TrendingMentions onOpenChat={() => openMetric('Trending Mentions')} />
           </div>
 
         </main>

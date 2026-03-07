@@ -45,14 +45,8 @@ const TAG_COLORS: Record<string, string> = {
   Market: '#C6DCFF',
 }
 
-function getBarColor(id: string): string {
-  const card = THEME_CARDS.find(c => c.id === id)
-  if (!card) return '#B9C5FF'
-  const labels = card.tags.map(t => t.label)
-  for (const priority of ['Urgent', 'Weakening', 'Strengthening', 'New', 'Customer', 'Market']) {
-    if (labels.includes(priority)) return TAG_COLORS[priority]
-  }
-  return TAG_COLORS[labels[0]] ?? '#B9C5FF'
+function getBarColor(_id: string): string {
+  return '#C1C9F4'
 }
 
 export function TrendingMentions({ onOpenChat }: { onOpenChat?: () => void }) {

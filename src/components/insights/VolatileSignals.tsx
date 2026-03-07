@@ -174,10 +174,7 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
             onMouseEnter={() => setHovered(i)}
             onMouseLeave={() => setHovered(null)}
           >
-            <span
-              className="w-2.5 h-2.5 rounded-sm shrink-0"
-              style={{ backgroundColor: BAR_COLORS[i] }}
-            />
+            <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', backgroundColor: BAR_COLORS[i], flexShrink: 0 }} />
             <span
               className="text-[13px] leading-snug truncate flex-1 transition-colors"
               style={{ color: hovered === i ? '#222428' : '#656b81' }}
