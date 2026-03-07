@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
@@ -499,68 +499,71 @@ export function ExpandedPrimaryPanel() {
           onReorder={handleReorderSpaces}
           onRename={handleRenameSpace}
           menuActions={spaceMenuActions}
-        />
-
-        {/* Insights section — matches Programs/Leadership Team/Events pattern */}
-        <div className="mt-2 flex flex-col">
-          <div
-            className="group flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full cursor-pointer font-semibold text-gray-500"
-            onClick={() => setInsightsExpanded((prev) => !prev)}
-          >
-            <span className="flex-1 text-left">Insights</span>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              className={`flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200 ${insightsExpanded ? "" : "-rotate-90"}`}
-            >
-              <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <AnimatePresence initial={false}>
-            {insightsExpanded && (
-              <motion.div
-                key="insights-content"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className="overflow-hidden"
-              >
-                <div className="pt-[6px] flex flex-col">
-                  {[
-                    { id: "overview", label: "Overview", href: "/insights/overview", icon: IconFlag },
-                    { id: "themes", label: "Insights", href: "/insights/themes", icon: IconInsights },
-                    { id: "signals", label: "Signals", href: "/insights/signals", icon: IconRectanglesThreeOverlap },
-                  ].map((item) => {
-                    const isActive = pathname.startsWith(item.href);
-                    const isHovered = hoveredInsightId === item.id;
-                    return (
-                      <Link
-                        key={item.id}
-                        href={item.href}
-                        className="flex items-center gap-3 h-9 px-3 rounded-lg text-sm transition-colors duration-200"
-                        style={{
-                          color: isActive ? navPalette.textPrimary : navPalette.textSecondary,
-                          fontWeight: isActive ? 500 : 400,
-                          backgroundColor: isActive || isHovered ? navPalette.hoverBg : "transparent",
-                        }}
-                        onMouseEnter={() => setHoveredInsightId(item.id)}
-                        onMouseLeave={() => setHoveredInsightId(null)}
-                      >
-                        <span className="w-5 h-5 flex items-center justify-center flex-shrink-0 ml-1">
-                          <item.icon css={{ width: 16, height: 16 }} />
-                        </span>
-                        <span className="truncate flex-1" style={{ color: "#222428" }}>{item.label}</span>
-                      </Link>
-                    );
-                  })}
+          afterSection={{
+            label: "Portfolio",
+            node: (
+              <div className="mt-2 flex flex-col">
+                <div
+                  className="group flex items-center h-8 pl-3 pr-0 pt-2 text-sm w-full cursor-pointer font-semibold text-gray-500"
+                  onClick={() => setInsightsExpanded((prev) => !prev)}
+                >
+                  <span className="flex-1 text-left">Insights</span>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    className={`flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200 ${insightsExpanded ? "" : "-rotate-90"}`}
+                  >
+                    <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                <AnimatePresence initial={false}>
+                  {insightsExpanded && (
+                    <motion.div
+                      key="insights-content"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pt-[6px] flex flex-col">
+                        {[
+                          { id: "overview", label: "Overview", href: "/insights/overview", icon: IconFlag },
+                          { id: "themes", label: "Insights", href: "/insights/themes", icon: IconInsights },
+                          { id: "signals", label: "Signals", href: "/insights/signals", icon: IconRectanglesThreeOverlap },
+                        ].map((item) => {
+                          const isActive = pathname.startsWith(item.href);
+                          const isHovered = hoveredInsightId === item.id;
+                          return (
+                            <Link
+                              key={item.id}
+                              href={item.href}
+                              className="flex items-center gap-3 h-9 px-3 rounded-lg text-sm transition-colors duration-200"
+                              style={{
+                                color: isActive ? navPalette.textPrimary : navPalette.textSecondary,
+                                fontWeight: isActive ? 500 : 400,
+                                backgroundColor: isActive || isHovered ? navPalette.hoverBg : "transparent",
+                              }}
+                              onMouseEnter={() => setHoveredInsightId(item.id)}
+                              onMouseLeave={() => setHoveredInsightId(null)}
+                            >
+                              <span className="w-5 h-5 flex items-center justify-center flex-shrink-0 ml-1">
+                                <item.icon css={{ width: 16, height: 16 }} />
+                              </span>
+                              <span className="truncate flex-1" style={{ color: "#222428" }}>{item.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ),
+          }}
+        />
       </div>
     </aside>
   );
@@ -584,6 +587,7 @@ function GroupedSpaceList({
   onReorder,
   onRename,
   menuActions,
+  afterSection,
 }: {
   sections: SpaceSection[];
   spaces: Space[];
@@ -592,6 +596,7 @@ function GroupedSpaceList({
   onReorder: (orderedIds: string[]) => void;
   onRename?: (id: string, newName: string) => void;
   menuActions?: NavMenuAction[];
+  afterSection?: { label: string; node: React.ReactNode };
 }) {
   const [orderedSections, setOrderedSections] = useState(initialSections);
   const [expandedSection, setExpandedSection] = useState<string | null>(
@@ -701,17 +706,19 @@ function GroupedSpaceList({
         }));
 
         return (
-          <SpaceSectionItem
-            key={section.label}
-            section={section}
-            isCollapsed={expandedSection !== section.label}
-            onToggle={() => toggle(section.label)}
-            navItems={sectionNavItems}
-            activePath={activePath}
-            onReorderItems={(orderedIds) => handleSectionItemReorder(section.label, orderedIds)}
-            onRename={onRename}
-            menuActions={menuActions}
-          />
+          <React.Fragment key={section.label}>
+            <SpaceSectionItem
+              section={section}
+              isCollapsed={expandedSection !== section.label}
+              onToggle={() => toggle(section.label)}
+              navItems={sectionNavItems}
+              activePath={activePath}
+              onReorderItems={(orderedIds) => handleSectionItemReorder(section.label, orderedIds)}
+              onRename={onRename}
+              menuActions={menuActions}
+            />
+            {afterSection?.label === section.label && afterSection.node}
+          </React.Fragment>
         );
       })}
     </Reorder.Group>
