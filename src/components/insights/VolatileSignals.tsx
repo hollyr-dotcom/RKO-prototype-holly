@@ -120,7 +120,7 @@ function VolatilePopover({
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
+export function VolatileSignals({ onOpenChat, onViewAnalysis }: { onOpenChat?: () => void; onViewAnalysis?: (themeIndex: number) => void }) {
   const router = useRouter()
   const themes = getVolatileThemes(3)
   const series = themes.map(t => buildSeries(t.meta.confidence, t.deltaNum))
@@ -209,7 +209,7 @@ export function VolatileSignals({ onOpenChat }: { onOpenChat?: () => void }) {
                 cx={popover.cx}
                 cy={popover.cy}
                 theme={themes[popover.si]}
-                onViewAnalysis={() => router.push(`/insights/themes/${themes[popover.si].id}`)}
+                onViewAnalysis={() => { onViewAnalysis?.(popover.si); setPopover(null); setHovered(null) }}
                 onMouseEnter={cancelClose}
                 onMouseLeave={scheduleClose}
               />
