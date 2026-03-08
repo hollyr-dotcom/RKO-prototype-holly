@@ -660,6 +660,17 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 
             {/* Filter chips */}
             <div className="flex items-center gap-1.5 flex-wrap mt-1">
+              <button
+                onClick={() => setFeedbackFilter(null)}
+                className="h-7 px-3 rounded-full text-[12px] font-medium transition-colors"
+                style={{
+                  backgroundColor: feedbackFilter === null ? '#222428' : 'transparent',
+                  color: feedbackFilter === null ? '#ffffff' : '#656b81',
+                  border: '1px solid ' + (feedbackFilter === null ? '#222428' : '#e0e2e8'),
+                }}
+              >
+                All
+              </button>
               {['Request', 'Problem', 'Praise'].map(type => (
                 <button
                   key={type}
@@ -683,9 +694,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                 (!feedbackSearch || item.text.toLowerCase().includes(feedbackSearch.toLowerCase()) || item.author.toLowerCase().includes(feedbackSearch.toLowerCase()))
               )
               .map((item, i) => (
-              <div key={i} className="rounded-[16px] cursor-pointer" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
-                onClick={() => { setActiveFeedback(activeFeedback === i ? null : i); if (openMenuIndex === i) setOpenMenuIndex(null) }}
-              >
+              <div key={i} className="rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}>
               <div className="rounded-[16px] bg-white p-4 flex flex-col gap-3">
 
                 {/* Top row — always visible */}
@@ -750,27 +759,19 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                   </div>
                 </div>
 
-                {/* Stars — only on hover */}
-                <AnimatePresence>
-                  {activeFeedback === i && item.stars !== null && (
-                    <motion.div
-                      className="flex items-center gap-0.5 overflow-hidden"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-                    >
-                      {Array.from({ length: 5 }, (_, si) => (
-                        <svg key={si} width="14" height="14" viewBox="0 0 16 16" fill={si < item.stars! ? '#222428' : '#e0e2e8'}>
-                          <path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.4l-3.7 1.9.7-4.1-3-2.9 4.2-.7L8 1z" />
-                        </svg>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/* Stars */}
+                {item.stars !== null && (
+                  <div className="flex items-center gap-0.5">
+                    {Array.from({ length: 5 }, (_, si) => (
+                      <svg key={si} width="14" height="14" viewBox="0 0 16 16" fill={si < item.stars! ? '#222428' : '#e0e2e8'}>
+                        <path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.4l-3.7 1.9.7-4.1-3-2.9 4.2-.7L8 1z" />
+                      </svg>
+                    ))}
+                  </div>
+                )}
 
                 {/* Text — clamped when inactive, full on hover */}
-                <p className={`text-[13px] leading-[1.6] ${item.type === 'Problem' ? 'text-[#222428] font-medium' : 'text-[#222428]'} ${activeFeedback === i ? '' : 'line-clamp-2'}`}>
+                <p className="text-[13px] leading-[1.6] text-[#222428]">
                   {item.text}
                 </p>
 
