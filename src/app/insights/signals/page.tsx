@@ -152,20 +152,20 @@ const FEATURED_CARDS = [
 
 type SignalTag = { label: string }
 const SIGNAL_ROWS = [
-  { id: '1',  sourceIcon: 'audio',  title: 'Canvas lag when 40+ users are active on a single board',          theme: 'Canvas Performance',        tags: [{ label: 'Customer' }, { label: 'Urgent' }] as SignalTag[],                               revenue: '$2.1M',  companies: ['apple', 'spotify'], impact: 94 },
-  { id: '2',  sourceIcon: 'globe',  title: 'AI suggestions interrupt focus during live workshops',             theme: 'AI UX Controls',            tags: [{ label: 'Customer' }, { label: 'Market' }, { label: 'New' }] as SignalTag[],           revenue: '$850K',  companies: ['spotify'],          impact: 72 },
-  { id: '3',  sourceIcon: 'mobile', title: 'Cursors invisible to collaborators on large 4K boards',           theme: 'Collaboration Visibility',  tags: [{ label: 'Customer' }, { label: 'Market' }] as SignalTag[],                             revenue: '$620K',  companies: ['apple', 'spotify'], impact: 68 },
-  { id: '4',  sourceIcon: 'audio',  title: 'SAML / SSO breaks with Okta and Azure AD out of the box',        theme: 'Enterprise Security',       tags: [{ label: 'Customer' }, { label: 'Urgent' }, { label: 'Strengthening' }] as SignalTag[], revenue: '$1.4M',  companies: ['apple'],            impact: 91 },
-  { id: '5',  sourceIcon: 'globe',  title: 'Templates overwritten by junior team members accidentally',       theme: 'Permission Controls',       tags: [{ label: 'Customer' }, { label: 'Market' }] as SignalTag[],                             revenue: '$390K',  companies: ['spotify'],          impact: 55 },
-  { id: '6',  sourceIcon: 'mobile', title: 'PDF exports lose fonts and break layout on large frames',         theme: 'Export Fidelity',           tags: [{ label: 'Customer' }] as SignalTag[],                                                   revenue: '$540K',  companies: ['apple', 'spotify'], impact: 63 },
-  { id: '7',  sourceIcon: 'audio',  title: 'Auto-layout breaks on complex multi-level system maps',           theme: 'Diagramming Engine',        tags: [{ label: 'Market' }, { label: 'Strengthening' }, { label: 'Customer' }] as SignalTag[], revenue: '$720K',  companies: ['spotify'],          impact: 78 },
-  { id: '8',  sourceIcon: 'globe',  title: 'No real-time translation support for APAC workshop teams',        theme: 'Localisation & i18n',       tags: [{ label: 'Market' }, { label: 'New' }] as SignalTag[],                                   revenue: '$480K',  companies: ['apple'],            impact: 61 },
-  { id: '9',  sourceIcon: 'mobile', title: 'SCIM provisioning fails silently on first-time sync',             theme: 'Enterprise Security',       tags: [{ label: 'Customer' }, { label: 'Urgent' }] as SignalTag[],                             revenue: '$1.1M',  companies: ['apple', 'spotify'], impact: 88 },
-  { id: '10', sourceIcon: 'audio',  title: 'Boards with 500+ objects take 8+ seconds to fully load',         theme: 'Canvas Performance',        tags: [{ label: 'Customer' }, { label: 'Strengthening' }, { label: 'Urgent' }] as SignalTag[], revenue: '$760K',  companies: ['spotify', 'apple'], impact: 85 },
-  { id: '11', sourceIcon: 'globe',  title: 'Miro Assist clusters stickies into incorrect or vague themes',   theme: 'AI Accuracy',               tags: [{ label: 'Customer' }, { label: 'New' }] as SignalTag[],                                 revenue: '$330K',  companies: ['spotify'],          impact: 49 },
-  { id: '12', sourceIcon: 'mobile', title: 'Enterprise onboarding missing bulk admin controls for orgs',     theme: 'Onboarding & Admin',        tags: [{ label: 'Market' }, { label: 'New' }] as SignalTag[],                                   revenue: '$290K',  companies: ['apple', 'spotify'], impact: 44 },
-  { id: '13', sourceIcon: 'audio',  title: 'Share link permissions confuse guests unfamiliar with Miro',     theme: 'Sharing & Access',          tags: [{ label: 'Customer' }, { label: 'Weakening' }, { label: 'Market' }] as SignalTag[],     revenue: '$450K',  companies: ['apple'],            impact: 58 },
-  { id: '14', sourceIcon: 'mobile', title: 'Mobile app missing sticky note editing and frame navigation',    theme: 'Mobile Parity',             tags: [{ label: 'Market' }] as SignalTag[],                                                     revenue: '$380K',  companies: ['spotify'],          impact: 52 },
+  { id: '1',  sourceIcon: 'audio',  title: 'Canvas lag when 40+ users are active on a single board',          description: 'Enterprise teams report severe lag and frame drops when 40+ collaborators are active simultaneously — affecting live workshops and increasing churn risk.',          theme: 'Canvas Performance',        tags: [{ label: 'Customer' }, { label: 'Urgent' }] as SignalTag[],                               revenue: '$2.1M',  companies: ['apple', 'spotify'], impact: 94 },
+  { id: '2',  sourceIcon: 'globe',  title: 'AI suggestions interrupt focus during live workshops',             description: 'AI-generated suggestions surface unprompted during active sessions, breaking facilitator flow and causing friction in front of clients.',                          theme: 'AI UX Controls',            tags: [{ label: 'Customer' }, { label: 'Market' }, { label: 'New' }] as SignalTag[],           revenue: '$850K',  companies: ['spotify'],          impact: 72 },
+  { id: '3',  sourceIcon: 'mobile', title: 'Cursors invisible to collaborators on large 4K boards',           description: 'On high-resolution or large boards, remote cursors disappear or become unreliable, degrading the real-time collaboration experience.',                            theme: 'Collaboration Visibility',  tags: [{ label: 'Customer' }, { label: 'Market' }] as SignalTag[],                             revenue: '$620K',  companies: ['apple', 'spotify'], impact: 68 },
+  { id: '4',  sourceIcon: 'audio',  title: 'SAML / SSO breaks with Okta and Azure AD out of the box',        description: 'First-time SSO configuration fails silently with major identity providers, requiring IT workarounds that delay enterprise rollouts and erode admin confidence.',      theme: 'Enterprise Security',       tags: [{ label: 'Customer' }, { label: 'Urgent' }, { label: 'Strengthening' }] as SignalTag[], revenue: '$1.4M',  companies: ['apple'],            impact: 91 },
+  { id: '5',  sourceIcon: 'globe',  title: 'Templates overwritten by junior team members accidentally',       description: 'Without granular permission controls, junior collaborators can overwrite shared templates, causing data loss and frustration for research and design teams.',       theme: 'Permission Controls',       tags: [{ label: 'Customer' }, { label: 'Market' }] as SignalTag[],                             revenue: '$390K',  companies: ['spotify'],          impact: 55 },
+  { id: '6',  sourceIcon: 'mobile', title: 'PDF exports lose fonts and break layout on large frames',         description: 'PDF exports of large or complex frames produce broken layouts and missing fonts, blocking enterprise handoff and client-facing deliverables.',                      theme: 'Export Fidelity',           tags: [{ label: 'Customer' }] as SignalTag[],                                                   revenue: '$540K',  companies: ['apple', 'spotify'], impact: 63 },
+  { id: '7',  sourceIcon: 'audio',  title: 'Auto-layout breaks on complex multi-level system maps',           description: 'Auto-layout becomes unreliable on deeply nested or high-node diagrams, misaligning components and requiring manual correction that slows engineering teams.',     theme: 'Diagramming Engine',        tags: [{ label: 'Market' }, { label: 'Strengthening' }, { label: 'Customer' }] as SignalTag[], revenue: '$720K',  companies: ['spotify'],          impact: 78 },
+  { id: '8',  sourceIcon: 'globe',  title: 'No real-time translation support for APAC workshop teams',        description: 'Cross-regional teams in APAC cannot collaborate in native languages during live sessions, making Miro a blocker for multilingual workshop facilitation.',           theme: 'Localisation & i18n',       tags: [{ label: 'Market' }, { label: 'New' }] as SignalTag[],                                   revenue: '$480K',  companies: ['apple'],            impact: 61 },
+  { id: '9',  sourceIcon: 'mobile', title: 'SCIM provisioning fails silently on first-time sync',             description: 'SCIM user sync failures surface no error messages, leaving admins unaware that provisioning has stalled and users are missing access.',                            theme: 'Enterprise Security',       tags: [{ label: 'Customer' }, { label: 'Urgent' }] as SignalTag[],                             revenue: '$1.1M',  companies: ['apple', 'spotify'], impact: 88 },
+  { id: '10', sourceIcon: 'audio',  title: 'Boards with 500+ objects take 8+ seconds to fully load',         description: 'Large boards with 500 or more objects have load times exceeding 8 seconds, causing timeouts and session abandonment — particularly in enterprise accounts.',        theme: 'Canvas Performance',        tags: [{ label: 'Customer' }, { label: 'Strengthening' }, { label: 'Urgent' }] as SignalTag[], revenue: '$760K',  companies: ['spotify', 'apple'], impact: 85 },
+  { id: '11', sourceIcon: 'globe',  title: 'Miro Assist clusters stickies into incorrect or vague themes',   description: 'Miro Assist groups sticky notes into themes that are too broad or misaligned with user intent, reducing trust in AI summarisation features.',                        theme: 'AI Accuracy',               tags: [{ label: 'Customer' }, { label: 'New' }] as SignalTag[],                                 revenue: '$330K',  companies: ['spotify'],          impact: 49 },
+  { id: '12', sourceIcon: 'mobile', title: 'Enterprise onboarding missing bulk admin controls for orgs',     description: 'Admins cannot bulk-provision users, assign roles at scale, or configure org-wide defaults during onboarding, extending time-to-value for large accounts.',        theme: 'Onboarding & Admin',        tags: [{ label: 'Market' }, { label: 'New' }] as SignalTag[],                                   revenue: '$290K',  companies: ['apple', 'spotify'], impact: 44 },
+  { id: '13', sourceIcon: 'audio',  title: 'Share link permissions confuse guests unfamiliar with Miro',     description: 'Guest users struggle to understand share link permission levels, leading to accidental edits, oversharing, and support escalations from enterprise admins.',      theme: 'Sharing & Access',          tags: [{ label: 'Customer' }, { label: 'Weakening' }, { label: 'Market' }] as SignalTag[],     revenue: '$450K',  companies: ['apple'],            impact: 58 },
+  { id: '14', sourceIcon: 'mobile', title: 'Mobile app missing sticky note editing and frame navigation',    description: 'Core editing capabilities including sticky note text editing and frame-to-frame navigation are absent on mobile, making the app unusable for remote contributors.', theme: 'Mobile Parity',             tags: [{ label: 'Market' }] as SignalTag[],                                                     revenue: '$380K',  companies: ['spotify'],          impact: 52 },
 ]
 
 const TAG_COLORS: Record<string, string> = {
@@ -401,7 +401,7 @@ const SIGNAL_CHIPS = [
   'Draft a roadmap recommendation',
 ]
 
-function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0]; onClose: () => void }) {
+function SignalDetailPanel({ signal, onClose, onBack }: { signal: typeof SIGNAL_ROWS[0]; onClose: () => void; onBack?: () => void }) {
   const [activeTab, setActiveTab] = useState<'summary' | 'feedback' | 'details' | 'updates'>('summary')
   const [expanded, setExpanded] = useState(false)
   const [activeFeedback, setActiveFeedback] = useState<number | null>(null)
@@ -445,7 +445,16 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
     >
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 shrink-0">
-        <span className="text-[18px] font-heading font-medium text-[#222428] leading-snug truncate flex-1 pr-2">{signal.title}</span>
+        <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+          {onBack && (
+            <button onClick={onBack} className="w-7 h-7 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors shrink-0">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M10 13L5 8L10 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          )}
+          <span className="text-[18px] font-heading font-medium text-[#222428] leading-snug truncate">{signal.title}</span>
+        </div>
         <div className="flex items-center gap-1">
           <button onClick={() => setExpanded(e => !e)} className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
             {expanded ? (
@@ -459,8 +468,10 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
             )}
           </button>
           <button className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M6 2H2a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1V8M8 1h5v5M13 1L6 8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width="4" height="14" viewBox="0 0 4 14" fill="none">
+              <circle cx="2" cy="2" r="1.5" fill="currentColor" />
+              <circle cx="2" cy="7" r="1.5" fill="currentColor" />
+              <circle cx="2" cy="12" r="1.5" fill="currentColor" />
             </svg>
           </button>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
@@ -545,7 +556,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 
         {/* Right column — signal detail */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto px-8 pt-4 pb-8 flex flex-col gap-4">
+          <div className="flex-1 min-h-0 overflow-y-auto px-8 pt-4 pb-8 flex flex-col gap-4">
 
         {/* Tabs */}
         <div className="flex items-center gap-0.5 flex-wrap mb-4 mt-0">
@@ -565,21 +576,14 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
         {/* Summary tab */}
         {activeTab === 'summary' && (
           <>
-            <p className="text-[16px] text-[#656b81] leading-[1.6]">
-              {signal.tags.some(t => t.label === 'Urgent')
-                ? `This signal is gaining urgency across enterprise accounts. `
-                : signal.tags.some(t => t.label === 'Strengthening')
-                ? `This signal is strengthening week over week. `
-                : signal.tags.some(t => t.label === 'New')
-                ? `This is a newly surfaced signal with early momentum. `
-                : `This signal has been consistently raised across customer touchpoints. `
-              }
-              {`Multiple customers have flagged "${signal.title.toLowerCase()}" as a friction point tied to ${signal.theme}. With an estimated ${signal.revenue} ARR impact, it represents a meaningful opportunity to address unmet needs and improve retention.`}
-            </p>
+            {/* Description */}
+            {signal.description && (
+              <p className="text-[14px] text-[#656b81] leading-[1.6]">{signal.description}</p>
+            )}
 
             {/* Confidence drivers */}
-            <div className="flex flex-col gap-2 mt-3">
-              <h3 className="text-[16px] font-heading font-medium text-[#222428] leading-snug pt-3 pb-1">Confidence drivers</h3>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-[16px] font-heading font-medium text-[#222428] leading-snug pb-1">Confidence drivers</h3>
               <div className="grid grid-cols-2">
                 {[
                   { value: mentions, label: 'Total Mentions' },
@@ -594,8 +598,6 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                 ))}
               </div>
             </div>
-
-            <div className="h-px bg-[#e0e2e8]" />
 
             {/* Total feedback */}
             <div className="flex flex-col gap-4">
@@ -618,10 +620,10 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                     { color: '#F8D3AF', label: 'App Store', value: 25 },
                   ].map((item) => (
                     <div key={item.label} className="flex items-center gap-2">
-                      <div className="w-1 rounded-full self-stretch shrink-0" style={{ backgroundColor: item.color }} />
+                      <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                       <div>
                         <p className="text-[12px] text-[#656b81]">{item.label}</p>
-                        <p className="text-[20px] text-[#222428] leading-[1.2]">{item.value}</p>
+                        <p className="text-[12px] text-[#222428] leading-[1.2]">{item.value}</p>
                       </div>
                     </div>
                   ))}
@@ -849,6 +851,37 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                 )}
               </div>
             ))}
+
+            {/* Linked work */}
+            {[
+              {
+                label: 'Initiatives',
+                items: ['Canvas Rendering Overhaul', 'Performance at Scale Q3'],
+              },
+              {
+                label: 'Projects',
+                items: ['WebGL Renderer Spike', 'Load Time Benchmarking'],
+              },
+              {
+                label: 'Tasks',
+                items: ['Profile board render path', 'Reproduce lag at 40+ users'],
+              },
+              {
+                label: 'Goals',
+                items: ['P95 board load < 2s by Q4', 'Reduce canvas churn signals by 30%'],
+              },
+            ].map(({ label, items }) => (
+              <div key={label} className="grid gap-6 py-3.5 items-start" style={{ gridTemplateColumns: '140px 1fr' }}>
+                <span className="text-sm text-[#656b81]">{label}</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {items.map((item) => (
+                    <span key={item} className="flex items-center h-6 px-2.5 rounded-full text-xs text-[#222428] bg-[#e9eaef]">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -878,7 +911,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
           </div>
 
           {/* Prompt chips + input */}
-          <div className="px-6 pb-6 pt-4 shrink-0 flex flex-col gap-3">
+          <div className="px-6 pb-6 pt-4 flex flex-col gap-3 sticky bottom-0 bg-white">
             <div className="-mx-0 rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
               {SIGNAL_CHIPS.map((chip) => (
                 <button
@@ -1302,12 +1335,13 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
 export default function SignalsPage() {
   const [aiOpen, setAiOpen] = useState(false)
   const [selectedSignal, setSelectedSignal] = useState<typeof SIGNAL_ROWS[0] | null>(null)
+  const [signalFromAI, setSignalFromAI] = useState(false)
   const [copiedSignal, setCopiedSignal] = useState<typeof FEATURED_CARDS[0] | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [direction, setDirection] = useState(1)
   const router = useRouter()
   const openAiPanel = () => { setAiOpen(true); setSelectedSignal(null) }
-  const selectSignal = (row: typeof SIGNAL_ROWS[0]) => { setSelectedSignal(row); setAiOpen(false) }
+  const selectSignal = (row: typeof SIGNAL_ROWS[0]) => { setSignalFromAI(aiOpen); setSelectedSignal(row); setAiOpen(false) }
   const handleAiStar = (card: typeof FEATURED_CARDS[0]) => { setCopiedSignal(card); setAiOpen(true); setSelectedSignal(null) }
 
   const TAG_ACCENT: Record<string, string> = { Customer: '#FFF6B6', Urgent: '#FFD8F4', Market: '#C6DCFF', New: '#ADF0C7', Strengthening: '#F8D3AF' }
@@ -1520,6 +1554,7 @@ export default function SignalsPage() {
           <SignalDetailPanel
             signal={selectedSignal}
             onClose={() => setSelectedSignal(null)}
+            onBack={signalFromAI ? () => { setSelectedSignal(null); setAiOpen(true) } : undefined}
           />
         )}
       </AnimatePresence>
