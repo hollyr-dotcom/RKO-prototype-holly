@@ -340,17 +340,17 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
     const fb = selectedSignal.feedback
     feedbackTotal = fb.survey + fb.call + fb.message + fb.appStore
     feedbackItems = [
-      { color: '#b5a9ff', label: 'Survey', value: fb.survey },
-      { color: '#ffabec', label: 'Call', value: fb.call },
-      { color: '#ffbd83', label: 'Message', value: fb.message },
-      { color: '#c2eb7f', label: 'App Store', value: fb.appStore },
+      { color: '#ADF0C7', label: 'Survey', value: fb.survey },
+      { color: '#FFF6B6', label: 'Call', value: fb.call },
+      { color: '#C6DCFF', label: 'Message', value: fb.message },
+      { color: '#F8D3AF', label: 'App Store', value: fb.appStore },
     ]
     const gap = 0.4
     const s = (fb.survey / feedbackTotal) * 100
     const c = (fb.call / feedbackTotal) * 100
     const m = (fb.message / feedbackTotal) * 100
     const s2 = s + gap, c2 = s2 + c, c3 = c2 + gap, m2 = c3 + m, m3 = m2 + gap
-    feedbackGradient = `conic-gradient(#b5a9ff 0% ${s.toFixed(1)}%, white ${s.toFixed(1)}% ${s2.toFixed(1)}%, #ffabec ${s2.toFixed(1)}% ${c2.toFixed(1)}%, white ${c2.toFixed(1)}% ${c3.toFixed(1)}%, #ffbd83 ${c3.toFixed(1)}% ${m2.toFixed(1)}%, white ${m2.toFixed(1)}% ${m3.toFixed(1)}%, #c2eb7f ${m3.toFixed(1)}% 100%)`
+    feedbackGradient = `conic-gradient(#ADF0C7 0% ${s.toFixed(1)}%, white ${s.toFixed(1)}% ${s2.toFixed(1)}%, #FFF6B6 ${s2.toFixed(1)}% ${c2.toFixed(1)}%, white ${c2.toFixed(1)}% ${c3.toFixed(1)}%, #C6DCFF ${c3.toFixed(1)}% ${m2.toFixed(1)}%, white ${m2.toFixed(1)}% ${m3.toFixed(1)}%, #F8D3AF ${m3.toFixed(1)}% 100%)`
   }
 
   const SIGNAL_TABS = ['Summary', 'Feedback', 'Details', 'Updates'] as const
@@ -421,11 +421,6 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                     <button className="w-6 h-6 flex items-center justify-center rounded-full text-[#aeb2c0] hover:text-[#656b81] transition-colors">
                       <MoreVertical size={14} strokeWidth={1.5} />
                     </button>
-                    {copiedCard.type === 'audio' && (
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: cardAccent }}>
-                        <Play className="w-3 h-3 text-[#222428] fill-[#222428] ml-0.5" />
-                      </div>
-                    )}
                   </div>
                   <div className="rounded-[12px] bg-white px-4 pt-4 pb-4 flex flex-col gap-2.5">
                     {/* Type badge */}
@@ -830,12 +825,12 @@ function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[
   const c = (fb.call / feedbackTotal) * 100
   const m = (fb.message / feedbackTotal) * 100
   const s2 = s + gap, c2 = s2 + c, c3 = c2 + gap, m2 = c3 + m, m3 = m2 + gap
-  const feedbackGradient = `conic-gradient(#b5a9ff 0% ${s.toFixed(1)}%, white ${s.toFixed(1)}% ${s2.toFixed(1)}%, #ffabec ${s2.toFixed(1)}% ${c2.toFixed(1)}%, white ${c2.toFixed(1)}% ${c3.toFixed(1)}%, #ffbd83 ${c3.toFixed(1)}% ${m2.toFixed(1)}%, white ${m2.toFixed(1)}% ${m3.toFixed(1)}%, #c2eb7f ${m3.toFixed(1)}% 100%)`
+  const feedbackGradient = `conic-gradient(#ADF0C7 0% ${s.toFixed(1)}%, white ${s.toFixed(1)}% ${s2.toFixed(1)}%, #FFF6B6 ${s2.toFixed(1)}% ${c2.toFixed(1)}%, white ${c2.toFixed(1)}% ${c3.toFixed(1)}%, #C6DCFF ${c3.toFixed(1)}% ${m2.toFixed(1)}%, white ${m2.toFixed(1)}% ${m3.toFixed(1)}%, #F8D3AF ${m3.toFixed(1)}% 100%)`
   const feedbackItems = [
-    { color: '#b5a9ff', label: 'Survey', value: fb.survey },
-    { color: '#ffabec', label: 'Call', value: fb.call },
-    { color: '#ffbd83', label: 'Message', value: fb.message },
-    { color: '#c2eb7f', label: 'App Store', value: fb.appStore },
+    { color: '#DEDAFF', label: 'Survey', value: fb.survey },
+    { color: '#FFD8F4', label: 'Call', value: fb.call },
+    { color: '#F8D3AF', label: 'Message', value: fb.message },
+    { color: '#ADF0C7', label: 'App Store', value: fb.appStore },
   ]
 
   return (
@@ -1093,7 +1088,7 @@ export default function ThemeDetailPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: [0.2, 0, 0, 1] }}
             className="rounded-[24px] p-8 pt-[132px] mb-[60px] relative min-h-[440px] shadow-sm"
-            style={{ backgroundColor: (TAG_COLORS[theme.tags[0]?.label] ?? '#ffffff') + '66' }}
+            style={{ backgroundColor: '#E7E7E5' }}
           >
             {/* Top-right badges */}
             <div className="absolute top-4 right-4 flex items-center gap-2">

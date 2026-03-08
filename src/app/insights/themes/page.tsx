@@ -262,6 +262,17 @@ function AIPanel({ open, onClose, chatPrompt, onClearChat, copiedThemeCard, onCl
                         </span>
                       )}
                     </div>
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-2 mt-2">
+                      <button className="h-8 px-3 rounded-[18px] text-[13px] font-medium text-white bg-[#222428] hover:opacity-80 transition-opacity">
+                        {copiedThemeCard.primaryAction.label}
+                      </button>
+                      {copiedThemeCard.secondaryAction && (
+                        <button className="h-8 px-3 rounded-[18px] text-[13px] font-medium text-[#222428] bg-white border border-[#e0e2e8] hover:opacity-80 transition-opacity">
+                          {copiedThemeCard.secondaryAction.label}
+                        </button>
+                      )}
+                    </div>
                   </div>
                   </div>
                 </motion.div>
