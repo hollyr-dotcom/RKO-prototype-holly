@@ -545,7 +545,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 
         {/* Right column — signal detail */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto px-8 pt-4 pb-8 flex flex-col gap-5">
+          <div className="flex-1 overflow-y-auto px-8 pt-4 pb-8 flex flex-col gap-4">
 
         {/* Tabs */}
         <div className="flex items-center gap-0.5 flex-wrap mb-4 mt-0">
@@ -579,7 +579,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 
             {/* Confidence drivers */}
             <div className="flex flex-col gap-2 mt-3">
-              <h3 className="text-[20px] font-heading font-medium text-[#222428] leading-snug pt-3 pb-1">Confidence drivers</h3>
+              <h3 className="text-[16px] font-heading font-medium text-[#222428] leading-snug pt-3 pb-1">Confidence drivers</h3>
               <div className="grid grid-cols-2">
                 {[
                   { value: mentions, label: 'Total Mentions' },
@@ -599,7 +599,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 
             {/* Total feedback */}
             <div className="flex flex-col gap-4">
-              <h3 className="text-[20px] font-heading font-medium text-[#222428] leading-snug">Total feedback</h3>
+              <h3 className="text-[16px] font-heading font-medium text-[#222428] leading-snug">Total feedback</h3>
               <div className="flex items-center gap-8">
                 <div className="relative w-[195px] h-[195px] shrink-0">
                   <div
