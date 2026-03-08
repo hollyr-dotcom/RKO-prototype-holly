@@ -404,15 +404,23 @@ const SIGNAL_CHIPS = [
 function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0]; onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<'summary' | 'feedback' | 'details' | 'updates'>('summary')
   const [expanded, setExpanded] = useState(false)
-  const [hoveredFeedback, setHoveredFeedback] = useState<number | null>(null)
+  const [activeFeedback, setActiveFeedback] = useState<number | null>(null)
+  const [feedbackSearch, setFeedbackSearch] = useState('')
+  const [feedbackFilter, setFeedbackFilter] = useState<string | null>(null)
+  const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null)
   const { navWidth } = useSidebar()
   const router = useRouter()
   const themeCard = THEME_CARDS.find(c => c.title.toLowerCase().includes(signal.theme.toLowerCase()) || signal.theme.toLowerCase().includes(c.title.toLowerCase().split(' ').slice(0, 3).join(' ')))
 
   const feedbackItems = [
-    { type: 'Request' as const, tagColor: '#ADF0C7', platforms: ['mobile', 'apple'], text: `Users are reporting that ${signal.title.toLowerCase()} is creating friction in their workflow. This is making it difficult to complete key tasks efficiently, and engagement may decline as a result.`, author: 'Kajsa Bell, CPO', date: 'Added 1 month ago', stars: null },
     { type: 'Problem' as const, tagColor: '#FFD8F4', platforms: ['mobile', 'apple'], text: `"The overall experience feels slow and unresponsive when this issue occurs. Each attempt is followed by a noticeable delay, creating the impression that the system is overprocessing before responding."`, author: 'Marco Rossi, PM', date: 'Added 1 month ago', stars: 2 },
-    { type: 'Praise' as const, tagColor: '#DEDAFF', platforms: ['mobile'], text: `When it works well, the experience is seamless. Users appreciate the speed and reliability when ${signal.theme.toLowerCase()} is functioning as expected.`, author: 'Priya Nair, Designer', date: 'Added 2 months ago', stars: null },
+    { type: 'Problem' as const, tagColor: '#FFD8F4', platforms: ['desktop'], text: `Enterprise teams on large boards are hitting severe lag when more than 50 objects are on screen simultaneously. One customer described it as "unusable" during workshops with clients present.`, author: 'Yuki Tanaka, CSM', date: 'Added 3 weeks ago', stars: 1 },
+    { type: 'Request' as const, tagColor: '#ADF0C7', platforms: ['mobile', 'apple'], text: `Users are requesting a reduced-motion or performance mode that disables animations when the canvas exceeds a certain complexity threshold. Several power users have asked for this explicitly.`, author: 'Kajsa Bell, CPO', date: 'Added 1 month ago', stars: null },
+    { type: 'Request' as const, tagColor: '#ADF0C7', platforms: ['desktop'], text: `A key account asked whether we have any plans to support GPU-accelerated rendering. They compared us unfavourably to a competitor that handles 500+ nodes without frame drops.`, author: 'Lena Fischer, AE', date: 'Added 2 weeks ago', stars: null },
+    { type: 'Problem' as const, tagColor: '#FFD8F4', platforms: ['mobile'], text: `"Scrolling through a board with embedded media causes the whole canvas to stutter. It's bad enough that I've started avoiding Miro in client demos — I can't risk it freezing mid-presentation."`, author: 'Tom Okafor, Solutions', date: 'Added 5 days ago', stars: 1 },
+    { type: 'Praise' as const, tagColor: '#DEDAFF', platforms: ['mobile'], text: `When it works well, the experience is seamless. Users appreciate the speed and reliability when ${signal.theme.toLowerCase()} is functioning as expected — smaller boards in particular feel fast and fluid.`, author: 'Priya Nair, Designer', date: 'Added 2 months ago', stars: null },
+    { type: 'Problem' as const, tagColor: '#FFD8F4', platforms: ['desktop'], text: `Three separate enterprise accounts escalated this month citing canvas lag as a blocker for renewing. Two mentioned it directly in NPS comments. This needs to be tracked as a churn risk.`, author: 'Sara Kim, CS Lead', date: 'Added 1 week ago', stars: 2 },
+    { type: 'Request' as const, tagColor: '#ADF0C7', platforms: ['mobile', 'apple'], text: `Customers in the APAC region are asking for progressive loading — only render what's in the viewport and lazy-load the rest. This is a pattern they've seen work well in Figma and Notion.`, author: 'Marco Rossi, PM', date: 'Added 3 weeks ago', stars: null },
   ];
 
   const expandedLeft = navWidth
@@ -436,8 +444,8 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
       style={{ left: expanded ? expandedLeft : 'calc(100vw - 472px - 16px)', transition: 'left 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 shrink-0 border-b border-[#e0e2e8]">
-        <span className="text-[18px] font-heading font-medium text-[#222428]">Signal</span>
+      <div className="flex items-center justify-between px-6 py-4 shrink-0">
+        <span className="text-[18px] font-heading font-medium text-[#222428] leading-snug truncate flex-1 pr-2">{signal.title}</span>
         <div className="flex items-center gap-1">
           <button onClick={() => setExpanded(e => !e)} className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
             {expanded ? (
@@ -537,13 +545,10 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 
         {/* Right column — signal detail */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto px-8 pt-8 pb-8 flex flex-col gap-5">
-
-            {/* Title */}
-            <h2 className="text-[24px] font-serif text-[#222428] leading-[1.35]">{signal.title}</h2>
+          <div className="flex-1 overflow-y-auto px-8 pt-4 pb-8 flex flex-col gap-5">
 
         {/* Tabs */}
-        <div className="flex items-center gap-0.5 flex-wrap mb-4 mt-3">
+        <div className="flex items-center gap-0.5 flex-wrap mb-4 mt-0">
           {TABS.map((tab) => (
             <button
               key={tab}
@@ -574,7 +579,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 
             {/* Confidence drivers */}
             <div className="flex flex-col gap-2 mt-3">
-              <h3 className="text-[20px] font-serif text-[#222428] py-3">Confidence drivers</h3>
+              <h3 className="text-[20px] font-heading font-medium text-[#222428] leading-snug pt-3 pb-1">Confidence drivers</h3>
               <div className="grid grid-cols-2">
                 {[
                   { value: mentions, label: 'Total Mentions' },
@@ -582,7 +587,7 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                   { value: signal.revenue, label: 'Est. ARR Impact' },
                   { value: wowPct, label: 'Frequency (WoW)' },
                 ].map((stat) => (
-                  <div key={stat.label} className="py-3">
+                  <div key={stat.label} className="py-2">
                     <p className="text-[32px] font-serif text-[#222428] leading-[1.2]">{stat.value}</p>
                     <p className="text-[14px] text-[#656b81] mt-1">{stat.label}</p>
                   </div>
@@ -594,12 +599,12 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
 
             {/* Total feedback */}
             <div className="flex flex-col gap-4">
-              <h3 className="text-[20px] font-serif text-[#222428]">Total feedback</h3>
+              <h3 className="text-[20px] font-heading font-medium text-[#222428] leading-snug">Total feedback</h3>
               <div className="flex items-center gap-8">
                 <div className="relative w-[195px] h-[195px] shrink-0">
                   <div
                     className="w-full h-full rounded-full"
-                    style={{ background: 'conic-gradient(#b5a9ff 0% 47.2%, white 47.2% 47.6%, #c2eb7f 47.6% 60.3%, white 60.3% 60.7%, #ffabec 60.7% 86.6%, white 86.6% 87.0%, #ffbd83 87.0% 100%)' }}
+                    style={{ background: 'conic-gradient(#ADF0C7 0% 47.2%, white 47.2% 47.6%, #FFF6B6 47.6% 60.3%, white 60.3% 60.7%, #C6DCFF 60.7% 86.6%, white 86.6% 87.0%, #F8D3AF 87.0% 100%)' }}
                   />
                   <div className="absolute inset-[22%] bg-white rounded-full flex items-center justify-center">
                     <span className="text-[32px] font-serif text-[#222428]">190</span>
@@ -607,10 +612,10 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                 </div>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-8">
                   {[
-                    { color: '#b5a9ff', label: 'Survey', value: 90 },
-                    { color: '#ffabec', label: 'Call', value: 50 },
-                    { color: '#ffbd83', label: 'Message', value: 25 },
-                    { color: '#c2eb7f', label: 'App Store', value: 25 },
+                    { color: '#ADF0C7', label: 'Survey', value: 90 },
+                    { color: '#FFF6B6', label: 'Call', value: 50 },
+                    { color: '#C6DCFF', label: 'Message', value: 25 },
+                    { color: '#F8D3AF', label: 'App Store', value: 25 },
                   ].map((item) => (
                     <div key={item.label} className="flex items-center gap-2">
                       <div className="w-1 rounded-full self-stretch shrink-0" style={{ backgroundColor: item.color }} />
@@ -629,10 +634,57 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
         {/* Feedback tab */}
         {activeTab === 'feedback' && (
           <div className="flex flex-col gap-3">
-            {feedbackItems.map((item, i) => (
-              <div key={i} className="rounded-[16px]" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
-                onMouseEnter={() => setHoveredFeedback(i)}
-                onMouseLeave={() => setHoveredFeedback(null)}
+
+            {/* Search */}
+            <div className="flex items-center gap-2 rounded-[18px] h-[44px] bg-gray-100 pl-4 pr-2">
+              <Search size={14} className="shrink-0 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search feedback…"
+                value={feedbackSearch}
+                onChange={e => setFeedbackSearch(e.target.value)}
+                className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 min-w-0"
+              />
+              {feedbackSearch && (
+                <button
+                  type="button"
+                  onClick={() => setFeedbackSearch('')}
+                  className="w-[28px] h-[28px] shrink-0 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:bg-gray-300 transition-colors"
+                >
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                    <path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {/* Filter chips */}
+            <div className="flex items-center gap-1.5 flex-wrap mt-1">
+              {['Request', 'Problem', 'Praise'].map(type => (
+                <button
+                  key={type}
+                  onClick={() => setFeedbackFilter(feedbackFilter === type ? null : type)}
+                  className="h-7 px-3 rounded-full text-[12px] font-medium transition-colors"
+                  style={{
+                    backgroundColor: feedbackFilter === type ? '#222428' : 'transparent',
+                    color: feedbackFilter === type ? '#ffffff' : '#656b81',
+                    border: '1px solid ' + (feedbackFilter === type ? '#222428' : '#e0e2e8'),
+                  }}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-3 mt-1">
+            {feedbackItems
+              .filter(item =>
+                (!feedbackFilter || item.type === feedbackFilter) &&
+                (!feedbackSearch || item.text.toLowerCase().includes(feedbackSearch.toLowerCase()) || item.author.toLowerCase().includes(feedbackSearch.toLowerCase()))
+              )
+              .map((item, i) => (
+              <div key={i} className="rounded-[16px] cursor-pointer" style={{ backgroundColor: item.tagColor, padding: '2px 2px 6px 2px' }}
+                onClick={() => { setActiveFeedback(activeFeedback === i ? null : i); if (openMenuIndex === i) setOpenMenuIndex(null) }}
               >
               <div className="rounded-[16px] bg-white p-4 flex flex-col gap-3">
 
@@ -641,16 +693,66 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                   <span className="flex items-center h-6 px-2 rounded-full text-xs text-[#222428] whitespace-nowrap" style={{ backgroundColor: item.tagColor }}>
                     {item.type}
                   </span>
-                  <button className="text-[#aeb2c0] hover:text-[#656b81] transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                      <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
-                    </svg>
-                  </button>
+                  <div className="relative">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setOpenMenuIndex(openMenuIndex === i ? null : i) }}
+                      className="text-[#aeb2c0] hover:text-[#656b81] transition-colors"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
+                      </svg>
+                    </button>
+                    {openMenuIndex === i && (
+                      <div
+                        className="absolute right-0 top-6 z-50 bg-white rounded-[10px] py-1 flex flex-col min-w-[140px]"
+                        style={{ boxShadow: '0px 4px 16px rgba(34,36,40,0.12), 0px 0px 0px 1px rgba(34,36,40,0.06)' }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          className="px-3 py-2 text-[13px] text-[#222428] text-left hover:bg-[#f1f2f5] transition-colors rounded-[8px] mx-1"
+                          onClick={async () => {
+                            setOpenMenuIndex(null)
+                            localStorage.setItem('pendingInsightCard', JSON.stringify({
+                              style: 'featured', cardType: 'quote',
+                              title: item.author.split(',')[0], quote: item.text,
+                              badge: item.type, accent: item.tagColor,
+                              meta: { person: item.author.split(',')[0], source: 'Gong', date: item.date.replace('Added ', '') },
+                              tableHeading: signal.title,
+                              relatedRows: feedbackItems.map(f => ({
+                                title: f.author.split(',')[0],
+                                description: f.text,
+                                source: 'Gong',
+                                type: f.type,
+                                date: f.date.replace('Added ', ''),
+                              })),
+                            }))
+                            try {
+                              const spaceRes = await fetch('/api/spaces/space-insights')
+                              const spaceData = spaceRes.ok ? await spaceRes.json() : null
+                              const existing = (spaceData?.canvases ?? []).find((c: { name: string }) => c.name === signal.theme)
+                              if (existing) { router.push(`/space/space-insights/canvas/${existing.id}`); return }
+                              const res = await fetch('/api/canvases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: signal.theme, spaceId: 'space-insights' }) })
+                              const canvas = await res.json()
+                              router.push(`/space/space-insights/canvas/${canvas.id}`)
+                            } catch { router.push('/space/space-insights/canvas/canvas-insights-untitled') }
+                          }}
+                        >
+                          Add to board
+                        </button>
+                        <button
+                          className="px-3 py-2 text-[13px] text-[#222428] text-left hover:bg-[#f1f2f5] transition-colors rounded-[8px] mx-1"
+                          onClick={() => { navigator.clipboard.writeText(item.text); setOpenMenuIndex(null) }}
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Stars — only on hover */}
                 <AnimatePresence>
-                  {hoveredFeedback === i && item.stars !== null && (
+                  {activeFeedback === i && item.stars !== null && (
                     <motion.div
                       className="flex items-center gap-0.5 overflow-hidden"
                       initial={{ opacity: 0, height: 0 }}
@@ -668,72 +770,35 @@ function SignalDetailPanel({ signal, onClose }: { signal: typeof SIGNAL_ROWS[0];
                 </AnimatePresence>
 
                 {/* Text — clamped when inactive, full on hover */}
-                <p className={`text-[13px] leading-[1.6] ${item.type === 'Problem' ? 'text-[#222428] font-medium' : 'text-[#222428]'} ${hoveredFeedback === i ? '' : 'line-clamp-2'}`}>
+                <p className={`text-[13px] leading-[1.6] ${item.type === 'Problem' ? 'text-[#222428] font-medium' : 'text-[#222428]'} ${activeFeedback === i ? '' : 'line-clamp-2'}`}>
                   {item.text}
                 </p>
 
-                {/* Footer — author only when inactive, chips on hover */}
-                <AnimatePresence mode="wait">
-                  {hoveredFeedback === i ? (
-                    <motion.div
-                      key="chips"
-                      className="flex items-center gap-1.5 overflow-x-auto shrink-0 no-scrollbar"
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 4 }}
-                      transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
-                    >
-                      <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
-                        <GongIcon />Gong
-                      </span>
-                      <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
-                        {item.author.split(',')[0]}
-                      </span>
-                      <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
-                        <CalendarIcon />{item.date.replace('Added ', '')}
-                      </span>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="author"
-                      className="flex items-center"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.1 }}
-                    >
-                      <span className="text-[12px] text-[#aeb2c0]">{item.author.split(',')[0]}</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/* Footer — metadata chips always visible */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                    <GongIcon />Gong
+                  </span>
+                  <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                    {item.author.split(',')[0]}
+                  </span>
+                  <span className="flex items-center gap-1 py-1.5 px-2.5 rounded-full border text-xs text-[#222428] shrink-0 whitespace-nowrap" style={{ backgroundColor: '#e9eaef', borderColor: '#e9eaef' }}>
+                    <CalendarIcon />{item.date.replace('Added ', '')}
+                  </span>
+                </div>
 
-                <button
-                  onClick={async () => {
-                    localStorage.setItem('pendingInsightCard', JSON.stringify({
-                      style: 'featured', cardType: 'quote',
-                      title: item.author.split(',')[0], quote: item.text,
-                      badge: item.type, accent: item.tagColor,
-                      meta: { person: item.author.split(',')[0], source: 'Gong', date: item.date.replace('Added ', '') },
-                      tableHeading: signal.title, relatedRows: [],
-                    }));
-                    try {
-                      const spaceRes = await fetch('/api/spaces/space-insights');
-                      const spaceData = spaceRes.ok ? await spaceRes.json() : null;
-                      const existing = (spaceData?.canvases ?? []).find((c: { name: string }) => c.name === signal.theme);
-                      if (existing) { router.push(`/space/space-insights/canvas/${existing.id}`); return; }
-                      const res = await fetch('/api/canvases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: signal.theme, spaceId: 'space-insights' }) });
-                      const canvas = await res.json();
-                      router.push(`/space/space-insights/canvas/${canvas.id}`);
-                    } catch { router.push('/space/space-insights/canvas/canvas-insights-untitled'); }
-                  }}
-                  className="self-start h-7 px-3 rounded-[24px] text-xs font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors"
-                >
-                  Add to board
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="self-start h-7 px-3 rounded-[24px] text-xs font-medium text-[#222428] border border-[#e0e2e8] bg-white hover:bg-[#222428] hover:text-white hover:border-[#222428] transition-colors"
+                  >
+                    Add to Backlog
+                  </button>
+                </div>
 
               </div>
               </div>
             ))}
+            </div>
           </div>
         )}
 
@@ -997,9 +1062,6 @@ function AIPanel({ open, onClose, copiedSignal, onClearCopied }: { open: boolean
                     <div className="absolute top-3 right-3 flex items-center gap-1.5">
                       <button className="w-6 h-6 flex items-center justify-center rounded-full text-[#aeb2c0] hover:text-[#656b81] transition-colors">
                         <MoreVertical size={14} strokeWidth={1.5} />
-                      </button>
-                      <button className="w-7 h-7 flex items-center justify-center rounded-full" style={{ backgroundColor: cardAccent }}>
-                        <Play size={12} strokeWidth={2} className="text-[#222428] fill-[#222428] ml-0.5" />
                       </button>
                     </div>
                     <p className="text-[15px] font-heading font-medium text-[#222428] leading-snug">{copiedSignal.title}</p>
