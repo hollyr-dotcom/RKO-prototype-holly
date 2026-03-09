@@ -551,7 +551,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                 <p className="text-[16px] text-[#656b81] leading-[1.6]">
                   {selectedSignal.description} With an estimated {selectedSignal.revenue} ARR impact, it represents a meaningful opportunity to address unmet needs and improve retention.
                 </p>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2" style={{ marginTop: '32px' }}>
                   <h3 className="text-lg font-heading font-medium text-[#222428] leading-snug">Confidence drivers</h3>
                   <div className="grid grid-cols-2">
                     {[
@@ -568,8 +568,6 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                   </div>
                 </div>
 
-                <div className="h-px bg-[#e0e2e8]" />
-
                 <div className="flex flex-col gap-4">
                   <h3 className="text-lg font-heading font-medium text-[#222428] leading-snug">Total feedback</h3>
                   <div className="flex items-center gap-6">
@@ -585,7 +583,7 @@ function AIPanel({ open, onClose, theme, showAnalysis, onDismissAnalysis, select
                           <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                           <div className="flex items-baseline justify-between flex-1">
                             <p className="text-[12px] text-[#656b81]">{item.label}</p>
-                            <p className="text-[18px] text-[#222428] leading-[1.2]">{item.value}</p>
+                            <p className="text-[12px] text-[#222428] leading-[1.2]">{item.value}</p>
                           </div>
                         </div>
                       ))}
@@ -807,10 +805,46 @@ function deriveStats(card: ThemeCard) {
   return { mentions, customers, arrImpact, freq: card.meta.confidenceDelta }
 }
 
+const SOURCE_LABEL: Record<string, string> = { audio: 'Gong', globe: 'Web', mobile: 'App Store' }
+
 // ─── Detail Signal Panel ───────────────────────────────────────────────────────
 
-function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[0]; onClose: () => void }) {
+function DetailSignalPanel({ signal, onClose, themeTitle }: { signal: typeof DETAIL_SIGNALS[0]; onClose: () => void; themeTitle?: string }) {
   const [tab, setTab] = useState<'summary' | 'feedback' | 'details' | 'updates'>('summary')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const router = useRouter()
+
+  const addToBoard = async () => {
+    setMenuOpen(false)
+    localStorage.setItem('pendingInsightCard', JSON.stringify({
+      style: 'featured',
+      cardType: 'quote',
+      quote: signal.description,
+      title: signal.title,
+      badge: SOURCE_LABEL[signal.sourceIcon] ?? signal.sourceIcon,
+      accent: signal.person.bg,
+      meta: { person: signal.person.name, company: signal.company.name, source: SOURCE_LABEL[signal.sourceIcon] ?? signal.sourceIcon, arr: signal.revenue },
+      tableHeading: themeTitle ?? signal.title,
+      relatedRows: DETAIL_SIGNALS.map(s => ({
+        title: s.title,
+        description: s.description,
+        source: SOURCE_LABEL[s.sourceIcon] ?? s.sourceIcon,
+        type: s.sourceIcon,
+        company: s.company.name,
+        date: s.person.name,
+      })),
+    }))
+    try {
+      const spaceRes = await fetch('/api/spaces/space-insights')
+      const spaceData = spaceRes.ok ? await spaceRes.json() : null
+      const canvasName = themeTitle ?? signal.title
+      const existing = (spaceData?.canvases ?? []).find((c: { name: string }) => c.name === canvasName)
+      if (existing) { router.push(`/space/space-insights/canvas/${existing.id}`); return }
+      const res = await fetch('/api/canvases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: canvasName, spaceId: 'space-insights' }) })
+      const canvas = await res.json()
+      router.push(`/space/space-insights/canvas/${canvas.id}`)
+    } catch { router.push('/space/space-insights/canvas/canvas-insights-untitled') }
+  }
 
   const revenueNum = parseFloat(signal.revenue.replace(/[^0-9.]/g, ''))
   const isMillions = signal.revenue.includes('M')
@@ -827,10 +861,10 @@ function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[
   const s2 = s + gap, c2 = s2 + c, c3 = c2 + gap, m2 = c3 + m, m3 = m2 + gap
   const feedbackGradient = `conic-gradient(#ADF0C7 0% ${s.toFixed(1)}%, white ${s.toFixed(1)}% ${s2.toFixed(1)}%, #FFF6B6 ${s2.toFixed(1)}% ${c2.toFixed(1)}%, white ${c2.toFixed(1)}% ${c3.toFixed(1)}%, #C6DCFF ${c3.toFixed(1)}% ${m2.toFixed(1)}%, white ${m2.toFixed(1)}% ${m3.toFixed(1)}%, #F8D3AF ${m3.toFixed(1)}% 100%)`
   const feedbackItems = [
-    { color: '#DEDAFF', label: 'Survey', value: fb.survey },
-    { color: '#FFD8F4', label: 'Call', value: fb.call },
-    { color: '#F8D3AF', label: 'Message', value: fb.message },
-    { color: '#ADF0C7', label: 'App Store', value: fb.appStore },
+    { color: '#ADF0C7', label: 'Survey', value: fb.survey },
+    { color: '#FFF6B6', label: 'Call', value: fb.call },
+    { color: '#C6DCFF', label: 'Message', value: fb.message },
+    { color: '#F8D3AF', label: 'App Store', value: fb.appStore },
   ]
 
   return (
@@ -842,22 +876,39 @@ function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[
       className="fixed top-4 right-4 bottom-4 w-[472px] bg-white rounded-[20px] shadow-[0_0_12px_rgba(34,36,40,0.04),-2px_0_8px_rgba(34,36,40,0.12)] flex flex-col overflow-hidden z-40"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-[#e0e2e8] shrink-0">
-        <span className="text-[18px] font-heading font-medium text-[#222428]">Signal</span>
-        <button onClick={onClose} className="w-6 h-6 flex items-center justify-center text-[#656b81] hover:text-[#222428] transition-colors">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </button>
+      <div className="flex items-center justify-between px-6 py-4 shrink-0">
+        <span className="text-[18px] font-heading font-medium text-[#222428] truncate">{themeTitle ?? 'Signal'}</span>
+        <div className="flex items-center gap-1 shrink-0">
+          <div className="relative">
+            <button onClick={() => setMenuOpen(o => !o)} className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
+              </svg>
+            </button>
+            {menuOpen && (
+              <div
+                className="absolute right-0 top-9 z-50 bg-white rounded-[10px] py-1 flex flex-col min-w-[140px]"
+                style={{ boxShadow: '0px 4px 16px rgba(34,36,40,0.12), 0px 0px 0px 1px rgba(34,36,40,0.06)' }}
+              >
+                <button className="px-3 py-2 text-[13px] text-[#222428] text-left hover:bg-[#f1f2f5] transition-colors rounded-[8px] mx-1" onClick={addToBoard}>
+                  Add to board
+                </button>
+                <button className="px-3 py-2 text-[13px] text-[#222428] text-left hover:bg-[#f1f2f5] transition-colors rounded-[8px] mx-1" onClick={() => { navigator.clipboard.writeText(signal.title); setMenuOpen(false) }}>
+                  Copy
+                </button>
+              </div>
+            )}
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded text-[#656b81] hover:bg-[#f1f2f5] transition-colors">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
-        <div>
-          <h2 className="text-[22px] font-serif text-[#222428] leading-[1.35]">{signal.title}</h2>
-          <p className="text-sm text-[#656b81] mt-1 leading-[1.5]">{signal.description}</p>
-        </div>
-
+      <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5 flex flex-col gap-5">
         {/* Tabs */}
         <div className="flex items-center gap-0.5 flex-wrap">
           {(['Summary', 'Feedback', 'Details', 'Updates'] as const).map(t => (
@@ -874,7 +925,7 @@ function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[
             <p className="text-[16px] text-[#656b81] leading-[1.6]">
               {signal.description} With an estimated {signal.revenue} ARR impact, it represents a meaningful opportunity to address unmet needs and improve retention.
             </p>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2" style={{ marginTop: '16px' }}>
               <h3 className="text-lg font-heading font-medium text-[#222428] leading-snug">Confidence drivers</h3>
               <div className="grid grid-cols-2">
                 {[
@@ -891,8 +942,6 @@ function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[
               </div>
             </div>
 
-            <div className="h-px bg-[#e0e2e8]" />
-
             <div className="flex flex-col gap-4">
               <h3 className="text-lg font-heading font-medium text-[#222428] leading-snug">Total feedback</h3>
               <div className="flex items-center gap-6">
@@ -908,7 +957,7 @@ function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[
                       <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                       <div className="flex items-baseline justify-between flex-1">
                         <p className="text-[12px] text-[#656b81]">{item.label}</p>
-                        <p className="text-[18px] text-[#222428] leading-[1.2]">{item.value}</p>
+                        <p className="text-[12px] text-[#222428] leading-[1.2]">{item.value}</p>
                       </div>
                     </div>
                   ))}
@@ -970,8 +1019,8 @@ function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[
         )}
       </div>
 
-      {/* Chips */}
-      <div className="px-6 pb-6 shrink-0">
+      {/* Chips + input */}
+      <div className="px-6 pb-6 pt-4 shrink-0 flex flex-col gap-3">
         <div className="rounded-[24px] overflow-hidden py-1.5" style={{ backgroundColor: '#FBFAF7' }}>
           {SIGNAL_CHIPS.map(chip => (
             <button key={chip} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors">
@@ -980,6 +1029,7 @@ function DetailSignalPanel({ signal, onClose }: { signal: typeof DETAIL_SIGNALS[
             </button>
           ))}
         </div>
+        <ChatInput onSubmit={() => {}} />
       </div>
     </motion.aside>
   )
@@ -1003,7 +1053,6 @@ export default function ThemeDetailPage() {
 
   const selectSignal = (row: typeof DETAIL_SIGNALS[0]) => { setSelectedSignal(row); setAiOpen(true) }
 
-  const SOURCE_LABEL: Record<string, string> = { audio: 'Gong', globe: 'Web', mobile: 'App Store' }
   const openSignalOnCanvas = async (row: typeof DETAIL_SIGNALS[0], themeTitle: string, accent: string) => {
     localStorage.setItem('pendingInsightCard', JSON.stringify({
       style: 'featured', cardType: 'audio',
@@ -1416,7 +1465,7 @@ export default function ThemeDetailPage() {
         </main>
       </div>
 
-      {!aiOpen && (
+      {!aiOpen && !detailSignal && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20" style={{ width: 560 }}>
           <div
             className="bg-white rounded-full"
@@ -1441,7 +1490,7 @@ export default function ThemeDetailPage() {
 
       <AnimatePresence>
         {detailSignal && (
-          <DetailSignalPanel signal={detailSignal} onClose={() => { setDetailSignal(null); setAiOpen(true) }} />
+          <DetailSignalPanel signal={detailSignal} onClose={() => { setDetailSignal(null); setAiOpen(true) }} themeTitle={theme?.title} />
         )}
       </AnimatePresence>
 

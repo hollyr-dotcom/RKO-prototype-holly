@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useChat } from "@/hooks/useChat";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -11,8 +12,14 @@ const contentTransition = "border-radius 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), 
 const NEUTRAL_SHADOW = "0px 0px 8px 0px rgba(34,36,40,0.06), 0px 6px 16px 0px rgba(34,36,40,0.12)";
 
 export function NavigationShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const { isCollapsed, showSecondary, navPalette } = useSidebar();
   const { chatMode, resizeHovered } = useChat();
+
+  // Insights landing page is a standalone app — no navigation shell
+  if (pathname === "/insights") {
+    return <div className="h-screen overflow-hidden">{children}</div>;
+  }
 
   const isChatSidePanel = chatMode === "sidepanel";
   // Content surface gets rounding whenever the navigation is expanded
